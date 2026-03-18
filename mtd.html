@@ -340,7 +340,7 @@
     <div class="container">
         <header>
             <h1>📊 Teeccino MTD Dashboard</h1>
-            <p>March 2026 • Updated Mar 18, 03:31 PM</p>
+            <p>March 2026 • Updated Mar 18, 03:38 PM</p>
         </header>
         
         <!-- Month Progress Bar -->
@@ -452,7 +452,7 @@
                 <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
             </div>
             <div class="ad-metrics">
-                <span class="spend">$4,795</span>
+                <span class="spend">$4,797</span>
                 <span class="roas bad">0.70x</span>
             </div>
         </div>
@@ -464,7 +464,7 @@
                 <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
             </div>
             <div class="ad-metrics">
-                <span class="spend">$888</span>
+                <span class="spend">$889</span>
                 <span class="roas bad">0.66x</span>
             </div>
         </div>
@@ -535,7 +535,10 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeAdModal()">&times;</span>
             <div class="modal-body">
-                <img id="modalImg" src="" alt="Ad Creative">
+                <div id="modalMedia">
+                    <img id="modalImg" src="" alt="Ad Creative">
+                    <video id="modalVideo" controls style="display:none;width:100%;max-height:300px;border-radius:12px;background:#000;"></video>
+                </div>
                 <div class="modal-info">
                     <h3 id="modalName"></h3>
                     <p id="modalCampaign" class="campaign"></p>
@@ -555,11 +558,30 @@
     </div>
     
     <script>
-        const adData = [{"img": "images/120241448664080459.jpg", "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$4,795", "roas": "0.70x", "revenue": "$3,353", "purchases": 133, "caption": ""}, {"img": "images/120241448911110459.jpg", "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$888", "roas": "0.66x", "revenue": "$585", "purchases": 26, "caption": ""}, {"img": "images/120241448268580459.jpg", "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$707", "roas": "0.89x", "revenue": "$630", "purchases": 17, "caption": ""}, {"img": "images/120241444573400459.jpg", "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$531", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": ""}, {"img": "images/120241444806880459.jpg", "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$355", "roas": "5.56x", "revenue": "$1,976", "purchases": 43, "caption": ""}, {"img": "images/120241447985220459.jpg", "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": ""}];
+        const adData = [{"img": "images/120241448664080459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$4,797", "roas": "0.70x", "revenue": "$3,353", "purchases": 133, "caption": ""}, {"img": "images/120241448911110459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$889", "roas": "0.66x", "revenue": "$585", "purchases": 26, "caption": ""}, {"img": "images/120241448268580459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$707", "roas": "0.89x", "revenue": "$630", "purchases": 17, "caption": ""}, {"img": "images/120241444573400459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$531", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": ""}, {"img": "images/120241444806880459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$355", "roas": "5.56x", "revenue": "$1,976", "purchases": 43, "caption": ""}, {"img": "images/120241447985220459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": ""}];
         
         function openAdModal(idx) {
             const ad = adData[idx];
-            document.getElementById('modalImg').src = ad.img;
+            const img = document.getElementById('modalImg');
+            const video = document.getElementById('modalVideo');
+            
+            // Reset video
+            video.pause();
+            video.src = '';
+            
+            if (ad.video) {
+                // Show video
+                img.style.display = 'none';
+                video.style.display = 'block';
+                video.src = ad.video;
+                video.poster = ad.img;
+            } else {
+                // Show image
+                img.style.display = 'block';
+                video.style.display = 'none';
+                img.src = ad.img;
+            }
+            
             document.getElementById('modalName').textContent = ad.name;
             document.getElementById('modalCampaign').textContent = ad.campaign;
             document.getElementById('modalSpend').textContent = ad.spend;
@@ -572,6 +594,8 @@
         
         function closeAdModal() {
             document.getElementById('adModal').style.display = 'none';
+            const video = document.getElementById('modalVideo');
+            video.pause();
         }
         
         document.addEventListener('keydown', function(e) {
