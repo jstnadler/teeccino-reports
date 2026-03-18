@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teeccino Reports</title>
+    <title>Teeccino Reports - MTD Dashboard</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -11,12 +11,10 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
             padding-top: 70px;
         }
+        .container { max-width: 1400px; margin: 0 auto; }
         
         /* Sticky Nav */
         .top-nav {
@@ -38,9 +36,6 @@
             font-weight: 700;
             color: #fff;
             text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         .top-nav .logo:hover { opacity: 0.8; }
         .top-nav .nav-links {
@@ -62,93 +57,181 @@
         }
         .top-nav .nav-links a.active {
             opacity: 1;
-            background: rgba(255,255,255,0.15);
+            background: rgba(0,184,148,0.3);
         }
-        .container {
-            max-width: 900px;
-            width: 100%;
-        }
+        
         header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 20px;
         }
-        header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00b894, #00cec9, #667eea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        header p {
-            font-size: 1.2em;
-            opacity: 0.7;
-        }
+        header h1 { font-size: 2.5em; margin-bottom: 5px; }
+        header p { opacity: 0.7; }
         
-        .nav-grid {
+        /* Month Progress Bar - Full Width at Top */
+        .progress-header {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .progress-header .label { font-size: 0.9em; opacity: 0.7; white-space: nowrap; }
+        .progress-header .bar-container { flex: 1; }
+        .progress-header .progress-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-header .progress-fill {
+            height: 100%;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+        }
+        .progress-header .pct { font-size: 1.4em; font-weight: 700; white-space: nowrap; }
+        
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
-        .nav-card {
+        .card {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 35px;
-            text-align: center;
-            text-decoration: none;
-            color: #fff;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            display: block;
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .nav-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.15);
+        .card h3 {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            margin-bottom: 12px;
         }
+        .card .big-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            line-height: 1;
+            display: inline;
+        }
+        .card .subtitle {
+            font-size: 0.85em;
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+        .card .yoy { margin-top: 5px; }
         
-        .nav-card .icon {
-            font-size: 3em;
-            margin-bottom: 15px;
+        .progress-section { margin-top: 15px; }
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 8px;
         }
-        .nav-card h2 {
-            font-size: 1.5em;
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+        .progress-fill.green { background: linear-gradient(90deg, #00b894, #00cec9); }
+        .progress-fill.yellow { background: linear-gradient(90deg, #fdcb6e, #f39c12); }
+        .progress-fill.red { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+        .comparison .label { opacity: 0.6; }
+        .comparison .value { font-weight: 600; }
+        
+        .mer-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        
+        /* Top Ads Section */
+        .top-ads {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .top-ads h2 { margin-bottom: 20px; font-size: 1.3em; }
+        .ad-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
             margin-bottom: 10px;
         }
-        .nav-card p {
-            opacity: 0.7;
-            font-size: 0.95em;
-            line-height: 1.5;
+        .ad-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: rgba(255,255,255,0.1);
         }
+        .ad-thumb.no-img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            opacity: 0.3;
+        }
+        .ad-rank {
+            font-size: 1.3em;
+            font-weight: 700;
+            opacity: 0.4;
+            width: 35px;
+        }
+        .ad-info { flex: 1; min-width: 0; }
+        .ad-name { font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ad-campaign { font-size: 0.8em; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ad-metrics {
+            display: flex;
+            gap: 15px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .ad-metrics .spend { font-weight: 600; font-size: 1.1em; }
+        .ad-metrics .roas { 
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .roas.good { background: rgba(0,184,148,0.3); color: #00b894; }
+        .roas.ok { background: rgba(253,203,110,0.3); color: #fdcb6e; }
+        .roas.bad { background: rgba(231,76,60,0.3); color: #e74c3c; }
         
-        .nav-card.mtd {
-            background: linear-gradient(135deg, rgba(0,184,148,0.3) 0%, rgba(0,206,201,0.3) 100%);
+        .reports-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
-        .nav-card.mtd:hover {
-            background: linear-gradient(135deg, rgba(0,184,148,0.5) 0%, rgba(0,206,201,0.5) 100%);
+        .reports-nav a {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: background 0.2s;
         }
-        
-        .nav-card.weekly {
-            background: linear-gradient(135deg, rgba(102,126,234,0.3) 0%, rgba(118,75,162,0.3) 100%);
-        }
-        .nav-card.weekly:hover {
-            background: linear-gradient(135deg, rgba(102,126,234,0.5) 0%, rgba(118,75,162,0.5) 100%);
-        }
-        
-        .nav-card.monthly {
-            background: linear-gradient(135deg, rgba(253,203,110,0.3) 0%, rgba(243,156,18,0.3) 100%);
-        }
-        .nav-card.monthly:hover {
-            background: linear-gradient(135deg, rgba(253,203,110,0.5) 0%, rgba(243,156,18,0.5) 100%);
-        }
+        .reports-nav a:hover { background: rgba(255,255,255,0.2); }
         
         footer {
             text-align: center;
-            margin-top: 50px;
+            padding: 30px;
             opacity: 0.5;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
     </style>
 </head>
@@ -156,35 +239,183 @@
     <nav class="top-nav">
         <a href="index.html" class="logo">☕ Teeccino Reports</a>
         <div class="nav-links">
-            <a href="mtd.html">📊 MTD</a>
+            <a href="mtd.html" class="active">📊 MTD</a>
             <a href="weekly.html">📈 Weekly</a>
             <a href="kpi.html">📅 Monthly</a>
         </div>
     </nav>
     <div class="container">
         <header>
-            <h1>☕ Teeccino Reports</h1>
-            <p>Marketing Analytics Dashboard</p>
+            <h1>📊 Teeccino MTD Dashboard</h1>
+            <p>March 2026 • Updated Mar 18, 01:31 PM</p>
         </header>
         
-        <div class="nav-grid">
-            <a href="mtd.html" class="nav-card mtd">
-                <div class="icon">📊</div>
-                <h2>MTD Dashboard</h2>
-                <p>Current month-to-date metrics, ad performance, and pacing vs forecast</p>
-            </a>
+        <!-- Month Progress Bar -->
+        <div class="progress-header">
+            <span class="label">📅 Month Progress</span>
+            <div class="bar-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 55%"></div>
+                </div>
+            </div>
+            <span class="pct">55%</span>
+            <span class="label">(17 of 31 days)</span>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>DTC Gross Sales</h3>
+                <div class="big-number">$107,186</div>
+                <span style="background: #e74c3c22; color: #e74c3c; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 47.7% YoY</span>
+                <div class="subtitle">LY Full Month: $204,765</div>
+                <div class="progress-section">
+                    <div class="comparison">
+                        <span class="label">Projected</span>
+                        <span class="value">$204,873</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill yellow" 
+                             style="width: 52%"></div>
+                    </div>
+                    <div class="comparison">
+                        <span class="label">Pacing</span>
+                        <span class="value">$195,457</span>
+                    </div>
+                </div>
+            </div>
             
-            <a href="weekly.html" class="nav-card weekly">
-                <div class="icon">📈</div>
-                <h2>Weekly Reports</h2>
-                <p>Detailed weekly Meta & Google Ads performance breakdowns</p>
-            </a>
+            <div class="card">
+                <h3>Total Orders</h3>
+                <div class="big-number">2,202</div>
+                <span style="background: #e74c3c22; color: #e74c3c; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 42.5% YoY</span>
+                <div class="subtitle">LY Full: 3,827 • 841 new • 770 subs</div>
+            </div>
             
-            <a href="kpi.html" class="nav-card monthly">
-                <div class="icon">📅</div>
-                <h2>Monthly KPIs</h2>
-                <p>Historical monthly KPI snapshots with YoY comparisons</p>
-            </a>
+            <div class="card">
+                <h3>DTC Discounts</h3>
+                <div class="big-number">$13,220</div>
+                <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 55.4% YoY</span>
+                <div class="subtitle">LY Full: $29,662 • 12.3% of gross</div>
+            </div>
+            
+            <div class="card">
+                <h3>Ad Spend</h3>
+                <div class="big-number">$13,889</div>
+                <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 66.3% YoY</span>
+                <div class="subtitle">LY Full: $41,227 • Meta $8,984 • Google $4,905</div>
+                <div class="progress-section">
+                    <div class="comparison">
+                        <span class="label">Budget</span>
+                        <span class="value">$25,000</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill green" 
+                             style="width: 56%"></div>
+                    </div>
+                    <div class="comparison">
+                        <span class="label">Pacing</span>
+                        <span class="value">$25,327</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mer-card">
+                <h3>Overall MER</h3>
+                <div class="big-number">🟢 7.20x</div>
+                <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↑ 60.2% YoY</span>
+                <div class="subtitle">LY Full: 4.49x • Target: 2.25x</div>
+            </div>
+            
+            <div class="card" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+                <h3>NC MER (New Customer)</h3>
+                <div class="big-number">🟢 2.32x</div>
+                <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↑ 50.6% YoY</span>
+                <div class="subtitle">LY Full: 1.54x • Target: 2.25x</div>
+            </div>
+        </div>
+        
+        <div class="top-ads">
+            <h2>🔥 Top Ads This Month (by Spend)</h2>
+            
+        <div class="ad-card">
+            <img src="images/120241448664080459.jpg" class="ad-thumb">
+            <div class="ad-rank">#1</div>
+            <div class="ad-info">
+                <div class="ad-name">#092 -  Dark Chocolate Taste - Image #02</div>
+                <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
+            </div>
+            <div class="ad-metrics">
+                <span class="spend">$4,772</span>
+                <span class="roas bad">0.70x</span>
+            </div>
+        </div>
+        <div class="ad-card">
+            <img src="images/120241448911110459.jpg" class="ad-thumb">
+            <div class="ad-rank">#2</div>
+            <div class="ad-info">
+                <div class="ad-name">#092 -  Dark Chocolate Taste - Image #04</div>
+                <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
+            </div>
+            <div class="ad-metrics">
+                <span class="spend">$884</span>
+                <span class="roas bad">0.66x</span>
+            </div>
+        </div>
+        <div class="ad-card">
+            <img src="images/120241448268580459.jpg" class="ad-thumb">
+            <div class="ad-rank">#3</div>
+            <div class="ad-info">
+                <div class="ad-name">#092 - Dark Chocolate Tas - Image #04</div>
+                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
+            </div>
+            <div class="ad-metrics">
+                <span class="spend">$707</span>
+                <span class="roas bad">0.89x</span>
+            </div>
+        </div>
+        <div class="ad-card">
+            <img src="images/120241444573400459.jpg" class="ad-thumb">
+            <div class="ad-rank">#4</div>
+            <div class="ad-info">
+                <div class="ad-name">#091 -  Dark Chocolate Toxins - Image #03</div>
+                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
+            </div>
+            <div class="ad-metrics">
+                <span class="spend">$531</span>
+                <span class="roas ok">1.24x</span>
+            </div>
+        </div>
+        <div class="ad-card">
+            <img src="images/120241444806880459.jpg" class="ad-thumb">
+            <div class="ad-rank">#5</div>
+            <div class="ad-info">
+                <div class="ad-name">#091 -  Dark Chocolate Toxins - Image #03</div>
+                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
+            </div>
+            <div class="ad-metrics">
+                <span class="spend">$355</span>
+                <span class="roas good">5.57x</span>
+            </div>
+        </div>
+        <div class="ad-card">
+            <img src="images/120241447985220459.jpg" class="ad-thumb">
+            <div class="ad-rank">#6</div>
+            <div class="ad-info">
+                <div class="ad-name">#092 - Dark Chocolate Tas - Image #03</div>
+                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
+            </div>
+            <div class="ad-metrics">
+                <span class="spend">$342</span>
+                <span class="roas bad">0.87x</span>
+            </div>
+        </div>
+        </div>
+        
+        <div>
+            <h3 style="margin-bottom: 15px; opacity: 0.7;">📅 Weekly Reports</h3>
+            <div class="reports-nav">
+                <a href="reports/2026-03-11/">2026-03-11</a><a href="reports/2026-03-04/">2026-03-04</a><a href="reports/2026-02-25/">2026-02-25</a><a href="reports/2026-02-18/">2026-02-18</a>
+            </div>
         </div>
         
         <footer>
