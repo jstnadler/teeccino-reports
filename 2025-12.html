@@ -150,6 +150,99 @@
         }
         .ad-metrics .purchases { font-size: 0.85em; opacity: 0.7; }
         
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.7;
+            z-index: 10;
+        }
+        .modal-close:hover { opacity: 1; }
+        .modal-body {
+            padding: 25px;
+        }
+        .modal-body img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        .modal-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+        .modal-info .campaign {
+            opacity: 0.6;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .modal-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .modal-metrics .metric {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .modal-metrics .label {
+            display: block;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+        .modal-metrics .value {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .modal-caption {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .modal-caption h4 {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+        .modal-caption p {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
         .archive-nav {
             background: rgba(255,255,255,0.05);
             border-radius: 16px;
@@ -270,7 +363,7 @@
         </div>
         
         <div class="top-ads"><h2>🔥 Top Ads This Month (by Spend)</h2>
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(0)" style="cursor:pointer;">
                 <img src="images/120236661708170459.jpg" alt="#060 - Insense - Video #4">
                 <div class="ad-info">
                     <div class="ad-name">#060 - Insense - Video #4</div>
@@ -283,7 +376,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(1)" style="cursor:pointer;">
                 <img src="images/120232044801520459.jpg" alt="#045 - Instant Miraculous Mush">
                 <div class="ad-info">
                     <div class="ad-name">#045 - Instant Miraculous Mushrooms - In...</div>
@@ -296,7 +389,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(2)" style="cursor:pointer;">
                 <img src="images/120239025432470459.jpg" alt="New Year Sale (Dec 28th - Jan ">
                 <div class="ad-info">
                     <div class="ad-name">New Year Sale (Dec 28th - Jan 4th) - Ima...</div>
@@ -309,7 +402,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(3)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#055 - PA - Melissa Mae">
                 <div class="ad-info">
                     <div class="ad-name">#055 - PA - Melissa Mae</div>
@@ -322,7 +415,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(4)" style="cursor:pointer;">
                 <img src="images/120236663820000459.jpg" alt="#060 - Insense - Video #6">
                 <div class="ad-info">
                     <div class="ad-name">#060 - Insense - Video #6</div>
@@ -335,7 +428,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(5)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#057 - PA - Rosie Ate">
                 <div class="ad-info">
                     <div class="ad-name">#057 - PA - Rosie Ate</div>
@@ -361,5 +454,54 @@
             Generated by Crowley 🐍 • Data from Monthly Matrices
         </footer>
     </div>
+    
+    <!-- Ad Modal -->
+    <div id="adModal" class="modal" onclick="if(event.target===this)closeAdModal()">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAdModal()">&times;</span>
+            <div class="modal-body">
+                <img id="modalImg" src="" alt="Ad Creative">
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p id="modalCampaign" class="campaign"></p>
+                    <div class="modal-metrics">
+                        <div class="metric"><span class="label">Spend</span><span id="modalSpend" class="value"></span></div>
+                        <div class="metric"><span class="label">ROAS</span><span id="modalRoas" class="value"></span></div>
+                        <div class="metric"><span class="label">Revenue</span><span id="modalRevenue" class="value"></span></div>
+                        <div class="metric"><span class="label">Orders</span><span id="modalPurchases" class="value"></span></div>
+                    </div>
+                    <div class="modal-caption">
+                        <h4>Ad Copy</h4>
+                        <p id="modalCaption"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const adData = [{"img": "images/120236661708170459.jpg", "name": "#060 - Insense - Video #4", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$9,273", "roas": "0.46x", "revenue": "$4,244", "purchases": 159, "caption": ""}, {"img": "images/120232044801520459.jpg", "name": "#045 - Instant Miraculous Mushrooms - Ingredients Coffee - Image #1", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$717", "roas": "0.52x", "revenue": "$376", "purchases": 10, "caption": ""}, {"img": "images/120239025432470459.jpg", "name": "New Year Sale (Dec 28th - Jan 4th) - Image #3", "campaign": "eH | CBO | New Year Sale (Dec 28th - Jan 4th)", "spend": "$621", "roas": "1.47x", "revenue": "$911", "purchases": 22, "caption": ""}, {"img": "images/placeholder.png", "name": "#055 - PA - Melissa Mae", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$584", "roas": "5.37x", "revenue": "$3,138", "purchases": 54, "caption": "\u2728 Iced Protein Teeccino Recipe\ud83c\udf6b\ud83e\udd65 \u2728<br><br>1\ufe0f\u20e3 Steep 1 bag of Teeccino (my fave is Maca Chocolate).<br>2\ufe0f\u20e3 Add your milk of choice.<br>3\ufe0f\u20e3 Mix in 1 scoop protein powder (I love the Coconut Chocolate \ud83e\udd65).<br>4\ufe0f\u20e3 Stir until creamy.<br>5\ufe0f\u20e3 Pour over ice \ud83e\uddca (pro tip: I re-steep my last tea bag & freeze it into cubes for next time).<br><br>One of my best friends is a convert and really missed her iced coffee, so I recently got her into iced Teeccino \ud83d\ude07 and now I\u2019m hooked again \ud83e\udee0<br><br>\ud83c\udf3f Teeccino was created by a woman who wanted to craft a coffee-like experience from herbs, roots, fruits, and grains. It\u2019s naturally caffeine-free, alkaline, and packed with prebiotics from chicory root. (Not a sponsored ad lol just love them!)<br><br>I don\u2019t share links here often, but I just love this protein because it\u2019s made with clean, real ingredients \u2014 no junk. Plus it\u2019s the yummiest one I\u2019ve ever tasted. \ud83d\ude0b<br><br>\ud83d\udd17 Grab it here: https://just.crrnt.app/4lK7qwE-<br>\u2728 Use code MelissaCarlton for 10% off!"}, {"img": "images/120236663820000459.jpg", "name": "#060 - Insense - Video #6", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$536", "roas": "3.19x", "revenue": "$1,710", "purchases": 35, "caption": ""}, {"img": "images/placeholder.png", "name": "#057 - PA - Rosie Ate", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$418", "roas": "4.80x", "revenue": "$2,006", "purchases": 40, "caption": "Let\u2019s try prebiotic, caffeine-free, herbal coffee with @teeccino \u2615\ufe0f<br><br>I\u2019ve been enjoying making myself a cup of the dandelion dark roast \u2014 it can be brewed just like regular coffee and can even be hot or iced. The flavor was so unique and rich, with ingredients like chicory, carob, and dandelion. It\u2019s caffeine free which means you can enjoy it in the afternoon or evening as a comforting drink<br><br>Check it out today and use my code (ROSIES15!) to get 15% off"}];
+        
+        function openAdModal(idx) {
+            const ad = adData[idx];
+            document.getElementById('modalImg').src = ad.img;
+            document.getElementById('modalName').textContent = ad.name;
+            document.getElementById('modalCampaign').textContent = ad.campaign;
+            document.getElementById('modalSpend').textContent = ad.spend;
+            document.getElementById('modalRoas').textContent = ad.roas;
+            document.getElementById('modalRevenue').textContent = ad.revenue;
+            document.getElementById('modalPurchases').textContent = ad.purchases + ' orders';
+            document.getElementById('modalCaption').innerHTML = ad.caption || '(No caption available)';
+            document.getElementById('adModal').style.display = 'flex';
+        }
+        
+        function closeAdModal() {
+            document.getElementById('adModal').style.display = 'none';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAdModal();
+        });
+    </script>
 </body>
 </html>

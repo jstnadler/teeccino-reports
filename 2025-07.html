@@ -150,6 +150,99 @@
         }
         .ad-metrics .purchases { font-size: 0.85em; opacity: 0.7; }
         
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.7;
+            z-index: 10;
+        }
+        .modal-close:hover { opacity: 1; }
+        .modal-body {
+            padding: 25px;
+        }
+        .modal-body img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        .modal-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+        .modal-info .campaign {
+            opacity: 0.6;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .modal-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .modal-metrics .metric {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .modal-metrics .label {
+            display: block;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+        .modal-metrics .value {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .modal-caption {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .modal-caption h4 {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+        .modal-caption p {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
         .archive-nav {
             background: rgba(255,255,255,0.05);
             border-radius: 16px;
@@ -270,7 +363,7 @@
         </div>
         
         <div class="top-ads"><h2>🔥 Top Ads This Month (by Spend)</h2>
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(0)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#019 - New Versions of Best Ad">
                 <div class="ad-info">
                     <div class="ad-name">#019 - New Versions of Best Ads - Image#...</div>
@@ -283,7 +376,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(1)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#028 - Miraculous Mushrooms Te">
                 <div class="ad-info">
                     <div class="ad-name">#028 - Miraculous Mushrooms Tea - Image ...</div>
@@ -296,7 +389,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(2)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#019 - New Versions of Best Ad">
                 <div class="ad-info">
                     <div class="ad-name">#019 - New Versions of Best Ads - Image#...</div>
@@ -309,7 +402,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(3)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="5 Pound Bag Sale (July 16 - 20">
                 <div class="ad-info">
                     <div class="ad-name">5 Pound Bag Sale (July 16 - 20) - Image ...</div>
@@ -322,7 +415,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(4)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#025 - French Toast Latte - Vi">
                 <div class="ad-info">
                     <div class="ad-name">#025 - French Toast Latte - Video</div>
@@ -335,7 +428,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(5)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="#018 - New Versions of Best Ad">
                 <div class="ad-info">
                     <div class="ad-name">#018 - New Versions of Best Ads - Image#...</div>
@@ -361,5 +454,54 @@
             Generated by Crowley 🐍 • Data from Monthly Matrices
         </footer>
     </div>
+    
+    <!-- Ad Modal -->
+    <div id="adModal" class="modal" onclick="if(event.target===this)closeAdModal()">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAdModal()">&times;</span>
+            <div class="modal-body">
+                <img id="modalImg" src="" alt="Ad Creative">
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p id="modalCampaign" class="campaign"></p>
+                    <div class="modal-metrics">
+                        <div class="metric"><span class="label">Spend</span><span id="modalSpend" class="value"></span></div>
+                        <div class="metric"><span class="label">ROAS</span><span id="modalRoas" class="value"></span></div>
+                        <div class="metric"><span class="label">Revenue</span><span id="modalRevenue" class="value"></span></div>
+                        <div class="metric"><span class="label">Orders</span><span id="modalPurchases" class="value"></span></div>
+                    </div>
+                    <div class="modal-caption">
+                        <h4>Ad Copy</h4>
+                        <p id="modalCaption"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const adData = [{"img": "images/placeholder.png", "name": "#019 - New Versions of Best Ads - Image#1", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$1,340", "roas": "0.82x", "revenue": "$1,105", "purchases": 35, "caption": "Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>\u2705 Tastes Just Like Coffee \u2013 But It's 100% caffeine-free<br>\u2705 Gut-Friendly & Acid-Free \u2013 Say goodbye to heartburn<br>\u2705 Super Affordable \u2013 Just pennies per cup!<br>\u2705 Prebiotic Benefits \u2013 Nourish your gut while you sip<br>\u2705 Trusted for 30+ Years \u2013 With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"}, {"img": "images/placeholder.png", "name": "#028 - Miraculous Mushrooms Tea - Image #1", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$637", "roas": "2.36x", "revenue": "$1,505", "purchases": 26, "caption": "All the satisfaction, none of the caffeine reaction? Try our new flavor with FIVE potent wellness mushrooms because America\u2019s #1 coffee alternative just got even tastier.<br><br>\u2705 Tastes Just Like Coffee \u2013 But It's 100% caffeine-free<br>\u2705 Gut-Friendly & Acid-Free \u2013 Say goodbye to heartburn<br>\u2705 Super Affordable \u2013 Just pennies per cup!<br>\u2705 Prebiotic Benefits \u2013 Nourish your gut while you sip<br>\u2705 Trusted for 30+ Years \u2013 With 50,000+ five-star reviews<br><br>Order today and taste the difference."}, {"img": "images/placeholder.png", "name": "#019 - New Versions of Best Ads - Image#3", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$557", "roas": "1.50x", "revenue": "$837", "purchases": 20, "caption": "Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>\u2705 Tastes Just Like Coffee \u2013 But It's 100% caffeine-free<br>\u2705 Gut-Friendly & Acid-Free \u2013 Say goodbye to heartburn<br>\u2705 Super Affordable \u2013 Just pennies per cup!<br>\u2705 Prebiotic Benefits \u2013 Nourish your gut while you sip<br>\u2705 Trusted for 30+ Years \u2013 With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"}, {"img": "images/placeholder.png", "name": "5 Pound Bag Sale (July 16 - 20) - Image #2", "campaign": "eH | CBO | 5 Pound Bag Sale (July 16 - 20)", "spend": "$475", "roas": "3.60x", "revenue": "$1,709", "purchases": 25, "caption": "Treat your taste buds from July 16th to 20th with America\u2019s #1 coffee alternative and save 15% on our biggest bags.<br><br>Order today and enjoy every sip, free of caffeine, acid, and guilt."}, {"img": "images/placeholder.png", "name": "#025 - French Toast Latte - Video", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$355", "roas": "2.98x", "revenue": "$1,057", "purchases": 15, "caption": "Morning boost? Afternoon pick-me-up? Late-night indulgence? With Teeccino Herbal Coffee, you never have to check the clock.<br><br>\u2705 Tastes Just Like Coffee \u2013 But It's 100% caffeine-free<br>\u2705 Gut-Friendly & Acid-Free \u2013 Say goodbye to heartburn<br>\u2705 Super Affordable \u2013 Just pennies per cup!<br>\u2705 Prebiotic Benefits \u2013 Nourish your gut while you sip<br>\u2705 Trusted for 30+ Years \u2013 With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"}, {"img": "images/placeholder.png", "name": "#018 - New Versions of Best Ads - Image#1", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$337", "roas": "1.20x", "revenue": "$406", "purchases": 7, "caption": "Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>\u2705 Tastes Just Like Coffee \u2013 But It's 100% caffeine-free<br>\u2705 Gut-Friendly & Acid-Free \u2013 Say goodbye to heartburn<br>\u2705 Super Affordable \u2013 Just pennies per cup!<br>\u2705 Prebiotic Benefits \u2013 Nourish your gut while you sip<br>\u2705 Trusted for 30+ Years \u2013 With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"}];
+        
+        function openAdModal(idx) {
+            const ad = adData[idx];
+            document.getElementById('modalImg').src = ad.img;
+            document.getElementById('modalName').textContent = ad.name;
+            document.getElementById('modalCampaign').textContent = ad.campaign;
+            document.getElementById('modalSpend').textContent = ad.spend;
+            document.getElementById('modalRoas').textContent = ad.roas;
+            document.getElementById('modalRevenue').textContent = ad.revenue;
+            document.getElementById('modalPurchases').textContent = ad.purchases + ' orders';
+            document.getElementById('modalCaption').innerHTML = ad.caption || '(No caption available)';
+            document.getElementById('adModal').style.display = 'flex';
+        }
+        
+        function closeAdModal() {
+            document.getElementById('adModal').style.display = 'none';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAdModal();
+        });
+    </script>
 </body>
 </html>

@@ -150,6 +150,99 @@
         }
         .ad-metrics .purchases { font-size: 0.85em; opacity: 0.7; }
         
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.7;
+            z-index: 10;
+        }
+        .modal-close:hover { opacity: 1; }
+        .modal-body {
+            padding: 25px;
+        }
+        .modal-body img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        .modal-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+        .modal-info .campaign {
+            opacity: 0.6;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .modal-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .modal-metrics .metric {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .modal-metrics .label {
+            display: block;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+        .modal-metrics .value {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .modal-caption {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .modal-caption h4 {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+        .modal-caption p {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
         .archive-nav {
             background: rgba(255,255,255,0.05);
             border-radius: 16px;
@@ -270,7 +363,7 @@
         </div>
         
         <div class="top-ads"><h2>🔥 Top Ads This Month (by Spend)</h2>
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(0)" style="cursor:pointer;">
                 <img src="images/120215899102770459.jpg" alt="UGC Jeanna Zenz Overpaying V2 ">
                 <div class="ad-info">
                     <div class="ad-name">UGC Jeanna Zenz Overpaying V2 Mythbuster...</div>
@@ -283,7 +376,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(1)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="Heather - 10 Best-Selling Blen">
                 <div class="ad-info">
                     <div class="ad-name">Heather - 10 Best-Selling Blends | Sampl...</div>
@@ -296,7 +389,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(2)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="Robin Plotnik | @whatrobineats">
                 <div class="ad-info">
                     <div class="ad-name">Robin Plotnik | @whatrobineats | Abandon...</div>
@@ -309,7 +402,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(3)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="RTN Catalog | Missed Us | VIP1">
                 <div class="ad-info">
                     <div class="ad-name">RTN Catalog | Missed Us | VIP10 Discount</div>
@@ -322,7 +415,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(4)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="Alyssa Brieloff | @alyssabriel">
                 <div class="ad-info">
                     <div class="ad-name">Alyssa Brieloff | @alyssabrieloff | Morn...</div>
@@ -335,7 +428,7 @@
                 </div>
             </div>
 
-            <div class="ad-card">
+            <div class="ad-card" onclick="openAdModal(5)" style="cursor:pointer;">
                 <img src="images/placeholder.png" alt="Amanda Krenz | @naturallyher_ ">
                 <div class="ad-info">
                     <div class="ad-name">Amanda Krenz | @naturallyher_ | Herbal C...</div>
@@ -361,5 +454,54 @@
             Generated by Crowley 🐍 • Data from Monthly Matrices
         </footer>
     </div>
+    
+    <!-- Ad Modal -->
+    <div id="adModal" class="modal" onclick="if(event.target===this)closeAdModal()">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAdModal()">&times;</span>
+            <div class="modal-body">
+                <img id="modalImg" src="" alt="Ad Creative">
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p id="modalCampaign" class="campaign"></p>
+                    <div class="modal-metrics">
+                        <div class="metric"><span class="label">Spend</span><span id="modalSpend" class="value"></span></div>
+                        <div class="metric"><span class="label">ROAS</span><span id="modalRoas" class="value"></span></div>
+                        <div class="metric"><span class="label">Revenue</span><span id="modalRevenue" class="value"></span></div>
+                        <div class="metric"><span class="label">Orders</span><span id="modalPurchases" class="value"></span></div>
+                    </div>
+                    <div class="modal-caption">
+                        <h4>Ad Copy</h4>
+                        <p id="modalCaption"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const adData = [{"img": "images/120215899102770459.jpg", "name": "UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Adaptogen Collection Dupe", "campaign": "< 3 | ACQ | EVERGREEN | ASC | Site + Shop | 7DC 1DV | ASB | Campaign", "spend": "$2,311", "roas": "0.66x", "revenue": "$1,526", "purchases": 20, "caption": ""}, {"img": "images/placeholder.png", "name": "Heather - 10 Best-Selling Blends | Samplers - Copy \ufffd", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$1,229", "roas": "0.84x", "revenue": "$1,027", "purchases": 13, "caption": "Ever dreamt of savoring the warmth and comfort of coffee throughout the day, free from the dreaded caffeine crash? Well, now you can! \u2728 Teeccino is a delicious blend of organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee. Taste 10 of our top-selling blends for only $19.99! \u2615\ufe0f\u2764\ufe0f<br><br>\u2022 Caffeine-free energy boost from nutrients<br>\u2022 Acid-free for good digestion<br>\u2022 650 mg of prebiotics to support probiotics<br>\u2022 Heart-healthy potassium<br>\u2022 Rich, bold, coffee-like flavor<br><br>Taste it now! \ud83d\ude4c\ud83c\udffc"}, {"img": "images/placeholder.png", "name": "Robin Plotnik | @whatrobineats | Abandon Starbucks | Allowlisted | CTA: Shop Now | LP: Chaga Ashwagandha Butterscotch Cream Mushroom Herbal Coffee", "campaign": "< 3 | ACQ | TESTING | CBO | Site + Shop | 7DC 1DV | UGC", "spend": "$1,020", "roas": "0.42x", "revenue": "$427", "purchases": 9, "caption": "Love coffee but don\u2019t love the late-night caffeine buzz? Same. That\u2019s why I\u2019ve been loving this rich, creamy Chaga Ashwagandha Mushroom Herbal Coffee from Teeccino\u2014it gives me all the cozy vibes without the crash. \u2615\u2728<br><br>Plus, it fits perfectly into a plant-based or alkaline lifestyle if that\u2019s your thing. If you\u2019re looking for a delicious, caffeine-free coffee alternative, this might be your new favorite."}, {"img": "images/placeholder.png", "name": "RTN Catalog | Missed Us | VIP10 Discount", "campaign": "< 3 | RTN | BOF | Sales | Website | Catalog | Winback + Upsell", "spend": "$1,007", "roas": "8.04x", "revenue": "$8,100", "purchases": 147, "caption": "Missed us? We missed you! Enjoy 10% OFF your next Teeccino purchase. Reignite your love for our herbal coffee and start your morning right."}, {"img": "images/placeholder.png", "name": "Alyssa Brieloff | @alyssabrieloff | Morning Routine | Allowlisted | CTA: Shop Now | LP: Chaga Ashwagandha Butterscotch Cream Mushroom Herbal Coffee", "campaign": "< 3 | ACQ | TESTING | CBO | Site + Shop | 7DC 1DV | UGC", "spend": "$946", "roas": "0.37x", "revenue": "$346", "purchases": 11, "caption": ""}, {"img": "images/placeholder.png", "name": "Amanda Krenz | @naturallyher_ | Herbal Coffee Is In | Allowlisted | CTA: Shop Now | LP: Dandelion Caramel Nut Chicory Herbal Coffee", "campaign": "< 3 | ACQ | TESTING | CBO | Site + Shop | 7DC 1DV | UGC", "spend": "$921", "roas": "0.54x", "revenue": "$501", "purchases": 11, "caption": ""}];
+        
+        function openAdModal(idx) {
+            const ad = adData[idx];
+            document.getElementById('modalImg').src = ad.img;
+            document.getElementById('modalName').textContent = ad.name;
+            document.getElementById('modalCampaign').textContent = ad.campaign;
+            document.getElementById('modalSpend').textContent = ad.spend;
+            document.getElementById('modalRoas').textContent = ad.roas;
+            document.getElementById('modalRevenue').textContent = ad.revenue;
+            document.getElementById('modalPurchases').textContent = ad.purchases + ' orders';
+            document.getElementById('modalCaption').innerHTML = ad.caption || '(No caption available)';
+            document.getElementById('adModal').style.display = 'flex';
+        }
+        
+        function closeAdModal() {
+            document.getElementById('adModal').style.display = 'none';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAdModal();
+        });
+    </script>
 </body>
 </html>

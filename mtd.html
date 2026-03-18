@@ -210,6 +210,99 @@
         .roas.ok { background: rgba(253,203,110,0.3); color: #fdcb6e; }
         .roas.bad { background: rgba(231,76,60,0.3); color: #e74c3c; }
         
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.7;
+            z-index: 10;
+        }
+        .modal-close:hover { opacity: 1; }
+        .modal-body {
+            padding: 25px;
+        }
+        .modal-body img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 20px;
+        }
+        .modal-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+        .modal-info .campaign {
+            opacity: 0.6;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .modal-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .modal-metrics .metric {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .modal-metrics .label {
+            display: block;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+        .modal-metrics .value {
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .modal-caption {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .modal-caption h4 {
+            font-size: 0.85em;
+            text-transform: uppercase;
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+        .modal-caption p {
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
         .reports-nav {
             display: flex;
             gap: 10px;
@@ -247,7 +340,7 @@
     <div class="container">
         <header>
             <h1>📊 Teeccino MTD Dashboard</h1>
-            <p>March 2026 • Updated Mar 18, 03:25 PM</p>
+            <p>March 2026 • Updated Mar 18, 03:31 PM</p>
         </header>
         
         <!-- Month Progress Bar -->
@@ -351,7 +444,7 @@
         <div class="top-ads">
             <h2>🔥 Top Ads This Month (by Spend)</h2>
             
-        <div class="ad-card">
+        <div class="ad-card" onclick="openAdModal(0)" style="cursor:pointer;">
             <img src="images/120241448664080459.jpg" class="ad-thumb">
             <div class="ad-rank">#1</div>
             <div class="ad-info">
@@ -359,11 +452,11 @@
                 <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
             </div>
             <div class="ad-metrics">
-                <span class="spend">$4,794</span>
+                <span class="spend">$4,795</span>
                 <span class="roas bad">0.70x</span>
             </div>
         </div>
-        <div class="ad-card">
+        <div class="ad-card" onclick="openAdModal(1)" style="cursor:pointer;">
             <img src="images/120241448911110459.jpg" class="ad-thumb">
             <div class="ad-rank">#2</div>
             <div class="ad-info">
@@ -375,7 +468,7 @@
                 <span class="roas bad">0.66x</span>
             </div>
         </div>
-        <div class="ad-card">
+        <div class="ad-card" onclick="openAdModal(2)" style="cursor:pointer;">
             <img src="images/120241448268580459.jpg" class="ad-thumb">
             <div class="ad-rank">#3</div>
             <div class="ad-info">
@@ -387,7 +480,7 @@
                 <span class="roas bad">0.89x</span>
             </div>
         </div>
-        <div class="ad-card">
+        <div class="ad-card" onclick="openAdModal(3)" style="cursor:pointer;">
             <img src="images/120241444573400459.jpg" class="ad-thumb">
             <div class="ad-rank">#4</div>
             <div class="ad-info">
@@ -399,7 +492,7 @@
                 <span class="roas ok">1.24x</span>
             </div>
         </div>
-        <div class="ad-card">
+        <div class="ad-card" onclick="openAdModal(4)" style="cursor:pointer;">
             <img src="images/120241444806880459.jpg" class="ad-thumb">
             <div class="ad-rank">#5</div>
             <div class="ad-info">
@@ -411,7 +504,7 @@
                 <span class="roas good">5.56x</span>
             </div>
         </div>
-        <div class="ad-card">
+        <div class="ad-card" onclick="openAdModal(5)" style="cursor:pointer;">
             <img src="images/120241447985220459.jpg" class="ad-thumb">
             <div class="ad-rank">#6</div>
             <div class="ad-info">
@@ -436,5 +529,54 @@
             Generated by Crowley 🐍 • Data from Monthly Matrices, Meta, Google
         </footer>
     </div>
+    
+    <!-- Ad Modal -->
+    <div id="adModal" class="modal" onclick="if(event.target===this)closeAdModal()">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAdModal()">&times;</span>
+            <div class="modal-body">
+                <img id="modalImg" src="" alt="Ad Creative">
+                <div class="modal-info">
+                    <h3 id="modalName"></h3>
+                    <p id="modalCampaign" class="campaign"></p>
+                    <div class="modal-metrics">
+                        <div class="metric"><span class="label">Spend</span><span id="modalSpend" class="value"></span></div>
+                        <div class="metric"><span class="label">ROAS</span><span id="modalRoas" class="value"></span></div>
+                        <div class="metric"><span class="label">Revenue</span><span id="modalRevenue" class="value"></span></div>
+                        <div class="metric"><span class="label">Orders</span><span id="modalPurchases" class="value"></span></div>
+                    </div>
+                    <div class="modal-caption">
+                        <h4>Ad Copy</h4>
+                        <p id="modalCaption"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const adData = [{"img": "images/120241448664080459.jpg", "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$4,795", "roas": "0.70x", "revenue": "$3,353", "purchases": 133, "caption": ""}, {"img": "images/120241448911110459.jpg", "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$888", "roas": "0.66x", "revenue": "$585", "purchases": 26, "caption": ""}, {"img": "images/120241448268580459.jpg", "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$707", "roas": "0.89x", "revenue": "$630", "purchases": 17, "caption": ""}, {"img": "images/120241444573400459.jpg", "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$531", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": ""}, {"img": "images/120241444806880459.jpg", "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$355", "roas": "5.56x", "revenue": "$1,976", "purchases": 43, "caption": ""}, {"img": "images/120241447985220459.jpg", "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": ""}];
+        
+        function openAdModal(idx) {
+            const ad = adData[idx];
+            document.getElementById('modalImg').src = ad.img;
+            document.getElementById('modalName').textContent = ad.name;
+            document.getElementById('modalCampaign').textContent = ad.campaign;
+            document.getElementById('modalSpend').textContent = ad.spend;
+            document.getElementById('modalRoas').textContent = ad.roas;
+            document.getElementById('modalRevenue').textContent = ad.revenue;
+            document.getElementById('modalPurchases').textContent = ad.purchases + ' orders';
+            document.getElementById('modalCaption').innerHTML = ad.caption || '(No caption available)';
+            document.getElementById('adModal').style.display = 'flex';
+        }
+        
+        function closeAdModal() {
+            document.getElementById('adModal').style.display = 'none';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAdModal();
+        });
+    </script>
 </body>
 </html>
