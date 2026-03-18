@@ -3,319 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teeccino Reports - MTD Dashboard</title>
+    <title>Teeccino Meta Ads Reports</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #fff;
-            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 40px 20px;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        header h1 { font-size: 2.5em; margin-bottom: 5px; }
-        header p { opacity: 0.7; }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .card h3 {
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.7;
-            margin-bottom: 15px;
-        }
-        .card .big-number {
-            font-size: 2.8em;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .card .subtitle {
-            font-size: 0.85em;
-            opacity: 0.6;
-            margin-top: 5px;
-        }
-        
-        .progress-section {
-            margin-top: 15px;
-        }
-        .progress-bar {
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-        .progress-fill.green { background: linear-gradient(90deg, #00b894, #00cec9); }
-        .progress-fill.yellow { background: linear-gradient(90deg, #fdcb6e, #f39c12); }
-        .progress-fill.red { background: linear-gradient(90deg, #e74c3c, #c0392b); }
-        
-        .comparison {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.9em;
-        }
-        .comparison .label { opacity: 0.6; }
-        .comparison .value { font-weight: 600; }
-        
-        .status { font-size: 1.2em; margin-right: 5px; }
-        
-        /* MER Card Special Styling */
-        .mer-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        /* Top Ads Section */
-        .top-ads {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-        .top-ads h2 {
-            margin-bottom: 20px;
-            font-size: 1.3em;
-        }
-        .ad-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .report-list { list-style: none; }
+        .report-list li { 
+            background: white;
             margin-bottom: 10px;
-        }
-        .ad-rank {
-            font-size: 1.5em;
-            font-weight: 700;
-            opacity: 0.5;
-            width: 40px;
-        }
-        .ad-info { flex: 1; }
-        .ad-name { font-weight: 600; margin-bottom: 3px; }
-        .ad-campaign { font-size: 0.85em; opacity: 0.6; }
-        .ad-metrics {
-            display: flex;
-            gap: 20px;
-            text-align: right;
-        }
-        .ad-metrics .spend { font-weight: 600; }
-        .ad-metrics .roas { 
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .roas.good { background: rgba(0,184,148,0.3); color: #00b894; }
-        .roas.ok { background: rgba(253,203,110,0.3); color: #fdcb6e; }
-        .roas.bad { background: rgba(231,76,60,0.3); color: #e74c3c; }
-        
-        /* Reports Nav */
-        .reports-nav {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-        .reports-nav a {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 20px;
             border-radius: 8px;
-            font-size: 0.9em;
-            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .reports-nav a:hover { background: rgba(255,255,255,0.2); }
-        
-        footer {
-            text-align: center;
-            padding: 30px;
-            opacity: 0.5;
-            font-size: 0.85em;
+        .report-list a {
+            display: block;
+            padding: 20px;
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 500;
         }
+        .report-list a:hover { background: #f8f9fa; }
+        .report-list .date { color: #333; }
+        .report-list .arrow { float: right; color: #ccc; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📊 Teeccino MTD Dashboard</h1>
-            <p>March 2026 • Updated Mar 18, 12:05 PM</p>
-        </header>
+        <h1>📊 Teeccino Meta Ads Reports</h1>
+        <p class="subtitle">Weekly performance reports with top ads by spend</p>
         
-        <div class="dashboard-grid">
-            <div class="card">
-                <h3>DTC Gross Sales</h3>
-                <div class="big-number">$113,991</div>
-                <div class="subtitle">Mar 01 - Mar 17</div>
-                <div class="progress-section">
-                    <div class="comparison">
-                        <span class="label">Projected</span>
-                        <span class="value">$204,873</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill green" 
-                             style="width: 56%"></div>
-                    </div>
-                    <div class="comparison">
-                        <span class="label">On Pace For</span>
-                        <span class="value">$207,866</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>Total Orders</h3>
-                <div class="big-number">2,361</div>
-                <div class="subtitle">990 new • 770 subscriptions</div>
-            </div>
-            
-            <div class="card">
-                <h3>DTC Discounts</h3>
-                <div class="big-number">$13,712</div>
-                <div class="subtitle">12.0% of gross</div>
-            </div>
-            
-            <div class="card">
-                <h3>Ad Spend</h3>
-                <div class="big-number">🟢 $13,889</div>
-                <div class="subtitle">Meta $8,984 • Google $4,905</div>
-                <div class="progress-section">
-                    <div class="comparison">
-                        <span class="label">Budget</span>
-                        <span class="value">$25,000</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill green" 
-                             style="width: 56%"></div>
-                    </div>
-                    <div class="comparison">
-                        <span class="label">On Pace For</span>
-                        <span class="value">$25,327</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card mer-card">
-                <h3>Marketing Efficiency Ratio</h3>
-                <div class="big-number">🟢 7.55x</div>
-                <div class="subtitle">Revenue ÷ Ad Spend</div>
-                <div class="comparison" style="margin-top: 15px;">
-                    <span class="label">Target MER</span>
-                    <span class="value">2.25x</span>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>Month Progress</h3>
-                <div class="big-number">55%</div>
-                <div class="subtitle">17 of ~31 days</div>
-            </div>
-        </div>
-        
-        <div class="top-ads">
-            <h2>🔥 Top Ads This Week (by Spend)</h2>
-            
-        <div class="ad-card">
-            <div class="ad-rank">#1</div>
-            <div class="ad-info">
-                <div class="ad-name">#092 -  Dark Chocolate Taste - Image #02</div>
-                <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
-            </div>
-            <div class="ad-metrics">
-                <span class="spend">$2,402</span>
-                <span class="roas bad">0.66x</span>
-            </div>
-        </div>
-        <div class="ad-card">
-            <div class="ad-rank">#2</div>
-            <div class="ad-info">
-                <div class="ad-name">#092 - Dark Chocolate Tas - Image #04</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </div>
-            <div class="ad-metrics">
-                <span class="spend">$296</span>
-                <span class="roas bad">0.68x</span>
-            </div>
-        </div>
-        <div class="ad-card">
-            <div class="ad-rank">#3</div>
-            <div class="ad-info">
-                <div class="ad-name">#091 -  Dark Chocolate Toxins - Image #03</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </div>
-            <div class="ad-metrics">
-                <span class="spend">$197</span>
-                <span class="roas bad">0.94x</span>
-            </div>
-        </div>
-        <div class="ad-card">
-            <div class="ad-rank">#4</div>
-            <div class="ad-info">
-                <div class="ad-name">#092 -  Dark Chocolate Taste - Image #04</div>
-                <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
-            </div>
-            <div class="ad-metrics">
-                <span class="spend">$151</span>
-                <span class="roas bad">0.88x</span>
-            </div>
-        </div>
-        <div class="ad-card">
-            <div class="ad-rank">#5</div>
-            <div class="ad-info">
-                <div class="ad-name">#091 -  Dark Chocolate Toxins - Image #03</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </div>
-            <div class="ad-metrics">
-                <span class="spend">$125</span>
-                <span class="roas good">4.20x</span>
-            </div>
-        </div>
-        <div class="ad-card">
-            <div class="ad-rank">#6</div>
-            <div class="ad-info">
-                <div class="ad-name">#098 - FOTM Gluten Free - Image #03</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </div>
-            <div class="ad-metrics">
-                <span class="spend">$105</span>
-                <span class="roas bad">0.14x</span>
-            </div>
-        </div>
-        </div>
-        
-        <div>
-            <h3 style="margin-bottom: 15px; opacity: 0.7;">📅 Weekly Reports</h3>
-            <div class="reports-nav">
-                <a href="reports/2026-03-11/">2026-03-11</a><a href="reports/2026-03-04/">2026-03-04</a><a href="reports/2026-02-25/">2026-02-25</a><a href="reports/2026-02-18/">2026-02-18</a>
-            </div>
-        </div>
-        
-        <footer>
-            Generated by Crowley 🐍 • Data from Shopify, Meta, Google, Triple Whale
-        </footer>
+        <ul class="report-list">
+
+            <li>
+                <a href="reports/2026-03-11/">
+                    <span class="date">Week of March 11, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-03-04/">
+                    <span class="date">Week of March 04, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-02-25/">
+                    <span class="date">Week of February 25, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-02-18/">
+                    <span class="date">Week of February 18, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+        </ul>
     </div>
 </body>
 </html>
