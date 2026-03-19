@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Library - Teeccino</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #f8fafc; }
+        .nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav a { color: #60a5fa; text-decoration: none; padding: 8px 16px; border: 1px solid #334155; border-radius: 6px; }
+        .nav a:hover { background: #1e293b; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat { background: #1e293b; padding: 20px; border-radius: 12px; text-align: center; }
+        .stat .val { font-size: 1.8rem; font-weight: bold; color: #f8fafc; }
+        .stat .lbl { color: #94a3b8; font-size: 14px; }
+        .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filters select, .filters input { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: #1e293b; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-4px); }
+        .card.unmatched { opacity: 0.5; }
+        .card img { width: 100%; height: 180px; object-fit: cover; background: #334155; }
+        .card-body { padding: 15px; }
+        .card-title { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; }
+        .card-meta { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 10px; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .badge-ok { background: #166534; color: #86efac; }
+        .badge-no { background: #7f1d1d; color: #fca5a5; }
+        .card-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .card-stat { background: #0f172a; padding: 8px; border-radius: 6px; text-align: center; }
+        .card-stat .v { font-weight: 600; font-size: 14px; }
+        .card-stat .l { font-size: 10px; color: #64748b; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 40px 20px; }
+        .modal.active { display: flex; justify-content: center; align-items: flex-start; }
+        .modal-box { background: #1e293b; border-radius: 16px; max-width: 800px; width: 100%; }
+        .modal-head { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; }
+        .modal-head h2 { font-size: 16px; }
+        .modal-close { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .modal-img { width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
+        th { color: #94a3b8; }
+        .st-active { color: #86efac; }
+        .st-paused { color: #fcd34d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Creative Library</h1>
+        <p style="color:#94a3b8">ECH creatives matched to Meta ads • Updated 2026-03-18 17:26</p>
+    </div>
+    <nav class="nav">
+        <a href="index.html">← Home</a>
+        <a href="mtd.html">MTD Dashboard</a>
+        <a href="kpi.html">Monthly KPIs</a>
+    </nav>
+    <div class="stats">
+        <div class="stat"><div class="val">48</div><div class="lbl">Creatives</div></div>
+        <div class="stat"><div class="val">25</div><div class="lbl">Matched</div></div>
+        <div class="stat"><div class="val">$3,866</div><div class="lbl">Total Spend</div></div>
+        <div class="stat"><div class="val">$5,333</div><div class="lbl">Total Revenue</div></div>
+    </div>
+    <div class="filters">
+        <select id="fFolder" onchange="filter()">
+            <option value="">All Folders</option>
+            <option value="2026-03-16_4">2026-03-16_4</option>
+            <option value="2026-03-16_3">2026-03-16_3</option>
+            <option value="2026-03-16_2">2026-03-16_2</option>
+            <option value="2026-03-16_1">2026-03-16_1</option>
+            <option value="2026-03-06_1">2026-03-06_1</option>
+            <option value="2025-12-26">2025-12-26</option>
+        </select>
+        <select id="fStatus" onchange="filter()">
+            <option value="">All</option>
+            <option value="matched">Matched</option>
+            <option value="unmatched">Unmatched</option>
+        </select>
+        <select id="fSort" onchange="sort()">
+            <option value="spend">By Spend</option>
+            <option value="roas">By ROAS</option>
+            <option value="date">By Date</option>
+        </select>
+        <input type="text" id="fSearch" placeholder="Search..." oninput="filter()">
+    </div>
+    <div class="grid" id="grid">
+        <div class="card " data-folder="2025-12-26" data-matched="matched" data-spend="3576.64" data-roas="1.3864017625480898" data-date="2025-12-26" data-name="v1.png" onclick='showModal("V1.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/606349454_1397418128558094_9071978835984431252_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=u3fbJ4hf8MsQ7kNvwFx_aEC&_nc_oc=AdoPtyt9LPw0wtk2eLvTdS94BG3oXdGm5t_G6GAKS5nc7rd29jGXPFwOnb4wudCO48k&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQHepEDwW5guLMLCW7XJDFlxfrE2Q2OG24fFbNxva-JmvBA5yk_xFfJta2EjKZz5ip3IPmoMfQWI8Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxVEtfNwO7zHR2t6Tzl5aF0StkEAZG7iP4vNF0O0FDSLw&oe=69C1242D", [{"id": "120239025432470459", "name": "New Year Sale (Dec 28th - Jan 4th) - Image #3", "status": "ACTIVE", "campaign": "eH | CBO | New Year Sale (Dec 28th - Jan 4th)", "adset": "US | M+F | 18-65 | New Year Sale (Dec 28th - Jan 4th)", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/606349454_1397418128558094_9071978835984431252_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=u3fbJ4hf8MsQ7kNvwFx_aEC&_nc_oc=AdoPtyt9LPw0wtk2eLvTdS94BG3oXdGm5t_G6GAKS5nc7rd29jGXPFwOnb4wudCO48k&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQHepEDwW5guLMLCW7XJDFlxfrE2Q2OG24fFbNxva-JmvBA5yk_xFfJta2EjKZz5ip3IPmoMfQWI8Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxVEtfNwO7zHR2t6Tzl5aF0StkEAZG7iP4vNF0O0FDSLw&oe=69C1242D", "spend": 3390.91, "roas": 1.352324, "revenue": 4585.61, "purchases": 94, "distance": 14}, {"id": "120239038128010459", "name": "New Year Sale (Dec 28th - Jan 4th) - Image #5", "status": "ACTIVE", "campaign": "eH | CBO | New Year Sale (Dec 28th - Jan 4th)", "adset": "US | M+F | 18-65 | New Year Sale (Dec 28th - Jan 4th)", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/606449111_1397874111845829_8820685326618911945_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=iH-cBFXE7E4Q7kNvwGZi_f-&_nc_oc=AdrDDh3mhvogPeg8RI6vVeKHprgftGzZmBWUYoRemXY9x3PCMbwMoutrZHnhbFOfEmo&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQGi31O26UEv_edp_bgY1qtTYVsLa8zBRKp9-hIfWSRJEL4bEccM-vocq0nVbe8WQ-xwXu8tkbf8Yw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afw_VBigWPJba_pROj2ZsTrSk2np7Ckd-ANkBv5mdUOXTA&oe=69C11CD8", "spend": 185.73, "roas": 2.008561, "revenue": 373.05, "purchases": 4, "distance": 0}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/606349454_1397418128558094_9071978835984431252_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=u3fbJ4hf8MsQ7kNvwFx_aEC&_nc_oc=AdoPtyt9LPw0wtk2eLvTdS94BG3oXdGm5t_G6GAKS5nc7rd29jGXPFwOnb4wudCO48k&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQHepEDwW5guLMLCW7XJDFlxfrE2Q2OG24fFbNxva-JmvBA5yk_xFfJta2EjKZz5ip3IPmoMfQWI8Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxVEtfNwO7zHR2t6Tzl5aF0StkEAZG7iP4vNF0O0FDSLw&oe=69C1242D" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="V1.png">V1.png</div>
+                <div class="card-meta"><span>2025-12-26</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$3,577</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">1.39</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$4,959</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2025-12-26" data-matched="matched" data-spend="124.08" data-roas="0.43157640232108313" data-date="2025-12-26" data-name="v3.png" onclick='showModal("V3.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/605598675_1397876018512305_7185556312159586135_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=Kc2Y_uhLwtsQ7kNvwEUFNRD&_nc_oc=Adq6NAupkiHQDc-Hhsu8XNSGFpQg9cSw6uVtIMFmCKbIHj7WVeogDMIYr97KeKt-QIQ&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQEgukOifQvO878a7H-DYrdwwytyam4HJrFECkShzBBslJBGWWEFqUXvxulNR2qxHmN3LtS05_gsgg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxDdcSM5SGb0ISvFC-XXawacHbRsX0NMiWaUSsi5Ddq8A&oe=69C11B7B", [{"id": "120239038158840459", "name": "New Year Sale (Dec 28th - Jan 4th) - Image #7", "status": "ACTIVE", "campaign": "eH | CBO | New Year Sale (Dec 28th - Jan 4th)", "adset": "US | M+F | 18-65 | New Year Sale (Dec 28th - Jan 4th)", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/605598675_1397876018512305_7185556312159586135_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=Kc2Y_uhLwtsQ7kNvwEUFNRD&_nc_oc=Adq6NAupkiHQDc-Hhsu8XNSGFpQg9cSw6uVtIMFmCKbIHj7WVeogDMIYr97KeKt-QIQ&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQEgukOifQvO878a7H-DYrdwwytyam4HJrFECkShzBBslJBGWWEFqUXvxulNR2qxHmN3LtS05_gsgg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxDdcSM5SGb0ISvFC-XXawacHbRsX0NMiWaUSsi5Ddq8A&oe=69C11B7B", "spend": 124.08, "roas": 0.431576, "revenue": 53.55, "purchases": 2, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/605598675_1397876018512305_7185556312159586135_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=Kc2Y_uhLwtsQ7kNvwEUFNRD&_nc_oc=Adq6NAupkiHQDc-Hhsu8XNSGFpQg9cSw6uVtIMFmCKbIHj7WVeogDMIYr97KeKt-QIQ&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQEgukOifQvO878a7H-DYrdwwytyam4HJrFECkShzBBslJBGWWEFqUXvxulNR2qxHmN3LtS05_gsgg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxDdcSM5SGb0ISvFC-XXawacHbRsX0NMiWaUSsi5Ddq8A&oe=69C11B7B" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="V3.png">V3.png</div>
+                <div class="card-meta"><span>2025-12-26</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$124</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">0.43</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$54</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2025-12-26" data-matched="matched" data-spend="113.23" data-roas="1.1156054049280224" data-date="2025-12-26" data-name="v2.png" onclick='showModal("V2.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/605189685_1397875015179072_5779431465265856209_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=QwoLfv5OZ9MQ7kNvwFi9uO1&_nc_oc=AdrcOF1Ujuz2efp0Nsn0dHdI_FP7XpmIQ7wVzpFPY18iNdZhWsPjsSN6L-36ltt8f9g&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQEF3ZcF4xMLhaZB1x0KNOnwRA8BkLQhTcV3Yn6h5WiM__LfwZcZtacYE4Lv1IoaGsR8exU2IH-LYA&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyNa8dVe4_Cb11cZqbdB_3vEvIBaYWeqs9qUq95CVe1jA&oe=69C11E45", [{"id": "120239038151390459", "name": "New Year Sale (Dec 28th - Jan 4th) - Image #6", "status": "ACTIVE", "campaign": "eH | CBO | New Year Sale (Dec 28th - Jan 4th)", "adset": "US | M+F | 18-65 | New Year Sale (Dec 28th - Jan 4th)", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/605189685_1397875015179072_5779431465265856209_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=QwoLfv5OZ9MQ7kNvwFi9uO1&_nc_oc=AdrcOF1Ujuz2efp0Nsn0dHdI_FP7XpmIQ7wVzpFPY18iNdZhWsPjsSN6L-36ltt8f9g&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQEF3ZcF4xMLhaZB1x0KNOnwRA8BkLQhTcV3Yn6h5WiM__LfwZcZtacYE4Lv1IoaGsR8exU2IH-LYA&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyNa8dVe4_Cb11cZqbdB_3vEvIBaYWeqs9qUq95CVe1jA&oe=69C11E45", "spend": 113.23, "roas": 1.115605, "revenue": 126.32, "purchases": 3, "distance": 2}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/605189685_1397875015179072_5779431465265856209_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=QwoLfv5OZ9MQ7kNvwFi9uO1&_nc_oc=AdrcOF1Ujuz2efp0Nsn0dHdI_FP7XpmIQ7wVzpFPY18iNdZhWsPjsSN6L-36ltt8f9g&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=VgOJtNkE-d9HKIJCK0rBPg&_nc_tpa=Q5bMBQEF3ZcF4xMLhaZB1x0KNOnwRA8BkLQhTcV3Yn6h5WiM__LfwZcZtacYE4Lv1IoaGsR8exU2IH-LYA&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyNa8dVe4_Cb11cZqbdB_3vEvIBaYWeqs9qUq95CVe1jA&oe=69C11E45" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="V2.png">V2.png</div>
+                <div class="card-meta"><span>2025-12-26</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$113</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">1.12</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$126</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-06_1" data-matched="matched" data-spend="11.760000000000002" data-roas="4.15391156462585" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v2.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V2.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQE754k-PW9RoAvavavcMQGP8z22_9DUYBjcht1u46c042ToV_DWOvxFnqWJAXJY14PHqZLOLd8qbw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyROYjd5B0xUWbYb8Wc5dY5iqyXr5aGnEHHUXODBAj5pw&oe=69C122EC", [{"id": "120241946182550459", "name": "#093 - Dark Chocolate Popular - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQE754k-PW9RoAvavavcMQGP8z22_9DUYBjcht1u46c042ToV_DWOvxFnqWJAXJY14PHqZLOLd8qbw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyROYjd5B0xUWbYb8Wc5dY5iqyXr5aGnEHHUXODBAj5pw&oe=69C122EC", "spend": 8.14, "roas": 6.001229, "revenue": 48.85, "purchases": 1, "distance": 0}, {"id": "120241945616680459", "name": "#093 - Dark Chocolate Popular - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQEKloa_A-QDM4DygB2NdD_BXVgixt4frjT34xH75twAUF5mKUcVSx1qrYkfhJt_Uai5SDvn4Dn03Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxU0TDmvcMbqJOpIelMjO78b5B9wDunqIypPGqA7kVUiQ&oe=69C122EC", "spend": 3.62, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQE754k-PW9RoAvavavcMQGP8z22_9DUYBjcht1u46c042ToV_DWOvxFnqWJAXJY14PHqZLOLd8qbw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyROYjd5B0xUWbYb8Wc5dY5iqyXr5aGnEHHUXODBAj5pw&oe=69C122EC" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V2.png">Teeccino February _Dark Chocolate Popular_ V2.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$12</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">4.15</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$49</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-06_1" data-matched="matched" data-spend="11.760000000000002" data-roas="4.15391156462585" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v2.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V2.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQE754k-PW9RoAvavavcMQGP8z22_9DUYBjcht1u46c042ToV_DWOvxFnqWJAXJY14PHqZLOLd8qbw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyROYjd5B0xUWbYb8Wc5dY5iqyXr5aGnEHHUXODBAj5pw&oe=69C122EC", [{"id": "120241946182550459", "name": "#093 - Dark Chocolate Popular - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQE754k-PW9RoAvavavcMQGP8z22_9DUYBjcht1u46c042ToV_DWOvxFnqWJAXJY14PHqZLOLd8qbw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyROYjd5B0xUWbYb8Wc5dY5iqyXr5aGnEHHUXODBAj5pw&oe=69C122EC", "spend": 8.14, "roas": 6.001229, "revenue": 48.85, "purchases": 1, "distance": 12}, {"id": "120241945616680459", "name": "#093 - Dark Chocolate Popular - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQEKloa_A-QDM4DygB2NdD_BXVgixt4frjT34xH75twAUF5mKUcVSx1qrYkfhJt_Uai5SDvn4Dn03Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxU0TDmvcMbqJOpIelMjO78b5B9wDunqIypPGqA7kVUiQ&oe=69C122EC", "spend": 3.62, "roas": 0, "revenue": 0, "purchases": 0, "distance": 12}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/648181343_1454863956146844_4143054178122540037_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=qKu-i__Khw4Q7kNvwEL3S0m&_nc_oc=AdoYyZuZ0VfvYYcB7Uk2ikAZcmQZCtKSCtumm2Y4XnjCQoiI1uau3uZNRzNwIr3vNvQ&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQE754k-PW9RoAvavavcMQGP8z22_9DUYBjcht1u46c042ToV_DWOvxFnqWJAXJY14PHqZLOLd8qbw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyROYjd5B0xUWbYb8Wc5dY5iqyXr5aGnEHHUXODBAj5pw&oe=69C122EC" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V2.png">Teeccino February _Dark Chocolate Popular_ V2.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$12</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">4.15</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$49</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-06_1" data-matched="matched" data-spend="9.06" data-roas="6.398454746136865" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v1.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V1.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/647465095_1454863946146845_6136159037710794370_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=IgORw4AFOeMQ7kNvwEEk6_g&_nc_oc=AdqhCfmEOqlQmaFybw4s6-KwUA4YHGgU-6f3uP1ACtbD0az9rARqNJHU3oIXIIaooYU&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQG73YSGuCw7V0XbMB8zuumAhnX0WvjwMSjrWvRgi0NqQwob1tX8_aBEkTA6NIg9-sBsJrNsnHxnpw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwjEWHjXMvYeMrttnUiHomDTqFrAI23eSLAIk6NddCccg&oe=69C110B2", [{"id": "120241946182580459", "name": "#093 - Dark Chocolate Popular - Image #04", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/647465095_1454863946146845_6136159037710794370_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=IgORw4AFOeMQ7kNvwEEk6_g&_nc_oc=AdqhCfmEOqlQmaFybw4s6-KwUA4YHGgU-6f3uP1ACtbD0az9rARqNJHU3oIXIIaooYU&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQG73YSGuCw7V0XbMB8zuumAhnX0WvjwMSjrWvRgi0NqQwob1tX8_aBEkTA6NIg9-sBsJrNsnHxnpw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwjEWHjXMvYeMrttnUiHomDTqFrAI23eSLAIk6NddCccg&oe=69C110B2", "spend": 5.54, "roas": 10.463899, "revenue": 57.97, "purchases": 1, "distance": 2}, {"id": "120241946091250459", "name": "#093 - Dark Chocolate Popular - Image #04", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/647465095_1454863946146845_6136159037710794370_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=IgORw4AFOeMQ7kNvwEEk6_g&_nc_oc=AdqhCfmEOqlQmaFybw4s6-KwUA4YHGgU-6f3uP1ACtbD0az9rARqNJHU3oIXIIaooYU&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=PdIZ_Gs9rppfXN7O9mxlkA&_nc_tpa=Q5bMBQGQi3CyRea1lgBloP68F2ALX34uebflaeToJEV3tNeMfTNA3jyfcQUHlda95yc-VdKSUfTGJHZeVg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzqwCQgGlU-l48urOeEsfa-Hkccb9Dx-j0RlZ0Zr9TYyg&oe=69C110B2", "spend": 3.52, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/647465095_1454863946146845_6136159037710794370_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=IgORw4AFOeMQ7kNvwEEk6_g&_nc_oc=AdqhCfmEOqlQmaFybw4s6-KwUA4YHGgU-6f3uP1ACtbD0az9rARqNJHU3oIXIIaooYU&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQG73YSGuCw7V0XbMB8zuumAhnX0WvjwMSjrWvRgi0NqQwob1tX8_aBEkTA6NIg9-sBsJrNsnHxnpw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwjEWHjXMvYeMrttnUiHomDTqFrAI23eSLAIk6NddCccg&oe=69C110B2" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V1.png">Teeccino February _Dark Chocolate Popular_ V1.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$9</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">6.40</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$58</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-06_1" data-matched="matched" data-spend="3.48" data-roas="11.201149425287355" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v3.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V3.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/648288368_1454863876146852_2023323476496837240_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=pRnXeUaDlacQ7kNvwF8wCs6&_nc_oc=AdrEaH7nX5VipG3FI6PbjNg1vr-9H1c9OO4MnNwny03pZruIZVX81OQamcOReAKZd3c&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFORJehvBtFQNppSdhGn1l1wyfYYN8PABpzejswQyQa0-Lzi499iJFSZD6QHoKTUWGb-TJSiesa-Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afxo20GD64gIdOzkJ9sREUoP1nEiE1rjyhyLPlC406FmcQ&oe=69C12E3A", [{"id": "120241946182570459", "name": "#093 - Dark Chocolate Popular - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/648288368_1454863876146852_2023323476496837240_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=pRnXeUaDlacQ7kNvwF8wCs6&_nc_oc=AdrEaH7nX5VipG3FI6PbjNg1vr-9H1c9OO4MnNwny03pZruIZVX81OQamcOReAKZd3c&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFORJehvBtFQNppSdhGn1l1wyfYYN8PABpzejswQyQa0-Lzi499iJFSZD6QHoKTUWGb-TJSiesa-Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afxo20GD64gIdOzkJ9sREUoP1nEiE1rjyhyLPlC406FmcQ&oe=69C12E3A", "spend": 2.55, "roas": 15.286275, "revenue": 38.98, "purchases": 1, "distance": 0}, {"id": "120241945981760459", "name": "#093 - Dark Chocolate Popular - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | Dark Chocolate Popular", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/648288368_1454863876146852_2023323476496837240_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=pRnXeUaDlacQ7kNvwF8wCs6&_nc_oc=AdrEaH7nX5VipG3FI6PbjNg1vr-9H1c9OO4MnNwny03pZruIZVX81OQamcOReAKZd3c&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEnv2-Wk_txBu1Uzqqqd9lMSw6EI79nhu11nf6r0YzJEvAIFYjjly4tEGWSpwbkqDAXcUr_DmckEw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzmV1Qux7MOHU_Nq7hjjJ9yzNHBzW2SBZpkrpyWhPHnmg&oe=69C12E3A", "spend": 0.93, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/648288368_1454863876146852_2023323476496837240_n.png?_nc_cat=110&ccb=1-7&_nc_ohc=pRnXeUaDlacQ7kNvwF8wCs6&_nc_oc=AdrEaH7nX5VipG3FI6PbjNg1vr-9H1c9OO4MnNwny03pZruIZVX81OQamcOReAKZd3c&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFORJehvBtFQNppSdhGn1l1wyfYYN8PABpzejswQyQa0-Lzi499iJFSZD6QHoKTUWGb-TJSiesa-Q&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afxo20GD64gIdOzkJ9sREUoP1nEiE1rjyhyLPlC406FmcQ&oe=69C12E3A" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V3.png">Teeccino February _Dark Chocolate Popular_ V3.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$3</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">11.20</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$39</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_2" data-matched="matched" data-spend="2.59" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v1 coffee.png" onclick='showModal("Teeccino March _FOTM Wanted_ V1 Coffee.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/651719899_1461178918848681_675005307957233153_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=wlMHFujAkOcQ7kNvwG2-uLg&_nc_oc=Adq9xVMJ85FQ9TxTDn4m7U7p8TqvhSXe_fndXunk2Q9WzPe5i2YC-mnkyE6tGyelw9U&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEF-pC5pTvDgbnUr4M-PJ1ARXUvtSLBVHlULE-cq4oA020Sv6KDVKItFVbDqYV3A5MQuoSvEO-xmQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afz0gtLn7OhJrmx7vkpwGv4STHnXjnC3Q5AUqi9pEu7K6Q&oe=69C127FF", [{"id": "120242327835000459", "name": "#097 -  FOTM Gluten Free - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/651719899_1461178918848681_675005307957233153_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=wlMHFujAkOcQ7kNvwG2-uLg&_nc_oc=Adq9xVMJ85FQ9TxTDn4m7U7p8TqvhSXe_fndXunk2Q9WzPe5i2YC-mnkyE6tGyelw9U&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEF-pC5pTvDgbnUr4M-PJ1ARXUvtSLBVHlULE-cq4oA020Sv6KDVKItFVbDqYV3A5MQuoSvEO-xmQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afz0gtLn7OhJrmx7vkpwGv4STHnXjnC3Q5AUqi9pEu7K6Q&oe=69C127FF", "spend": 1.75, "roas": 0, "revenue": 0, "purchases": 0, "distance": 8}, {"id": "120242327755380459", "name": "#099 - FOTM Wanted - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653535902_1461172608849312_385819081368835250_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=k2ZPDWjo064Q7kNvwEKu81D&_nc_oc=Adol69RRFxg10afuarsorImvXDR8KHPf7XsKAHbZab67VTJsKFWd4ACBpqiCfqqHB2A&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGIIBUo-FTpvr4hFyMGGDZK9tcr9oK3vCTlJpqFF_CEIYjd36qlarIyfOG4T2tKpIil7SlWYLLyDg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzAEZH866LDjtThl-6EinwzI1M_c3G1cUdxAFs8_OAs2A&oe=69C10707", "spend": 0.45, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242327720220459", "name": "#099 - FOTM Wanted - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653535902_1461172608849312_385819081368835250_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=k2ZPDWjo064Q7kNvwEKu81D&_nc_oc=Adol69RRFxg10afuarsorImvXDR8KHPf7XsKAHbZab67VTJsKFWd4ACBpqiCfqqHB2A&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGE8k0dnLH1lAZHZz30VKw87zGHdEl94grA4iwoGc3qvlts8a5InXOc6-kqp0nHWIC9o1i9invlxQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwV2U_v6Cuw-XFYnVtvk66Lum5BQZpDcxnvOs_1VC94mg&oe=69C10707", "spend": 0.39, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/651719899_1461178918848681_675005307957233153_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=wlMHFujAkOcQ7kNvwG2-uLg&_nc_oc=Adq9xVMJ85FQ9TxTDn4m7U7p8TqvhSXe_fndXunk2Q9WzPe5i2YC-mnkyE6tGyelw9U&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEF-pC5pTvDgbnUr4M-PJ1ARXUvtSLBVHlULE-cq4oA020Sv6KDVKItFVbDqYV3A5MQuoSvEO-xmQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afz0gtLn7OhJrmx7vkpwGv4STHnXjnC3Q5AUqi9pEu7K6Q&oe=69C127FF" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V1 Coffee.png">Teeccino March _FOTM Wanted_ V1 Coffee.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$3</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">3</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_2" data-matched="matched" data-spend="2.59" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v1 tea.png" onclick='showModal("Teeccino March _FOTM Wanted_ V1 Tea.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/651719899_1461178918848681_675005307957233153_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=wlMHFujAkOcQ7kNvwG2-uLg&_nc_oc=Adq9xVMJ85FQ9TxTDn4m7U7p8TqvhSXe_fndXunk2Q9WzPe5i2YC-mnkyE6tGyelw9U&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEF-pC5pTvDgbnUr4M-PJ1ARXUvtSLBVHlULE-cq4oA020Sv6KDVKItFVbDqYV3A5MQuoSvEO-xmQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afz0gtLn7OhJrmx7vkpwGv4STHnXjnC3Q5AUqi9pEu7K6Q&oe=69C127FF", [{"id": "120242327835000459", "name": "#097 -  FOTM Gluten Free - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/651719899_1461178918848681_675005307957233153_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=wlMHFujAkOcQ7kNvwG2-uLg&_nc_oc=Adq9xVMJ85FQ9TxTDn4m7U7p8TqvhSXe_fndXunk2Q9WzPe5i2YC-mnkyE6tGyelw9U&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEF-pC5pTvDgbnUr4M-PJ1ARXUvtSLBVHlULE-cq4oA020Sv6KDVKItFVbDqYV3A5MQuoSvEO-xmQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afz0gtLn7OhJrmx7vkpwGv4STHnXjnC3Q5AUqi9pEu7K6Q&oe=69C127FF", "spend": 1.75, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}, {"id": "120242327755380459", "name": "#099 - FOTM Wanted - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653535902_1461172608849312_385819081368835250_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=k2ZPDWjo064Q7kNvwEKu81D&_nc_oc=Adol69RRFxg10afuarsorImvXDR8KHPf7XsKAHbZab67VTJsKFWd4ACBpqiCfqqHB2A&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGIIBUo-FTpvr4hFyMGGDZK9tcr9oK3vCTlJpqFF_CEIYjd36qlarIyfOG4T2tKpIil7SlWYLLyDg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzAEZH866LDjtThl-6EinwzI1M_c3G1cUdxAFs8_OAs2A&oe=69C10707", "spend": 0.45, "roas": 0, "revenue": 0, "purchases": 0, "distance": 8}, {"id": "120242327720220459", "name": "#099 - FOTM Wanted - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653535902_1461172608849312_385819081368835250_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=k2ZPDWjo064Q7kNvwEKu81D&_nc_oc=Adol69RRFxg10afuarsorImvXDR8KHPf7XsKAHbZab67VTJsKFWd4ACBpqiCfqqHB2A&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGE8k0dnLH1lAZHZz30VKw87zGHdEl94grA4iwoGc3qvlts8a5InXOc6-kqp0nHWIC9o1i9invlxQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwV2U_v6Cuw-XFYnVtvk66Lum5BQZpDcxnvOs_1VC94mg&oe=69C10707", "spend": 0.39, "roas": 0, "revenue": 0, "purchases": 0, "distance": 8}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/651719899_1461178918848681_675005307957233153_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=wlMHFujAkOcQ7kNvwG2-uLg&_nc_oc=Adq9xVMJ85FQ9TxTDn4m7U7p8TqvhSXe_fndXunk2Q9WzPe5i2YC-mnkyE6tGyelw9U&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEF-pC5pTvDgbnUr4M-PJ1ARXUvtSLBVHlULE-cq4oA020Sv6KDVKItFVbDqYV3A5MQuoSvEO-xmQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afz0gtLn7OhJrmx7vkpwGv4STHnXjnC3Q5AUqi9pEu7K6Q&oe=69C127FF" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V1 Tea.png">Teeccino March _FOTM Wanted_ V1 Tea.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$3</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">3</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_2" data-matched="matched" data-spend="1.85" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-3.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-3.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/655021015_1461181498848423_3569172313193006224_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=FlZet4JMULMQ7kNvwHFfaRy&_nc_oc=Adp-LAnDIHDQKO5kYWVWRnjkXD_R_M7LX5g-0JAhwYXKir7Q_NnWK5cTtPj-FcYrEBc&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGMniRv-cSpXmnlbu_ujaj6AIK3szS81oM08eHr211XXG5SbWv_UheMAzrO8JgmKlX3Dh8QiYbUdg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxbC3id51GgVgQ6KN3O281oEszW8tezHBTCKAwpza0mRA&oe=69C12FBA", [{"id": "120242328172860459", "name": "#097 -  FOTM Gluten Free - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/655021015_1461181498848423_3569172313193006224_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=FlZet4JMULMQ7kNvwHFfaRy&_nc_oc=Adp-LAnDIHDQKO5kYWVWRnjkXD_R_M7LX5g-0JAhwYXKir7Q_NnWK5cTtPj-FcYrEBc&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGMniRv-cSpXmnlbu_ujaj6AIK3szS81oM08eHr211XXG5SbWv_UheMAzrO8JgmKlX3Dh8QiYbUdg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxbC3id51GgVgQ6KN3O281oEszW8tezHBTCKAwpza0mRA&oe=69C12FBA", "spend": 1.09, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}, {"id": "120242327737670459", "name": "#099 - FOTM Wanted - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/653565707_1461172625515977_6405874264749091400_n.png?_nc_cat=105&ccb=1-7&_nc_ohc=5H4bU00Ns2sQ7kNvwHa7jf9&_nc_oc=Ado1nxIsQKxPk4Wz0eY9b9mk3zktjsXdffg0NJou_OMNBauPcRroe1yAQ6AS42gyiLs&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEMol4nWZclmb1A4XFYQGrO1SZN0-qyhx39dMlkM-jutH048iIAK57cQhDLMkeUyWD90pCBlEOFfQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyhE-nXmvqIN-S9b1NILIaj85MKNaPjuixgjjP9F9we7g&oe=69C11220", "spend": 0.22, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}, {"id": "120242327755350459", "name": "#099 - FOTM Wanted - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/653565707_1461172625515977_6405874264749091400_n.png?_nc_cat=105&ccb=1-7&_nc_ohc=5H4bU00Ns2sQ7kNvwHa7jf9&_nc_oc=Ado1nxIsQKxPk4Wz0eY9b9mk3zktjsXdffg0NJou_OMNBauPcRroe1yAQ6AS42gyiLs&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQG--4whkN1vVmRiyZlQJriAqaRu4Oht_NfQu0biZRN89yjjW8M294Oj42AaCJ-EgLwsrX6sCWovIg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyCaZ5_psMLb9aE-qosJx5ep8aLDQHOyRtSqtHFK88icA&oe=69C11220", "spend": 0.54, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/655021015_1461181498848423_3569172313193006224_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=FlZet4JMULMQ7kNvwHFfaRy&_nc_oc=Adp-LAnDIHDQKO5kYWVWRnjkXD_R_M7LX5g-0JAhwYXKir7Q_NnWK5cTtPj-FcYrEBc&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGMniRv-cSpXmnlbu_ujaj6AIK3szS81oM08eHr211XXG5SbWv_UheMAzrO8JgmKlX3Dh8QiYbUdg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxbC3id51GgVgQ6KN3O281oEszW8tezHBTCKAwpza0mRA&oe=69C12FBA" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-3.png">Teeccino March _FOTM Wanted_ V2 Coffee-3.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$2</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">3</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_2" data-matched="matched" data-spend="1.85" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/655021015_1461181498848423_3569172313193006224_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=FlZet4JMULMQ7kNvwHFfaRy&_nc_oc=Adp-LAnDIHDQKO5kYWVWRnjkXD_R_M7LX5g-0JAhwYXKir7Q_NnWK5cTtPj-FcYrEBc&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGMniRv-cSpXmnlbu_ujaj6AIK3szS81oM08eHr211XXG5SbWv_UheMAzrO8JgmKlX3Dh8QiYbUdg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxbC3id51GgVgQ6KN3O281oEszW8tezHBTCKAwpza0mRA&oe=69C12FBA", [{"id": "120242328172860459", "name": "#097 -  FOTM Gluten Free - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/655021015_1461181498848423_3569172313193006224_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=FlZet4JMULMQ7kNvwHFfaRy&_nc_oc=Adp-LAnDIHDQKO5kYWVWRnjkXD_R_M7LX5g-0JAhwYXKir7Q_NnWK5cTtPj-FcYrEBc&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGMniRv-cSpXmnlbu_ujaj6AIK3szS81oM08eHr211XXG5SbWv_UheMAzrO8JgmKlX3Dh8QiYbUdg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxbC3id51GgVgQ6KN3O281oEszW8tezHBTCKAwpza0mRA&oe=69C12FBA", "spend": 1.09, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}, {"id": "120242327737670459", "name": "#099 - FOTM Wanted - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/653565707_1461172625515977_6405874264749091400_n.png?_nc_cat=105&ccb=1-7&_nc_ohc=5H4bU00Ns2sQ7kNvwHa7jf9&_nc_oc=Ado1nxIsQKxPk4Wz0eY9b9mk3zktjsXdffg0NJou_OMNBauPcRroe1yAQ6AS42gyiLs&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEMol4nWZclmb1A4XFYQGrO1SZN0-qyhx39dMlkM-jutH048iIAK57cQhDLMkeUyWD90pCBlEOFfQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyhE-nXmvqIN-S9b1NILIaj85MKNaPjuixgjjP9F9we7g&oe=69C11220", "spend": 0.22, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242327755350459", "name": "#099 - FOTM Wanted - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/653565707_1461172625515977_6405874264749091400_n.png?_nc_cat=105&ccb=1-7&_nc_ohc=5H4bU00Ns2sQ7kNvwHa7jf9&_nc_oc=Ado1nxIsQKxPk4Wz0eY9b9mk3zktjsXdffg0NJou_OMNBauPcRroe1yAQ6AS42gyiLs&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQG--4whkN1vVmRiyZlQJriAqaRu4Oht_NfQu0biZRN89yjjW8M294Oj42AaCJ-EgLwsrX6sCWovIg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyCaZ5_psMLb9aE-qosJx5ep8aLDQHOyRtSqtHFK88icA&oe=69C11220", "spend": 0.54, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/655021015_1461181498848423_3569172313193006224_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=FlZet4JMULMQ7kNvwHFfaRy&_nc_oc=Adp-LAnDIHDQKO5kYWVWRnjkXD_R_M7LX5g-0JAhwYXKir7Q_NnWK5cTtPj-FcYrEBc&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGMniRv-cSpXmnlbu_ujaj6AIK3szS81oM08eHr211XXG5SbWv_UheMAzrO8JgmKlX3Dh8QiYbUdg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxbC3id51GgVgQ6KN3O281oEszW8tezHBTCKAwpza0mRA&oe=69C12FBA" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee.png">Teeccino March _FOTM Wanted_ V2 Coffee.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$2</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">3</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_3" data-matched="matched" data-spend="1.4300000000000002" data-roas="0.0" data-date="2026-03-16" data-name="v3.png" onclick='showModal("v3.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE0okKKYBnxsd6M8Jlj-_bP2MBsg56eeXbwgAzrDVFgzPCZ8yHtGyshzJ9ZsVBB_Ga5ptI8vrvsUQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxD2weDlAG014s9peh3OLaYExNouzSuu8IuQonDHUkk7Q&oe=69C1016F", [{"id": "120242330314800459", "name": "#0100 - FOTM Coffee Reviews - Image #04", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE0okKKYBnxsd6M8Jlj-_bP2MBsg56eeXbwgAzrDVFgzPCZ8yHtGyshzJ9ZsVBB_Ga5ptI8vrvsUQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxD2weDlAG014s9peh3OLaYExNouzSuu8IuQonDHUkk7Q&oe=69C1016F", "spend": 0.21, "roas": 0, "revenue": 0, "purchases": 0, "distance": 4}, {"id": "120242330185540459", "name": "#0100 - FOTM Coffee Reviews - Image #04", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE5EkH_ZFLrbkwYgOQo7_Q43nziSsZ2vekQHGOf2Uzq0spg1-JRI32ZCDqmiPr_AVBom9e346vntw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwqFVSB4SLmRn903m2DQ6ocKRUTaf7tDsHH4yGUm0VYNw&oe=69C1016F", "spend": 0.0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 4}, {"id": "120242330314810459", "name": "#0100 - FOTM Coffee Reviews - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653909159_1461200908846482_5043729798262019532_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=BV-bDY3BJ1QQ7kNvwHjlYs9&_nc_oc=AdqExPFUlqSVHe-WF0UgheOtvffH-x-52b9Vve0Uxm9h8XQB3CqVi1Ar9yaNYOU3-ag&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFZnHrgFq1OaAaAeIhre2kJHvPTTSrLSs4C1LNvQItDTTP18lidmyb0gGz0A6Yfn1qpDb3uBcDbKQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyYR1toJU118OMjgpq6cU-yLoF0VVm-D5_cYEqgoNZGCg&oe=69C0F931", "spend": 1.07, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242330140820459", "name": "#0100 - FOTM Coffee Reviews - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653909159_1461200908846482_5043729798262019532_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=BV-bDY3BJ1QQ7kNvwHjlYs9&_nc_oc=AdqExPFUlqSVHe-WF0UgheOtvffH-x-52b9Vve0Uxm9h8XQB3CqVi1Ar9yaNYOU3-ag&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGBTf9ckr-sjH57h74ELrewIZk74y6lO_dh8xDEGOvDBs5LVcpN-14c8F4oDnjZVAjnPTw0J4qXNA&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyUJyKnTX7ggw0XB0STEr6P9hBq05ub9nG4nMZR1NcFUw&oe=69C0F931", "spend": 0.15, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE0okKKYBnxsd6M8Jlj-_bP2MBsg56eeXbwgAzrDVFgzPCZ8yHtGyshzJ9ZsVBB_Ga5ptI8vrvsUQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxD2weDlAG014s9peh3OLaYExNouzSuu8IuQonDHUkk7Q&oe=69C1016F" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v3.png">v3.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$1</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">4</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_3" data-matched="matched" data-spend="1.4300000000000002" data-roas="0.0" data-date="2026-03-16" data-name="v4.png" onclick='showModal("v4.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE0okKKYBnxsd6M8Jlj-_bP2MBsg56eeXbwgAzrDVFgzPCZ8yHtGyshzJ9ZsVBB_Ga5ptI8vrvsUQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxD2weDlAG014s9peh3OLaYExNouzSuu8IuQonDHUkk7Q&oe=69C1016F", [{"id": "120242330314800459", "name": "#0100 - FOTM Coffee Reviews - Image #04", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE0okKKYBnxsd6M8Jlj-_bP2MBsg56eeXbwgAzrDVFgzPCZ8yHtGyshzJ9ZsVBB_Ga5ptI8vrvsUQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxD2weDlAG014s9peh3OLaYExNouzSuu8IuQonDHUkk7Q&oe=69C1016F", "spend": 0.21, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242330185540459", "name": "#0100 - FOTM Coffee Reviews - Image #04", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE5EkH_ZFLrbkwYgOQo7_Q43nziSsZ2vekQHGOf2Uzq0spg1-JRI32ZCDqmiPr_AVBom9e346vntw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwqFVSB4SLmRn903m2DQ6ocKRUTaf7tDsHH4yGUm0VYNw&oe=69C1016F", "spend": 0.0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242330314810459", "name": "#0100 - FOTM Coffee Reviews - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653909159_1461200908846482_5043729798262019532_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=BV-bDY3BJ1QQ7kNvwHjlYs9&_nc_oc=AdqExPFUlqSVHe-WF0UgheOtvffH-x-52b9Vve0Uxm9h8XQB3CqVi1Ar9yaNYOU3-ag&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFZnHrgFq1OaAaAeIhre2kJHvPTTSrLSs4C1LNvQItDTTP18lidmyb0gGz0A6Yfn1qpDb3uBcDbKQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyYR1toJU118OMjgpq6cU-yLoF0VVm-D5_cYEqgoNZGCg&oe=69C0F931", "spend": 1.07, "roas": 0, "revenue": 0, "purchases": 0, "distance": 4}, {"id": "120242330140820459", "name": "#0100 - FOTM Coffee Reviews - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653909159_1461200908846482_5043729798262019532_n.png?_nc_cat=107&ccb=1-7&_nc_ohc=BV-bDY3BJ1QQ7kNvwHjlYs9&_nc_oc=AdqExPFUlqSVHe-WF0UgheOtvffH-x-52b9Vve0Uxm9h8XQB3CqVi1Ar9yaNYOU3-ag&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGBTf9ckr-sjH57h74ELrewIZk74y6lO_dh8xDEGOvDBs5LVcpN-14c8F4oDnjZVAjnPTw0J4qXNA&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyUJyKnTX7ggw0XB0STEr6P9hBq05ub9nG4nMZR1NcFUw&oe=69C0F931", "spend": 0.15, "roas": 0, "revenue": 0, "purchases": 0, "distance": 4}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/652903908_1461201978846375_645991977612986955_n.png?_nc_cat=103&ccb=1-7&_nc_ohc=vSu-IivZIiEQ7kNvwG6LOQM&_nc_oc=AdonRa97RQFtOVbtN88g_TVPQZIdszlu-NbggfTD3pUH--h6laZ5YmmSwzTcWiHIaSk&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQE0okKKYBnxsd6M8Jlj-_bP2MBsg56eeXbwgAzrDVFgzPCZ8yHtGyshzJ9ZsVBB_Ga5ptI8vrvsUQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxD2weDlAG014s9peh3OLaYExNouzSuu8IuQonDHUkk7Q&oe=69C1016F" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v4.png">v4.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$1</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">4</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_1" data-matched="matched" data-spend="1.41" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v3.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V3.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/651989538_1461193618847211_1001041277840535763_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=FZhgUeK4DXcQ7kNvwEj_3nE&_nc_oc=AdrrctiKAMPqOWCrrVAFWrfYMIuaT0h0S7uBU7CruOCbTDy5ywtKYWx4pVOmE2HfXiw&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQHzcSEiMgBRlffW3bSeEKntlndyKQ7SEMqpggYksaLqZpCWzxWPwxWogAfvTbjbf8MytheAJZPj4A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwcfDoLQD4cS8mPd62ufhSV0U4UFWxlnMtB_sZAhB5DCQ&oe=69C0FB33", [{"id": "120242329776010459", "name": "#098 - FOTM Tea Reviews - Image #05", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Tea Reviews", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/651989538_1461193618847211_1001041277840535763_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=FZhgUeK4DXcQ7kNvwEj_3nE&_nc_oc=AdrrctiKAMPqOWCrrVAFWrfYMIuaT0h0S7uBU7CruOCbTDy5ywtKYWx4pVOmE2HfXiw&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQHzcSEiMgBRlffW3bSeEKntlndyKQ7SEMqpggYksaLqZpCWzxWPwxWogAfvTbjbf8MytheAJZPj4A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwcfDoLQD4cS8mPd62ufhSV0U4UFWxlnMtB_sZAhB5DCQ&oe=69C0FB33", "spend": 1.41, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/651989538_1461193618847211_1001041277840535763_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=FZhgUeK4DXcQ7kNvwEj_3nE&_nc_oc=AdrrctiKAMPqOWCrrVAFWrfYMIuaT0h0S7uBU7CruOCbTDy5ywtKYWx4pVOmE2HfXiw&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQHzcSEiMgBRlffW3bSeEKntlndyKQ7SEMqpggYksaLqZpCWzxWPwxWogAfvTbjbf8MytheAJZPj4A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwcfDoLQD4cS8mPd62ufhSV0U4UFWxlnMtB_sZAhB5DCQ&oe=69C0FB33" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V3.png">Teeccino March _FOTM Tea Reviews_ Image Task V3.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$1</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_1" data-matched="matched" data-spend="1.41" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v3-1.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V3-1.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/651989538_1461193618847211_1001041277840535763_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=FZhgUeK4DXcQ7kNvwEj_3nE&_nc_oc=AdrrctiKAMPqOWCrrVAFWrfYMIuaT0h0S7uBU7CruOCbTDy5ywtKYWx4pVOmE2HfXiw&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQHzcSEiMgBRlffW3bSeEKntlndyKQ7SEMqpggYksaLqZpCWzxWPwxWogAfvTbjbf8MytheAJZPj4A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwcfDoLQD4cS8mPd62ufhSV0U4UFWxlnMtB_sZAhB5DCQ&oe=69C0FB33", [{"id": "120242329776010459", "name": "#098 - FOTM Tea Reviews - Image #05", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Tea Reviews", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/651989538_1461193618847211_1001041277840535763_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=FZhgUeK4DXcQ7kNvwEj_3nE&_nc_oc=AdrrctiKAMPqOWCrrVAFWrfYMIuaT0h0S7uBU7CruOCbTDy5ywtKYWx4pVOmE2HfXiw&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQHzcSEiMgBRlffW3bSeEKntlndyKQ7SEMqpggYksaLqZpCWzxWPwxWogAfvTbjbf8MytheAJZPj4A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwcfDoLQD4cS8mPd62ufhSV0U4UFWxlnMtB_sZAhB5DCQ&oe=69C0FB33", "spend": 1.41, "roas": 0, "revenue": 0, "purchases": 0, "distance": 10}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/651989538_1461193618847211_1001041277840535763_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=FZhgUeK4DXcQ7kNvwEj_3nE&_nc_oc=AdrrctiKAMPqOWCrrVAFWrfYMIuaT0h0S7uBU7CruOCbTDy5ywtKYWx4pVOmE2HfXiw&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQHzcSEiMgBRlffW3bSeEKntlndyKQ7SEMqpggYksaLqZpCWzxWPwxWogAfvTbjbf8MytheAJZPj4A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwcfDoLQD4cS8mPd62ufhSV0U4UFWxlnMtB_sZAhB5DCQ&oe=69C0FB33" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V3-1.png">Teeccino March _FOTM Tea Reviews_ Image Task V3-1.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$1</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_2" data-matched="matched" data-spend="0.39" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-4.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-4.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652877147_1461182652181641_6282456889055082289_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=U3arlcN7yBAQ7kNvwHmhb0m&_nc_oc=AdqvtHDM2WvY2r0aN1elC5NC0aoZP5gb42jA5I5-zv8h8ifkl_fF1mcalNqb9fRP_TE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEHFC13Rg2a1FtIdiDVLhWvnno6VObolZzG50noN4fQ-dVVy8dIo7LnR5pp9u_hjzAo7NoS2ODCng&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxM4SvGtAYSaBXcxHftIBlU45G3Elt_rnLFD9jLYwofuA&oe=69C1158B", [{"id": "120242328263070459", "name": "#097 -  FOTM Gluten Free - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652877147_1461182652181641_6282456889055082289_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=U3arlcN7yBAQ7kNvwHmhb0m&_nc_oc=AdqvtHDM2WvY2r0aN1elC5NC0aoZP5gb42jA5I5-zv8h8ifkl_fF1mcalNqb9fRP_TE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEHFC13Rg2a1FtIdiDVLhWvnno6VObolZzG50noN4fQ-dVVy8dIo7LnR5pp9u_hjzAo7NoS2ODCng&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxM4SvGtAYSaBXcxHftIBlU45G3Elt_rnLFD9jLYwofuA&oe=69C1158B", "spend": 0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 10}, {"id": "120242327755370459", "name": "#099 - FOTM Wanted - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/654570725_1461172598849313_6198917711453549183_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=MM9DUuTEQAwQ7kNvwFXKtEx&_nc_oc=AdrJDhOLOXyzs8YAmliReyenXEF6OY5Wq_5Egz-u5rnhvQ5BOTTxhgf4DPsWONTCWX0&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEpyS-E_q8csI2ZYZHiL47ZHuFPryEpVmzQtAYxqJNZ32XxtM2utaZJ8ljli4EobpJJPwzz9eVYFw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afyg-LnovELnev3QIKVyOKLClqXXvQMX-Q-fw7GcoNRxtQ&oe=69C12252", "spend": 0.39, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242327701370459", "name": "#099 - FOTM Wanted - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/654570725_1461172598849313_6198917711453549183_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=MM9DUuTEQAwQ7kNvwFXKtEx&_nc_oc=AdrJDhOLOXyzs8YAmliReyenXEF6OY5Wq_5Egz-u5rnhvQ5BOTTxhgf4DPsWONTCWX0&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFG7V5Tfo1zIr7t2k6R9xIZ3nXMGC6XeLbegzwhHXEMWNIUZfBHIOAxAckX-SYduzWNG57H3lxj8w&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afwe3Wcxxcftz0yybCwwWY3hXyCMDnnx2C-sOrdGVb1d0A&oe=69C12252", "spend": 0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652877147_1461182652181641_6282456889055082289_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=U3arlcN7yBAQ7kNvwHmhb0m&_nc_oc=AdqvtHDM2WvY2r0aN1elC5NC0aoZP5gb42jA5I5-zv8h8ifkl_fF1mcalNqb9fRP_TE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEHFC13Rg2a1FtIdiDVLhWvnno6VObolZzG50noN4fQ-dVVy8dIo7LnR5pp9u_hjzAo7NoS2ODCng&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxM4SvGtAYSaBXcxHftIBlU45G3Elt_rnLFD9jLYwofuA&oe=69C1158B" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-4.png">Teeccino March _FOTM Wanted_ V2 Coffee-4.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">3</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_2" data-matched="matched" data-spend="0.39" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-5.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-5.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652877147_1461182652181641_6282456889055082289_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=U3arlcN7yBAQ7kNvwHmhb0m&_nc_oc=AdqvtHDM2WvY2r0aN1elC5NC0aoZP5gb42jA5I5-zv8h8ifkl_fF1mcalNqb9fRP_TE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEHFC13Rg2a1FtIdiDVLhWvnno6VObolZzG50noN4fQ-dVVy8dIo7LnR5pp9u_hjzAo7NoS2ODCng&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxM4SvGtAYSaBXcxHftIBlU45G3Elt_rnLFD9jLYwofuA&oe=69C1158B", [{"id": "120242328263070459", "name": "#097 -  FOTM Gluten Free - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652877147_1461182652181641_6282456889055082289_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=U3arlcN7yBAQ7kNvwHmhb0m&_nc_oc=AdqvtHDM2WvY2r0aN1elC5NC0aoZP5gb42jA5I5-zv8h8ifkl_fF1mcalNqb9fRP_TE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEHFC13Rg2a1FtIdiDVLhWvnno6VObolZzG50noN4fQ-dVVy8dIo7LnR5pp9u_hjzAo7NoS2ODCng&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxM4SvGtAYSaBXcxHftIBlU45G3Elt_rnLFD9jLYwofuA&oe=69C1158B", "spend": 0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}, {"id": "120242327755370459", "name": "#099 - FOTM Wanted - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/654570725_1461172598849313_6198917711453549183_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=MM9DUuTEQAwQ7kNvwFXKtEx&_nc_oc=AdrJDhOLOXyzs8YAmliReyenXEF6OY5Wq_5Egz-u5rnhvQ5BOTTxhgf4DPsWONTCWX0&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEpyS-E_q8csI2ZYZHiL47ZHuFPryEpVmzQtAYxqJNZ32XxtM2utaZJ8ljli4EobpJJPwzz9eVYFw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afyg-LnovELnev3QIKVyOKLClqXXvQMX-Q-fw7GcoNRxtQ&oe=69C12252", "spend": 0.39, "roas": 0, "revenue": 0, "purchases": 0, "distance": 8}, {"id": "120242327701370459", "name": "#099 - FOTM Wanted - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Wanted", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/654570725_1461172598849313_6198917711453549183_n.png?_nc_cat=102&ccb=1-7&_nc_ohc=MM9DUuTEQAwQ7kNvwFXKtEx&_nc_oc=AdrJDhOLOXyzs8YAmliReyenXEF6OY5Wq_5Egz-u5rnhvQ5BOTTxhgf4DPsWONTCWX0&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQFG7V5Tfo1zIr7t2k6R9xIZ3nXMGC6XeLbegzwhHXEMWNIUZfBHIOAxAckX-SYduzWNG57H3lxj8w&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afwe3Wcxxcftz0yybCwwWY3hXyCMDnnx2C-sOrdGVb1d0A&oe=69C12252", "spend": 0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 8}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652877147_1461182652181641_6282456889055082289_n.png?_nc_cat=109&ccb=1-7&_nc_ohc=U3arlcN7yBAQ7kNvwHmhb0m&_nc_oc=AdqvtHDM2WvY2r0aN1elC5NC0aoZP5gb42jA5I5-zv8h8ifkl_fF1mcalNqb9fRP_TE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEHFC13Rg2a1FtIdiDVLhWvnno6VObolZzG50noN4fQ-dVVy8dIo7LnR5pp9u_hjzAo7NoS2ODCng&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfxM4SvGtAYSaBXcxHftIBlU45G3Elt_rnLFD9jLYwofuA&oe=69C1158B" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-5.png">Teeccino March _FOTM Wanted_ V2 Coffee-5.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">3</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_4" data-matched="matched" data-spend="0.38" data-roas="0.0" data-date="2026-03-16" data-name="coffee.png" onclick='showModal("Coffee.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652079454_1461211368845436_5219215746123812872_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QPBnhm_2AS8Q7kNvwHPajQY&_nc_oc=Ado8NSs-SmnN5rpNRQ1CNRdoU_CcVMR9savA5V6lMOncIuYuYGqR5mO73GpUuJ7gquE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQH9_6BNBBm2lnM6hxUTc2ITzXNAhj3WJ6G06scRfVgQqw3QRx4j1iuiSGCRCsSdksMcSK0TejHccQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzBWOw0O9dS1OQhzVkBP8pbyyCKWQxfBNiiCMGHq_jDuw&oe=69C0FE80", [{"id": "120242330656370459", "name": "#099 - FOTM Tea Reviews - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM First Letters", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652079454_1461211368845436_5219215746123812872_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QPBnhm_2AS8Q7kNvwHPajQY&_nc_oc=Ado8NSs-SmnN5rpNRQ1CNRdoU_CcVMR9savA5V6lMOncIuYuYGqR5mO73GpUuJ7gquE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQH9_6BNBBm2lnM6hxUTc2ITzXNAhj3WJ6G06scRfVgQqw3QRx4j1iuiSGCRCsSdksMcSK0TejHccQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzBWOw0O9dS1OQhzVkBP8pbyyCKWQxfBNiiCMGHq_jDuw&oe=69C0FE80", "spend": 0.38, "roas": 0, "revenue": 0, "purchases": 0, "distance": 14}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652079454_1461211368845436_5219215746123812872_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QPBnhm_2AS8Q7kNvwHPajQY&_nc_oc=Ado8NSs-SmnN5rpNRQ1CNRdoU_CcVMR9savA5V6lMOncIuYuYGqR5mO73GpUuJ7gquE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQH9_6BNBBm2lnM6hxUTc2ITzXNAhj3WJ6G06scRfVgQqw3QRx4j1iuiSGCRCsSdksMcSK0TejHccQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzBWOw0O9dS1OQhzVkBP8pbyyCKWQxfBNiiCMGHq_jDuw&oe=69C0FE80" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Coffee.png">Coffee.png</div>
+                <div class="card-meta"><span>2026-03-16_4</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_4" data-matched="matched" data-spend="0.38" data-roas="0.0" data-date="2026-03-16" data-name="tea.png" onclick='showModal("Tea.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652079454_1461211368845436_5219215746123812872_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QPBnhm_2AS8Q7kNvwHPajQY&_nc_oc=Ado8NSs-SmnN5rpNRQ1CNRdoU_CcVMR9savA5V6lMOncIuYuYGqR5mO73GpUuJ7gquE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQH9_6BNBBm2lnM6hxUTc2ITzXNAhj3WJ6G06scRfVgQqw3QRx4j1iuiSGCRCsSdksMcSK0TejHccQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzBWOw0O9dS1OQhzVkBP8pbyyCKWQxfBNiiCMGHq_jDuw&oe=69C0FE80", [{"id": "120242330656370459", "name": "#099 - FOTM Tea Reviews - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM First Letters", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652079454_1461211368845436_5219215746123812872_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QPBnhm_2AS8Q7kNvwHPajQY&_nc_oc=Ado8NSs-SmnN5rpNRQ1CNRdoU_CcVMR9savA5V6lMOncIuYuYGqR5mO73GpUuJ7gquE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQH9_6BNBBm2lnM6hxUTc2ITzXNAhj3WJ6G06scRfVgQqw3QRx4j1iuiSGCRCsSdksMcSK0TejHccQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzBWOw0O9dS1OQhzVkBP8pbyyCKWQxfBNiiCMGHq_jDuw&oe=69C0FE80", "spend": 0.38, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/652079454_1461211368845436_5219215746123812872_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QPBnhm_2AS8Q7kNvwHPajQY&_nc_oc=Ado8NSs-SmnN5rpNRQ1CNRdoU_CcVMR9savA5V6lMOncIuYuYGqR5mO73GpUuJ7gquE&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQH9_6BNBBm2lnM6hxUTc2ITzXNAhj3WJ6G06scRfVgQqw3QRx4j1iuiSGCRCsSdksMcSK0TejHccQ&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzBWOw0O9dS1OQhzVkBP8pbyyCKWQxfBNiiCMGHq_jDuw&oe=69C0FE80" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Tea.png">Tea.png</div>
+                <div class="card-meta"><span>2026-03-16_4</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_3" data-matched="matched" data-spend="0.31" data-roas="0.0" data-date="2026-03-16" data-name="v1.png" onclick='showModal("v1.png", "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/652628861_1461198358846737_3630306952933143564_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=opZ-bLfUhR0Q7kNvwEzK72e&_nc_oc=Ado0YStDGC2O8Gn_xaPgRMyEPFCb8kg5Nt8N400zNPi-wPyqlvqK3ihQoQBRj0khAZg&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEQgq8ikwKGBaZE-b0i_8X1oTNnlvm5Pl3bPpnB7DWSweQbtFQY7yNclWdck97argJW82MCbrizMw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzkRIeHDkn3VP_hO_DOv8HvqvDpgi3FP6kvTpxJFIzjHw&oe=69C10CF9", [{"id": "120242329999390459", "name": "#0100 - FOTM Coffee Reviews - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/652628861_1461198358846737_3630306952933143564_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=opZ-bLfUhR0Q7kNvwEzK72e&_nc_oc=Ado0YStDGC2O8Gn_xaPgRMyEPFCb8kg5Nt8N400zNPi-wPyqlvqK3ihQoQBRj0khAZg&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEQgq8ikwKGBaZE-b0i_8X1oTNnlvm5Pl3bPpnB7DWSweQbtFQY7yNclWdck97argJW82MCbrizMw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzkRIeHDkn3VP_hO_DOv8HvqvDpgi3FP6kvTpxJFIzjHw&oe=69C10CF9", "spend": 0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242330314780459", "name": "#0100 - FOTM Coffee Reviews - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/652628861_1461198358846737_3630306952933143564_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=opZ-bLfUhR0Q7kNvwEzK72e&_nc_oc=Ado0YStDGC2O8Gn_xaPgRMyEPFCb8kg5Nt8N400zNPi-wPyqlvqK3ihQoQBRj0khAZg&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQG-5ost2eAhJ0kJ9z1_nlQ_K-AjQDTdcgpGuSZXyr4rK5ocOi2AEFceqkl8I4Hxtcc0E_FygO6srg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyXQEe4m51Me1PA-jty3nRWQyEQOGngt6VpvlS6Sbc4qQ&oe=69C10CF9", "spend": 0.31, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/652628861_1461198358846737_3630306952933143564_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=opZ-bLfUhR0Q7kNvwEzK72e&_nc_oc=Ado0YStDGC2O8Gn_xaPgRMyEPFCb8kg5Nt8N400zNPi-wPyqlvqK3ihQoQBRj0khAZg&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEQgq8ikwKGBaZE-b0i_8X1oTNnlvm5Pl3bPpnB7DWSweQbtFQY7yNclWdck97argJW82MCbrizMw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzkRIeHDkn3VP_hO_DOv8HvqvDpgi3FP6kvTpxJFIzjHw&oe=69C10CF9" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v1.png">v1.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_1" data-matched="matched" data-spend="0.04" data-roas="0.0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v1a.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V1A.png", "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/651510429_1461188195514420_677957219618382673_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=zgqQbSxWvssQ7kNvwEJBkIz&_nc_oc=AdoB4k-8CxIgnM5epIxByCxQoFfDLyCABYlqI7wxYSjDF7gw4RVsrKu5oSnlNM1qxyw&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGiLogqOZjXnlzpV6YLDk6Reamzs721OP7CXM1y-FmBs1eRpjWXv5KV9X6CqsjGa-zfWff1g4Jimw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx_tYgMqeiMirGneINUEOL5f1eVZJLhTeeAd9y-5AW1AQ&oe=69C12B2A", [{"id": "120242328962660459", "name": "#098 - FOTM Tea Reviews - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Tea Reviews", "thumb": "https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/651510429_1461188195514420_677957219618382673_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=zgqQbSxWvssQ7kNvwEJBkIz&_nc_oc=AdoB4k-8CxIgnM5epIxByCxQoFfDLyCABYlqI7wxYSjDF7gw4RVsrKu5oSnlNM1qxyw&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGiLogqOZjXnlzpV6YLDk6Reamzs721OP7CXM1y-FmBs1eRpjWXv5KV9X6CqsjGa-zfWff1g4Jimw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx_tYgMqeiMirGneINUEOL5f1eVZJLhTeeAd9y-5AW1AQ&oe=69C12B2A", "spend": 0.04, "roas": 0, "revenue": 0, "purchases": 0, "distance": 2}])'>
+            <img src="https://scontent-lax7-1.xx.fbcdn.net/v/t45.1600-4/651510429_1461188195514420_677957219618382673_n.png?_nc_cat=101&ccb=1-7&_nc_ohc=zgqQbSxWvssQ7kNvwEJBkIz&_nc_oc=AdoB4k-8CxIgnM5epIxByCxQoFfDLyCABYlqI7wxYSjDF7gw4RVsrKu5oSnlNM1qxyw&_nc_zt=1&_nc_ht=scontent-lax7-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGiLogqOZjXnlzpV6YLDk6Reamzs721OP7CXM1y-FmBs1eRpjWXv5KV9X6CqsjGa-zfWff1g4Jimw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx_tYgMqeiMirGneINUEOL5f1eVZJLhTeeAd9y-5AW1AQ&oe=69C12B2A" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V1A.png">Teeccino March _FOTM Tea Reviews_ Image Task V1A.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_3" data-matched="matched" data-spend="0.04" data-roas="0.0" data-date="2026-03-16" data-name="v2.png" onclick='showModal("v2.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653688270_1461199648846608_7754551036540905637_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=pBF2Ms7VcR8Q7kNvwH30ueO&_nc_oc=AdqYzv5N-0f39S3DFOt5R6FVg1aVPpeb1ZXuEZyonSGCvLQ6EeveHuGp0xtLsO4XEAo&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEXWCrXWpNkZVr9utUbN1yJMBCZma7pdwIa0vfeuGy3A1lWXPefcxcDobeXVWNlMpm8wUsSGRvV6A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwvN8onRIjk1s1n1cM6QaEAXMAqjjksXu8Ueh7hI1i9nQ&oe=69C10BC0", [{"id": "120242330314790459", "name": "#0100 - FOTM Coffee Reviews - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | Retargeting Campaign", "adset": "US | Retargeting | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653688270_1461199648846608_7754551036540905637_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=pBF2Ms7VcR8Q7kNvwH30ueO&_nc_oc=AdqYzv5N-0f39S3DFOt5R6FVg1aVPpeb1ZXuEZyonSGCvLQ6EeveHuGp0xtLsO4XEAo&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEXWCrXWpNkZVr9utUbN1yJMBCZma7pdwIa0vfeuGy3A1lWXPefcxcDobeXVWNlMpm8wUsSGRvV6A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwvN8onRIjk1s1n1cM6QaEAXMAqjjksXu8Ueh7hI1i9nQ&oe=69C10BC0", "spend": 0.0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}, {"id": "120242330080200459", "name": "#0100 - FOTM Coffee Reviews - Image #02", "status": "ACTIVE", "campaign": "eH | CBO | COLD | Main Campaign", "adset": "US | M+F | 18-65 | FOTM Coffee Reviews", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653688270_1461199648846608_7754551036540905637_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=pBF2Ms7VcR8Q7kNvwH30ueO&_nc_oc=AdqYzv5N-0f39S3DFOt5R6FVg1aVPpeb1ZXuEZyonSGCvLQ6EeveHuGp0xtLsO4XEAo&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGGpxaujszlY8HN6BHiJv5ZDHTioImCVyr4VOKxWlZMeBet_oXOp4cSo8pEjSHnAeILZ54-kWFBTg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfzlftOeE1IDyo3GYWyXwtnVDZGeDr30ZeEKl6-fYoZXSg&oe=69C10BC0", "spend": 0.04, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653688270_1461199648846608_7754551036540905637_n.png?_nc_cat=108&ccb=1-7&_nc_ohc=pBF2Ms7VcR8Q7kNvwH30ueO&_nc_oc=AdqYzv5N-0f39S3DFOt5R6FVg1aVPpeb1ZXuEZyonSGCvLQ6EeveHuGp0xtLsO4XEAo&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEXWCrXWpNkZVr9utUbN1yJMBCZma7pdwIa0vfeuGy3A1lWXPefcxcDobeXVWNlMpm8wUsSGRvV6A&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfwvN8onRIjk1s1n1cM6QaEAXMAqjjksXu8Ueh7hI1i9nQ&oe=69C10BC0" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v2.png">v2.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">2</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2025-12-26" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2025-12-26" data-name="v1.png" onclick='showModal("V1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="V1.png">V1.png</div>
+                <div class="card-meta"><span>2025-12-26</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2025-12-26" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2025-12-26" data-name="v2.png" onclick='showModal("V2.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="V2.png">V2.png</div>
+                <div class="card-meta"><span>2025-12-26</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2025-12-26" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2025-12-26" data-name="v3.png" onclick='showModal("V3.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="V3.png">V3.png</div>
+                <div class="card-meta"><span>2025-12-26</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-06_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v4.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V4.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V4.png">Teeccino February _Dark Chocolate Popular_ V4.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-06_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v1-1.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V1-1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V1-1.png">Teeccino February _Dark Chocolate Popular_ V1-1.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-06_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v3-1.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V3-1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V3-1.png">Teeccino February _Dark Chocolate Popular_ V3-1.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-06_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-06" data-name="teeccino february _dark chocolate popular_ v4-1.png" onclick='showModal("Teeccino February _Dark Chocolate Popular_ V4-1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino February _Dark Chocolate Popular_ V4-1.png">Teeccino February _Dark Chocolate Popular_ V4-1.png</div>
+                <div class="card-meta"><span>2026-03-06_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_1" data-matched="matched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v1a-1.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V1A-1.png", "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653478116_1461186772181229_1642713765459450673_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QGSuab-wiuYQ7kNvwFLZVBv&_nc_oc=AdrsYHWzFy1Y55LdlLls29fV8h4Z7xTh5lACDqp_slgvmZsLIqH_z-fB5QpQUlVs0YA&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEpWDd3QFuwmD4gaffhIpyiBV7UzbwRnjmGwzyBIdbLhrTWr1Zcc5vAxpEvAP5IXO4OyAaL0SBVJw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyDh9c1xIjPDsMjhv26vld1t1NZX1dMbUfC8Lq6hez9vw&oe=69C11A07", [{"id": "120242328626060459", "name": "#098 - FOTM Tea Reviews - Image #01", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Tea Reviews", "thumb": "https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653478116_1461186772181229_1642713765459450673_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QGSuab-wiuYQ7kNvwFLZVBv&_nc_oc=AdrsYHWzFy1Y55LdlLls29fV8h4Z7xTh5lACDqp_slgvmZsLIqH_z-fB5QpQUlVs0YA&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEpWDd3QFuwmD4gaffhIpyiBV7UzbwRnjmGwzyBIdbLhrTWr1Zcc5vAxpEvAP5IXO4OyAaL0SBVJw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyDh9c1xIjPDsMjhv26vld1t1NZX1dMbUfC8Lq6hez9vw&oe=69C11A07", "spend": 0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-1.xx.fbcdn.net/v/t45.1600-4/653478116_1461186772181229_1642713765459450673_n.png?_nc_cat=104&ccb=1-7&_nc_ohc=QGSuab-wiuYQ7kNvwFLZVBv&_nc_oc=AdrsYHWzFy1Y55LdlLls29fV8h4Z7xTh5lACDqp_slgvmZsLIqH_z-fB5QpQUlVs0YA&_nc_zt=1&_nc_ht=scontent-lax3-1.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQEpWDd3QFuwmD4gaffhIpyiBV7UzbwRnjmGwzyBIdbLhrTWr1Zcc5vAxpEvAP5IXO4OyAaL0SBVJw&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_AfyDh9c1xIjPDsMjhv26vld1t1NZX1dMbUfC8Lq6hez9vw&oe=69C11A07" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V1A-1.png">Teeccino March _FOTM Tea Reviews_ Image Task V1A-1.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_1" data-matched="matched" data-spend="0.0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v2-2.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V2-2.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653459757_1461189675514272_8197087955920202358_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=hpb8xu3nkJUQ7kNvwEGzlAG&_nc_oc=AdortdFZJhrgYtvqOA-uOewgpMgO-lXIEZwwWZFS0LLgyv3gcLPQP0KAYJa9aSs7jO8&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGs7fmd0BNDr3bGKhcPMhtjdXKnMCmq5nAj7B7rohEZx-swcGFIIo-jam_Bk0mYKtLAHxdFIYgspg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx6KoFv0wmAQ_mx6NeC7D4CCPVBeXTWVIw6l4wNmSIT4A&oe=69C100D4", [{"id": "120242329341240459", "name": "#098 - FOTM Tea Reviews - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Tea Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653459757_1461189675514272_8197087955920202358_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=hpb8xu3nkJUQ7kNvwEGzlAG&_nc_oc=AdortdFZJhrgYtvqOA-uOewgpMgO-lXIEZwwWZFS0LLgyv3gcLPQP0KAYJa9aSs7jO8&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGs7fmd0BNDr3bGKhcPMhtjdXKnMCmq5nAj7B7rohEZx-swcGFIIo-jam_Bk0mYKtLAHxdFIYgspg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx6KoFv0wmAQ_mx6NeC7D4CCPVBeXTWVIw6l4wNmSIT4A&oe=69C100D4", "spend": 0.0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 0}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653459757_1461189675514272_8197087955920202358_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=hpb8xu3nkJUQ7kNvwEGzlAG&_nc_oc=AdortdFZJhrgYtvqOA-uOewgpMgO-lXIEZwwWZFS0LLgyv3gcLPQP0KAYJa9aSs7jO8&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGs7fmd0BNDr3bGKhcPMhtjdXKnMCmq5nAj7B7rohEZx-swcGFIIo-jam_Bk0mYKtLAHxdFIYgspg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx6KoFv0wmAQ_mx6NeC7D4CCPVBeXTWVIw6l4wNmSIT4A&oe=69C100D4" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V2-2.png">Teeccino March _FOTM Tea Reviews_ Image Task V2-2.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v2.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V2.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V2.png">Teeccino March _FOTM Tea Reviews_ Image Task V2.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v1a-2.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V1A-2.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V1A-2.png">Teeccino March _FOTM Tea Reviews_ Image Task V1A-2.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v1b.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V1B.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V1B.png">Teeccino March _FOTM Tea Reviews_ Image Task V1B.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_1" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v2-1.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V2-1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V2-1.png">Teeccino March _FOTM Tea Reviews_ Image Task V2-1.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card " data-folder="2026-03-16_1" data-matched="matched" data-spend="0.0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm tea reviews_ image task v2-3.png" onclick='showModal("Teeccino March _FOTM Tea Reviews_ Image Task V2-3.png", "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653459757_1461189675514272_8197087955920202358_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=hpb8xu3nkJUQ7kNvwEGzlAG&_nc_oc=AdortdFZJhrgYtvqOA-uOewgpMgO-lXIEZwwWZFS0LLgyv3gcLPQP0KAYJa9aSs7jO8&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGs7fmd0BNDr3bGKhcPMhtjdXKnMCmq5nAj7B7rohEZx-swcGFIIo-jam_Bk0mYKtLAHxdFIYgspg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx6KoFv0wmAQ_mx6NeC7D4CCPVBeXTWVIw6l4wNmSIT4A&oe=69C100D4", [{"id": "120242329341240459", "name": "#098 - FOTM Tea Reviews - Image #03", "status": "ACTIVE", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "adset": "US | M+F | 18-65 | FOTM Tea Reviews", "thumb": "https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653459757_1461189675514272_8197087955920202358_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=hpb8xu3nkJUQ7kNvwEGzlAG&_nc_oc=AdortdFZJhrgYtvqOA-uOewgpMgO-lXIEZwwWZFS0LLgyv3gcLPQP0KAYJa9aSs7jO8&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGs7fmd0BNDr3bGKhcPMhtjdXKnMCmq5nAj7B7rohEZx-swcGFIIo-jam_Bk0mYKtLAHxdFIYgspg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx6KoFv0wmAQ_mx6NeC7D4CCPVBeXTWVIw6l4wNmSIT4A&oe=69C100D4", "spend": 0.0, "roas": 0, "revenue": 0, "purchases": 0, "distance": 14}])'>
+            <img src="https://scontent-lax3-2.xx.fbcdn.net/v/t45.1600-4/653459757_1461189675514272_8197087955920202358_n.png?_nc_cat=106&ccb=1-7&_nc_ohc=hpb8xu3nkJUQ7kNvwEGzlAG&_nc_oc=AdortdFZJhrgYtvqOA-uOewgpMgO-lXIEZwwWZFS0LLgyv3gcLPQP0KAYJa9aSs7jO8&_nc_zt=1&_nc_ht=scontent-lax3-2.xx&edm=AOgd6ZUEAAAA&_nc_gid=ew-4SbK-m_t_MMheChMwYg&_nc_tpa=Q5bMBQGs7fmd0BNDr3bGKhcPMhtjdXKnMCmq5nAj7B7rohEZx-swcGFIIo-jam_Bk0mYKtLAHxdFIYgspg&stp=c0.5000x0.5000f_dst-emg0_p64x64_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Afx6KoFv0wmAQ_mx6NeC7D4CCPVBeXTWVIw6l4wNmSIT4A&oe=69C100D4" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Tea Reviews_ Image Task V2-3.png">Teeccino March _FOTM Tea Reviews_ Image Task V2-3.png</div>
+                <div class="card-meta"><span>2026-03-16_1</span><span class="badge badge-ok">Matched</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">1</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_2" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v1 coffee-1.png" onclick='showModal("Teeccino March _FOTM Wanted_ V1 Coffee-1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V1 Coffee-1.png">Teeccino March _FOTM Wanted_ V1 Coffee-1.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_2" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v1 coffee-2.png" onclick='showModal("Teeccino March _FOTM Wanted_ V1 Coffee-2.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V1 Coffee-2.png">Teeccino March _FOTM Wanted_ V1 Coffee-2.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_2" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-1.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-1.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-1.png">Teeccino March _FOTM Wanted_ V2 Coffee-1.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_2" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-2.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-2.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-2.png">Teeccino March _FOTM Wanted_ V2 Coffee-2.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_2" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-6.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-6.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-6.png">Teeccino March _FOTM Wanted_ V2 Coffee-6.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_2" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="teeccino march _fotm wanted_ v2 coffee-7.png" onclick='showModal("Teeccino March _FOTM Wanted_ V2 Coffee-7.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Teeccino March _FOTM Wanted_ V2 Coffee-7.png">Teeccino March _FOTM Wanted_ V2 Coffee-7.png</div>
+                <div class="card-meta"><span>2026-03-16_2</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_3" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="v1 9x16.png" onclick='showModal("v1 9x16.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v1 9x16.png">v1 9x16.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_3" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="v2 9x16.png" onclick='showModal("v2 9x16.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v2 9x16.png">v2 9x16.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_3" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="v3 9x16.png" onclick='showModal("v3 9x16.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v3 9x16.png">v3 9x16.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_3" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="v4 9x16.png" onclick='showModal("v4 9x16.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="v4 9x16.png">v4 9x16.png</div>
+                <div class="card-meta"><span>2026-03-16_3</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_4" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="coffee copy.png" onclick='showModal("Coffee copy.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Coffee copy.png">Coffee copy.png</div>
+                <div class="card-meta"><span>2026-03-16_4</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card unmatched" data-folder="2026-03-16_4" data-matched="unmatched" data-spend="0" data-roas="0" data-date="2026-03-16" data-name="tea copy.png" onclick='showModal("Tea copy.png", "", [])'>
+            <img src="" alt="" onerror="this.style.display='none'">
+            <div class="card-body">
+                <div class="card-title" title="Tea copy.png">Tea copy.png</div>
+                <div class="card-meta"><span>2026-03-16_4</span><span class="badge badge-no">No Match</span></div>
+                <div class="card-stats">
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Spend</div></div>
+                    <div class="card-stat"><div class="v">-</div><div class="l">ROAS</div></div>
+                    <div class="card-stat"><div class="v">$0</div><div class="l">Revenue</div></div>
+                    <div class="card-stat"><div class="v">0</div><div class="l">Ads</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+        <div class="modal-box">
+            <div class="modal-head"><h2 id="mTitle"></h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+            <div class="modal-body">
+                <img class="modal-img" id="mImg" src="">
+                <h3 style="margin-bottom:15px;color:#94a3b8">Ads Using This Creative</h3>
+                <table><thead><tr><th>Ad Name</th><th>Campaign</th><th>Status</th><th>Spend</th><th>Revenue</th><th>ROAS</th></tr></thead><tbody id="mTable"></tbody></table>
+            </div>
+        </div>
+    </div>
+    <script>
+        function filter() {
+            const folder = document.getElementById('fFolder').value;
+            const status = document.getElementById('fStatus').value;
+            const search = document.getElementById('fSearch').value.toLowerCase();
+            document.querySelectorAll('.card').forEach(c => {
+                const ok = (!folder || c.dataset.folder === folder) && (!status || c.dataset.matched === status) && (!search || c.dataset.name.includes(search));
+                c.style.display = ok ? 'block' : 'none';
+            });
+        }
+        function sort() {
+            const by = document.getElementById('fSort').value;
+            const grid = document.getElementById('grid');
+            const cards = Array.from(grid.children);
+            cards.sort((a, b) => by === 'date' ? b.dataset.date.localeCompare(a.dataset.date) : parseFloat(b.dataset[by]) - parseFloat(a.dataset[by]));
+            cards.forEach(c => grid.appendChild(c));
+        }
+        function showModal(name, thumb, ads) {
+            document.getElementById('mTitle').textContent = name;
+            document.getElementById('mImg').src = thumb;
+            const tb = document.getElementById('mTable');
+            tb.innerHTML = ads.length ? ads.map(a => `<tr><td>${a.name}</td><td>${a.campaign}</td><td class="${a.status==='ACTIVE'?'st-active':'st-paused'}">${a.status}</td><td>$${a.spend.toLocaleString()}</td><td>$${a.revenue.toLocaleString()}</td><td>${a.roas?a.roas.toFixed(2):'-'}</td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#64748b">No matching ads</td></tr>';
+            document.getElementById('modal').classList.add('active');
+        }
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+        document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+    </script>
+</body>
+</html>
