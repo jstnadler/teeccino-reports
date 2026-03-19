@@ -94,8 +94,8 @@
         .progress-header .pct { font-size: 1.4em; font-weight: 700; white-space: nowrap; }
         
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -107,7 +107,16 @@
             padding: 25px;
             border: 1px solid rgba(255,255,255,0.1);
             cursor: grab;
+            flex: 1 1 280px;
+            min-width: 280px;
+            max-width: calc(33.333% - 14px);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        @media (max-width: 960px) {
+            .card { max-width: calc(50% - 10px); }
+        }
+        @media (max-width: 640px) {
+            .card { max-width: 100%; }
         }
         .card:active { cursor: grabbing; }
         .card.sortable-ghost {
@@ -122,15 +131,6 @@
         }
         .card.sortable-drag {
             opacity: 1 !important;
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .dashboard-grid > .card {
-            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.3s ease;
         }
         .card h3 {
             font-size: 0.85em;
@@ -366,7 +366,7 @@
     <div class="container">
         <header>
             <h1>📊 Teeccino MTD KPI</h1>
-            <p>March 2026 • Updated Mar 19, 11:32 AM</p>
+            <p>March 2026 • Updated Mar 19, 11:35 AM</p>
         </header>
         
         <!-- Month Progress Bar -->
@@ -512,7 +512,7 @@
                 <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
             </div>
             <div class="ad-metrics">
-                <span class="spend">$5,004</span>
+                <span class="spend">$5,005</span>
                 <span class="roas bad">0.70x</span>
             </div>
         </div>
@@ -548,7 +548,7 @@
                 <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
             </div>
             <div class="ad-metrics">
-                <span class="spend">$533</span>
+                <span class="spend">$534</span>
                 <span class="roas ok">1.24x</span>
             </div>
         </div>
@@ -561,7 +561,7 @@
             </div>
             <div class="ad-metrics">
                 <span class="spend">$361</span>
-                <span class="roas good">5.47x</span>
+                <span class="roas good">5.66x</span>
             </div>
         </div>
         <div class="ad-card" onclick="openAdModal(5)" style="cursor:pointer;">
@@ -618,7 +618,7 @@
     </div>
     
     <script>
-        const adData = [{"img": "images/120241448664080459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$5,004", "roas": "0.70x", "revenue": "$3,489", "purchases": 136, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448911110459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$908", "roas": "0.64x", "revenue": "$585", "purchases": 26, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448268580459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$708", "roas": "0.94x", "revenue": "$664", "purchases": 18, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444573400459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$533", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444806880459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$361", "roas": "5.47x", "revenue": "$1,976", "purchases": 43, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241447985220459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}];
+        const adData = [{"img": "images/120241448664080459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$5,005", "roas": "0.70x", "revenue": "$3,489", "purchases": 136, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448911110459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$908", "roas": "0.64x", "revenue": "$585", "purchases": 26, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448268580459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$708", "roas": "0.94x", "revenue": "$664", "purchases": 18, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444573400459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$534", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444806880459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$361", "roas": "5.66x", "revenue": "$2,043", "purchases": 44, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241447985220459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}];
         
         function openAdModal(idx) {
             const ad = adData[idx];
