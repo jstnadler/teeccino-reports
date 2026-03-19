@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teeccino KPI - January 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -75,8 +76,8 @@
         }
         
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -87,6 +88,29 @@
             border-radius: 16px;
             padding: 25px;
             border: 1px solid rgba(255,255,255,0.1);
+            cursor: grab;
+            flex: 1 1 280px;
+            min-width: 280px;
+            max-width: calc(33.333% - 14px);
+        }
+        @media (max-width: 960px) {
+            .card { max-width: calc(50% - 10px); }
+        }
+        @media (max-width: 640px) {
+            .card { max-width: 100%; }
+        }
+        .card:active { cursor: grabbing; }
+        .card.sortable-ghost {
+            opacity: 0.4;
+            background: rgba(0,184,148,0.3) !important;
+        }
+        .card.sortable-chosen {
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .card.sortable-fallback {
+            opacity: 1 !important;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
         }
         .card h3 {
             font-size: 0.85em;
@@ -304,71 +328,71 @@
             <div class="completed-badge">✓ Month Complete</div>
         </header>
         
-        <div class="dashboard-grid">
-            <div class="card">
+        <div class="dashboard-grid" id="kpiGrid">
+            <div class="card" data-card-id="dtc-gross">
                 <h3>DTC Gross Sales</h3>
                 <div class="big-number">$199,296</div>
                 <span style="background:#00b89422;color:#00b894;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 12.3%</span>
                 <div class="subtitle">LY: $177,491</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="orders">
                 <h3>Total Orders</h3>
                 <div class="big-number">4,008</div>
                 <span style="background:#00b89422;color:#00b894;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 18.0%</span>
                 <div class="subtitle">LY: 3,398 • 1,637 new • 1,265 subs</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="discounts">
                 <h3>DTC Discounts</h3>
                 <div class="big-number">$24,823</div>
                 <span style="background:#e74c3c22;color:#e74c3c;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 31.8%</span>
                 <div class="subtitle">LY: $18,835 • 12.5% of gross</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="adspend">
                 <h3>Ad Spend</h3>
                 <div class="big-number">$40,287</div>
                 <span style="background:#e74c3c22;color:#e74c3c;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 61.6%</span>
                 <div class="subtitle">LY: $24,925 • Budget: $40,000</div>
             </div>
             
-            <div class="card mer-card">
+            <div class="card mer-card" data-card-id="mer">
                 <h3>Overall MER</h3>
                 <div class="big-number">4.43x</div>
                 <span style="background:#e74c3c22;color:#e74c3c;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↓ 34.5%</span>
                 <div class="subtitle">LY: 6.76x</div>
             </div>
             
-            <div class="card" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+            <div class="card" data-card-id="nc-mer" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
                 <h3>NC MER (New Customer)</h3>
                 <div class="big-number">🔴 1.47x</div>
                 <span style="background:#e74c3c22;color:#e74c3c;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↓ 33.0%</span>
                 <div class="subtitle">LY: 2.20x • Target: 2.25x</div>
             </div>
             
-            <div class="card" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+            <div class="card" data-card-id="nc-gross" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
                 <h3>NC Gross Sales</h3>
                 <div class="big-number">$104,282</div>
                 <span style="background:#00b89422;color:#00b894;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 16.7%</span>
                 <div class="subtitle">LY: $89,374</div>
             </div>
             
-            <div class="card" style="background: linear-gradient(135deg, #e17055 0%, #d63031 100%);">
+            <div class="card" data-card-id="rc-gross" style="background: linear-gradient(135deg, #e17055 0%, #d63031 100%);">
                 <h3>RC Gross Sales</h3>
                 <div class="big-number">🔴 $109,929</div>
                 <span style="background:#00b89422;color:#00b894;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 8.8%</span>
                 <div class="subtitle">LY: $101,069 • Target: 20% YoY growth</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="shopify-costs">
                 <h3>Shopify Costs</h3>
                 <div class="big-number">$4,119</div>
                 <span style="background:#00b89422;color:#00b894;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↓ 33.0%</span>
                 <div class="subtitle">LY: $6,150 • Apps: $1,917 • Shipping: $0</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="cc-costs">
                 <h3>CC Other Costs</h3>
                 <div class="big-number">$15,133</div>
                 <span style="background:#e74c3c22;color:#e74c3c;padding:2px 8px;border-radius:12px;font-size:0.8em;margin-left:8px;">↑ 15.1%</span>
@@ -539,6 +563,49 @@
         
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeAdModal();
+        });
+        
+        // Drag and drop for KPI cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.getElementById('kpiGrid');
+            if (grid) {
+                // Restore saved order (use month-specific key)
+                const storageKey = 'kpiCardOrder_2026_01';
+                const savedOrder = localStorage.getItem(storageKey);
+                if (savedOrder) {
+                    try {
+                        const order = JSON.parse(savedOrder);
+                        const cards = Array.from(grid.children);
+                        const cardMap = {};
+                        cards.forEach(card => {
+                            cardMap[card.dataset.cardId] = card;
+                        });
+                        order.forEach(id => {
+                            if (cardMap[id]) {
+                                grid.appendChild(cardMap[id]);
+                            }
+                        });
+                    } catch(e) {}
+                }
+                
+                // Initialize Sortable
+                new Sortable(grid, {
+                    animation: 400,
+                    easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    forceFallback: true,
+                    fallbackClass: 'sortable-fallback',
+                    fallbackOnBody: true,
+                    swapThreshold: 0.65,
+                    onEnd: function() {
+                        // Save new order
+                        const cards = Array.from(grid.children);
+                        const order = cards.map(c => c.dataset.cardId);
+                        localStorage.setItem(storageKey, JSON.stringify(order));
+                    }
+                });
+            }
         });
     </script>
 </body>
