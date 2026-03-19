@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teeccino MTD KPI</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -105,6 +106,20 @@
             border-radius: 16px;
             padding: 25px;
             border: 1px solid rgba(255,255,255,0.1);
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:active { cursor: grabbing; }
+        .card.sortable-ghost {
+            opacity: 0.4;
+            background: rgba(0,184,148,0.3);
+        }
+        .card.sortable-chosen {
+            transform: scale(1.02);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .card.sortable-drag {
+            opacity: 1 !important;
         }
         .card h3 {
             font-size: 0.85em;
@@ -340,7 +355,7 @@
     <div class="container">
         <header>
             <h1>📊 Teeccino MTD KPI</h1>
-            <p>March 2026 • Updated Mar 19, 11:19 AM</p>
+            <p>March 2026 • Updated Mar 19, 11:29 AM</p>
         </header>
         
         <!-- Month Progress Bar -->
@@ -355,8 +370,8 @@
             <span class="label">(18 of 31 days)</span>
         </div>
         
-        <div class="dashboard-grid">
-            <div class="card">
+        <div class="dashboard-grid" id="kpiGrid">
+            <div class="card" data-card-id="dtc-gross">
                 <h3>DTC Gross Sales</h3>
                 <div class="big-number">$112,809</div>
                 <span style="background: #e74c3c22; color: #e74c3c; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 44.9% YoY</span>
@@ -377,21 +392,21 @@
                 </div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="orders">
                 <h3>Total Orders</h3>
                 <div class="big-number">2,313</div>
                 <span style="background: #e74c3c22; color: #e74c3c; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 39.6% YoY</span>
                 <div class="subtitle">LY Full: 3,827 • 879 new • 796 subs</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="discounts">
                 <h3>DTC Discounts</h3>
                 <div class="big-number">$14,466</div>
                 <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 51.2% YoY</span>
                 <div class="subtitle">LY Full: $29,662 • 12.8% of gross</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="adspend">
                 <h3>Ad Spend</h3>
                 <div class="big-number">$14,523</div>
                 <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 64.8% YoY</span>
@@ -412,21 +427,21 @@
                 </div>
             </div>
             
-            <div class="card mer-card">
+            <div class="card mer-card" data-card-id="mer">
                 <h3>Overall MER</h3>
                 <div class="big-number">7.26x</div>
                 <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↑ 61.5% YoY</span>
                 <div class="subtitle">LY Full: 4.49x</div>
             </div>
             
-            <div class="card" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+            <div class="card" data-card-id="nc-mer" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
                 <h3>NC MER (New Customer)</h3>
                 <div class="big-number">🟢 2.32x</div>
                 <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↑ 50.7% YoY</span>
                 <div class="subtitle">LY Full: 1.54x • Target: 2.25x</div>
             </div>
             
-            <div class="card" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
+            <div class="card" data-card-id="nc-gross" style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);">
                 <h3>NC Gross Sales</h3>
                 <div class="big-number">🟢 $56,710</div>
                 <span style="background: #e74c3c22; color: #e74c3c; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 48.1% YoY</span>
@@ -443,7 +458,7 @@
                 </div>
             </div>
             
-            <div class="card" style="background: linear-gradient(135deg, #e17055 0%, #d63031 100%);">
+            <div class="card" data-card-id="rc-gross" style="background: linear-gradient(135deg, #e17055 0%, #d63031 100%);">
                 <h3>RC Gross Sales</h3>
                 <div class="big-number">🔴 $64,080</div>
                 <span style="background: #e74c3c22; color: #e74c3c; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 46.2% YoY</span>
@@ -460,14 +475,14 @@
                 </div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="shopify-costs">
                 <h3>Shopify Costs</h3>
                 <div class="big-number">$0</div>
                 <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 100.0% YoY</span>
                 <div class="subtitle">LY Full: $6,066 • Apps: $0 • Shipping: $0</div>
             </div>
             
-            <div class="card">
+            <div class="card" data-card-id="cc-costs">
                 <h3>CC Other Costs</h3>
                 <div class="big-number">$3,702</div>
                 <span style="background: #00b89422; color: #00b894; padding: 3px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">↓ 63.0% YoY</span>
@@ -486,7 +501,7 @@
                 <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
             </div>
             <div class="ad-metrics">
-                <span class="spend">$5,001</span>
+                <span class="spend">$5,003</span>
                 <span class="roas bad">0.70x</span>
             </div>
         </div>
@@ -592,7 +607,7 @@
     </div>
     
     <script>
-        const adData = [{"img": "images/120241448664080459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$5,001", "roas": "0.70x", "revenue": "$3,489", "purchases": 136, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448911110459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$908", "roas": "0.64x", "revenue": "$585", "purchases": 26, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448268580459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$708", "roas": "0.94x", "revenue": "$664", "purchases": 18, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444573400459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$533", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444806880459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$361", "roas": "5.47x", "revenue": "$1,976", "purchases": 43, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241447985220459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}];
+        const adData = [{"img": "images/120241448664080459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #02", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$5,003", "roas": "0.70x", "revenue": "$3,489", "purchases": 136, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448911110459.jpg", "video": null, "name": "#092 -  Dark Chocolate Taste - Image #04", "campaign": "eH | CBO | COLD | TOF Herbal Tea", "spend": "$908", "roas": "0.64x", "revenue": "$585", "purchases": 26, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241448268580459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #04", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$708", "roas": "0.94x", "revenue": "$664", "purchases": 18, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444573400459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$533", "roas": "1.24x", "revenue": "$660", "purchases": 23, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241444806880459.jpg", "video": null, "name": "#091 -  Dark Chocolate Toxins - Image #03", "campaign": "eH | CBO | Retargeting Campaign", "spend": "$361", "roas": "5.47x", "revenue": "$1,976", "purchases": 43, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}, {"img": "images/120241447985220459.jpg", "video": null, "name": "#092 - Dark Chocolate Tas - Image #03", "campaign": "eH | CBO | COLD | Main Campaign", "spend": "$342", "roas": "0.87x", "revenue": "$298", "purchases": 12, "caption": "Craving something sweet? Satisfy your sweet tooth without sugar or guilt.<br><br>Brewed or steeped, Dark Chocolate is a treat you\u2019ll love. A rich indulgence you can enjoy day or night.<br><br>\u2705 No caffeine<br>\u2705 No sugar<br>\u2705 No fat<br>\u2705 No acid<br>\u2705 Low calories<br><br>Order today and discover your new favorite treat."}];
         
         function openAdModal(idx) {
             const ad = adData[idx];
@@ -634,6 +649,44 @@
         
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeAdModal();
+        });
+        
+        // Drag and drop for KPI cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.getElementById('kpiGrid');
+            if (grid) {
+                // Restore saved order
+                const savedOrder = localStorage.getItem('kpiCardOrder');
+                if (savedOrder) {
+                    try {
+                        const order = JSON.parse(savedOrder);
+                        const cards = Array.from(grid.children);
+                        const cardMap = {};
+                        cards.forEach(card => {
+                            cardMap[card.dataset.cardId] = card;
+                        });
+                        order.forEach(id => {
+                            if (cardMap[id]) {
+                                grid.appendChild(cardMap[id]);
+                            }
+                        });
+                    } catch(e) {}
+                }
+                
+                // Initialize Sortable
+                new Sortable(grid, {
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    onEnd: function() {
+                        // Save new order
+                        const cards = Array.from(grid.children);
+                        const order = cards.map(c => c.dataset.cardId);
+                        localStorage.setItem('kpiCardOrder', JSON.stringify(order));
+                    }
+                });
+            }
         });
     </script>
 </body>
