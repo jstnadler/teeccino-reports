@@ -3,204 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teeccino Reports</title>
+    <title>Teeccino Meta Ads Reports</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            padding-top: 70px;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 40px 20px;
         }
-        
-        /* Sticky Nav */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .top-nav .logo {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-        }
-        .top-nav .logo:hover { opacity: 0.8; }
-        .top-nav .nav-links {
-            display: flex;
-            gap: 5px;
-        }
-        .top-nav .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 16px;
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .report-list { list-style: none; }
+        .report-list li { 
+            background: white;
+            margin-bottom: 10px;
             border-radius: 8px;
-            font-size: 0.9em;
-            opacity: 0.7;
-            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .top-nav .nav-links a:hover {
-            opacity: 1;
-            background: rgba(255,255,255,0.1);
-        }
-        .top-nav .nav-links a.active {
-            opacity: 1;
-            background: rgba(255,255,255,0.15);
-        }
-        
-        .container {
-            max-width: 900px;
-            width: 100%;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00b894, #00cec9, #667eea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        header p {
-            font-size: 1.2em;
-            opacity: 0.7;
-        }
-        
-        .nav-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-        }
-        
-        .nav-card {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 35px;
-            text-align: center;
-            text-decoration: none;
-            color: #fff;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+        .report-list a {
             display: block;
+            padding: 20px;
+            color: #1877f2;
+            text-decoration: none;
+            font-weight: 500;
         }
-        .nav-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.15);
-        }
-        
-        .nav-card .icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-        .nav-card h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-        .nav-card p {
-            opacity: 0.7;
-            font-size: 0.95em;
-            line-height: 1.5;
-        }
-        
-        .nav-card.mtd {
-            background: linear-gradient(135deg, rgba(0,184,148,0.3) 0%, rgba(0,206,201,0.3) 100%);
-        }
-        .nav-card.mtd:hover {
-            background: linear-gradient(135deg, rgba(0,184,148,0.5) 0%, rgba(0,206,201,0.5) 100%);
-        }
-        
-        .nav-card.weekly {
-            background: linear-gradient(135deg, rgba(102,126,234,0.3) 0%, rgba(118,75,162,0.3) 100%);
-        }
-        .nav-card.weekly:hover {
-            background: linear-gradient(135deg, rgba(102,126,234,0.5) 0%, rgba(118,75,162,0.5) 100%);
-        }
-        
-        .nav-card.monthly {
-            background: linear-gradient(135deg, rgba(253,203,110,0.3) 0%, rgba(243,156,18,0.3) 100%);
-        }
-        .nav-card.monthly:hover {
-            background: linear-gradient(135deg, rgba(253,203,110,0.5) 0%, rgba(243,156,18,0.5) 100%);
-        }
-        
-        .nav-card.creatives {
-            background: linear-gradient(135deg, rgba(232,67,147,0.3) 0%, rgba(253,121,168,0.3) 100%);
-        }
-        .nav-card.creatives:hover {
-            background: linear-gradient(135deg, rgba(232,67,147,0.5) 0%, rgba(253,121,168,0.5) 100%);
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            opacity: 0.5;
-            font-size: 0.9em;
-        }
+        .report-list a:hover { background: #f8f9fa; }
+        .report-list .date { color: #333; }
+        .report-list .arrow { float: right; color: #ccc; }
     </style>
 </head>
 <body>
-    <nav class="top-nav">
-        <a href="index.html" class="logo">☕ Teeccino Reports</a>
-        <div class="nav-links">
-            <a href="weekly.html">📈 Weekly</a>
-            <a href="kpi.html">📅 Monthly</a>
-            <a href="creatives.html">🎨 Creatives</a>
-        </div>
-    </nav>
     <div class="container">
-        <header>
-            <h1>☕ Teeccino Reports</h1>
-            <p>Marketing Analytics Dashboard</p>
-        </header>
+        <h1>📊 Teeccino Meta Ads Reports</h1>
+        <p class="subtitle">Weekly performance reports with top ads by spend</p>
         
-        <div class="nav-grid">
-            <a href="mtd.html" class="nav-card mtd">
-                <div class="icon">📊</div>
-                <h2>MTD Dashboard</h2>
-                <p>Current month-to-date metrics, ad performance, and pacing vs forecast</p>
-            </a>
-            
-            <a href="weekly.html" class="nav-card weekly">
-                <div class="icon">📈</div>
-                <h2>Weekly Reports</h2>
-                <p>Detailed weekly Meta & Google Ads performance breakdowns</p>
-            </a>
-            
-            <a href="kpi.html" class="nav-card monthly">
-                <div class="icon">📅</div>
-                <h2>Monthly KPIs</h2>
-                <p>Historical monthly KPI snapshots with YoY comparisons</p>
-            </a>
-            
-            <a href="creatives.html" class="nav-card creatives">
-                <div class="icon">🎨</div>
-                <h2>Creative Library</h2>
-                <p>ECH ad creatives matched to Meta campaign performance</p>
-            </a>
-        </div>
-        
-        <footer>
-            Generated by Crowley 🐍 • Data from Monthly Matrices, Meta, Google
-        </footer>
+        <ul class="report-list">
+
+            <li>
+                <a href="reports/2026-03-16/">
+                    <span class="date">Week of March 16, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-03-11/">
+                    <span class="date">Week of March 11, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-03-04/">
+                    <span class="date">Week of March 04, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-02-25/">
+                    <span class="date">Week of February 25, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="reports/2026-02-18/">
+                    <span class="date">Week of February 18, 2026</span>
+                    <span class="arrow">&rarr;</span>
+                </a>
+            </li>
+
+        </ul>
     </div>
 </body>
 </html>
