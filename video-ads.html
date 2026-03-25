@@ -3,100 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Ads - Teeccino</title>
+    <title>Video Ad Creatives - Teeccino</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #f8fafc; }
-        .nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
-        .nav a { color: #60a5fa; text-decoration: none; padding: 8px 16px; border: 1px solid #334155; border-radius: 6px; }
-        .nav a:hover { background: #1e293b; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat { background: #1e293b; padding: 20px; border-radius: 12px; text-align: center; }
-        .stat .val { font-size: 1.8rem; font-weight: bold; color: #f8fafc; }
-        .stat .lbl { color: #94a3b8; font-size: 14px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; }
-        .card { background: #1e293b; border-radius: 12px; overflow: hidden; }
-        .card video { width: 100%; height: auto; background: #334155; }
-        .card-body { padding: 15px; }
-        .card-title { font-weight: 600; font-size: 16px; margin-bottom: 8px; color: #f8fafc; }
-        .card-meta { font-size: 13px; color: #94a3b8; margin-bottom: 10px; }
-        .card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .card-stat { background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; }
-        .card-stat .v { font-weight: 600; font-size: 18px; color: #22c55e; }
-        .card-stat .l { font-size: 11px; color: #64748b; margin-top: 4px; }
-        .top-performer { border: 2px solid #22c55e; }
-        .top-performer::before { content: '🏆 TOP PERFORMER'; display: block; background: #22c55e; color: #000; text-align: center; font-size: 12px; font-weight: 600; padding: 4px; }
+        :root {
+            --primary: #8B4513;
+            --secondary: #D2691E;
+            --bg: #FDF5E6;
+            --card-bg: #FFFFFF;
+            --text: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .nav-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .video-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .video-container {
+            position: relative;
+            background: #000;
+        }
+        
+        .video-container video {
+            width: 100%;
+            display: block;
+        }
+        
+        .video-info {
+            padding: 20px;
+        }
+        
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .video-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .meta-item strong {
+            color: var(--secondary);
+        }
+        
+        .spend-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .stats {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stats h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        
+        .stat-item {
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🎬 Video Ads Library</h1>
-        <p style="color:#94a3b8">Top performing video ads from Meta • Last 30 days</p>
+        <h1>🎬 Video Ad Creatives</h1>
+        <p class="subtitle">Meta Ads video library sorted by spend</p>
+        <a href="index.html" class="nav-link">← Back to Reports</a>
     </div>
-    <nav class="nav">
-        <a href="index.html">← Home</a>
-        <a href="creatives.html">Creative Library</a>
-        <a href="mtd.html">MTD Dashboard</a>
-    </nav>
+    
     <div class="stats">
-        <div class="stat"><div class="val">3</div><div class="lbl">Videos</div></div>
-        <div class="stat"><div class="val">$2,969</div><div class="lbl">Total Spend</div></div>
-        <div class="stat"><div class="val">145K</div><div class="lbl">Impressions</div></div>
+        <h2>📊 Summary</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">7</div>
+                <div class="stat-label">Video Ads</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">$3,383</div>
+                <div class="stat-label">Total Spend</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">$483</div>
+                <div class="stat-label">Avg Spend</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">Mar 2026</div>
+                <div class="stat-label">Last Updated</div>
+            </div>
+        </div>
     </div>
-    <div class="grid">
-        <!-- #060 - Insense - Video #4 - TOP PERFORMER -->
-        <div class="card top-performer">
-            <video controls preload="metadata" poster="">
-                <source src="creatives/videos/060_insense_video4.mp4" type="video/mp4">
-            </video>
-            <div class="card-body">
-                <div class="card-title">#060 - Insense - Video #4</div>
-                <div class="card-meta">Top spending video ad in last 30 days</div>
-                <div class="card-stats">
-                    <div class="card-stat"><div class="v">$2,022</div><div class="l">Spend</div></div>
-                    <div class="card-stat"><div class="v">92K</div><div class="l">Impressions</div></div>
-                    <div class="card-stat"><div class="v">1,929</div><div class="l">Clicks</div></div>
+    
+    <div class="video-grid">
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/060_insense_video4.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#060 - Insense - Video #4</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$2,022 spend</span>
+                    <span class="meta-item"><strong>92K</strong> impressions</span>
+                    <span class="meta-item"><strong>1.9K</strong> clicks</span>
                 </div>
             </div>
         </div>
         
-        <!-- #077 - Dandelion - Video #1 -->
-        <div class="card">
-            <video controls preload="metadata">
-                <source src="creatives/videos/077_dandelion_video1.mp4" type="video/mp4">
-            </video>
-            <div class="card-body">
-                <div class="card-title">#077 - Dandelion - Video #1</div>
-                <div class="card-meta">Dandelion collection focus</div>
-                <div class="card-stats">
-                    <div class="card-stat"><div class="v">$549</div><div class="l">Spend</div></div>
-                    <div class="card-stat"><div class="v">36K</div><div class="l">Impressions</div></div>
-                    <div class="card-stat"><div class="v">483</div><div class="l">Clicks</div></div>
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/077_dandelion_video1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#077 - Dandelion - Video #1</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$549 spend</span>
+                    <span class="meta-item"><strong>36K</strong> impressions</span>
+                    <span class="meta-item"><strong>483</strong> clicks</span>
                 </div>
             </div>
         </div>
         
-        <!-- #086 - PT - bluedotliving - Video #1 -->
-        <div class="card">
-            <video controls preload="metadata">
-                <source src="creatives/videos/086_bluedotliving_video1.mp4" type="video/mp4">
-            </video>
-            <div class="card-body">
-                <div class="card-title">#086 - PT - bluedotliving - Video #1</div>
-                <div class="card-meta">UGC partner content (Bluedot Living)</div>
-                <div class="card-stats">
-                    <div class="card-stat"><div class="v">$398</div><div class="l">Spend</div></div>
-                    <div class="card-stat"><div class="v">48K</div><div class="l">Impressions</div></div>
-                    <div class="card-stat"><div class="v">589</div><div class="l">Clicks</div></div>
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/086_bluedotliving_video1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#086 - PT - bluedotliving - Video #1</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$398 spend</span>
+                    <span class="meta-item"><strong>48K</strong> impressions</span>
+                    <span class="meta-item"><strong>589</strong> clicks</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/086_igpost_video3.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#086 - IG Post - Video #3</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$138 spend</span>
+                    <span class="meta-item"><strong>20K</strong> impressions</span>
+                    <span class="meta-item"><strong>338</strong> clicks</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/087_insense_video02.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#087 - Insense Videos - Video #02</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$93 spend</span>
+                    <span class="meta-item"><strong>8K</strong> impressions</span>
+                    <span class="meta-item"><strong>264</strong> clicks</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/0086_jessiekrasner_video1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#0086 - jessiekrasner - Video #1</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$81 spend</span>
+                    <span class="meta-item"><strong>5K</strong> impressions</span>
+                    <span class="meta-item"><strong>45</strong> clicks</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-card">
+            <div class="video-container">
+                <video controls preload="metadata">
+                    <source src="creatives/videos/089_routine_video02.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="video-info">
+                <div class="video-title">#089 - Routine Videos - Video #02</div>
+                <div class="video-meta">
+                    <span class="spend-badge">$63 spend</span>
+                    <span class="meta-item"><strong>7K</strong> impressions</span>
+                    <span class="meta-item"><strong>51</strong> clicks</span>
                 </div>
             </div>
         </div>
     </div>
     
-    <div style="text-align:center; margin-top:40px; color:#64748b; font-size:13px;">
-        Videos downloaded directly from Meta Ads Manager • Updated March 25, 2026
+    <div style="text-align: center; margin-top: 40px; padding: 20px; color: #666;">
+        <p>Videos downloaded from Meta Ads Manager • Last 30 days data</p>
+        <p>Focus: Ads with $50+ spend • Sorted by spend descending</p>
     </div>
 </body>
 </html>
