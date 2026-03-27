@@ -115,7 +115,7 @@
 <body>
     <div class="container">
         <h1>🔧 Teeccino Automations Dashboard</h1>
-        <div class="timestamp">Last updated: 2026-03-27 14:18:51 PST</div>
+        <div class="timestamp">Last updated: 2026-03-27 14:20:49 PST</div>
         
         <div class="note">
             <strong>Note on Links:</strong> For security reasons, web browsers block local file links (<code>file:///C:/...</code>) when viewing this page online. To click these links, open this dashboard directly from your hard drive at <code>C:\Users\JustinAdler\dev\repos\teeccino-reports\status.html</code>.
@@ -127,13 +127,46 @@
             <div class="script-block">
                 <div class="script-header">
                     <div>
+                        <div class="script-name">📜 0. Monthly Price List Generator (manual)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/generate_monthly_price_reference.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\generate_monthly_price_reference.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    <strong>HOW PRICE LISTS ARE BUILT:</strong><br/>1. Fetches ALL orders for a given month from Shopify GraphQL.<br/>2. <strong>Excludes</strong> subscription orders and wholesale orders — only uses one-time DTC purchases.<br/>3. For each SKU, collects every <code>originalUnitPrice</code> observed across all qualifying orders.<br/>4. Calculates the reference price as the <strong>mode</strong> (most common price). Falls back to <strong>median</strong> if no clear mode.<br/>5. Saves as <code>PriceList/Monthly/prices_YYYY-MM.json</code> — one file per month.<br/><br/><strong>Why mode?</strong> During promos, some orders have discounted prices. The mode captures the 'normal' retail price since most orders in any given month are non-promo.<br/><br/><strong>Coverage:</strong> Jan 2024 → Feb 2026 (26 months). Also has 'derived' folder with extended price observations.<br/><br/><strong>⚠️ Not automated daily.</strong> Run manually when new months need prices or when price changes happen.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Shopify GraphQL API (historical order line items)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Monthly Price JSONs</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/PriceList/Monthly" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\PriceList\Monthly</a></td>
+                            <td class="success">2026-03-03 23:58</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
                         <div class="script-name">📜 1. Daily Shopify Orders Fetch (6:00 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_shopify_orders.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_shopify_orders.py</a>
                     </div>
                     <div class="status-badge error">ISSUE / STALE</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
-                    Queries Shopify GraphQL for all orders created yesterday. Filters to PAID/PARTIALLY_REFUNDED only. Separates DTC vs Wholesale (Walmart/Target/Faire by tag).<br/><br/><strong>Per-Order Fields:</strong> Financial Status, Current Total Price (Net), Total Discounts, Total Shipping (customer-paid), Subtotal, Order Tags, Customer Order Index (1st order = New).<br/><strong>Per-Line-Item Fields:</strong> SKU, Quantity, Original Unit Price, Discount Allocations (type: automatic/code/manual).<br/><br/><strong>Calculated Columns (not from Shopify):</strong><br/>• <code>dtc_gross</code> = Units × Monthly Price List (True Gross at retail)<br/>• <code>dtc_subscription_discounts</code> = Implied from comparing unit price vs price list on subscription orders<br/>• <code>dtc_automatic_discounts</code>, <code>dtc_code_discounts</code>, <code>dtc_manual_discounts</code> = Parsed from discount_allocations<br/>• <code>dtc_shipping_discounts</code> = Total Discounts minus all other discount types<br/>• <code>dtc_free_item_value/count/cogs</code> = Items where originalUnitPrice = $0<br/>• <code>dtc_refund_value/units/cogs</code> = Refunds processed on that date (separate REST API call)<br/><br/><strong>CSV has 67 columns per day.</strong> This is the foundation for ALL downstream reports.
+                    Queries Shopify GraphQL for all orders created yesterday. Filters to PAID/PARTIALLY_REFUNDED only. Separates DTC vs Wholesale (Walmart/Target/Faire by tag).<br/><br/><strong>Per-Order Fields from Shopify:</strong> Financial Status, Current Total Price (Net), Total Discounts, Total Shipping (customer-paid), Subtotal, Order Tags, Customer Order Index (1st order = New).<br/><strong>Per-Line-Item Fields from Shopify:</strong> SKU, Quantity, Original Unit Price, Discount Allocations (type + amount per allocation).<br/><br/><strong>Calculated Columns (NOT from Shopify — computed by this script):</strong><br/>• <code>dtc_gross</code> = Units × Monthly Price List from <code>PriceList/Monthly/prices_YYYY-MM.json</code> (see Script #0)<br/>• <code>dtc_subscription_discounts</code> = For subscription orders: <code>(Price List price − originalUnitPrice) × quantity</code>. This captures the 15% Stay.ai discount that Shopify bakes into the line item price instead of tracking as a discount.<br/>• <code>dtc_automatic_discounts</code> = Sum of all <code>AutomaticDiscountApplication</code> allocations on line items<br/>• <code>dtc_code_discounts</code> = Sum of all <code>DiscountCodeApplication</code> allocations (e.g. WELCOME15)<br/>• <code>dtc_manual_discounts</code> = Sum of all <code>ManualDiscountApplication</code> allocations (CS/rewards)<br/>• <code>dtc_shipping_discounts</code> = <code>Total Discounts − (subscription + automatic + code + manual)</code>. This is the remainder — captures free shipping value.<br/>• <code>dtc_free_item_value/count/cogs</code> = Line items where <code>originalUnitPrice = $0</code>. Value calculated using Price List. COGS from <code>COGS/Cogs.xlsx</code>.<br/>• <code>dtc_refund_value/units/cogs</code> = Separate REST API call for refunds processed on that date (not the order date).<br/><br/><strong>CSV has 67 columns per day.</strong> This is the foundation for ALL downstream reports.
                 </div>
                 
                 <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
