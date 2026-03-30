@@ -115,7 +115,7 @@
 <body>
     <div class="container">
         <h1>🔧 Teeccino Automations Dashboard</h1>
-        <div class="timestamp">Last updated: 2026-03-27 15:40:01 PST</div>
+        <div class="timestamp">Last updated: 2026-03-30 16:22:04 PST</div>
         
         <div class="note">
             <strong>Note on Links:</strong> For security reasons, web browsers block local file links (<code>file:///C:/...</code>) when viewing this page online. To click these links, open this dashboard directly from your hard drive at <code>C:\Users\JustinAdler\dev\repos\teeccino-reports\status.html</code>.
@@ -163,7 +163,7 @@
                         <div class="script-name">📜 1. Daily Shopify Orders Fetch (6:00 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_shopify_orders.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_shopify_orders.py</a>
                     </div>
-                    <div class="status-badge error">ISSUE / STALE</div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
                     Queries Shopify GraphQL for all orders created yesterday. Filters to PAID/PARTIALLY_REFUNDED only. Separates DTC vs Wholesale (Walmart/Target/Faire by tag).<br/><br/><strong>Per-Order Fields from Shopify:</strong> Financial Status, Current Total Price (Net), Total Discounts, Total Shipping (customer-paid), Subtotal, Order Tags, Customer Order Index (1st order = New).<br/><strong>Per-Line-Item Fields from Shopify:</strong> SKU, Quantity, Original Unit Price, Discount Allocations (type + amount per allocation).<br/><br/><strong>Calculated Columns (NOT from Shopify — computed by this script):</strong><br/>• <code>dtc_gross</code> = Units × Monthly Price List from <code>PriceList/Monthly/prices_YYYY-MM.json</code> (see Script #0)<br/>• <code>dtc_subscription_discounts</code> = For subscription orders: <code>(Price List price − originalUnitPrice) × quantity</code>. This captures the 15% Stay.ai discount that Shopify bakes into the line item price instead of tracking as a discount.<br/>• <code>dtc_automatic_discounts</code> = Sum of all <code>AutomaticDiscountApplication</code> allocations on line items<br/>• <code>dtc_code_discounts</code> = Sum of all <code>DiscountCodeApplication</code> allocations (e.g. WELCOME15)<br/>• <code>dtc_manual_discounts</code> = Sum of all <code>ManualDiscountApplication</code> allocations (CS/rewards)<br/>• <code>dtc_shipping_discounts</code> = <code>Total Discounts − (subscription + automatic + code + manual)</code>. This is the remainder — captures free shipping value.<br/>• <code>dtc_free_item_value/count/cogs</code> = Line items where <code>originalUnitPrice = $0</code>. Value calculated using Price List. COGS from <code>COGS/Cogs.xlsx</code>.<br/>• <code>dtc_refund_value/units/cogs</code> = Separate REST API call for refunds processed on that date (not the order date).<br/><br/><strong>CSV has 67 columns per day.</strong> This is the foundation for ALL downstream reports.
@@ -185,7 +185,7 @@
                         <tr>
                             <td><strong>Daily Shopify Orders CSV</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Shopify Orders.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Shopify Orders.csv</a></td>
-                            <td class="error">⚠️ STALE! 2026-03-26 07:45</td>
+                            <td class="success">2026-03-30 11:43</td>
                         </tr>
                     </tbody>
                 </table>
@@ -196,7 +196,7 @@
                         <div class="script-name">📜 2. Daily SKU Sales Report (6:00 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_sku_sales_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_sku_sales_report.py</a>
                     </div>
-                    <div class="status-badge error">ISSUE / STALE</div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
                     Independently fetches all orders from Shopify REST API. Excludes wholesale. Breaks down units sold per SKU into New vs Returning customers.<br/><br/><strong>Per-SKU Output:</strong> Product Name, New Units, New Revenue, Returning Units, Returning Revenue.<br/><br/><strong>Note:</strong> This script does NOT calculate True Gross. It outputs raw Shopify revenue per SKU. True Gross (units × price list) is calculated downstream in generate_monthly_matrices.py.
@@ -218,7 +218,7 @@
                         <tr>
                             <td><strong>Daily SKU Sales Excel</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily SKU Sales.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily SKU Sales.xlsx</a></td>
-                            <td class="error">⚠️ STALE! 2026-03-26 06:00</td>
+                            <td class="success">2026-03-30 09:52</td>
                         </tr>
                     </tbody>
                 </table>
@@ -251,7 +251,7 @@
                         <tr>
                             <td><strong>Daily Shipping Costs CSV</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Shipping Costs.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Shipping Costs.csv</a></td>
-                            <td class="success">2026-03-27 15:36</td>
+                            <td class="success">2026-03-30 09:53</td>
                         </tr>
                     </tbody>
                 </table>
@@ -262,7 +262,7 @@
                         <div class="script-name">📜 3a. Daily Meta Ads Fetch (6:15 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_meta_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_meta_report.py</a>
                     </div>
-                    <div class="status-badge error">ISSUE / STALE</div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
                     Fetches account-level insights from Meta Ads API.<br/><br/><strong>Fields:</strong> Spend, Impressions, Clicks, CPC, CPM, Reach, Frequency, Actions (purchases, add-to-carts, etc.), Action Values (conversion revenue), Cost Per Action.
@@ -284,7 +284,7 @@
                         <tr>
                             <td><strong>Daily Meta Ads CSV</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Meta Ads.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Meta Ads.csv</a></td>
-                            <td class="error">⚠️ STALE! 2026-03-26 07:15</td>
+                            <td class="success">2026-03-30 07:15</td>
                         </tr>
                     </tbody>
                 </table>
@@ -350,7 +350,7 @@
                         <tr>
                             <td><strong>SQL KPI Database</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/clawd/Automations/db/teeccino_kpi.db" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\db\teeccino_kpi.db</a></td>
-                            <td class="success">2026-03-27 11:17</td>
+                            <td class="success">2026-03-30 11:23</td>
                         </tr>
                     </tbody>
                 </table>
@@ -383,12 +383,12 @@
                         <tr>
                             <td><strong>Monthly Matrices Excel</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/Monthly Matrices.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\Monthly Matrices.xlsx</a></td>
-                            <td class="success">2026-03-26 17:26</td>
+                            <td class="success">2026-03-30 11:50</td>
                         </tr>
                         <tr>
                             <td><strong>Shopify KPI 2026</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/Shopify KPI 2026.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\Shopify KPI 2026.xlsx</a></td>
-                            <td class="success">2026-03-26 06:57</td>
+                            <td class="success">2026-03-30 09:57</td>
                         </tr>
                     </tbody>
                 </table>
@@ -399,7 +399,7 @@
                         <div class="script-name">📜 6. Dashboard Generator (6:55 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/generate_dashboard.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\generate_dashboard.py</a>
                     </div>
-                    <div class="status-badge error">ISSUE / STALE</div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
                     Reads the finalized KPI Excel files and generates the visual MTD HTML dashboard with cards for Revenue, Orders, AOV, Ad Spend, MER, and Shipping.
@@ -421,7 +421,7 @@
                         <tr>
                             <td><strong>MTD HTML</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/dev/repos/teeccino-reports/mtd.html" class="path-link" target="_blank">C:\Users\JustinAdler\dev\repos\teeccino-reports\mtd.html</a></td>
-                            <td class="error">⚠️ STALE! 2026-03-26 09:57</td>
+                            <td class="success">2026-03-30 16:21</td>
                         </tr>
                     </tbody>
                 </table>
@@ -454,7 +454,7 @@
                         <tr>
                             <td><strong>Daily Shipping Analysis CSV</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Shipping Analysis.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Shipping Analysis.csv</a></td>
-                            <td class="success">2026-03-27 15:36</td>
+                            <td class="success">2026-03-30 11:43</td>
                         </tr>
                     </tbody>
                 </table>
@@ -465,7 +465,7 @@
                         <div class="script-name">📜 2d. Fulfillment Tracker (7:15 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/fulfillment_tracker.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\fulfillment_tracker.py</a>
                     </div>
-                    <div class="status-badge error">ISSUE / STALE</div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
                     Measures warehouse speed. Pulls all orders from the last 30 days and calculates how long it took from order placement to fulfillment.<br/><br/><strong>Key Metrics:</strong> Orders Fulfilled, Avg Fulfillment Time (hours), Median Fulfillment Time, % fulfilled within 24h/48h/72h, Current Backlog count, Backlog over 24h/48h.<br/><br/><strong>Also outputs:</strong> A per-order detail table showing each order's creation time, fulfillment hours, and total value.
@@ -487,7 +487,7 @@
                         <tr>
                             <td><strong>Fulfillment Tracker CSV</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Fulfillment Tracker.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Fulfillment Tracker.csv</a></td>
-                            <td class="error">⚠️ STALE! 2026-03-26 07:16</td>
+                            <td class="success">2026-03-30 11:23</td>
                         </tr>
                     </tbody>
                 </table>
@@ -498,7 +498,7 @@
                         <div class="script-name">📜 2e. Daily Fulfillment Report (7:10 AM)</div>
                         <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_fulfillment_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_fulfillment_report.py</a>
                     </div>
-                    <div class="status-badge error">ISSUE / STALE</div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
                 <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
                     Reshapes the Daily Shipping Analysis CSV into a clean Excel report. Shows daily fulfillment counts, units per order, avg package weight, free vs paid shipping split, and total shipping cost.<br/><br/><strong>Note:</strong> This does NOT fetch any new data — it just reformats the ShipStation data from script 2c into a more readable Excel format.
@@ -520,7 +520,7 @@
                         <tr>
                             <td><strong>Daily Fulfillment Report Excel</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Fulfillment Report.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Fulfillment Report.xlsx</a></td>
-                            <td class="error">⚠️ STALE! 2026-03-26 09:49</td>
+                            <td class="success">2026-03-30 11:22</td>
                         </tr>
                     </tbody>
                 </table>
@@ -553,7 +553,7 @@
                         <tr>
                             <td><strong>Instagram Metrics CSV</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Instagram Metrics.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Instagram Metrics.csv</a></td>
-                            <td class="success">2026-03-27 11:17</td>
+                            <td class="success">2026-03-30 11:43</td>
                         </tr>
                     </tbody>
                 </table>
@@ -586,12 +586,12 @@
                         <tr>
                             <td><strong>ECH Ads State JSON</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/clawd/data/ech_ads_state.json" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\data\ech_ads_state.json</a></td>
-                            <td class="success">2026-03-27 11:17</td>
+                            <td class="success">2026-03-30 10:03</td>
                         </tr>
                         <tr>
                             <td><strong>Creatives Library HTML</strong></td>
                             <td><a href="file:///C:/Users/JustinAdler/dev/repos/teeccino-reports/creatives.html" class="path-link" target="_blank">C:\Users\JustinAdler\dev\repos\teeccino-reports\creatives.html</a></td>
-                            <td class="success">2026-03-26 08:13</td>
+                            <td class="success">2026-03-30 11:33</td>
                         </tr>
                     </tbody>
                 </table>
