@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Control - Crowley HQ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+            padding-top: 80px;
+        }
+
+        /* Sticky Nav */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .top-nav .logo {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+        }
+        .top-nav .logo:hover { opacity: 0.8; }
+        .top-nav .nav-links {
+            display: flex;
+            gap: 5px;
+        }
+        .top-nav .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+        .top-nav .nav-links a:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+        }
+        .top-nav .nav-links a.active {
+            opacity: 1;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #a29bfe, #6c5ce7, #fd79a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p {
+            font-size: 1.1em;
+            opacity: 0.6;
+        }
+
+        /* Section titles */
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-bottom: 18px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+
+        /* Agent Cards */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 18px;
+            margin-bottom: 50px;
+        }
+
+        .agent-card {
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .agent-card .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .agent-card .agent-emoji {
+            font-size: 2em;
+        }
+        .agent-card .agent-name {
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+        .agent-card .agent-role {
+            font-size: 0.82em;
+            opacity: 0.6;
+            margin-bottom: 14px;
+        }
+        .agent-card .agent-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .agent-card .discord-channel {
+            font-size: 0.78em;
+            opacity: 0.5;
+            font-family: monospace;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .badge.online {
+            background: rgba(0,184,148,0.2);
+            color: #00b894;
+            border: 1px solid rgba(0,184,148,0.4);
+        }
+        .badge.offline {
+            background: rgba(214,48,49,0.2);
+            color: #d63031;
+            border: 1px solid rgba(214,48,49,0.4);
+        }
+        .badge.pending {
+            background: rgba(162,155,254,0.15);
+            color: #a29bfe;
+            border: 1px solid rgba(162,155,254,0.35);
+        }
+        .badge.done {
+            background: rgba(0,184,148,0.2);
+            color: #00b894;
+            border: 1px solid rgba(0,184,148,0.4);
+        }
+        .badge.in_progress {
+            background: rgba(253,203,110,0.2);
+            color: #fdcb6e;
+            border: 1px solid rgba(253,203,110,0.4);
+        }
+        .badge.failed {
+            background: rgba(214,48,49,0.2);
+            color: #d63031;
+            border: 1px solid rgba(214,48,49,0.4);
+        }
+
+        /* Status dot */
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        .status-dot.online { background: #00b894; box-shadow: 0 0 6px #00b894; }
+        .status-dot.offline { background: #d63031; }
+        .status-dot.pending { background: #a29bfe; }
+
+        /* Tasks Table */
+        .table-wrapper {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            margin-bottom: 50px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 0.78em;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            opacity: 0.5;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-weight: 600;
+        }
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.04); }
+        tbody td {
+            padding: 14px 20px;
+            font-size: 0.92em;
+        }
+        .task-desc {
+            font-weight: 500;
+        }
+        .task-agent {
+            opacity: 0.8;
+            font-size: 0.88em;
+        }
+        .task-time {
+            opacity: 0.45;
+            font-size: 0.82em;
+            font-family: monospace;
+            white-space: nowrap;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.4;
+            font-size: 0.88em;
+            padding-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.9em; }
+            .top-nav .nav-links a { padding: 6px 10px; font-size: 0.8em; }
+            thead th:nth-child(4), tbody td:nth-child(4),
+            thead th:nth-child(5), tbody td:nth-child(5) { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="home.html" class="logo">☕ Teeccino Reports</a>
+        <div class="nav-links">
+            <a href="mtd.html">📊 MTD</a>
+            <a href="weekly.html">📈 Weekly</a>
+            <a href="kpi.html">📅 Monthly</a>
+            <a href="projects.html">📋 Projects</a>
+            <a href="mission-control.html" class="active">🐍 Mission Control</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>🐍 Mission Control</h1>
+            <p>Crowley HQ — AI Agent Team Status</p>
+        </header>
+
+        <div class="section-title">Agents</div>
+        <div class="agents-grid" id="agents-grid"></div>
+
+        <div class="section-title">Tasks</div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Agent</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Completed</th>
+                    </tr>
+                </thead>
+                <tbody id="tasks-tbody"></tbody>
+            </table>
+        </div>
+
+        <footer>Mission Control • Crowley HQ 🐍</footer>
+    </div>
+
+    <script>
+        const data = {
+            agents: [
+                {
+                    name: "Crowley",
+                    emoji: "🐍",
+                    role: "Orchestrator",
+                    status: "online",
+                    discord: "#crowley-hq"
+                },
+                {
+                    name: "Shopkeeper",
+                    emoji: "🛒",
+                    role: "Shopify Ops",
+                    status: "online",
+                    discord: "#shopkeeper"
+                },
+                {
+                    name: "DataOps",
+                    emoji: "📊",
+                    role: "Data & Reporting",
+                    status: "online",
+                    discord: "#dataops"
+                },
+                {
+                    name: "Adsmith",
+                    emoji: "📣",
+                    role: "Paid Media",
+                    status: "pending",
+                    discord: "#adsmith"
+                }
+            ],
+            tasks: [
+                {
+                    description: "Deploy agent team",
+                    agent: "Crowley",
+                    status: "in_progress",
+                    created: "2026-03-31 09:00",
+                    completed: null
+                },
+                {
+                    description: "Shopkeeper setup",
+                    agent: "Shopkeeper",
+                    status: "done",
+                    created: "2026-03-30 14:00",
+                    completed: "2026-03-31 08:45"
+                },
+                {
+                    description: "DataOps setup",
+                    agent: "DataOps",
+                    status: "done",
+                    created: "2026-03-30 14:00",
+                    completed: "2026-03-31 08:50"
+                },
+                {
+                    description: "Adsmith setup",
+                    agent: "Adsmith",
+                    status: "pending",
+                    created: "2026-03-31 09:00",
+                    completed: null
+                },
+                {
+                    description: "Migrate cron jobs",
+                    agent: "Crowley",
+                    status: "pending",
+                    created: "2026-03-31 09:05",
+                    completed: null
+                }
+            ]
+        };
+
+        // Render agent cards
+        const agentsGrid = document.getElementById('agents-grid');
+        data.agents.forEach(agent => {
+            const card = document.createElement('div');
+            card.className = 'agent-card';
+            card.innerHTML = `
+                <div class="agent-header">
+                    <span class="agent-emoji">${agent.emoji}</span>
+                    <div>
+                        <div class="agent-name">${agent.name}</div>
+                    </div>
+                </div>
+                <div class="agent-role">${agent.role}</div>
+                <div class="agent-footer">
+                    <span class="badge ${agent.status}">
+                        <span class="status-dot ${agent.status}"></span>${agent.status.replace('_', ' ')}
+                    </span>
+                    <span class="discord-channel">${agent.discord}</span>
+                </div>
+            `;
+            agentsGrid.appendChild(card);
+        });
+
+        // Render tasks table
+        const tbody = document.getElementById('tasks-tbody');
+        data.tasks.forEach(task => {
+            const labelMap = {
+                done: 'Done',
+                in_progress: 'In Progress',
+                pending: 'Pending',
+                failed: 'Failed'
+            };
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="task-desc">${task.description}</td>
+                <td class="task-agent">${task.agent}</td>
+                <td><span class="badge ${task.status}">${labelMap[task.status] || task.status}</span></td>
+                <td class="task-time">${task.created}</td>
+                <td class="task-time">${task.completed || '—'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    </script>
+</body>
+</html>
