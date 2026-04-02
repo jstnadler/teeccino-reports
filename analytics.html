@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teeccino Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        nav {
+            background: #2c2c2c;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav h1 { font-size: 20px; font-weight: 600; }
+        nav a { color: #D4A843; text-decoration: none; font-size: 14px; }
+        nav a:hover { text-decoration: underline; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+        .updated { text-align: right; color: #888; font-size: 13px; margin-bottom: 20px; }
+
+        /* KPI Cards Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .kpi-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .kpi-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #8B6914;
+        }
+        .kpi-card .label {
+            font-size: 13px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        /* Section */
+        .section { margin-bottom: 40px; }
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #D4A843;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #555;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #555;
+            position: sticky;
+            top: 0;
+        }
+        th:first-child, td:first-child { text-align: left; }
+        tr:hover { background: #fafaf5; }
+
+        /* Retention heatmap */
+        .retention-table td.heat {
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        /* Cohort KPI cards */
+        .cohort-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .cohort-kpis { grid-template-columns: repeat(2, 1fr); }
+        }
+        .cohort-kpi {
+            background: #faf7f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .cohort-kpi .val { font-size: 24px; font-weight: 700; color: #6B8E23; }
+        .cohort-kpi .lbl { font-size: 12px; color: #888; }
+
+        /* Change indicators */
+        .positive { color: #6B8E23; }
+        .negative { color: #c0392b; }
+
+        canvas { max-height: 320px; }
+        .chart-sm canvas { max-height: 260px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>📊 Teeccino Analytics</h1>
+        <a href="index.html">&larr; Back to Reports</a>
+    </nav>
+    <div class="container">
+        <p class="updated">Last updated: April 02, 2026 at 10:55 AM</p>
+
+        <!-- KPI Summary -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="value">4,165</div>
+                <div class="label">Orders (30d)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">$196,530</div>
+                <div class="label">Revenue (30d)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">$47.19</div>
+                <div class="label">Avg Order Value</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">38.4%</div>
+                <div class="label">New Customer %</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">3.0%</div>
+                <div class="label">Sub Conversion</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">63,905</div>
+                <div class="label">Total Customers</div>
+            </div>
+        </div>
+
+        <!-- 1. Attribution Overview -->
+        <div class="section">
+            <h2 class="section-title">Attribution Overview</h2>
+            <div class="grid-2">
+                <div class="card chart-sm">
+                    <h3>Revenue by Channel</h3>
+                    <canvas id="channelDonut"></canvas>
+                </div>
+                <div class="card chart-sm">
+                    <h3>Days to Conversion</h3>
+                    <canvas id="daysConversion"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Monthly Revenue by Channel</h3>
+                <canvas id="monthlyRevenue"></canvas>
+            </div>
+            <div class="card">
+                <h3>Channel Breakdown</h3>
+                <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>Channel</th><th>Orders</th><th>Revenue</th><th>AOV</th><th>New Customer %</th></tr></thead>
+                    <tbody>
+                    <tr><td>Direct</td><td>70,187</td><td>$3,413,839.91</td><td>$48.64</td><td>30.4%</td></tr><tr><td>Google</td><td>29,255</td><td>$1,441,006.39</td><td>$49.26</td><td>56.6%</td></tr><tr><td>Email</td><td>28,048</td><td>$1,515,107.29</td><td>$54.02</td><td>22.3%</td></tr><tr><td>Meta</td><td>5,946</td><td>$170,308.41</td><td>$28.64</td><td>82.8%</td></tr><tr><td>Attentive</td><td>9,441</td><td>$478,771.91</td><td>$50.71</td><td>43.9%</td></tr><tr><td>Other</td><td>4,724</td><td>$240,265.29</td><td>$50.86</td><td>52.3%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Customer Cohorts -->
+        <div class="section">
+            <h2 class="section-title">Customer Cohorts</h2>
+            <div class="cohort-kpis">
+                <div class="cohort-kpi"><div class="val">63,905</div><div class="lbl">Total Customers</div></div>
+                <div class="cohort-kpi"><div class="val">$113.59</div><div class="lbl">Avg LTV</div></div>
+                <div class="cohort-kpi"><div class="val">11.4%</div><div class="lbl">Sub Conversion</div></div>
+                <div class="cohort-kpi"><div class="val">2.3</div><div class="lbl">Avg Orders</div></div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>LTV Curves by Cohort</h3>
+                    <canvas id="ltvCurves"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Monthly Subscription Conversion Rate</h3>
+                    <canvas id="subConversion"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Retention Matrix (Last 6 Cohorts)</h3>
+                <div style="overflow-x:auto">
+                <table class="retention-table">
+                    <thead><tr><th>Cohort</th><th>Customers</th><th>Month 0</th><th>Month 1</th><th>Month 2</th><th>Month 3</th><th>Month 4</th><th>Month 5</th></tr></thead>
+                    <tbody>
+                    <tr><td>2025-10</td><td>1,457</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">14.2%</td><td class="heat" style="background:#DEB887;color:#555">7.8%</td><td class="heat" style="background:#DEB887;color:#555">7.2%</td><td class="heat" style="background:#DEB887;color:#555">6.2%</td><td class="heat" style="background:#DEB887;color:#555">5.7%</td></tr><tr><td>2025-11</td><td>2,520</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">8.0%</td><td class="heat" style="background:#DEB887;color:#555">7.5%</td><td class="heat" style="background:#DEB887;color:#555">9.5%</td><td class="heat" style="background:#DEB887;color:#555">5.8%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td></tr><tr><td>2025-12</td><td>1,568</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">8.5%</td><td class="heat" style="background:#DEB887;color:#555">7.7%</td><td class="heat" style="background:#DEB887;color:#555">8.4%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td></tr><tr><td>2026-01</td><td>1,992</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">11.0%</td><td class="heat" style="background:#DEB887;color:#555">9.2%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td></tr><tr><td>2026-02</td><td>2,006</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">11.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td></tr><tr><td>2026-03</td><td>1,741</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td><td class="heat" style="background:#f0e6d3;color:#555">0.0%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SKU Performance -->
+        <div class="section">
+            <h2 class="section-title">SKU Performance</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Top 15 SKUs by Revenue</h3>
+                    <canvas id="topSkus"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Revenue vs Margin % (Top 30 SKUs)</h3>
+                    <canvas id="skuScatter"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Top 20 SKUs — Detail</h3>
+                <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>SKU</th><th>Revenue</th><th>COGS</th><th>Margin</th><th>Margin %</th><th>Discount Rate</th></tr></thead>
+                    <tbody>
+                    <tr><td>60110</td><td>$220,943.76</td><td>$49,315.54</td><td>$171,628.22</td><td>77.7%</td><td>4.6%</td></tr><tr><td>50097</td><td>$205,474.66</td><td>$73,699.02</td><td>$131,775.64</td><td>64.1%</td><td>6.9%</td></tr><tr><td>60060</td><td>$164,692.61</td><td>$35,557.28</td><td>$129,135.33</td><td>78.4%</td><td>5.8%</td></tr><tr><td>80110L</td><td>$164,323.15</td><td>$31,246.16</td><td>$133,076.99</td><td>81.0%</td><td>6.1%</td></tr><tr><td>46011</td><td>$160,513.50</td><td>$36,809.22</td><td>$123,704.28</td><td>77.1%</td><td>7.2%</td></tr><tr><td>86010L</td><td>$151,779.82</td><td>$45,136.87</td><td>$106,642.95</td><td>70.3%</td><td>7.1%</td></tr><tr><td>63110</td><td>$134,619.99</td><td>$36,388.37</td><td>$98,231.62</td><td>73.0%</td><td>6.8%</td></tr><tr><td>83110L</td><td>$127,327.64</td><td>$30,823.04</td><td>$96,504.60</td><td>75.8%</td><td>5.8%</td></tr><tr><td>80060L</td><td>$127,201.95</td><td>$23,860.60</td><td>$103,341.35</td><td>81.2%</td><td>5.5%</td></tr><tr><td>43111</td><td>$116,429.58</td><td>$21,444.15</td><td>$94,985.43</td><td>81.6%</td><td>4.9%</td></tr><tr><td>43221</td><td>$114,892.95</td><td>$24,874.53</td><td>$90,018.42</td><td>78.3%</td><td>6.1%</td></tr><tr><td>60070</td><td>$112,678.10</td><td>$22,997.24</td><td>$89,680.86</td><td>79.6%</td><td>4.9%</td></tr><tr><td>85020L</td><td>$112,550.81</td><td>$25,386.01</td><td>$87,164.80</td><td>77.4%</td><td>6.4%</td></tr><tr><td>40097</td><td>$105,041.96</td><td>$16,687.45</td><td>$88,354.51</td><td>84.1%</td><td>6.7%</td></tr><tr><td>60010</td><td>$94,737.87</td><td>$26,114.00</td><td>$68,623.87</td><td>72.4%</td><td>5.1%</td></tr><tr><td>80030L</td><td>$91,851.58</td><td>$18,550.21</td><td>$73,301.37</td><td>79.8%</td><td>6.0%</td></tr><tr><td>80010L</td><td>$85,627.50</td><td>$20,189.88</td><td>$65,437.62</td><td>76.4%</td><td>6.5%</td></tr><tr><td>45021</td><td>$84,234.79</td><td>$15,661.44</td><td>$68,573.35</td><td>81.4%</td><td>5.8%</td></tr><tr><td>82060L</td><td>$81,043.15</td><td>$20,591.05</td><td>$60,452.10</td><td>74.6%</td><td>6.2%</td></tr><tr><td>85070L</td><td>$81,034.81</td><td>$19,021.36</td><td>$62,013.45</td><td>76.5%</td><td>8.1%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Growing &amp; Declining SKUs (&gt;20% change, last 90d vs prior 90d)</h3>
+                <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>SKU</th><th>Recent 90d</th><th>Prior 90d</th><th>Change</th></tr></thead>
+                    <tbody>
+                    <tr><td>56010</td><td>$12,031.30</td><td>$548.00</td><td class="positive">+2095.5%</td></tr><tr><td>46010L</td><td>$4,284.18</td><td>$1,804.42</td><td class="positive">+137.4%</td></tr><tr><td>90001</td><td>$1,154.79</td><td>$714.87</td><td class="positive">+61.5%</td></tr><tr><td>40016</td><td>$2,845.99</td><td>$1,891.12</td><td class="positive">+50.5%</td></tr><tr><td>40097</td><td>$12,501.74</td><td>$8,315.84</td><td class="positive">+50.3%</td></tr><tr><td>49999</td><td>$770.40</td><td>$513.60</td><td class="positive">+50.0%</td></tr><tr><td>46011</td><td>$30,095.83</td><td>$20,269.86</td><td class="positive">+48.5%</td></tr><tr><td>10031</td><td>$1,208.79</td><td>$816.20</td><td class="positive">+48.1%</td></tr><tr><td>30011L</td><td>$5,175.46</td><td>$3,504.09</td><td class="positive">+47.7%</td></tr><tr><td>82040L</td><td>$2,873.28</td><td>$1,982.50</td><td class="positive">+44.9%</td></tr><tr><td>40030L</td><td>$1,147.71</td><td>$792.51</td><td class="positive">+44.8%</td></tr><tr><td>43351</td><td>$1,007.73</td><td>$721.62</td><td class="positive">+39.6%</td></tr><tr><td>60030</td><td>$5,938.42</td><td>$4,409.51</td><td class="positive">+34.7%</td></tr><tr><td>48003</td><td>$1,708.29</td><td>$1,268.73</td><td class="positive">+34.6%</td></tr><tr><td>62060</td><td>$2,618.70</td><td>$1,979.78</td><td class="positive">+32.3%</td></tr><tr><td>80130L</td><td>$4,565.47</td><td>$3,455.91</td><td class="positive">+32.1%</td></tr><tr><td>82130L</td><td>$1,870.82</td><td>$1,415.89</td><td class="positive">+32.1%</td></tr><tr><td>40110L</td><td>$759.90</td><td>$577.02</td><td class="positive">+31.7%</td></tr><tr><td>63110</td><td>$13,564.01</td><td>$10,464.09</td><td class="positive">+29.6%</td></tr><tr><td>86010L</td><td>$20,773.03</td><td>$16,257.87</td><td class="positive">+27.8%</td></tr><tr><td>43310L</td><td>$899.58</td><td>$712.29</td><td class="positive">+26.3%</td></tr><tr><td>30009L</td><td>$3,009.14</td><td>$2,391.44</td><td class="positive">+25.8%</td></tr><tr><td>83350L</td><td>$659.04</td><td>$525.93</td><td class="positive">+25.3%</td></tr><tr><td>80066A</td><td>$2,230.37</td><td>$1,781.19</td><td class="positive">+25.2%</td></tr><tr><td>42040L</td><td>$959.60</td><td>$771.13</td><td class="positive">+24.4%</td></tr><tr><td>45060L</td><td>$1,022.97</td><td>$826.16</td><td class="positive">+23.8%</td></tr><tr><td>45020L</td><td>$1,019.11</td><td>$826.26</td><td class="positive">+23.3%</td></tr><tr><td>40011</td><td>$6,495.21</td><td>$8,206.17</td><td class="negative">-20.8%</td></tr><tr><td>50097</td><td>$11,954.09</td><td>$15,490.04</td><td class="negative">-22.8%</td></tr><tr><td>31014L</td><td>$7,022.52</td><td>$9,184.35</td><td class="negative">-23.5%</td></tr><tr><td>30007L</td><td>$10,425.11</td><td>$13,684.21</td><td class="negative">-23.8%</td></tr><tr><td>45051</td><td>$4,298.16</td><td>$5,640.03</td><td class="negative">-23.8%</td></tr><tr><td>82110L</td><td>$2,761.20</td><td>$3,628.35</td><td class="negative">-23.9%</td></tr><tr><td>31010L</td><td>$2,402.78</td><td>$3,163.13</td><td class="negative">-24.0%</td></tr><tr><td>83310L</td><td>$4,127.52</td><td>$5,437.89</td><td class="negative">-24.1%</td></tr><tr><td>45071</td><td>$6,331.89</td><td>$8,455.77</td><td class="negative">-25.1%</td></tr><tr><td>60080</td><td>$4,715.30</td><td>$6,299.30</td><td class="negative">-25.1%</td></tr><tr><td>31007L</td><td>$6,207.77</td><td>$8,308.15</td><td class="negative">-25.3%</td></tr><tr><td>80020L</td><td>$4,267.07</td><td>$5,789.42</td><td class="negative">-26.3%</td></tr><tr><td>63080</td><td>$2,248.05</td><td>$3,219.72</td><td class="negative">-30.2%</td></tr><tr><td>30013L</td><td>$8,779.37</td><td>$12,647.29</td><td class="negative">-30.6%</td></tr><tr><td>63010</td><td>$1,115.40</td><td>$1,609.86</td><td class="negative">-30.7%</td></tr><tr><td>42121</td><td>$3,798.19</td><td>$5,504.76</td><td class="negative">-31.0%</td></tr><tr><td>43340L</td><td>$929.94</td><td>$1,366.04</td><td class="negative">-31.9%</td></tr><tr><td>40021</td><td>$4,414.39</td><td>$6,575.13</td><td class="negative">-32.9%</td></tr><tr><td>80040L</td><td>$586.99</td><td>$928.03</td><td class="negative">-36.7%</td></tr><tr><td>46021</td><td>$1,133.38</td><td>$1,799.10</td><td class="negative">-37.0%</td></tr><tr><td>40141</td><td>$936.98</td><td>$1,631.04</td><td class="negative">-42.6%</td></tr><tr><td>55010</td><td>$2,867.80</td><td>$5,016.00</td><td class="negative">-42.8%</td></tr><tr><td>40121</td><td>$1,604.69</td><td>$3,024.22</td><td class="negative">-46.9%</td></tr><tr><td>63310</td><td>$1,173.62</td><td>$2,478.03</td><td class="negative">-52.6%</td></tr><tr><td>62070</td><td>$886.40</td><td>$1,889.79</td><td class="negative">-53.1%</td></tr><tr><td>85060L</td><td>$1,201.01</td><td>$2,651.93</td><td class="negative">-54.7%</td></tr><tr><td>50091</td><td>$1,326.45</td><td>$3,342.24</td><td class="negative">-60.3%</td></tr><tr><td>CLIP01</td><td>$534.00</td><td>$1,428.00</td><td class="negative">-62.6%</td></tr><tr><td>42021</td><td>$1,616.58</td><td>$4,349.44</td><td class="negative">-62.8%</td></tr><tr><td>82070L</td><td>$2,065.95</td><td>$5,695.23</td><td class="negative">-63.7%</td></tr><tr><td>90037</td><td>$524.47</td><td>$1,535.04</td><td class="negative">-65.8%</td></tr><tr><td>82020L</td><td>$1,687.07</td><td>$6,456.31</td><td class="negative">-73.9%</td></tr><tr><td>42011</td><td>$1,708.34</td><td>$6,796.00</td><td class="negative">-74.9%</td></tr><tr><td>83360L</td><td>$1,667.50</td><td>$7,087.62</td><td class="negative">-76.5%</td></tr><tr><td>31011L</td><td>$1,177.39</td><td>$5,172.29</td><td class="negative">-77.2%</td></tr><tr><td>82010L</td><td>$515.62</td><td>$9,217.33</td><td class="negative">-94.4%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const COLORS = ["#8B6914", "#D4A843", "#6B8E23", "#CD853F", "#8FBC8F", "#DEB887"];
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+    // 1. Channel Donut
+    new Chart(document.getElementById('channelDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: ["Direct", "Google", "Email", "Meta", "Attentive", "Other"],
+            datasets: [{ data: [3413839.91, 1441006.39, 1515107.29, 170308.41, 478771.91, 240265.29], backgroundColor: COLORS, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: { callbacks: { label: ctx => ctx.label + ': $' + ctx.parsed.toLocaleString() } }
+            }
+        }
+    });
+
+    // 2. Monthly Revenue Stacked Bar
+    const monthlyDS = [{"label": "Direct", "data": [112355.28, 84793.06, 71192.42, 77057.3, 79109.93, 87777.33, 98088.85, 139024.3, 87348.17, 94390.98, 100500.05, 99221.2]}, {"label": "Google", "data": [45818.02, 33556.6, 24451.28, 25527.32, 28024.27, 30528.81, 39153.07, 63223.69, 37406.47, 44476.26, 43735.4, 43129.56]}, {"label": "Email", "data": [65821.23, 27555.4, 18142.51, 31450.14, 34157.61, 34949.03, 40127.38, 105803.76, 26009.29, 27895.82, 49669.8, 36230.72]}, {"label": "Meta", "data": [7920.01, 2538.8, 2568.46, 2858.71, 3411.33, 3974.99, 5993.24, 14625.27, 5930.16, 9822.75, 10170.82, 8458.98]}, {"label": "Attentive", "data": [16601.18, 11177.81, 6774.9, 8507.87, 10579.46, 10926.14, 12006.52, 18263.64, 9576.44, 8864.0, 16174.02, 13021.05]}, {"label": "Other", "data": [8523.61, 6055.97, 3083.46, 4879.32, 5735.59, 6805.55, 7561.3, 10510.97, 6386.07, 6997.94, 5190.55, 6272.87]}];
+    new Chart(document.getElementById('monthlyRevenue'), {
+        type: 'bar',
+        data: {
+            labels: ["2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"],
+            datasets: monthlyDS.map((ds, i) => ({
+                label: ds.label,
+                data: ds.data,
+                backgroundColor: COLORS[i % COLORS.length],
+            }))
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+            },
+            plugins: {
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } }
+            }
+        }
+    });
+
+    // 3. Days to Conversion
+    new Chart(document.getElementById('daysConversion'), {
+        type: 'bar',
+        data: {
+            labels: ["Same day", "2-3 days", "4-7 days", "8-14 days", "15-30 days"],
+            datasets: [{ data: [79195, 4571, 5623, 6814, 13202], backgroundColor: '#8B6914', borderRadius: 4 }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v.toLocaleString() } } }
+        }
+    });
+
+    // 4. LTV Curves
+    new Chart(document.getElementById('ltvCurves'), {
+        type: 'line',
+        data: {
+            labels: ["2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"],
+            datasets: [
+                { label: '30d LTV', data: [48.2, 48.09, 36.76, 40.64, 41.58, 39.45, 45.17, 45.08, 39.88, 38.59, 38.81, 38.52], borderColor: '#8B6914', backgroundColor: 'rgba(139,105,20,0.1)', fill: false, tension: 0.3 },
+                { label: '90d LTV', data: [56.57, 57.0, 44.45, 51.61, 51.63, 50.73, 54.17, 53.18, 47.41, 45.04, 41.32, 38.52], borderColor: '#D4A843', backgroundColor: 'rgba(212,168,67,0.1)', fill: false, tension: 0.3 },
+                { label: '365d LTV', data: [85.31, 84.01, 64.57, 75.82, 68.19, 60.02, 62.72, 58.33, 49.56, 45.04, 41.32, 38.52], borderColor: '#6B8E23', backgroundColor: 'rgba(107,142,35,0.1)', fill: false, tension: 0.3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { ticks: { callback: v => '$' + v } } },
+            plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2) } } }
+        }
+    });
+
+    // 5. Subscription Conversion
+    new Chart(document.getElementById('subConversion'), {
+        type: 'bar',
+        data: {
+            labels: ["2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04"],
+            datasets: [{ data: [2.4, 2.6, 2.1, 2.8, 1.9, 2.0, 3.0, 3.0, 3.0, 3.4, 3.6, 3.2, 3.4], backgroundColor: '#6B8E23', borderRadius: 4 }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v + '%' } } }
+        }
+    });
+
+    // 6. Top 15 SKUs (horizontal bar)
+    new Chart(document.getElementById('topSkus'), {
+        type: 'bar',
+        data: {
+            labels: ["60110", "50097", "60060", "80110L", "46011", "86010L", "63110", "83110L", "80060L", "43111", "43221", "60070", "85020L", "40097", "60010"],
+            datasets: [{ data: [220943.76, 205474.66, 164692.61, 164323.15, 160513.5, 151779.82, 134619.99, 127327.64, 127201.95, 116429.58, 114892.95, 112678.1, 112550.81, 105041.96, 94737.87], backgroundColor: COLORS.concat(COLORS).concat(COLORS), borderRadius: 4 }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } } }
+        }
+    });
+
+    // 7. SKU Scatter (bubble)
+    const scatterData = [{"sku": "60110", "revenue": 220943.76, "margin_pct": 77.7, "units": 2756}, {"sku": "50097", "revenue": 205474.66, "margin_pct": 64.1, "units": 9204}, {"sku": "60060", "revenue": 164692.61, "margin_pct": 78.4, "units": 2040}, {"sku": "80110L", "revenue": 164323.15, "margin_pct": 81.0, "units": 12488}, {"sku": "46011", "revenue": 160513.5, "margin_pct": 77.1, "units": 8729}, {"sku": "86010L", "revenue": 151779.82, "margin_pct": 70.3, "units": 8791}, {"sku": "63110", "revenue": 134619.99, "margin_pct": 73.0, "units": 1272}, {"sku": "83110L", "revenue": 127327.64, "margin_pct": 75.8, "units": 8120}, {"sku": "80060L", "revenue": 127201.95, "margin_pct": 81.2, "units": 9777}, {"sku": "43111", "revenue": 116429.58, "margin_pct": 81.6, "units": 6821}, {"sku": "43221", "revenue": 114892.95, "margin_pct": 78.3, "units": 6888}, {"sku": "60070", "revenue": 112678.1, "margin_pct": 79.6, "units": 1398}, {"sku": "85020L", "revenue": 112550.81, "margin_pct": 77.4, "units": 7503}, {"sku": "40097", "revenue": 105041.96, "margin_pct": 84.1, "units": 6204}, {"sku": "60010", "revenue": 94737.87, "margin_pct": 72.4, "units": 1194}, {"sku": "80030L", "revenue": 91851.58, "margin_pct": 79.8, "units": 6998}, {"sku": "80010L", "revenue": 85627.5, "margin_pct": 76.4, "units": 6598}, {"sku": "45021", "revenue": 84234.79, "margin_pct": 81.4, "units": 4925}, {"sku": "82060L", "revenue": 81043.15, "margin_pct": 74.6, "units": 5852}, {"sku": "85070L", "revenue": 81034.81, "margin_pct": 76.5, "units": 4439}, {"sku": "40011", "revenue": 80893.61, "margin_pct": 78.3, "units": 5914}, {"sku": "83220L", "revenue": 80759.69, "margin_pct": 74.1, "units": 5069}, {"sku": "85050L", "revenue": 79360.35, "margin_pct": 81.0, "units": 5301}, {"sku": "80070L", "revenue": 78858.51, "margin_pct": 81.9, "units": 6192}, {"sku": "82110L", "revenue": 78513.57, "margin_pct": 75.7, "units": 5498}, {"sku": "66010", "revenue": 77601.78, "margin_pct": 65.6, "units": 644}, {"sku": "40111", "revenue": 76949.41, "margin_pct": 80.0, "units": 5574}, {"sku": "60080", "revenue": 72985.89, "margin_pct": 74.7, "units": 916}, {"sku": "43311", "revenue": 72506.28, "margin_pct": 78.4, "units": 4330}, {"sku": "40061", "revenue": 71518.33, "margin_pct": 76.7, "units": 5136}];
+    new Chart(document.getElementById('skuScatter'), {
+        type: 'bubble',
+        data: {
+            datasets: [{
+                label: 'SKUs',
+                data: scatterData.map(s => ({ x: s.revenue, y: s.margin_pct, r: Math.max(3, Math.sqrt(s.units) / 2), sku: s.sku })),
+                backgroundColor: 'rgba(139,105,20,0.5)',
+                borderColor: '#8B6914',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: {
+                    label: ctx => {
+                        const p = ctx.raw;
+                        return p.sku + ' — Rev: $' + p.x.toLocaleString() + ', Margin: ' + p.y + '%';
+                    }
+                } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Revenue' }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } },
+                y: { title: { display: true, text: 'Margin %' }, ticks: { callback: v => v + '%' } }
+            }
+        }
+    });
+    </script>
+</body>
+</html>
