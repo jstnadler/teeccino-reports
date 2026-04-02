@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control — Crowley HQ</title>
+<style>
+  :root {
+    --bg: #0d1117; --card: #161b22; --border: #30363d;
+    --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --yellow: #d29922; --red: #f85149;
+    --orange: #db6d28; --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); padding: 24px; line-height: 1.5;
+  }
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 1.6rem; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
+  .btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); background: rgba(88,166,255,0.08); }
+  .btn.active { border-color: var(--accent); background: rgba(88,166,255,0.12); }
+  .btn-refresh { position: relative; }
+  .btn-refresh.spinning::after {
+    content: ''; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinning .refresh-icon { animation: spin 0.6s linear; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; cursor: pointer; transition: border-color 0.2s, transform 0.1s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .card.expanded { border-color: var(--accent); }
+  .card h3 { font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .card .role { color: var(--text-dim); font-size: 0.8rem; }
+  .card .channel { color: var(--accent); font-size: 0.8rem; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .status-online { background: var(--green); box-shadow: 0 0 6px rgba(63,185,80,0.4); }
+  .status-busy { background: var(--yellow); box-shadow: 0 0 6px rgba(210,153,34,0.4); }
+  .status-idle { background: var(--text-dim); }
+  .status-error { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.4); }
+  .status-offline { background: var(--border); }
+
+  .work-item {
+    background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent);
+    padding: 8px 12px; margin: 8px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem;
+  }
+  .work-item.idle { background: rgba(139,148,158,0.08); border-left-color: var(--border); color: var(--text-dim); font-style: italic; }
+
+  .detail-panel {
+    display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .card.expanded .detail-panel { display: block; }
+  .detail-section { margin-bottom: 10px; }
+  .detail-section h4 { font-size: 0.8rem; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .detail-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .detail-row .label { color: var(--text-dim); }
+
+  .section-title { font-size: 1.2rem; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  .project-row {
+    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.9rem;
+  }
+  .project-row:last-child { border-bottom: none; }
+  .badge {
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .badge-active { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .badge-complete { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-planning { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge-blocked { background: rgba(248,81,73,0.15); color: var(--red); }
+  .progress-bar { width: 100px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.3s; }
+  .project-name { flex: 1; }
+  .project-owner { color: var(--text-dim); font-size: 0.8rem; min-width: 80px; }
+  .project-tasks { color: var(--text-dim); font-size: 0.8rem; min-width: 60px; text-align: right; }
+
+  .human-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .human-item:last-child { border-bottom: none; }
+  .human-item .title { font-size: 0.9rem; }
+  .human-item .detail { color: var(--text-dim); font-size: 0.8rem; margin-top: 2px; }
+  .human-item.done { opacity: 0.4; }
+  .human-item.done .title { text-decoration: line-through; }
+
+  .activity-item { font-size: 0.8rem; color: var(--text-dim); padding: 3px 0; }
+  .cron-item { font-size: 0.8rem; padding: 2px 0; }
+  .cron-ok { color: var(--green); }
+  .cron-error { color: var(--red); }
+  .cron-summary { font-size: 0.8rem; color: var(--text-dim); }
+
+  .stats-bar { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .pulse { animation: pulse-glow 2s ease-in-out infinite; }
+  @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .timestamp { color: var(--text-dim); font-size: 0.75rem; }
+  .empty-state { color: var(--text-dim); padding: 16px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐍 Mission Control — Crowley HQ</h1>
+  <div class="header-actions">
+    <button class="btn btn-refresh" onclick="refresh()" title="Refresh data">
+      <span class="refresh-icon">🔄</span> Refresh
+    </button>
+    <button class="btn" id="autoToggle" onclick="toggleAuto()" title="Toggle auto-refresh">
+      Auto: <span id="autoLabel">60s</span>
+    </button>
+  </div>
+</header>
+<div class="subtitle" id="lastUpdated">Loading...</div>
+
+<div class="stats-bar" id="statsBar"></div>
+
+<h2 class="section-title">Agents</h2>
+<div class="grid" id="agentsGrid"></div>
+
+<div class="two-col">
+  <div>
+    <h2 class="section-title">⚡ Human Action Items</h2>
+    <div id="humanActions"></div>
+  </div>
+  <div>
+    <h2 class="section-title">📋 Active Projects</h2>
+    <div id="activeProjects"></div>
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+  <h2 class="section-title" style="border:none;margin:0;padding:0">📁 All Projects</h2>
+  <div class="filter-bar" id="filterBar"></div>
+</div>
+<div id="allProjects"></div>
+
+<script>
+const DATA_URL = 'mission-control.json';
+let autoInterval = null;
+let autoMs = 60000;
+let expandedAgents = new Set();
+let activeFilter = 'all';
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'never';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const mins = Math.floor((now - d) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+async function loadData() {
+  const resp = await fetch(DATA_URL + '?t=' + Date.now());
+  return resp.json();
+}
+
+async function refresh() {
+  const btn = document.querySelector('.btn-refresh');
+  btn.classList.add('spinning');
+  try {
+    const data = await loadData();
+    render(data);
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
+  }
+  setTimeout(() => btn.classList.remove('spinning'), 600);
+}
+
+function toggleAuto() {
+  if (autoInterval) {
+    clearInterval(autoInterval);
+    autoInterval = null;
+    document.getElementById('autoLabel').textContent = 'off';
+  } else {
+    autoInterval = setInterval(refresh, autoMs);
+    document.getElementById('autoLabel').textContent = '60s';
+  }
+}
+
+function toggleAgent(id) {
+  if (expandedAgents.has(id)) expandedAgents.delete(id);
+  else expandedAgents.add(id);
+  // Re-render just updates classes
+  document.querySelectorAll('.agent-card').forEach(el => {
+    if (el.dataset.agentId === id) el.classList.toggle('expanded');
+  });
+}
+
+function renderStats(data) {
+  const agents = data.agents || [];
+  const projects = data.projects || [];
+  const online = agents.filter(a => ['online','busy'].includes(a.status)).length;
+  const active = projects.filter(p => p.status === 'active').length;
+  const complete = projects.filter(p => p.status === 'complete').length;
+  const pending = (data.humanActions || []).filter(a => !a.done).length;
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat"><div class="num">${online}/${agents.length}</div><div class="label">Agents Online</div></div>
+    <div class="stat"><div class="num">${active}</div><div class="label">Active Projects</div></div>
+    <div class="stat"><div class="num">${complete}</div><div class="label">Completed</div></div>
+    <div class="stat"><div class="num" style="color:${pending > 0 ? 'var(--yellow)' : 'var(--green)'}">${pending}</div><div class="label">Action Items</div></div>
+  `;
+}
+
+function renderAgents(agents) {
+  document.getElementById('agentsGrid').innerHTML = agents.map(a => {
+    const sc = 'status-' + (a.status || 'offline');
+    const work = a.activeWork || [];
+    const expanded = expandedAgents.has(a.id) ? 'expanded' : '';
+    const logs = (a.activityLog || []).slice(0, 5);
+    const crons = a.cronJobs || [];
+    const lastLog = logs[0];
+
+    let workHtml = work.length > 0
+      ? work.map(w => `<div class="work-item">🔧 ${esc(w.task)}<div class="timestamp">${timeAgo(w.startedAt)}</div></div>`).join('')
+      : '<div class="work-item idle">Idle</div>';
+
+    let lastHtml = lastLog
+      ? `<div class="activity-item">Last: ${esc(lastLog.task)} <span class="timestamp">(${timeAgo(lastLog.completedAt)})</span></div>`
+      : '';
+
+    let cronSummary = '';
+    if (crons.length > 0) {
+      const ok = crons.filter(c => c.status === 'ok' || c.status === 'fixed').length;
+      const err = crons.length - ok;
+      cronSummary = `<div class="cron-summary">${crons.length} crons: <span class="cron-ok">${ok} ok</span>${err > 0 ? ` <span class="cron-error">${err} err</span>` : ''}</div>`;
+    }
+
+    // Detail panel
+    let cronDetail = crons.length > 0
+      ? crons.map(c => {
+          const cls = (c.status === 'ok' || c.status === 'fixed') ? 'cron-ok' : 'cron-error';
+          return `<div class="cron-item"><span class="${cls}">●</span> ${esc(c.name)} — ${esc(c.schedule)}</div>`;
+        }).join('')
+      : '<div class="activity-item">No crons configured</div>';
+
+    let logDetail = logs.length > 0
+      ? logs.map(l => `<div class="activity-item">${esc(l.task)} <span class="timestamp">${timeAgo(l.completedAt)}</span></div>`).join('')
+      : '<div class="activity-item">No recent activity</div>';
+
+    return `
+      <div class="card agent-card ${expanded}" data-agent-id="${a.id}" onclick="toggleAgent('${a.id}')">
+        <h3><span class="status-dot ${sc}"></span> ${a.emoji || ''} ${esc(a.name)}</h3>
+        <div class="role">${esc(a.role)}</div>
+        <div class="channel">${esc(a.channel)}</div>
+        ${workHtml}
+        ${cronSummary}
+        ${lastHtml}
+        <div class="detail-panel" onclick="event.stopPropagation()">
+          <div class="detail-section">
+            <h4>Agent Info</h4>
+            <div class="detail-row"><span class="label">ID</span><span>${a.id}</span></div>
+            <div class="detail-row"><span class="label">Status</span><span>${a.status}</span></div>
+            <div class="detail-row"><span class="label">Heartbeat</span><span>${a.heartbeat ? a.heartbeat.interval : 'n/a'}</span></div>
+          </div>
+          <div class="detail-section">
+            <h4>Cron Jobs (${crons.length})</h4>
+            ${cronDetail}
+          </div>
+          <div class="detail-section">
+            <h4>Recent Activity</h4>
+            ${logDetail}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHumanActions(actions) {
+  const el = document.getElementById('humanActions');
+  const items = actions || [];
+  const pending = items.filter(a => !a.done);
+  if (pending.length === 0) {
+    el.innerHTML = '<div class="empty-state">✅ All clear — nothing needs your attention</div>';
+    return;
+  }
+  el.innerHTML = pending.map(a => {
+    const icon = a.priority === 'urgent' ? '🔴' : '🟡';
+    return `
+      <div class="human-item">
+        <div class="title">${icon} ${esc(a.title)}</div>
+        <div class="detail">${esc(a.detail || '')} — flagged by ${esc(a.flaggedBy)} ${timeAgo(a.created)}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderProjects(projects) {
+  const active = (projects || []).filter(p => p.status === 'active');
+  const el = document.getElementById('activeProjects');
+  el.innerHTML = active.length === 0
+    ? '<div class="empty-state">No active projects</div>'
+    : active.map(p => projRow(p)).join('');
+
+  // Filters
+  const statuses = [...new Set((projects || []).map(p => p.status))];
+  const filterBar = document.getElementById('filterBar');
+  filterBar.innerHTML = `<button class="btn ${activeFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">All</button>` +
+    statuses.map(s => `<button class="btn ${activeFilter === s ? 'active' : ''}" onclick="setFilter('${s}')">${s}</button>`).join('');
+
+  const filtered = activeFilter === 'all' ? projects : (projects || []).filter(p => p.status === activeFilter);
+  document.getElementById('allProjects').innerHTML = filtered.length === 0
+    ? '<div class="empty-state">No projects match filter</div>'
+    : filtered.map(p => {
+        const bc = 'badge-' + (p.status || 'active');
+        const pct = p.milestoneTotal > 0 ? Math.round((p.milestoneDone / p.milestoneTotal) * 100) : 0;
+        const totalTasks = (p.tasksDone || 0) + (p.tasksPending || 0);
+        return `
+          <div class="project-row">
+            <span class="badge ${bc}">${p.status}</span>
+            <span class="project-name">${esc(p.name)}</span>
+            <span class="project-owner">${esc(p.owner)}</span>
+            <span style="color:var(--text-dim);font-size:0.8rem">${esc(p.category || '')}</span>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <span class="project-tasks">${totalTasks} tasks</span>
+          </div>`;
+      }).join('');
+}
+
+function projRow(p) {
+  const pct = p.milestoneTotal > 0 ? Math.round((p.milestoneDone / p.milestoneTotal) * 100) : 0;
+  return `
+    <div class="project-row">
+      <span class="badge badge-active">Active</span>
+      <span class="project-name">${esc(p.name)}</span>
+      <span class="project-owner">${esc(p.owner)}</span>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <span class="project-tasks">${p.tasksPending || 0} pending</span>
+    </div>`;
+}
+
+function setFilter(f) { activeFilter = f; refresh(); }
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function render(data) {
+  document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date(data.lastUpdated).toLocaleString() + ' — refreshed ' + new Date().toLocaleTimeString();
+  renderStats(data);
+  renderAgents(data.agents || []);
+  renderHumanActions(data.humanActions);
+  renderProjects(data.projects);
+}
+
+async function init() {
+  try {
+    const data = await loadData();
+    render(data);
+    autoInterval = setInterval(refresh, autoMs);
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = 'Error loading data: ' + e.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
