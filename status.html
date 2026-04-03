@@ -596,6 +596,133 @@
                     </tbody>
                 </table>
             </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 Analytics DB Sync Pipeline (7:15 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/analytics/" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\analytics\</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    DB-first analytics pipeline. Ingests raw data from Shopify GraphQL, Meta Ads, and Google Ads APIs into a SQLite analytics database. Then runs transforms to calculate daily aggregates, SKU-level sales, attribution, and customer cohorts. All calculations use <strong>True Gross (Units × Price List)</strong> and <strong>True Discounts (True Gross − Subtotal)</strong>, matching KPI matrix methodology.<br/><br/>
+                    <strong>Pipeline steps (in order):</strong><br/>
+                    1. <code>ingest_shopify.py</code> — Fetches orders, line items, discount allocations, customer journey moments from Shopify GraphQL<br/>
+                    2. <code>ingest_meta.py</code> — Fetches daily Meta Ads spend, impressions, clicks, conversions<br/>
+                    3. <code>ingest_google.py</code> — Fetches daily Google Ads spend, impressions, clicks, conversions<br/>
+                    4. <code>transform_daily.py</code> — Aggregates into <code>calc_daily_shopify</code>: DTC/WS orders, True Gross, revenue, discount components, free items, sub tracking<br/>
+                    5. <code>transform_sku.py</code> — Aggregates into <code>calc_daily_sku_sales</code>: per-SKU True Gross, net, discounts, DTC/WS/sub splits<br/>
+                    6. <code>transform_attribution.py</code> — Calculates <code>calc_attribution</code>: NC/RC classification, channel attribution from customer journey moments<br/>
+                    7. <code>transform_cohorts.py</code> — Calculates <code>calc_customer_cohorts</code>: cohort month, LTV windows (30d/90d/365d), order frequency<br/><br/>
+                    <strong>Key design decisions:</strong><br/>
+                    • Raw tables store API responses as-is; calculated tables derive everything from raw data<br/>
+                    • True Gross = Units × Price List price (falls back to nearest prior month if current month missing)<br/>
+                    • True Discounts = True Gross − Net (subtotal), NOT Shopify's <code>total_discounts</code><br/>
+                    • DTC-only filtering: <code>is_wholesale = 0</code> on all DTC metrics<br/>
+                    • Ignores non-physical SKUs: DONATE, GIFTCARD, SP001, GUIDEPROTECTION-*, EDONATION-*<br/>
+                    • 147,601 orders, 505,064 line items, 264,800 customer journey moments ingested
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Shopify GraphQL API, Meta Ads API, Google Ads API, PriceList/Monthly/*.json, COGS/Cogs.xlsx
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Analytics SQLite DB</strong></td>
+                            <td><a href="file:///C:/temp/analytics/teeccino_analytics.db" class="path-link" target="_blank">C:\temp\analytics\teeccino_analytics.db</a></td>
+                            <td class="success">2026-04-02 21:30</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OneDrive Copy</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/Analytics/teeccino_analytics.db" class="path-link" target="_blank">Reporting\Analytics\teeccino_analytics.db</a></td>
+                            <td class="success">2026-04-02</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📊 Analytics Dashboard Builder</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/analytics/build_analytics_dashboard.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\analytics\build_analytics_dashboard.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Generates interactive Chart.js dashboard from analytics DB. Includes KPI summary cards, monthly revenue/orders trends, attribution channel breakdown, cohort retention, top SKU analysis (scatter + table), and growing/declining SKU detection. All data filtered to DTC-only with True Gross calculations.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> teeccino_analytics.db (calc tables), sku_display_map.json (SKU display names)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Analytics Dashboard</strong></td>
+                            <td><a href="https://jstnadler.github.io/teeccino-reports/analytics.html" class="path-link" target="_blank">analytics.html → GitHub Pages</a></td>
+                            <td class="success">2026-04-02 21:30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📊 MTD KPI Dashboard Builder</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/analytics/build_mtd_dashboard.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\analytics\build_mtd_dashboard.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    DB-powered MTD KPI dashboard with month archive browsing. Pulls core KPIs from analytics DB (<code>calc_daily_shopify</code>, <code>calc_attribution</code>), ad spend from <code>raw_meta_ads</code>/<code>raw_google_ads</code>, top Meta ads from Graph API (current month only), forecast targets from Excel, and billing costs from CSVs.<br/><br/>
+                    <strong>Features:</strong> 12 KPI cards with YoY comparison, daily trend + cumulative pacing charts, top 10 Meta ads with ROAS, NC/RC True Gross split, billing cost tracking, month selector dropdown for browsing historical months.<br/><br/>
+                    <strong>CLI args:</strong> <code>--all</code> (rebuild all months), <code>--month YYYY-MM</code> (single month), <code>--since YYYY-MM</code> (range), <code>--no-ads</code>, <code>--no-push</code><br/>
+                    <strong>Archive:</strong> 28 months (Jan 2024 → Apr 2026), completed months at <code>mtd/YYYY-MM.html</code>, current month at <code>mtd.html</code>
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> teeccino_analytics.db, Meta Graph API (top ads), 2026 Forecast v3.xlsx, Billing CSVs
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>MTD Dashboard (current)</strong></td>
+                            <td><a href="https://jstnadler.github.io/teeccino-reports/mtd.html" class="path-link" target="_blank">mtd.html → GitHub Pages</a></td>
+                            <td class="success">2026-04-02 21:30</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Month Archives (28)</strong></td>
+                            <td><a href="https://jstnadler.github.io/teeccino-reports/mtd/2026-03.html" class="path-link" target="_blank">mtd/YYYY-MM.html → GitHub Pages</a></td>
+                            <td class="success">2026-04-02 21:30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <div class="card">
