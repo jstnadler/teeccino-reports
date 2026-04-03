@@ -1,22 +1,35 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teeccino Analytics Database — Schema Reference</title>
+    <title>Teeccino Analytics Database â€” Schema Reference</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f6f8fa;
-            color: #1f2328;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
             line-height: 1.6;
+            min-height: 100vh;
+            padding-top: 50px;
         }
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+            z-index: 200; padding: 12px 24px;
+            display: flex; align-items: center; gap: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
+        .top-nav a:hover { color: #D4A843; }
+        .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
         .header {
-            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a2332 100%);
+            background: rgba(255,255,255,0.03);
             color: white;
             padding: 40px 0;
-            border-bottom: 3px solid #58a6ff;
+            border-bottom: 2px solid rgba(212,168,67,0.3);
         }
         .header-inner {
             max-width: 1100px;
@@ -27,11 +40,11 @@
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, #D4A843, #8B6914);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .header p {
-            color: #8b949e;
-            font-size: 15px;
-        }
+        .header p { color: #888; font-size: 15px; }
+        .header p code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px; color: #ccc; }
         .header .stats {
             display: flex;
             gap: 24px;
@@ -39,29 +52,30 @@
             flex-wrap: wrap;
         }
         .header .stat {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 8px;
             padding: 10px 18px;
         }
         .header .stat .value {
             font-size: 22px;
             font-weight: 700;
-            color: #58a6ff;
+            color: #D4A843;
         }
         .header .stat .label {
             font-size: 12px;
-            color: #8b949e;
+            color: #888;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         .nav {
-            background: white;
-            border-bottom: 1px solid #d0d7de;
+            background: rgba(26,26,46,0.9);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             padding: 12px 0;
             position: sticky;
-            top: 0;
+            top: 50px;
             z-index: 100;
+            backdrop-filter: blur(8px);
         }
         .nav-inner {
             max-width: 1100px;
@@ -75,15 +89,15 @@
             display: inline-block;
             padding: 6px 14px;
             font-size: 13px;
-            color: #656d76;
+            color: #999;
             text-decoration: none;
             border-radius: 20px;
             white-space: nowrap;
             transition: all 0.15s;
         }
-        .nav a:hover { background: #f0f3f6; color: #1f2328; }
-        .nav a.active { background: #ddf4ff; color: #0969da; font-weight: 500; }
-        .nav .back-link { color: #0969da; font-weight: 500; }
+        .nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .nav a.active { background: rgba(212,168,67,0.15); color: #D4A843; font-weight: 500; }
+        .nav .back-link { color: #D4A843; font-weight: 500; }
         main {
             max-width: 1100px;
             margin: 0 auto;
@@ -94,21 +108,21 @@
             font-weight: 600;
             margin: 36px 0 12px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #d0d7de;
-            color: #1f2328;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            color: #D4A843;
         }
         .section-heading:first-child { margin-top: 12px; }
         .section-desc {
-            color: #656d76;
+            color: #888;
             font-size: 14px;
             margin-bottom: 20px;
         }
 
         /* Pipeline diagram */
         .pipeline {
-            background: white;
-            border: 1px solid #d0d7de;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
             font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -116,18 +130,18 @@
             line-height: 2;
             overflow-x: auto;
         }
-        .pipeline .step { color: #1f2328; }
-        .pipeline .script { color: #0969da; font-weight: 600; }
-        .pipeline .arrow { color: #8b949e; }
-        .pipeline .db { color: #8250df; font-weight: 600; }
-        .pipeline .output { color: #1a7f37; font-weight: 600; }
-        .pipeline .label { color: #656d76; font-style: italic; }
+        .pipeline .step { color: #ccc; }
+        .pipeline .script { color: #D4A843; font-weight: 600; }
+        .pipeline .arrow { color: #666; }
+        .pipeline .db { color: #a78bfa; font-weight: 600; }
+        .pipeline .output { color: #4ade80; font-weight: 600; }
+        .pipeline .label { color: #888; font-style: italic; }
 
         /* Table cards */
         .table-card {
-            background: white;
-            border: 1px solid #d0d7de;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
             margin-bottom: 16px;
             overflow: hidden;
         }
@@ -140,19 +154,19 @@
             user-select: none;
             transition: background 0.1s;
         }
-        .table-card-header:hover { background: #f6f8fa; }
+        .table-card-header:hover { background: rgba(255,255,255,0.05); }
         .table-name {
             font-size: 16px;
             font-weight: 600;
             font-family: 'SFMono-Regular', Consolas, monospace;
-            color: #0969da;
+            color: #D4A843;
         }
         .table-meta {
             display: flex;
             gap: 16px;
             align-items: center;
             font-size: 13px;
-            color: #656d76;
+            color: #888;
         }
         .table-meta .badge {
             display: inline-block;
@@ -163,17 +177,18 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
-        .badge-raw { background: #ddf4ff; color: #0550ae; }
-        .badge-calc { background: #dafbe1; color: #116329; }
-        .badge-ref { background: #fff8c5; color: #6f4e00; }
-        .badge-journey { background: #fbefff; color: #6639a6; }
+        .badge-raw { background: rgba(212,168,67,0.15); color: #D4A843; }
+        .badge-calc { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-ref { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-journey { background: rgba(167,139,250,0.15); color: #a78bfa; }
         .table-desc {
             padding: 0 20px 16px;
             font-size: 14px;
-            color: #4d555e;
-            border-bottom: 1px solid #d0d7de;
+            color: #999;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-        .table-desc strong { color: #1f2328; }
+        .table-desc strong { color: #fff; }
+        .table-desc code { background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 3px; color: #ccc; font-size: 12px; }
 
         /* Column table */
         .col-table {
@@ -184,47 +199,50 @@
         .col-table th {
             text-align: left;
             padding: 8px 20px;
-            background: #f6f8fa;
-            color: #656d76;
+            background: rgba(255,255,255,0.05);
+            color: #D4A843;
             font-weight: 600;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid #d0d7de;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .col-table td {
             padding: 8px 20px;
-            border-bottom: 1px solid #eaeef2;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             vertical-align: top;
         }
         .col-table tr:last-child td { border-bottom: none; }
         .col-table .col-name {
             font-family: 'SFMono-Regular', Consolas, monospace;
             font-weight: 500;
-            color: #1f2328;
+            color: #fff;
             white-space: nowrap;
         }
         .col-table .col-type {
             font-family: 'SFMono-Regular', Consolas, monospace;
-            color: #8250df;
+            color: #a78bfa;
             font-size: 12px;
         }
-        .col-table .pk { color: #cf222e; font-weight: 600; font-size: 10px; }
-        .col-table .col-desc { color: #4d555e; }
+        .col-table .pk { color: #f87171; font-weight: 600; font-size: 10px; }
+        .col-table .col-desc { color: #999; }
+        .col-table .col-desc code { background: rgba(255,255,255,0.1); padding: 1px 5px; border-radius: 3px; color: #ccc; font-size: 11px; }
+        .col-table td[colspan] { color: #888; background: rgba(255,255,255,0.03); }
         .idx-info {
             padding: 10px 20px 14px;
-            background: #f6f8fa;
+            background: rgba(255,255,255,0.03);
             font-size: 12px;
-            color: #656d76;
+            color: #888;
         }
         .idx-info code {
-            background: #eff2f5;
+            background: rgba(255,255,255,0.1);
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 11px;
+            color: #ccc;
         }
         .expand-icon {
-            color: #8b949e;
+            color: #888;
             font-size: 18px;
             transition: transform 0.2s;
         }
@@ -232,14 +250,26 @@
         .table-card-body { display: none; }
         .table-card.open .table-card-body { display: block; }
 
+        /* Info box in pipeline section */
+        .info-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .info-box code { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px; font-size: 13px; color: #ccc; }
+
         /* Footer */
         .footer {
             text-align: center;
             padding: 24px;
-            color: #8b949e;
+            color: #666;
             font-size: 13px;
         }
-        .footer a { color: #0969da; text-decoration: none; }
+        .footer a { color: #D4A843; text-decoration: none; }
 
         @media (max-width: 700px) {
             .header .stats { gap: 12px; }
@@ -252,10 +282,21 @@
 </head>
 <body>
 
+<nav class="top-nav">
+    <span class="brand">â˜• Teeccino</span>
+    <a href="index.html">Home</a>
+    <a href="mtd.html">MTD</a>
+    <a href="ytd.html">YTD</a>
+    <a href="analytics.html">Analytics</a>
+    <a href="creatives.html">Creatives</a>
+    <a href="status.html">Status</a>
+    <a href="database.html" style="color:#D4A843;font-weight:600;">Database</a>
+</nav>
+
 <div class="header">
     <div class="header-inner">
-        <h1>📦 Teeccino Analytics Database</h1>
-        <p><code>teeccino_analytics.db</code> — The single source of truth for all Teeccino ecommerce reporting</p>
+        <h1>ðŸ“¦ Teeccino Analytics Database</h1>
+        <p><code>teeccino_analytics.db</code> â€” The single source of truth for all Teeccino ecommerce reporting</p>
         <div class="stats">
             <div class="stat">
                 <div class="value">14</div>
@@ -270,7 +311,7 @@
                 <div class="label">Total Rows</div>
             </div>
             <div class="stat">
-                <div class="value">Jan 2023 → Present</div>
+                <div class="value">Jan 2023 â†’ Present</div>
                 <div class="label">Date Range</div>
             </div>
         </div>
@@ -279,7 +320,7 @@
 
 <div class="nav">
     <div class="nav-inner">
-        <a href="index.html" class="back-link">← Reports</a>
+        <a href="index.html" class="back-link">â† Reports</a>
         <a href="#pipeline">Pipeline</a>
         <a href="#raw-tables">Raw Tables</a>
         <a href="#journey-tables">Journey Tables</a>
@@ -291,39 +332,39 @@
 <main>
 
     <!-- PIPELINE -->
-    <h2 class="section-heading" id="pipeline">🔄 How the Database Gets Updated</h2>
+    <h2 class="section-heading" id="pipeline">ðŸ”„ How the Database Gets Updated</h2>
     <p class="section-desc">The analytics pipeline runs daily at 7:00 AM PST via <code>run_pipeline.py</code>. It can also be triggered manually for any date or as a full rebuild.</p>
 
     <div class="pipeline">
-        <div class="step"><span class="label">── Step 1: Ingestion ──</span></div>
-        <div class="step"><span class="script">ingest_shopify.py</span> <span class="arrow">→</span> Shopify GraphQL Admin API <span class="arrow">→</span> <span class="db">raw_orders</span> + <span class="db">raw_line_items</span> + <span class="db">raw_discount_allocations</span> + <span class="db">order_journey</span> + <span class="db">order_moments</span></div>
-        <div class="step"><span class="script">ingest_meta.py</span> <span class="arrow">→</span> Daily Meta Ads CSV (or Meta API) <span class="arrow">→</span> <span class="db">raw_meta_ads</span></div>
-        <div class="step"><span class="script">ingest_google.py</span> <span class="arrow">→</span> Daily Google Ads CSV (or Google API) <span class="arrow">→</span> <span class="db">raw_google_ads</span></div>
+        <div class="step"><span class="label">â”€â”€ Step 1: Ingestion â”€â”€</span></div>
+        <div class="step"><span class="script">ingest_shopify.py</span> <span class="arrow">â†’</span> Shopify GraphQL Admin API <span class="arrow">â†’</span> <span class="db">raw_orders</span> + <span class="db">raw_line_items</span> + <span class="db">raw_discount_allocations</span> + <span class="db">order_journey</span> + <span class="db">order_moments</span></div>
+        <div class="step"><span class="script">ingest_meta.py</span> <span class="arrow">â†’</span> Daily Meta Ads CSV (or Meta API) <span class="arrow">â†’</span> <span class="db">raw_meta_ads</span></div>
+        <div class="step"><span class="script">ingest_google.py</span> <span class="arrow">â†’</span> Daily Google Ads CSV (or Google API) <span class="arrow">â†’</span> <span class="db">raw_google_ads</span></div>
         <br/>
-        <div class="step"><span class="label">── Step 2: Transform ──</span></div>
-        <div class="step"><span class="script">transform_daily.py</span> <span class="arrow">→</span> raw_orders + raw_line_items <span class="arrow">→</span> <span class="db">calc_daily_shopify</span> <span class="label">(37 daily aggregate columns)</span></div>
-        <div class="step"><span class="script">transform_sku.py</span> <span class="arrow">→</span> raw_line_items + price_list + cogs <span class="arrow">→</span> <span class="db">calc_daily_sku_sales</span> <span class="label">(per-SKU daily metrics)</span></div>
-        <div class="step"><span class="script">transform_attribution.py</span> <span class="arrow">→</span> raw_orders + order_journey <span class="arrow">→</span> <span class="db">calc_attribution</span> <span class="label">(first/last touch per order)</span></div>
-        <div class="step"><span class="script">transform_cohorts.py</span> <span class="arrow">→</span> raw_orders <span class="arrow">→</span> <span class="db">calc_customer_cohorts</span> <span class="label">(full rebuild only — too expensive daily)</span></div>
+        <div class="step"><span class="label">â”€â”€ Step 2: Transform â”€â”€</span></div>
+        <div class="step"><span class="script">transform_daily.py</span> <span class="arrow">â†’</span> raw_orders + raw_line_items <span class="arrow">â†’</span> <span class="db">calc_daily_shopify</span> <span class="label">(37 daily aggregate columns)</span></div>
+        <div class="step"><span class="script">transform_sku.py</span> <span class="arrow">â†’</span> raw_line_items + price_list + cogs <span class="arrow">â†’</span> <span class="db">calc_daily_sku_sales</span> <span class="label">(per-SKU daily metrics)</span></div>
+        <div class="step"><span class="script">transform_attribution.py</span> <span class="arrow">â†’</span> raw_orders + order_journey <span class="arrow">â†’</span> <span class="db">calc_attribution</span> <span class="label">(first/last touch per order)</span></div>
+        <div class="step"><span class="script">transform_cohorts.py</span> <span class="arrow">â†’</span> raw_orders <span class="arrow">â†’</span> <span class="db">calc_customer_cohorts</span> <span class="label">(full rebuild only â€” too expensive daily)</span></div>
         <br/>
-        <div class="step"><span class="label">── Step 3: Output ──</span></div>
-        <div class="step"><span class="script">build_mtd_dashboard.py</span> <span class="arrow">→</span> calc_daily_shopify + raw_meta/google_ads <span class="arrow">→</span> <span class="output">mtd.html</span> <span class="arrow">→</span> GitHub Pages</div>
+        <div class="step"><span class="label">â”€â”€ Step 3: Output â”€â”€</span></div>
+        <div class="step"><span class="script">build_mtd_dashboard.py</span> <span class="arrow">â†’</span> calc_daily_shopify + raw_meta/google_ads <span class="arrow">â†’</span> <span class="output">mtd.html</span> <span class="arrow">â†’</span> GitHub Pages</div>
     </div>
 
     <div style="background: white; border: 1px solid #d0d7de; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; font-size: 14px;">
         <strong>Update Schedule:</strong> The daily pipeline runs at <strong>7:00 AM PST</strong>, processing the previous day's data. A full rebuild (all dates since Jan 2023) takes ~15 minutes.
         <br/><br/>
         <strong>Commands:</strong><br/>
-        <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py</code> — Transform today's data<br/>
-        <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py --ingest</code> — Ingest from APIs + transform<br/>
-        <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py --date 2026-04-01</code> — Process a specific date<br/>
-        <code style="background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py --full</code> — Full rebuild of all calculated tables
+        <code style="background: rgba(255,255,255,0.03); padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py</code> â€” Transform today's data<br/>
+        <code style="background: rgba(255,255,255,0.03); padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py --ingest</code> â€” Ingest from APIs + transform<br/>
+        <code style="background: rgba(255,255,255,0.03); padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py --date 2026-04-01</code> â€” Process a specific date<br/>
+        <code style="background: rgba(255,255,255,0.03); padding: 2px 6px; border-radius: 3px; font-size: 13px;">python run_pipeline.py --full</code> â€” Full rebuild of all calculated tables
     </div>
 
 
     <!-- RAW TABLES -->
-    <h2 class="section-heading" id="raw-tables">📥 Raw Tables — Ingested Data</h2>
-    <p class="section-desc">Source data pulled directly from APIs and CSVs. These are the ground truth — never modified by transforms.</p>
+    <h2 class="section-heading" id="raw-tables">ðŸ“¥ Raw Tables â€” Ingested Data</h2>
+    <p class="section-desc">Source data pulled directly from APIs and CSVs. These are the ground truth â€” never modified by transforms.</p>
 
     <!-- raw_orders -->
     <div class="table-card open" id="raw_orders">
@@ -334,14 +375,14 @@
             <div class="table-meta">
                 <span class="badge badge-raw">Raw</span>
                 <span>147,846 rows</span>
-                <span>Jan 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Jan 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Every Shopify order, fetched via the <strong>GraphQL Admin API</strong> by <code>ingest_shopify.py</code>. Includes DTC, wholesale (Walmart/Target/Faire), and subscription orders. Excludes cancelled/voided. One row per order.
             <br/><br/>
-            <strong>Source:</strong> Shopify GraphQL <code>orders</code> query → customer journey + financial data
+            <strong>Source:</strong> Shopify GraphQL <code>orders</code> query â†’ customer journey + financial data
         </div>
         <div class="table-card-body">
             <table class="col-table">
@@ -384,12 +425,12 @@
             <div class="table-meta">
                 <span class="badge badge-raw">Raw</span>
                 <span>505,739 rows</span>
-                <span>Jan 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Jan 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
-            Individual line items within each order. One row per SKU per order. Used by <code>transform_sku.py</code> to calculate True Gross Sales (<code>quantity × price_list_price</code>).
+            Individual line items within each order. One row per SKU per order. Used by <code>transform_sku.py</code> to calculate True Gross Sales (<code>quantity Ã— price_list_price</code>).
             <br/><br/>
             <strong>Source:</strong> Shopify GraphQL <code>lineItems</code> within each order
         </div>
@@ -398,7 +439,7 @@
                 <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td class="col-name">id <span class="pk">PK</span></td><td class="col-type">INTEGER</td><td class="col-desc">Auto-increment ID</td></tr>
-                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">FK → <code>raw_orders.shopify_id</code></td></tr>
+                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">FK â†’ <code>raw_orders.shopify_id</code></td></tr>
                     <tr><td class="col-name">date</td><td class="col-type">TEXT</td><td class="col-desc">Order date (denormalized for fast SKU queries)</td></tr>
                     <tr><td class="col-name">sku</td><td class="col-type">TEXT</td><td class="col-desc">Product SKU (e.g. <code>43111</code>, <code>80060L</code>)</td></tr>
                     <tr><td class="col-name">product_name</td><td class="col-type">TEXT</td><td class="col-desc">Full product name</td></tr>
@@ -426,7 +467,7 @@
             <div class="table-meta">
                 <span class="badge badge-raw">Raw</span>
                 <span>169,542 rows</span>
-                <span class="expand-icon">▸</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
@@ -439,7 +480,7 @@
                 <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td class="col-name">id <span class="pk">PK</span></td><td class="col-type">INTEGER</td><td class="col-desc">Auto-increment ID</td></tr>
-                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">FK → <code>raw_orders.shopify_id</code></td></tr>
+                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">FK â†’ <code>raw_orders.shopify_id</code></td></tr>
                     <tr><td class="col-name">line_item_index</td><td class="col-type">INTEGER</td><td class="col-desc">Position of line item within the order (0-based)</td></tr>
                     <tr><td class="col-name">sku</td><td class="col-type">TEXT</td><td class="col-desc">SKU of the discounted item</td></tr>
                     <tr><td class="col-name">amount</td><td class="col-type">REAL</td><td class="col-desc">Dollar amount of this discount allocation</td></tr>
@@ -463,14 +504,14 @@
             <div class="table-meta">
                 <span class="badge badge-raw">Raw</span>
                 <span>1,153 rows</span>
-                <span>Feb 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Feb 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Daily Meta (Facebook/Instagram) advertising performance. One row per day.
             <br/><br/>
-            <strong>Source:</strong> <code>ingest_meta.py</code> → reads <code>Daily Meta Ads.csv</code> (generated by <code>daily_meta_report.py</code> from Meta Marketing API, account <code>559530661221525</code>)
+            <strong>Source:</strong> <code>ingest_meta.py</code> â†’ reads <code>Daily Meta Ads.csv</code> (generated by <code>daily_meta_report.py</code> from Meta Marketing API, account <code>559530661221525</code>)
         </div>
         <div class="table-card-body">
             <table class="col-table">
@@ -501,14 +542,14 @@
             <div class="table-meta">
                 <span class="badge badge-raw">Raw</span>
                 <span>1,180 rows</span>
-                <span>Jan 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Jan 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Daily Google Ads performance. One row per day.
             <br/><br/>
-            <strong>Source:</strong> <code>ingest_google.py</code> → reads <code>Daily Google Ads.csv</code> (generated by <code>daily_google_report.py</code> from Google Ads API, customer ID <code>806-386-6750</code>)
+            <strong>Source:</strong> <code>ingest_google.py</code> â†’ reads <code>Daily Google Ads.csv</code> (generated by <code>daily_google_report.py</code> from Google Ads API, customer ID <code>806-386-6750</code>)
         </div>
         <div class="table-card-body">
             <table class="col-table">
@@ -518,7 +559,7 @@
                     <tr><td class="col-name">spend</td><td class="col-type">REAL</td><td class="col-desc">Total ad spend ($)</td></tr>
                     <tr><td class="col-name">impressions</td><td class="col-type">INTEGER</td><td class="col-desc">Total impressions</td></tr>
                     <tr><td class="col-name">clicks</td><td class="col-type">INTEGER</td><td class="col-desc">Total clicks</td></tr>
-                    <tr><td class="col-name">conversions</td><td class="col-type">REAL</td><td class="col-desc">Attributed conversions (fractional — Google uses data-driven attribution)</td></tr>
+                    <tr><td class="col-name">conversions</td><td class="col-type">REAL</td><td class="col-desc">Attributed conversions (fractional â€” Google uses data-driven attribution)</td></tr>
                     <tr><td class="col-name">conversion_value</td><td class="col-type">REAL</td><td class="col-desc">Attributed conversion revenue ($)</td></tr>
                     <tr><td class="col-name">fetched_at</td><td class="col-type">TEXT</td><td class="col-desc">When this row was last ingested</td></tr>
                 </tbody>
@@ -531,7 +572,7 @@
 
 
     <!-- JOURNEY TABLES -->
-    <h2 class="section-heading" id="journey-tables">🧭 Journey Tables — Customer Attribution</h2>
+    <h2 class="section-heading" id="journey-tables">ðŸ§­ Journey Tables â€” Customer Attribution</h2>
     <p class="section-desc">Marketing touchpoint data from Shopify's customer journey tracking. Shows how customers discovered and returned to the store before purchasing.</p>
 
     <!-- order_journey -->
@@ -543,19 +584,19 @@
             <div class="table-meta">
                 <span class="badge badge-journey">Journey</span>
                 <span>147,846 rows</span>
-                <span class="expand-icon">▸</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             First-touch and last-touch attribution summary for each order. Extracted from Shopify's <code>customerJourneySummary</code> GraphQL field. One row per order.
             <br/><br/>
-            <strong>Source:</strong> <code>ingest_shopify.py</code> → Shopify GraphQL <code>customerJourneySummary</code>
+            <strong>Source:</strong> <code>ingest_shopify.py</code> â†’ Shopify GraphQL <code>customerJourneySummary</code>
         </div>
         <div class="table-card-body">
             <table class="col-table">
                 <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
                 <tbody>
-                    <tr><td class="col-name">order_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">FK → <code>raw_orders.shopify_id</code></td></tr>
+                    <tr><td class="col-name">order_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">FK â†’ <code>raw_orders.shopify_id</code></td></tr>
                     <tr><td class="col-name">customer_order_index</td><td class="col-type">INTEGER</td><td class="col-desc">Customer's nth order</td></tr>
                     <tr><td class="col-name">days_to_conversion</td><td class="col-type">INTEGER</td><td class="col-desc">Days from first visit to purchase</td></tr>
                     <tr><td class="col-name">first_visit_source</td><td class="col-type">TEXT</td><td class="col-desc">First-touch channel (email, direct, google, facebook, etc.)</td></tr>
@@ -597,20 +638,20 @@
             <div class="table-meta">
                 <span class="badge badge-journey">Journey</span>
                 <span>265,028 rows</span>
-                <span class="expand-icon">▸</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
-            Individual marketing touchpoints ("moments") in each customer's journey. Multiple rows per order — one per visit/interaction before purchase.
+            Individual marketing touchpoints ("moments") in each customer's journey. Multiple rows per order â€” one per visit/interaction before purchase.
             <br/><br/>
-            <strong>Source:</strong> <code>ingest_shopify.py</code> → Shopify GraphQL <code>customerJourneySummary.moments</code>
+            <strong>Source:</strong> <code>ingest_shopify.py</code> â†’ Shopify GraphQL <code>customerJourneySummary.moments</code>
         </div>
         <div class="table-card-body">
             <table class="col-table">
                 <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td class="col-name">id <span class="pk">PK</span></td><td class="col-type">INTEGER</td><td class="col-desc">Auto-increment ID</td></tr>
-                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">FK → <code>raw_orders.shopify_id</code></td></tr>
+                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">FK â†’ <code>raw_orders.shopify_id</code></td></tr>
                     <tr><td class="col-name">moment_index</td><td class="col-type">INTEGER</td><td class="col-desc">Chronological index of this moment (0-based)</td></tr>
                     <tr><td class="col-name">occurred_at</td><td class="col-type">TEXT</td><td class="col-desc">ISO timestamp when the touchpoint occurred</td></tr>
                     <tr><td class="col-name">source</td><td class="col-type">TEXT</td><td class="col-desc">Channel source (email, direct, google, facebook, etc.)</td></tr>
@@ -634,7 +675,7 @@
 
 
     <!-- CALCULATED TABLES -->
-    <h2 class="section-heading" id="calc-tables">⚙️ Calculated Tables — Transformed Data</h2>
+    <h2 class="section-heading" id="calc-tables">âš™ï¸ Calculated Tables â€” Transformed Data</h2>
     <p class="section-desc">Derived from raw tables by transform scripts. These power the MTD dashboard and reports. Rebuilt daily (or on-demand).</p>
 
     <!-- calc_daily_shopify -->
@@ -646,59 +687,59 @@
             <div class="table-meta">
                 <span class="badge badge-calc">Calculated</span>
                 <span>1,188 rows</span>
-                <span>Jan 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Jan 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Daily aggregate KPIs for Shopify. <strong>This is the primary table that powers the MTD dashboard.</strong> One row per day with 37 columns covering orders, revenue, discounts, subscriptions, and wholesale.
             <br/><br/>
-            <strong>Source:</strong> <code>transform_daily.py</code> → aggregates <code>raw_orders</code> + <code>raw_line_items</code> + <code>raw_discount_allocations</code>
+            <strong>Source:</strong> <code>transform_daily.py</code> â†’ aggregates <code>raw_orders</code> + <code>raw_line_items</code> + <code>raw_discount_allocations</code>
             <br/>
-            <strong>Gross formula:</strong> <code>True Gross = Σ(quantity × price_list_price)</code> per line item, using monthly price list
+            <strong>Gross formula:</strong> <code>True Gross = Î£(quantity Ã— price_list_price)</code> per line item, using monthly price list
         </div>
         <div class="table-card-body">
             <table class="col-table">
                 <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td class="col-name">date <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Date (<code>YYYY-MM-DD</code>)</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— All-Channel Totals —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” All-Channel Totals â€”</td></tr>
                     <tr><td class="col-name">total_orders</td><td class="col-type">INTEGER</td><td class="col-desc">Total orders (DTC + wholesale)</td></tr>
                     <tr><td class="col-name">new_orders</td><td class="col-type">INTEGER</td><td class="col-desc">New customer orders (customer_order_index = 1)</td></tr>
                     <tr><td class="col-name">ret_orders</td><td class="col-type">INTEGER</td><td class="col-desc">Returning customer orders</td></tr>
                     <tr><td class="col-name">total_revenue</td><td class="col-type">REAL</td><td class="col-desc">Total net revenue (all channels)</td></tr>
                     <tr><td class="col-name">new_revenue</td><td class="col-type">REAL</td><td class="col-desc">Revenue from new customers</td></tr>
                     <tr><td class="col-name">ret_revenue</td><td class="col-type">REAL</td><td class="col-desc">Revenue from returning customers</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— DTC (Direct-to-Consumer) —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” DTC (Direct-to-Consumer) â€”</td></tr>
                     <tr><td class="col-name">dtc_orders</td><td class="col-type">INTEGER</td><td class="col-desc">DTC orders only (excludes Walmart/Target/Faire)</td></tr>
                     <tr><td class="col-name">dtc_new_orders</td><td class="col-type">INTEGER</td><td class="col-desc">DTC new customer orders</td></tr>
                     <tr><td class="col-name">dtc_ret_orders</td><td class="col-type">INTEGER</td><td class="col-desc">DTC returning customer orders</td></tr>
-                    <tr><td class="col-name">dtc_gross</td><td class="col-type">REAL</td><td class="col-desc"><strong>True Gross Sales</strong> = Σ(units × monthly price list price) for DTC line items</td></tr>
+                    <tr><td class="col-name">dtc_gross</td><td class="col-type">REAL</td><td class="col-desc"><strong>True Gross Sales</strong> = Î£(units Ã— monthly price list price) for DTC line items</td></tr>
                     <tr><td class="col-name">dtc_revenue</td><td class="col-type">REAL</td><td class="col-desc">DTC net revenue (total_price from orders)</td></tr>
                     <tr><td class="col-name">dtc_new_revenue</td><td class="col-type">REAL</td><td class="col-desc">DTC revenue from new customers</td></tr>
                     <tr><td class="col-name">dtc_ret_revenue</td><td class="col-type">REAL</td><td class="col-desc">DTC revenue from returning customers</td></tr>
                     <tr><td class="col-name">dtc_subtotal</td><td class="col-type">REAL</td><td class="col-desc">Sum of order subtotals (after line discounts, before shipping)</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— Discount Breakdown —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” Discount Breakdown â€”</td></tr>
                     <tr><td class="col-name">dtc_discounts</td><td class="col-type">REAL</td><td class="col-desc">Total discount amount (all types combined)</td></tr>
                     <tr><td class="col-name">dtc_subscription_discounts</td><td class="col-type">REAL</td><td class="col-desc">Subscription discount allocations</td></tr>
                     <tr><td class="col-name">dtc_automatic_discounts</td><td class="col-type">REAL</td><td class="col-desc">Automatic discount allocations</td></tr>
                     <tr><td class="col-name">dtc_code_discounts</td><td class="col-type">REAL</td><td class="col-desc">Discount code allocations</td></tr>
                     <tr><td class="col-name">dtc_manual_discounts</td><td class="col-type">REAL</td><td class="col-desc">Manual discount allocations</td></tr>
                     <tr><td class="col-name">dtc_shipping_discounts</td><td class="col-type">REAL</td><td class="col-desc">Shipping discount allocations</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— Free Items —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” Free Items â€”</td></tr>
                     <tr><td class="col-name">dtc_free_item_value</td><td class="col-type">REAL</td><td class="col-desc">Retail value of free items given away</td></tr>
                     <tr><td class="col-name">dtc_free_item_count</td><td class="col-type">INTEGER</td><td class="col-desc">Number of free items</td></tr>
                     <tr><td class="col-name">dtc_free_item_cogs</td><td class="col-type">REAL</td><td class="col-desc">Cost of goods for free items</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— Subscriptions —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” Subscriptions â€”</td></tr>
                     <tr><td class="col-name">sub_orders</td><td class="col-type">INTEGER</td><td class="col-desc">Total subscription orders</td></tr>
                     <tr><td class="col-name">sub_revenue</td><td class="col-type">REAL</td><td class="col-desc">Subscription revenue</td></tr>
                     <tr><td class="col-name">first_sub_orders</td><td class="col-type">INTEGER</td><td class="col-desc">First-time subscription orders (new subscribers)</td></tr>
                     <tr><td class="col-name">recurring_sub_orders</td><td class="col-type">INTEGER</td><td class="col-desc">Recurring subscription orders</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— Wholesale —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” Wholesale â€”</td></tr>
                     <tr><td class="col-name">ws_orders</td><td class="col-type">INTEGER</td><td class="col-desc">Wholesale orders (Walmart + Target + Faire)</td></tr>
                     <tr><td class="col-name">ws_gross</td><td class="col-type">REAL</td><td class="col-desc">Wholesale gross sales</td></tr>
                     <tr><td class="col-name">ws_revenue</td><td class="col-type">REAL</td><td class="col-desc">Wholesale net revenue</td></tr>
-                    <tr><td colspan="3" style="padding: 4px 20px; color: #656d76; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: #f6f8fa;">— Totals —</td></tr>
+                    <tr><td colspan="3" style="padding: 4px 20px; color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; background: rgba(255,255,255,0.03);">â€” Totals â€”</td></tr>
                     <tr><td class="col-name">subtotal</td><td class="col-type">REAL</td><td class="col-desc">Sum of all order subtotals</td></tr>
                     <tr><td class="col-name">total_discounts</td><td class="col-type">REAL</td><td class="col-desc">Sum of all discounts</td></tr>
                     <tr><td class="col-name">total_shipping</td><td class="col-type">REAL</td><td class="col-desc">Sum of customer-paid shipping</td></tr>
@@ -722,14 +763,14 @@
             <div class="table-meta">
                 <span class="badge badge-calc">Calculated</span>
                 <span>139,051 rows</span>
-                <span>Jan 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Jan 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Daily sales by SKU. One row per SKU per day (only days with sales). Used for SKU profitability analysis and the SKU breakdown in matrices.
             <br/><br/>
-            <strong>Source:</strong> <code>transform_sku.py</code> → aggregates <code>raw_line_items</code> + joins <code>price_list</code> + <code>cogs</code>
+            <strong>Source:</strong> <code>transform_sku.py</code> â†’ aggregates <code>raw_line_items</code> + joins <code>price_list</code> + <code>cogs</code>
         </div>
         <div class="table-card-body">
             <table class="col-table">
@@ -738,7 +779,7 @@
                     <tr><td class="col-name">date <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Date</td></tr>
                     <tr><td class="col-name">sku <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Product SKU</td></tr>
                     <tr><td class="col-name">units_sold</td><td class="col-type">INTEGER</td><td class="col-desc">Total units sold (all channels)</td></tr>
-                    <tr><td class="col-name">gross_sales</td><td class="col-type">REAL</td><td class="col-desc">Gross sales = units × price list price</td></tr>
+                    <tr><td class="col-name">gross_sales</td><td class="col-type">REAL</td><td class="col-desc">Gross sales = units Ã— price list price</td></tr>
                     <tr><td class="col-name">net_sales</td><td class="col-type">REAL</td><td class="col-desc">Net sales after discounts</td></tr>
                     <tr><td class="col-name">discounts</td><td class="col-type">REAL</td><td class="col-desc">Total discounts applied to this SKU</td></tr>
                     <tr><td class="col-name">dtc_units</td><td class="col-type">INTEGER</td><td class="col-desc">DTC units sold</td></tr>
@@ -748,7 +789,7 @@
                     <tr><td class="col-name">ws_units</td><td class="col-type">INTEGER</td><td class="col-desc">Wholesale units sold</td></tr>
                     <tr><td class="col-name">ws_gross</td><td class="col-type">REAL</td><td class="col-desc">Wholesale gross sales</td></tr>
                     <tr><td class="col-name">sub_units</td><td class="col-type">INTEGER</td><td class="col-desc">Subscription units</td></tr>
-                    <tr><td class="col-name">cogs</td><td class="col-type">REAL</td><td class="col-desc">Cost of goods sold (units × cogs_per_unit from <code>cogs</code> table)</td></tr>
+                    <tr><td class="col-name">cogs</td><td class="col-type">REAL</td><td class="col-desc">Cost of goods sold (units Ã— cogs_per_unit from <code>cogs</code> table)</td></tr>
                     <tr><td class="col-name">calculated_at</td><td class="col-type">TEXT</td><td class="col-desc">When this row was calculated</td></tr>
                 </tbody>
             </table>
@@ -767,20 +808,20 @@
             <div class="table-meta">
                 <span class="badge badge-calc">Calculated</span>
                 <span>147,830 rows</span>
-                <span>Jan 2023 → Apr 2026</span>
-                <span class="expand-icon">▸</span>
+                <span>Jan 2023 â†’ Apr 2026</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Simplified marketing attribution per order. Maps first/last touch journey data to a single <code>attributed_channel</code> (Meta, Google, Email, Direct, Organic, Other).
             <br/><br/>
-            <strong>Source:</strong> <code>transform_attribution.py</code> → joins <code>raw_orders</code> + <code>order_journey</code>
+            <strong>Source:</strong> <code>transform_attribution.py</code> â†’ joins <code>raw_orders</code> + <code>order_journey</code>
         </div>
         <div class="table-card-body">
             <table class="col-table">
                 <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
                 <tbody>
-                    <tr><td class="col-name">order_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">FK → <code>raw_orders.shopify_id</code></td></tr>
+                    <tr><td class="col-name">order_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">FK â†’ <code>raw_orders.shopify_id</code></td></tr>
                     <tr><td class="col-name">date</td><td class="col-type">TEXT</td><td class="col-desc">Order date</td></tr>
                     <tr><td class="col-name">first_touch_source</td><td class="col-type">TEXT</td><td class="col-desc">First-touch source (parsed from UTM/referrer)</td></tr>
                     <tr><td class="col-name">first_touch_medium</td><td class="col-type">TEXT</td><td class="col-desc">First-touch medium</td></tr>
@@ -811,13 +852,13 @@
             <div class="table-meta">
                 <span class="badge badge-calc">Calculated</span>
                 <span>60,591 rows</span>
-                <span class="expand-icon">▸</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
             Customer-level cohort analysis. One row per unique customer. Groups customers by their first-order month and calculates LTV at 30/90/365 days.
             <br/><br/>
-            <strong>Source:</strong> <code>transform_cohorts.py</code> → aggregates <code>raw_orders</code> by customer. Only runs on full rebuild (too expensive for daily).
+            <strong>Source:</strong> <code>transform_cohorts.py</code> â†’ aggregates <code>raw_orders</code> by customer. Only runs on full rebuild (too expensive for daily).
         </div>
         <div class="table-card-body">
             <table class="col-table">
@@ -843,7 +884,7 @@
 
 
     <!-- REFERENCE TABLES -->
-    <h2 class="section-heading" id="reference-tables">📋 Reference Tables — Lookups & Constants</h2>
+    <h2 class="section-heading" id="reference-tables">ðŸ“‹ Reference Tables â€” Lookups & Constants</h2>
     <p class="section-desc">Static or semi-static reference data used by transform scripts. Updated when prices change or new COGS data arrives.</p>
 
     <!-- price_list -->
@@ -855,11 +896,11 @@
             <div class="table-meta">
                 <span class="badge badge-ref">Reference</span>
                 <span>5,610 rows</span>
-                <span class="expand-icon">▸</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
-            Monthly retail price list for every SKU. <strong>This is critical</strong> — it's used to calculate True Gross Sales. Prices change when Teeccino adjusts pricing (e.g., the Jan 2023 price increase).
+            Monthly retail price list for every SKU. <strong>This is critical</strong> â€” it's used to calculate True Gross Sales. Prices change when Teeccino adjusts pricing (e.g., the Jan 2023 price increase).
             <br/><br/>
             <strong>Source:</strong> <code>PriceList/monthly/*.json</code> files on OneDrive, imported by <code>create_db.py</code>
         </div>
@@ -888,7 +929,7 @@
             <div class="table-meta">
                 <span class="badge badge-ref">Reference</span>
                 <span>1,517 rows</span>
-                <span class="expand-icon">▸</span>
+                <span class="expand-icon">â–¸</span>
             </div>
         </div>
         <div class="table-desc">
@@ -915,7 +956,7 @@
 </main>
 
 <div class="footer">
-    <p>Generated by DataOps on <span id="gen-date"></span> · <a href="status.html">Status Dashboard</a> · <a href="mtd.html">MTD Dashboard</a> · <a href="creatives.html">Creative Library</a></p>
+    <p>Generated by DataOps on <span id="gen-date"></span> Â· <a href="status.html">Status Dashboard</a> Â· <a href="mtd.html">MTD Dashboard</a> Â· <a href="creatives.html">Creative Library</a></p>
 </div>
 
 <script>

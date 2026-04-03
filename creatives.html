@@ -6,58 +6,66 @@
     <title>Creative Library - Teeccino</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e2e8f0; padding: 20px; padding-top: 70px; min-height: 100vh; }
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; background: rgba(26,26,46,0.95); backdrop-filter: blur(10px); z-index: 200; padding: 12px 24px; display: flex; align-items: center; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
+        .top-nav a:hover { color: #D4A843; }
+        .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
         .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: #f8fafc; }
-        .nav { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
-        .nav a { color: #60a5fa; text-decoration: none; padding: 8px 16px; border: 1px solid #334155; border-radius: 6px; }
-        .nav a:hover { background: #1e293b; }
+        .header h1 { background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .old-nav { display: none; }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat { background: #1e293b; padding: 20px; border-radius: 12px; text-align: center; }
-        .stat .val { font-size: 1.8rem; font-weight: bold; color: #f8fafc; }
+        .stat { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center; }
+        .stat .val { font-size: 1.8rem; font-weight: bold; color: #D4A843; }
         .stat .lbl { color: #94a3b8; font-size: 14px; }
         .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filters select, .filters input { padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; }
+        .filters select, .filters input { padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #e2e8f0; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; }
-        .card { background: #1e293b; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-4px); }
+        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-4px); border-color: rgba(212,168,67,0.4); }
         .card.unmatched { opacity: 0.5; }
-        .card img { width: 100%; height: 280px; object-fit: contain; background: #334155; }
+        .card img { width: 100%; height: 280px; object-fit: contain; background: rgba(255,255,255,0.03); }
         .card-body { padding: 15px; }
         .card-title { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; }
         .card-meta { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 10px; }
         .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
-        .badge-ok { background: #166534; color: #86efac; }
-        .badge-no { background: #7f1d1d; color: #fca5a5; }
+        .badge-ok { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-no { background: rgba(248,113,113,0.15); color: #f87171; }
         .card-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-        .card-stat { background: #0f172a; padding: 8px; border-radius: 6px; text-align: center; }
+        .card-stat { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; text-align: center; }
         .card-stat .v { font-weight: 600; font-size: 14px; }
         .card-stat .l { font-size: 10px; color: #64748b; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; padding: 40px 20px; }
         .modal.active { display: flex; justify-content: center; align-items: flex-start; }
-        .modal-box { background: #1e293b; border-radius: 16px; max-width: 800px; width: 100%; }
-        .modal-head { padding: 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; }
+        .modal-box { background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; max-width: 800px; width: 100%; }
+        .modal-head { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
         .modal-head h2 { font-size: 16px; }
         .modal-close { background: none; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; }
         .modal-body { padding: 20px; }
         .modal-img { width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
-        th { color: #94a3b8; }
-        .st-active { color: #86efac; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
+        th { color: #D4A843; }
+        .st-active { color: #4ade80; }
         .st-paused { color: #fcd34d; }
     </style>
 </head>
 <body>
+    <nav class="top-nav">
+        <span class="brand">☕ Teeccino</span>
+        <a href="index.html">Home</a>
+        <a href="mtd.html">MTD</a>
+        <a href="ytd.html">YTD</a>
+        <a href="analytics.html">Analytics</a>
+        <a href="creatives.html" style="color:#D4A843;font-weight:600;">Creatives</a>
+        <a href="status.html">Status</a>
+        <a href="database.html">Database</a>
+    </nav>
+
     <div class="header">
         <h1>🎨 Creative Library</h1>
         <p style="color:#94a3b8">ECH creatives matched to Meta ads • Updated 2026-04-03 08:14</p>
     </div>
-    <nav class="nav">
-        <a href="index.html">← Home</a>
-        <a href="mtd.html">MTD Dashboard</a>
-        <a href="kpi.html">Monthly KPIs</a>
-    </nav>
     <div class="stats">
         <div class="stat"><div class="val">76</div><div class="lbl">Creatives</div></div>
         <div class="stat"><div class="val">46</div><div class="lbl">Matched</div></div>

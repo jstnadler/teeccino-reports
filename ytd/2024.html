@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teeccino 2024 YTD KPI</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    color: #fff;
+    padding: 20px;
+    padding-top: 70px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+
+.top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+    z-index: 100; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
+.top-nav a:hover { color: #D4A843; }
+.top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 {
+    font-size: 2em; background: linear-gradient(135deg, #D4A843, #8B6914);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header .sub { color: #888; margin-top: 5px; }
+.header .updated { color: #666; font-size: 0.8em; margin-top: 3px; }
+
+.year-nav {
+    text-align: center; margin-bottom: 24px;
+}
+.year-nav select {
+    background: rgba(255,255,255,0.1);
+    color: #D4A843; border: 1px solid rgba(212,168,67,0.4);
+    border-radius: 8px; padding: 10px 20px;
+    font-size: 1em; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D4A843' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    min-width: 200px;
+}
+.year-nav select:hover { border-color: #D4A843; }
+.year-nav select option { background: #1a1a2e; color: #fff; }
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px; margin-bottom: 30px;
+}
+.kpi-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 20px;
+    transition: transform 0.2s;
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-card .label { color: #999; font-size: 0.85em; margin-bottom: 6px; }
+.kpi-card .value { font-size: 1.8em; font-weight: 700; }
+.kpi-card .yoy { font-size: 0.85em; margin-top: 4px; }
+.kpi-card .yoy.good { color: #4ade80; }
+.kpi-card .yoy.bad { color: #f87171; }
+.kpi-card .detail { color: #888; font-size: 0.8em; margin-top: 6px; }
+
+.section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 24px; margin-bottom: 24px;
+}
+.section h2 {
+    color: #D4A843; font-size: 1.2em; margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;
+}
+
+.chart-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; margin-bottom: 24px;
+}
+.chart-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 20px;
+}
+.chart-box h3 { color: #D4A843; font-size: 1em; margin-bottom: 12px; }
+
+table {
+    width: 100%; border-collapse: collapse; font-size: 14px;
+}
+th, td {
+    padding: 10px 14px; text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+th {
+    background: rgba(255,255,255,0.05); font-weight: 600;
+    color: #D4A843; position: sticky; top: 0;
+}
+th:first-child, td:first-child { text-align: left; }
+tr:hover { background: rgba(255,255,255,0.03); }
+td { color: #ccc; }
+
+@media (max-width: 768px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .chart-row { grid-template-columns: 1fr; }
+    .kpi-card .value { font-size: 1.4em; }
+}
+@media (max-width: 480px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+    <span class="brand">☕ Teeccino</span>
+    <a href="../index.html">Home</a>
+    <a href="../mtd.html">MTD</a>
+    <a href="../ytd.html" style="color:#D4A843;font-weight:600;">YTD</a>
+    <a href="../analytics.html">Analytics</a>
+    <a href="../creatives.html">Creatives</a>
+    <a href="../status.html">Status</a>
+    <a href="../database.html">Database</a>
+</nav>
+
+<div class="container">
+
+<div class="header">
+    <h1>📅 2024 — Full Year KPI Report</h1>
+    <div class="sub">Full Year (366 days) &bull; DTC Only &bull; YoY vs 2023</div>
+    <div class="updated">Updated April 03, 2026 at 02:56 PM</div>
+</div>
+
+
+    <div class="year-nav">
+        <select id="yearSelect" onchange="navigateYear(this.value)">
+            <option value="2026">2026</option>
+<option value="2025">2025</option>
+<option value="2024" selected>2024</option>
+
+        </select>
+    </div>
+    <script>
+    function navigateYear(val) {
+        const now = new Date();
+        const currentY = String(now.getFullYear());
+        const prefix = "..";
+        if (val === currentY) {
+            window.location.href = "./../ytd.html";
+        } else {
+            window.location.href = "./" + val + ".html";
+        }
+    }
+    </script>
+
+<div class="kpi-grid">
+
+    <div class="kpi-card">
+        <div class="label">DTC Gross Sales</div>
+        <div class="value">$2,439,858</div>
+        <div class="yoy good">↑ 16.2% YoY</div>
+        <div class="detail">LY: $2,099,020</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">Total Orders</div>
+        <div class="value">44,108</div>
+        <div class="yoy good">↑ 4.7% YoY</div>
+        <div class="detail">LY: 42,109 &bull; 16,293 new &bull; 9,531 subs</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">DTC Discounts</div>
+        <div class="value">$318,068</div>
+        <div class="yoy bad">↑ 63.4% YoY</div>
+        <div class="detail">LY: $194,653 &bull; 13.0% of gross</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">Ad Spend</div>
+        <div class="value">$330,038</div>
+        <div class="yoy bad">↑ 41.5% YoY</div>
+        <div class="detail">LY: $233,233 &bull; Meta $227,413 &bull; Google $102,625</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">Overall MER</div>
+        <div class="value">6.72x</div>
+        <div class="yoy bad">↓ 22.4% YoY</div>
+        <div class="detail">LY: 8.67x</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">CPA (Cost Per Order)</div>
+        <div class="value">$7.48</div>
+        <div class="yoy bad">↑ 35.1% YoY</div>
+        <div class="detail">LY: $5.54</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">NC CPA (New Customer)</div>
+        <div class="value">$20.26</div>
+        <div class="yoy bad">↑ 43.0% YoY</div>
+        <div class="detail">16,293 new customers</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">NC MER (New Customer)</div>
+        <div class="value">2.08x</div>
+        <div class="yoy bad">↓ 28.7% YoY</div>
+        <div class="detail">LY: 2.92x</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">NC Gross Sales</div>
+        <div class="value">$781,510</div>
+        <div class="yoy good">↑ 10.4% YoY</div>
+        <div class="detail">LY: $708,135</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">RC Gross Sales</div>
+        <div class="value">$1,658,348</div>
+        <div class="yoy good">↑ 19.2% YoY</div>
+        <div class="detail">LY: $1,390,886</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">Shopify Costs</div>
+        <div class="value">$61,801</div>
+        <div class="yoy bad">↑ 19.9% YoY</div>
+        <div class="detail">LY: $51,563</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="label">CC Other Costs</div>
+        <div class="value">$99,699</div>
+        <div class="yoy bad">↑ 911.9% YoY</div>
+        <div class="detail">LY: $9,853 (excl Meta/Google)</div>
+    </div>
+
+</div>
+
+<div class="chart-row">
+    <div class="chart-box">
+        <h3>Monthly Gross Sales (2024 vs 2023)</h3>
+        <canvas id="monthlyBar" height="220"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3>Cumulative YTD Pacing</h3>
+        <canvas id="cumChart" height="220"></canvas>
+    </div>
+</div>
+
+<div class="section">
+    <h2>📊 Monthly Breakdown — 2024</h2>
+    <div style="overflow-x:auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Month</th><th>Gross Sales</th><th>Orders</th><th>New Orders</th>
+                <th>Ad Spend</th><th>MER</th><th>Discounts</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr>
+            <td style="text-align:left;">Jan</td>
+            <td>$197,592</td>
+            <td>3,747</td>
+            <td>1,480</td>
+            <td>$13,982</td>
+            <td>13.12x</td>
+            <td>$22,765</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Feb</td>
+            <td>$171,755</td>
+            <td>3,538</td>
+            <td>1,440</td>
+            <td>$26,881</td>
+            <td>6.07x</td>
+            <td>$15,043</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Mar</td>
+            <td>$193,856</td>
+            <td>3,888</td>
+            <td>1,568</td>
+            <td>$32,040</td>
+            <td>5.76x</td>
+            <td>$19,002</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Apr</td>
+            <td>$271,618</td>
+            <td>4,498</td>
+            <td>1,705</td>
+            <td>$35,094</td>
+            <td>6.74x</td>
+            <td>$46,267</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">May</td>
+            <td>$163,027</td>
+            <td>3,352</td>
+            <td>1,322</td>
+            <td>$30,316</td>
+            <td>5.06x</td>
+            <td>$16,930</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Jun</td>
+            <td>$148,367</td>
+            <td>2,846</td>
+            <td>1,006</td>
+            <td>$29,937</td>
+            <td>4.56x</td>
+            <td>$19,404</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Jul</td>
+            <td>$158,773</td>
+            <td>2,879</td>
+            <td>950</td>
+            <td>$27,390</td>
+            <td>5.37x</td>
+            <td>$18,864</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Aug</td>
+            <td>$174,732</td>
+            <td>3,221</td>
+            <td>1,133</td>
+            <td>$27,233</td>
+            <td>5.94x</td>
+            <td>$20,852</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Sep</td>
+            <td>$179,561</td>
+            <td>3,290</td>
+            <td>1,108</td>
+            <td>$22,788</td>
+            <td>7.41x</td>
+            <td>$18,029</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Oct</td>
+            <td>$200,191</td>
+            <td>3,692</td>
+            <td>1,276</td>
+            <td>$27,003</td>
+            <td>6.94x</td>
+            <td>$21,330</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Nov</td>
+            <td>$349,174</td>
+            <td>5,299</td>
+            <td>1,917</td>
+            <td>$37,811</td>
+            <td>7.80x</td>
+            <td>$61,152</td>
+        </tr>
+        <tr>
+            <td style="text-align:left;">Dec</td>
+            <td>$231,211</td>
+            <td>3,858</td>
+            <td>1,388</td>
+            <td>$19,563</td>
+            <td>10.22x</td>
+            <td>$38,428</td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+
+</div>
+
+<script>
+const barData = {"labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "data": [197592.0, 171755.0, 193856.0, 271618.0, 163027.0, 148367.0, 158773.0, 174732.0, 179561.0, 200191.0, 349174.0, 231211.0], "ly_data": [177433.0, 161667.0, 165478.0, 192256.0, 142910.0, 116359.0, 140217.0, 137521.0, 170422.0, 167230.0, 342149.0, 185377.0]};
+const cumData = {"labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "cum": [197592.0, 369347.0, 563203.0, 834821.0, 997848.0, 1146215.0, 1304988.0, 1479720.0, 1659281.0, 1859472.0, 2208646.0, 2439857.0], "ly_cum": [177433.0, 339100.0, 504578.0, 696834.0, 839744.0, 956103.0, 1096320.0, 1233841.0, 1404263.0, 1571493.0, 1913642.0, 2099019.0]};
+
+new Chart(document.getElementById('monthlyBar'), {
+    type: 'bar',
+    data: {
+        labels: barData.labels,
+        datasets: [
+            {
+                label: '2024',
+                data: barData.data,
+                backgroundColor: 'rgba(212,168,67,0.7)',
+                borderRadius: 4,
+            },
+            {
+                label: '2023',
+                data: barData.ly_data,
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                borderRadius: 4,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { labels: { color: '#999', font: { size: 11 } } },
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { ticks: { color: '#666' }, grid: { display: false } },
+            y: { ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+    }
+});
+
+new Chart(document.getElementById('cumChart'), {
+    type: 'line',
+    data: {
+        labels: cumData.labels,
+        datasets: [
+            {
+                label: '2024',
+                data: cumData.cum,
+                borderColor: '#D4A843',
+                backgroundColor: 'rgba(212,168,67,0.1)',
+                fill: true, tension: 0.3, pointRadius: 2,
+            },
+            {
+                label: '2023',
+                data: cumData.ly_cum,
+                borderColor: 'rgba(255,255,255,0.3)',
+                borderDash: [5, 5],
+                fill: false, tension: 0.3, pointRadius: 2,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { labels: { color: '#999', font: { size: 11 } } },
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } }
+        },
+        scales: {
+            x: { ticks: { color: '#666' }, grid: { display: false } },
+            y: { ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+    }
+});
+</script>
+</body>
+</html>
