@@ -115,7 +115,7 @@
 <body>
     <div class="container">
         <h1>🔧 Teeccino Automations Dashboard</h1>
-        <div class="timestamp">Last updated: 2026-04-02 08:15:10 PST</div>
+        <div class="timestamp">Last updated: 2026-04-02 22:30:00 PST</div>
         
         <div class="note">
             <strong>Note on Links:</strong> For security reasons, web browsers block local file links (<code>file:///C:/...</code>) when viewing this page online. To click these links, open this dashboard directly from your hard drive at <code>C:\Users\JustinAdler\dev\repos\teeccino-reports\status.html</code>.
@@ -726,6 +726,63 @@
         </div>
         
         <div class="card">
+            <h2>🗂️ Data Architecture</h2>
+            <div style="font-size: 0.9em; line-height: 1.7;">
+                <p><strong>Three data stores power Teeccino's reporting:</strong></p>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th>Store</th>
+                            <th>Source</th>
+                            <th>Used By</th>
+                            <th>Gross Formula</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Analytics DB</strong><br/><code>teeccino_analytics.db</code> (357 MB)</td>
+                            <td>Shopify GraphQL → <code>ingest_shopify.py</code><br/>Daily CSVs → <code>ingest_meta.py</code> / <code>ingest_google.py</code></td>
+                            <td><code>build_mtd_dashboard.py</code> → <a href="mtd.html">mtd.html</a></td>
+                            <td><strong>True Gross</strong> = units × monthly price list price</td>
+                        </tr>
+                        <tr>
+                            <td><strong>KPI DB</strong><br/><code>teeccino_kpi.db</code> (177 MB)</td>
+                            <td>Daily CSV aggregation → <code>daily_sync.py</code></td>
+                            <td><code>query.py</code>, <code>analytics.py</code> (ad hoc)</td>
+                            <td>CSV-derived (same as Daily CSVs)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Daily CSVs</strong><br/>(OneDrive)</td>
+                            <td>API scripts (#1–#7 below)</td>
+                            <td><code>generate_monthly_matrices.py</code> → Monthly Matrices.xlsx</td>
+                            <td><code>subtotal + total_discounts</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p style="margin-top: 15px;"><strong>Pipeline Flow:</strong></p>
+                <div style="background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 15px; font-family: monospace; font-size: 0.85em; line-height: 2;">
+                    <strong>Daily (6:00 AM cron):</strong><br/>
+                    &nbsp;&nbsp;Shopify/Meta/Google APIs → Daily CSVs (OneDrive)<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+                    &nbsp;&nbsp;CSVs → <code>generate_monthly_matrices.py</code> → Monthly Matrices.xlsx<br/>
+                    &nbsp;&nbsp;CSVs → <code>daily_sync.py</code> → KPI DB<br/>
+                    <br/>
+                    <strong>Analytics Pipeline (7:00 AM cron):</strong><br/>
+                    &nbsp;&nbsp;Shopify GraphQL → <code>ingest_shopify.py</code> → Analytics DB (raw_orders, raw_line_items)<br/>
+                    &nbsp;&nbsp;CSVs → <code>ingest_meta.py</code> / <code>ingest_google.py</code> → Analytics DB (raw_meta_ads, raw_google_ads)<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+                    &nbsp;&nbsp;<code>run_pipeline.py</code> → transform_daily → transform_sku → transform_attribution<br/>
+                    &nbsp;&nbsp;&nbsp;&nbsp;↓<br/>
+                    &nbsp;&nbsp;<code>build_mtd_dashboard.py</code> → mtd.html → GitHub Pages
+                </div>
+
+                <p style="margin-top: 15px; color: #4d555e;"><strong>⚠️ Known Delta:</strong> The Analytics DB uses True Gross (units × price list) while Monthly Matrices use Shopify's subtotal + discounts. This causes ~$10–30K monthly gross variance. Net revenue aligns within $40. Migration to single source planned.</p>
+            </div>
+        </div>
+
+        <div class="card">
             <h2>🔌 API Connections (.env Files)</h2>
             
             <div class="conn-item">
@@ -747,7 +804,7 @@
                     <div style="font-weight: 500;">Google Ads API</div>
                     <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/GoogleAdsAPI/googleads.yaml" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\GoogleAdsAPI\googleads.yaml</a>
                 </div>
-                <div class="status-badge error">ERROR</div>
+                <div class="status-badge success">CONNECTED</div>
             </div>
             <div class="conn-item">
                 <div>
