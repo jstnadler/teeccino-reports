@@ -260,7 +260,7 @@ body {
 <div class="header">
     <h1>March 2026 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 03, 2026 at 11:16 PM</div>
+    <div class="updated">Last updated April 04, 2026 at 12:24 AM</div>
 </div>
 
 
@@ -322,7 +322,7 @@ body {
         <div class="card-value">$220,686</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 7.2%</span></div>
         <div class="card-detail">LY: $205,868</div>
-        
+        <div class="card-projected">Forecast: $204,873 (below by 4.1%)</div>
     </div>
         <div class="card-modal" id="modal-gross">
             <div class="modal-inner">
@@ -474,7 +474,7 @@ body {
         <div class="card-label">Total Ad Spend</div>
         <div class="card-value">$27,974</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 32.1%</span></div>
-        <div class="card-detail">Meta: $17,812 | Google: $10,162</div>
+        <div class="card-detail">Budget: $25,000 | Actual: 112% (over) | Meta: $17,812 / Google: $10,162</div>
         
     </div>
         <div class="card-modal" id="modal-adspend">
@@ -493,7 +493,7 @@ body {
         <div class="card-value">7.03x</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 56.1%</span></div>
         <div class="card-detail">LY: 4.50x</div>
-        
+        <div class="card-projected">Forecast MER: 8.19x (on $25,000 budget)</div>
     </div>
         <div class="card-modal" id="modal-mer">
             <div class="modal-inner">
@@ -565,7 +565,7 @@ body {
 <!-- ======== COSTS ======== -->
 <div class="section-header">
     <div class="section-icon costs">%</div>
-    <h2>Costs & Discounts</h2>
+    <h2>Costs, Shipping & Discounts</h2>
 </div>
 <div class="kpi-grid">
     
@@ -639,6 +639,60 @@ body {
                 <div class="modal-value">$3,702</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Credit card charges excluding Meta and Google ad payments. Covers tools, services, and miscellaneous business expenses.</p></div>
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of credit card transactions excluding FACEBOOK/META/GOOGLE merchants.</p></div>
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_cost')" style="cursor:pointer;">
+        <div class="card-label">Shipping Cost (Actual)</div>
+        <div class="card-value">$37,593</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 35.7%</span></div>
+        <div class="card-detail">LY: $27,702 | 4,822 shipments | Avg: $7.80</div>
+        <div class="card-projected">DHL eCommerce: 3,102 ($21,842) | USPS: 1,711 ($15,482) | FedEx: 9 ($268)</div>
+    </div>
+        <div class="card-modal" id="modal-ship_cost">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Shipping Cost (Actual)</span>
+                    <button class="modal-close" onclick="closeModal('ship_cost')">&times;</button>
+                </div>
+                <div class="modal-value">$37,593</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Actual carrier costs paid through ShipStation. This is what we pay to ship orders (DHL, USPS, FedEx), separate from what customers paid for shipping.</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of shipment_cost from raw_shipments (ShipStation API) for non-voided, non-return shipments.</p></div>
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_charged')" style="cursor:pointer;">
+        <div class="card-label">Shipping Charged to Customers</div>
+        <div class="card-value">$19,046</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 65.8%</span></div>
+        <div class="card-detail">LY: $11,489 | Margin: $-18,547</div>
+        
+    </div>
+        <div class="card-modal" id="modal-ship_charged">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Shipping Charged to Customers</span>
+                    <button class="modal-close" onclick="closeModal('ship_charged')">&times;</button>
+                </div>
+                <div class="modal-value">$19,046</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Revenue from shipping charges collected from customers. The difference between this and actual shipping cost is our shipping margin (positive = we collect more than we pay).</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of total_shipping from Shopify orders (calc_daily_shopify).</p></div>
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_margin')" style="cursor:pointer;">
+        <div class="card-label">Shipping Margin</div>
+        <div class="card-value">$-18,547</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 14.4%</span></div>
+        <div class="card-detail">LY: $-16,214 | Cost/shipment: $7.80 (LY: $6.99)</div>
+        
+    </div>
+        <div class="card-modal" id="modal-ship_margin">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Shipping Margin</span>
+                    <button class="modal-close" onclick="closeModal('ship_margin')">&times;</button>
+                </div>
+                <div class="modal-value">$-18,547</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Difference between what customers paid for shipping and our actual carrier costs. Positive = we collect more than we pay. Negative = we subsidize shipping.</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Charged to Customers - Shipping Cost (Actual)</p></div>
             </div>
         </div>
 </div>

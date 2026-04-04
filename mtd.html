@@ -260,7 +260,7 @@ body {
 <div class="header">
     <h1>April 2026 &mdash; MTD Dashboard</h1>
     <div class="sub">Through 2026-04-03 &mdash; 3 of 30 days (10%) &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 03, 2026 at 11:16 PM</div>
+    <div class="updated">Last updated April 04, 2026 at 12:24 AM</div>
 </div>
 
 
@@ -322,7 +322,7 @@ body {
         <div class="card-value">$13,063</div>
         <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 95.5%</span></div>
         <div class="card-detail">LY: $289,571</div>
-        <div class="card-projected">Projected: $130,628</div>
+        <div class="card-projected">Projected: $130,628 | Forecast: $238,217</div>
     </div>
         <div class="card-modal" id="modal-gross">
             <div class="modal-inner">
@@ -565,7 +565,7 @@ body {
 <!-- ======== COSTS ======== -->
 <div class="section-header">
     <div class="section-icon costs">%</div>
-    <h2>Costs & Discounts</h2>
+    <h2>Costs, Shipping & Discounts</h2>
 </div>
 <div class="kpi-grid">
     
@@ -639,6 +639,60 @@ body {
                 <div class="modal-value">$0</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Credit card charges excluding Meta and Google ad payments. Covers tools, services, and miscellaneous business expenses.</p></div>
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of credit card transactions excluding FACEBOOK/META/GOOGLE merchants.</p></div>
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_cost')" style="cursor:pointer;">
+        <div class="card-label">Shipping Cost (Actual)</div>
+        <div class="card-value">$4,649</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 86.0%</span></div>
+        <div class="card-detail">LY: $33,277 | 616 shipments | Avg: $7.55</div>
+        <div class="card-projected">DHL eCommerce: 379 ($2,672) | USPS: 237 ($1,977)</div>
+    </div>
+        <div class="card-modal" id="modal-ship_cost">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Shipping Cost (Actual)</span>
+                    <button class="modal-close" onclick="closeModal('ship_cost')">&times;</button>
+                </div>
+                <div class="modal-value">$4,649</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Actual carrier costs paid through ShipStation. This is what we pay to ship orders (DHL, USPS, FedEx), separate from what customers paid for shipping.</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of shipment_cost from raw_shipments (ShipStation API) for non-voided, non-return shipments.</p></div>
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_charged')" style="cursor:pointer;">
+        <div class="card-label">Shipping Charged to Customers</div>
+        <div class="card-value">$1,170</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 91.4%</span></div>
+        <div class="card-detail">LY: $13,674 | Margin: $-3,479</div>
+        
+    </div>
+        <div class="card-modal" id="modal-ship_charged">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Shipping Charged to Customers</span>
+                    <button class="modal-close" onclick="closeModal('ship_charged')">&times;</button>
+                </div>
+                <div class="modal-value">$1,170</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Revenue from shipping charges collected from customers. The difference between this and actual shipping cost is our shipping margin (positive = we collect more than we pay).</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of total_shipping from Shopify orders (calc_daily_shopify).</p></div>
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_margin')" style="cursor:pointer;">
+        <div class="card-label">Shipping Margin</div>
+        <div class="card-value">$-3,479</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 82.3%</span></div>
+        <div class="card-detail">LY: $-19,603 | Cost/shipment: $7.55 (LY: $7.29)</div>
+        
+    </div>
+        <div class="card-modal" id="modal-ship_margin">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Shipping Margin</span>
+                    <button class="modal-close" onclick="closeModal('ship_margin')">&times;</button>
+                </div>
+                <div class="modal-value">$-3,479</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Difference between what customers paid for shipping and our actual carrier costs. Positive = we collect more than we pay. Negative = we subsidize shipping.</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Charged to Customers - Shipping Cost (Actual)</p></div>
             </div>
         </div>
 </div>
