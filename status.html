@@ -3,332 +3,658 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automations Dashboard — Teeccino</title>
+    <title>System & Automations Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2328;
+            margin: 0;
             padding: 20px;
-            padding-top: 70px;
         }
-        .top-nav {
-            position: fixed; top: 0; left: 0; right: 0;
-            background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
-            z-index: 100; padding: 12px 24px;
-            display: flex; align-items: center; gap: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
         }
-        .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
-        .top-nav a:hover { color: #D4A843; }
-        .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
-        .container { max-width: 1100px; margin: 0 auto; }
         h1 {
-            font-size: 2em;
-            background: linear-gradient(135deg, #D4A843, #8B6914);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            padding-bottom: 10px; margin-bottom: 10px;
+            border-bottom: 1px solid #d0d7de;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            color: #24292f;
         }
-        .timestamp { color: #888; font-size: 0.9em; margin-bottom: 30px; }
+        .timestamp {
+            color: #656d76;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        .note {
+            background: #fff8c5;
+            border: 1px solid #d4a72c;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #4d3a00;
+        }
         .card {
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 20px; margin-bottom: 20px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #d0d7de;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            padding: 20px;
+            margin-bottom: 20px;
         }
         .card h2 {
-            margin-top: 0; font-size: 1.2em;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 10px; color: #D4A843; margin-bottom: 16px;
+            margin-top: 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid #eaeef2;
+            padding-bottom: 10px;
+            color: #24292f;
         }
         .script-block {
             margin-bottom: 25px;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px; padding: 15px;
-            background: rgba(255,255,255,0.02);
+            border: 1px solid #eaeef2;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fafbfc;
         }
         .script-header {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
         }
-        .script-name { font-weight: 600; font-size: 1.1em; color: #fff; }
+        .script-name {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
         .path-link {
-            font-size: 0.8em; color: #8B6914; text-decoration: none;
-            word-break: break-all; display: block; margin-top: 4px;
+            font-size: 0.8em;
+            color: #0969da;
+            text-decoration: none;
+            word-break: break-all;
+            display: block;
+            margin-top: 4px;
         }
-        .path-link:hover { text-decoration: underline; color: #D4A843; }
-        .outputs-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .path-link:hover { text-decoration: underline; }
+        .outputs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+        }
         .outputs-table th, .outputs-table td {
-            text-align: left; padding: 8px 10px;
-            border: 1px solid rgba(255,255,255,0.08); font-size: 0.9em;
+            text-align: left;
+            padding: 8px 10px;
+            border: 1px solid #eaeef2;
+            font-size: 0.9em;
         }
-        .outputs-table th { background: rgba(255,255,255,0.05); color: #D4A843; }
-        .outputs-table td { color: #ccc; }
+        .outputs-table th { background: #f6f8fa; color: #57606a; }
+        
         .status-badge {
-            padding: 4px 8px; border-radius: 12px;
-            font-size: 0.8em; font-weight: 600; display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            display: inline-block;
         }
-        .success { background-color: rgba(74,222,128,0.15); color: #4ade80; }
-        .manual { background-color: rgba(251,191,36,0.15); color: #fbbf24; }
+        .success { background-color: #dafbe1; color: #1a7f37; }
+        .error { background-color: #ffebe9; color: #cf222e; }
+        
+        /* Connection list styles */
         .conn-item {
-            display: flex; justify-content: space-between;
-            align-items: center; padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eaeef2;
         }
         .conn-item:last-child { border-bottom: none; }
-        .conn-item div:first-child div:first-child { font-weight: 500; color: #fff; }
-        code { background: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 3px; color: #ccc; font-size: 0.9em; }
-        .pipeline-flow {
-            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px; padding: 20px; margin-top: 16px;
-        }
-        .pipeline-step {
-            display: flex; align-items: center; gap: 12px;
-            padding: 8px 0; color: #ccc; font-size: 0.9em;
-        }
-        .pipeline-step .num {
-            background: rgba(212,168,67,0.2); color: #D4A843;
-            width: 28px; height: 28px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.85em; flex-shrink: 0;
-        }
-        .pipeline-arrow { color: #555; margin-left: 14px; font-size: 0.8em; }
-        .archived-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        .archived-table th, .archived-table td {
-            text-align: left; padding: 6px 10px;
-            border: 1px solid rgba(255,255,255,0.06); font-size: 0.85em;
-        }
-        .archived-table th { background: rgba(255,255,255,0.04); color: #D4A843; }
-        .archived-table td { color: #888; }
     </style>
 </head>
 <body>
-
-<nav class="top-nav">
-    <span class="brand">&#9749; Teeccino</span>
-    <a href="index.html">Home</a>
-    <a href="mtd.html">MTD</a>
-    <a href="ytd.html">YTD</a>
-    <a href="analytics.html">Analytics</a>
-    <a href="creatives.html">Creatives</a>
-    <a href="status.html" style="color:#D4A843;font-weight:600;">Status</a>
-    <a href="database.html">Database</a>
-</nav>
-
-<div class="container">
-    <h1>&#128295; Automations Dashboard</h1>
-    <div class="timestamp">Last updated: April 3, 2026 &mdash; Analytics DB is the single source of truth</div>
-
-    <!-- ── Active Scripts ─────────────────────────────────────────── -->
-    <div class="card">
-        <h2>&#9881;&#65039; Active Scripts</h2>
-
-        <!-- 1. Analytics Pipeline -->
-        <div class="script-block">
-            <div class="script-header">
-                <div>
-                    <div class="script-name">&#128202; Analytics DB Pipeline</div>
-                    <span class="path-link">analytics/run_pipeline.py --ingest</span>
-                </div>
-                <div class="status-badge success">DAILY 7:00 AM</div>
-            </div>
-            <div style="font-size: 0.9em; color: #999; margin-bottom: 12px;">
-                The core pipeline. Ingests directly from APIs (Shopify GraphQL, Meta Ads, Google Ads), transforms into calculated tables, and builds attribution data. <strong style="color:#ccc;">No CSV dependency</strong> &mdash; all API-direct since April 2026.
-            </div>
-            <div class="pipeline-flow">
-                <div class="pipeline-step"><span class="num">1</span> <strong style="color:#fff;">Ingest Shopify</strong> &mdash; GraphQL API &rarr; raw_orders, raw_line_items, raw_discount_allocations</div>
-                <div class="pipeline-arrow">&darr;</div>
-                <div class="pipeline-step"><span class="num">2</span> <strong style="color:#fff;">Ingest Meta Ads</strong> &mdash; Marketing API &rarr; raw_meta_ads</div>
-                <div class="pipeline-arrow">&darr;</div>
-                <div class="pipeline-step"><span class="num">3</span> <strong style="color:#fff;">Ingest Google Ads</strong> &mdash; Google Ads API &rarr; raw_google_ads</div>
-                <div class="pipeline-arrow">&darr;</div>
-                <div class="pipeline-step"><span class="num">4</span> <strong style="color:#fff;">Transform Daily</strong> &mdash; calc_daily_shopify, calc_daily_sku_sales (True Gross, subs, discounts)</div>
-                <div class="pipeline-arrow">&darr;</div>
-                <div class="pipeline-step"><span class="num">5</span> <strong style="color:#fff;">Build Attribution</strong> &mdash; calc_attribution, order_journey, order_moments</div>
-                <div class="pipeline-arrow">&darr;</div>
-                <div class="pipeline-step"><span class="num">6</span> <strong style="color:#fff;">Customer Cohorts</strong> &mdash; calc_customer_cohorts</div>
-            </div>
-            <table class="outputs-table" style="margin-top: 16px;">
-                <thead><tr><th width="40%">Output</th><th width="30%">Location</th><th width="30%">Notes</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Analytics DB</strong></td><td><code>C:\temp\analytics\teeccino_analytics.db</code></td><td>~357 MB, 14 tables</td></tr>
-                </tbody>
-            </table>
+    <div class="container">
+        <h1>🔧 Teeccino Automations Dashboard</h1>
+        <div class="timestamp">Last updated: 2026-04-04 08:15:44 PST</div>
+        
+        <div class="note">
+            <strong>Note on Links:</strong> For security reasons, web browsers block local file links (<code>file:///C:/...</code>) when viewing this page online. To click these links, open this dashboard directly from your hard drive at <code>C:\Users\JustinAdler\dev\repos\teeccino-reports\status.html</code>.
         </div>
-
-        <!-- 2. MTD Dashboard Builder -->
-        <div class="script-block">
-            <div class="script-header">
-                <div>
-                    <div class="script-name">&#128200; MTD KPI Dashboard Builder</div>
-                    <span class="path-link">analytics/build_mtd_dashboard.py</span>
+        
+        <div class="card">
+            <h2>⚙️ Scripts & Outputs</h2>
+            
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 0. Monthly Price List Generator (manual)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/generate_monthly_price_reference.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\generate_monthly_price_reference.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
                 </div>
-                <div class="status-badge success">AFTER PIPELINE</div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    <strong>HOW PRICE LISTS ARE BUILT:</strong><br/>1. Fetches ALL orders for a given month from Shopify GraphQL.<br/>2. <strong>Excludes</strong> subscription orders and wholesale orders — only uses one-time DTC purchases.<br/>3. For each SKU, collects every <code>originalUnitPrice</code> observed across all qualifying orders.<br/>4. Calculates the reference price as the <strong>mode</strong> (most common price). Falls back to <strong>median</strong> if no clear mode.<br/>5. Saves as <code>PriceList/Monthly/prices_YYYY-MM.json</code> — one file per month.<br/><br/><strong>Why mode?</strong> During promos, some orders have discounted prices. The mode captures the 'normal' retail price since most orders in any given month are non-promo.<br/><br/><strong>Coverage:</strong> Jan 2024 → Feb 2026 (26 months). Also has 'derived' folder with extended price observations.<br/><br/><strong>⚠️ Not automated daily.</strong> Run manually when new months need prices or when price changes happen.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Shopify GraphQL API (historical order line items)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Monthly Price JSONs</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/PriceList/Monthly" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\PriceList\Monthly</a></td>
+                            <td class="success">2026-04-03 13:54</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <div style="font-size: 0.9em; color: #999; margin-bottom: 12px;">
-                Reads from Analytics DB + Meta Ads API (live top ads) + Forecast Excel. Generates monthly KPI dashboards with YoY comparisons, daily trend charts, cumulative pacing, and top Meta ad rankings. Archives past months to <code>mtd/</code> subfolder.
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 1. Daily Shopify Orders Fetch (6:00 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_shopify_orders.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_shopify_orders.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Queries Shopify GraphQL for all orders created yesterday. Filters to PAID/PARTIALLY_REFUNDED only. Separates DTC vs Wholesale (Walmart/Target/Faire by tag).<br/><br/><strong>Per-Order Fields from Shopify:</strong> Financial Status, Current Total Price (Net), Total Discounts, Total Shipping (customer-paid), Subtotal, Order Tags, Customer Order Index (1st order = New).<br/><strong>Per-Line-Item Fields from Shopify:</strong> SKU, Quantity, Original Unit Price, Discount Allocations (type + amount per allocation).<br/><br/><strong>Calculated Columns (NOT from Shopify — computed by this script):</strong><br/>• <code>dtc_gross</code> = Units × Monthly Price List from <code>PriceList/Monthly/prices_YYYY-MM.json</code> (see Script #0)<br/>• <code>dtc_subscription_discounts</code> = For subscription orders: <code>(Price List price − originalUnitPrice) × quantity</code>. This captures the 15% Stay.ai discount that Shopify bakes into the line item price instead of tracking as a discount.<br/>• <code>dtc_automatic_discounts</code> = Sum of all <code>AutomaticDiscountApplication</code> allocations on line items<br/>• <code>dtc_code_discounts</code> = Sum of all <code>DiscountCodeApplication</code> allocations (e.g. WELCOME15)<br/>• <code>dtc_manual_discounts</code> = Sum of all <code>ManualDiscountApplication</code> allocations (CS/rewards)<br/>• <code>dtc_shipping_discounts</code> = <code>Total Discounts − (subscription + automatic + code + manual)</code>. This is the remainder — captures free shipping value.<br/>• <code>dtc_free_item_value/count/cogs</code> = Line items where <code>originalUnitPrice = $0</code>. Value calculated using Price List. COGS from <code>COGS/Cogs.xlsx</code>.<br/>• <code>dtc_refund_value/units/cogs</code> = Separate REST API call for refunds processed on that date (not the order date).<br/><br/><strong>CSV has 67 columns per day.</strong> This is the foundation for ALL downstream reports.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Shopify GraphQL API, PriceList/Monthly/*.json (for True Gross), COGS/Cogs.xlsx (for cost tracking)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily Shopify Orders CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Shopify Orders.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Shopify Orders.csv</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 07:45</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <table class="outputs-table">
-                <thead><tr><th width="40%">Output</th><th width="30%">Location</th><th width="30%">Notes</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Current Month</strong></td><td><a href="mtd.html" style="color:#D4A843;">mtd.html</a></td><td>28 months available (Jan 2024&ndash;present)</td></tr>
-                    <tr><td><strong>Archive</strong></td><td><code>mtd/YYYY-MM.html</code></td><td>Auto-generated for all past months</td></tr>
-                </tbody>
-            </table>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 2. Daily SKU Sales Report (6:00 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_sku_sales_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_sku_sales_report.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Independently fetches all orders from Shopify REST API. Excludes wholesale. Breaks down units sold per SKU into New vs Returning customers.<br/><br/><strong>Per-SKU Output:</strong> Product Name, New Units, New Revenue, Returning Units, Returning Revenue.<br/><br/><strong>Note:</strong> This script does NOT calculate True Gross. It outputs raw Shopify revenue per SKU. True Gross (units × price list) is calculated downstream in generate_monthly_matrices.py.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Shopify REST API (separate fetch, does NOT read from Daily Shopify Orders CSV)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily SKU Sales Excel</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily SKU Sales.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily SKU Sales.xlsx</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 06:02</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 2b. Daily Shipping Costs (6:45 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/shipstation_shipping_costs.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\shipstation_shipping_costs.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Queries the ShipStation API for all shipments created yesterday. Calculates the actual postage cost Teeccino paid per shipment.<br/><br/><strong>Output Columns:</strong> Date, Total Cost (what we paid), Shipment Count, Avg Cost Per Shipment.<br/><br/><strong>This is NOT what the customer paid for shipping</strong> (that comes from Shopify's totalShippingPriceSet in script #1). This is what Teeccino actually paid carriers (DHL, USPS) via ShipStation.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> ShipStation API
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily Shipping Costs CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Shipping Costs.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Shipping Costs.csv</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 06:45</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 3a. Daily Meta Ads Fetch (6:15 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_meta_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_meta_report.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Fetches account-level insights from Meta Ads API.<br/><br/><strong>Fields:</strong> Spend, Impressions, Clicks, CPC, CPM, Reach, Frequency, Actions (purchases, add-to-carts, etc.), Action Values (conversion revenue), Cost Per Action.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Meta Marketing API (Ad Account 559530661221525)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily Meta Ads CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Meta Ads.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Meta Ads.csv</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 07:15</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 3b. Daily Google Ads Fetch (6:30 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_google_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_google_report.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Fetches campaign-level metrics from Google Ads API using GAQL query.<br/><br/><strong>Fields:</strong> Cost (micros → dollars), Impressions, Clicks, Conversions, Conversion Value.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Google Ads API (via googleads Python client)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily Google Ads CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Google Ads.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Google Ads.csv</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 07:30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 4. Daily Database Sync (7:00 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/db/daily_sync.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\db\daily_sync.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Reads the CSV files generated by scripts 1, 3a, and 3b and inserts/updates them into the local SQLite database (<code>teeccino_kpi.db</code>).<br/><br/><strong>Tables Updated:</strong><br/>• <code>daily_shopify</code> — All 67 columns from Daily Shopify Orders CSV<br/>• <code>daily_meta_ads</code> — Meta spend/impressions/clicks/conversions<br/>• <code>daily_google_ads</code> — Google spend/impressions/clicks/conversions<br/><br/><strong>This is a data warehouse step</strong> — it does not recalculate anything. It just loads the flat files into SQL for easier querying downstream.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Daily Shopify Orders.csv (from #1), Daily Meta Ads.csv (from #3a), Daily Google Ads.csv (from #3b)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SQL KPI Database</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/clawd/Automations/db/teeccino_kpi.db" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\db\teeccino_kpi.db</a></td>
+                            <td class="error">File not found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 5. KPI Matrices Refresh (6:55 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/generate_monthly_matrices.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\generate_monthly_matrices.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    The big one. Aggregates all data sources into monthly summaries across multiple Excel sheets.<br/><br/><strong>True Gross Calculation (happens HERE):</strong><br/><code>DTC Gross Sales = (SKU Units × Monthly Price List) − Free Item Value − Refund Value</code><br/><br/><strong>Sheets Generated in Monthly Matrices:</strong><br/>• <strong>WebSalesMatrix</strong> — DTC orders, gross, net, units, AOV, new/returning, subscriptions<br/>• <strong>ChannelMatrix</strong> — Walmart/Target/Faire wholesale breakdown<br/>• <strong>DiscountMatrix</strong> — Subscription/automatic/code/manual/shipping/price-reduction discounts<br/>• <strong>ShippingMatrix</strong> — Customer-paid shipping vs actual ShipStation costs<br/>• <strong>Profit Waterfall</strong> — Gross → Discounts → Shipping → COGS → Ad Spend → Platform → Tools → Contribution Margin<br/><br/><strong>Shopify KPI 2026</strong> pulls from these matrices and adds Forecast targets (from 2026 Forecast v3.xlsx) and sessions/CVR data.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Daily SKU Sales.xlsx (from #2), PriceList/Monthly/*.json, COGS/Cogs.xlsx, teeccino_kpi.db (from #4), Billing/CreditCard/master_transactions.csv
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Monthly Matrices Excel</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/Monthly Matrices.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\Monthly Matrices.xlsx</a></td>
+                            <td class="success">2026-04-04 06:57</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Shopify KPI 2026</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/Shopify KPI 2026.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\Shopify KPI 2026.xlsx</a></td>
+                            <td class="success">2026-04-02 06:57</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 6. Dashboard Generator (6:55 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/generate_dashboard.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\generate_dashboard.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Reads the finalized KPI Excel files and generates the visual MTD HTML dashboard with cards for Revenue, Orders, AOV, Ad Spend, MER, and Shipping.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Monthly Matrices.xlsx (from #5), Shopify KPI 2026.xlsx (from #5)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>MTD HTML</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/dev/repos/teeccino-reports/mtd.html" class="path-link" target="_blank">C:\Users\JustinAdler\dev\repos\teeccino-reports\mtd.html</a></td>
+                            <td class="success">2026-04-04 07:10</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 2c. Daily Shipping Analysis (6:50 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/shipping_analysis.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\shipping_analysis.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Breaks down shipping into Free vs Paid. For each shipment, queries ShipStation for actual postage cost, then matches against Shopify order to see if the customer paid for shipping or got free shipping.<br/><br/><strong>Output Columns:</strong> Total Shipments, Total Units, Avg Units/Order, Avg Weight, Free Shipping Count/Cost, Paid Shipping Count/Revenue/Cost, Total Cost, Total Revenue, Net (revenue minus cost).<br/><br/><strong>Key Insight:</strong> 'Net' is almost always negative — Teeccino subsidizes shipping. This feeds into the Shipping Matrix in Monthly Matrices.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> ShipStation API, Shopify REST API (to match shipping revenue per order)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily Shipping Analysis CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Shipping Analysis.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Shipping Analysis.csv</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 06:50</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 2d. Fulfillment Tracker (7:15 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/fulfillment_tracker.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\fulfillment_tracker.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Measures warehouse speed. Pulls all orders from the last 30 days and calculates how long it took from order placement to fulfillment.<br/><br/><strong>Key Metrics:</strong> Orders Fulfilled, Avg Fulfillment Time (hours), Median Fulfillment Time, % fulfilled within 24h/48h/72h, Current Backlog count, Backlog over 24h/48h.<br/><br/><strong>Also outputs:</strong> A per-order detail table showing each order's creation time, fulfillment hours, and total value.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Shopify REST API (last 30 days of orders + fulfillment events)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Fulfillment Tracker CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Fulfillment Tracker.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Fulfillment Tracker.csv</a></td>
+                            <td class="success">2026-04-04 07:18</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 2e. Daily Fulfillment Report (7:10 AM)</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_fulfillment_report.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_fulfillment_report.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Reshapes the Daily Shipping Analysis CSV into a clean Excel report. Shows daily fulfillment counts, units per order, avg package weight, free vs paid shipping split, and total shipping cost.<br/><br/><strong>Note:</strong> This does NOT fetch any new data — it just reformats the ShipStation data from script 2c into a more readable Excel format.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Daily Shipping Analysis CSV (from #2c — does NOT hit any API directly)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Daily Fulfillment Report Excel</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Fulfillment Report.xlsx" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Fulfillment Report.xlsx</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-03 07:11</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 Daily Instagram Metrics</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/daily_instagram_metrics.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\daily_instagram_metrics.py</a>
+                    </div>
+                    <div class="status-badge error">ISSUE / STALE</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Standalone. Tracks Instagram follower growth, reach, impressions, profile views, and engagement daily. Not connected to the KPI pipeline.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Instagram Graph API
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Instagram Metrics CSV</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Marketing and eCommerce/Reporting/DAILY/Daily Instagram Metrics.csv" class="path-link" target="_blank">C:\Users\JustinAdler\OneDrive - teeccino.com\Marketing and eCommerce\Reporting\DAILY\Daily Instagram Metrics.csv</a></td>
+                            <td class="error">⚠️ STALE! 2026-04-02 06:51</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="script-block">
+                <div class="script-header">
+                    <div>
+                        <div class="script-name">📜 ECH Ad Creative Check</div>
+                        <a href="file:///C:/Users/JustinAdler/clawd/Automations/check_new_ech_ads.py" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\Automations\check_new_ech_ads.py</a>
+                    </div>
+                    <div class="status-badge success">ALL OK</div>
+                </div>
+                <div style="font-size: 0.9em; color: #4d555e; margin-bottom: 12px; font-style: italic;">
+                    Standalone. Scans Slack for new ECH ad creative Drive links, downloads them, matches creatives to Meta ad performance data via image hashing, and rebuilds the visual Creatives Library HTML page.
+                </div>
+                
+                <div style="font-size: 0.85em; margin-bottom: 10px; color: #24292f;">
+                    <strong>📥 Inputs:</strong> Slack API (ECH channel), Google Drive (folder downloads), teeccino_kpi.db (Meta performance matching)
+                </div>
+                
+                <table class="outputs-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">Output File</th>
+                            <th width="50%">Path</th>
+                            <th width="20%">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ECH Ads State JSON</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/clawd/data/ech_ads_state.json" class="path-link" target="_blank">C:\Users\JustinAdler\clawd\data\ech_ads_state.json</a></td>
+                            <td class="success">2026-04-01 09:01</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Creatives Library HTML</strong></td>
+                            <td><a href="file:///C:/Users/JustinAdler/dev/repos/teeccino-reports/creatives.html" class="path-link" target="_blank">C:\Users\JustinAdler\dev\repos\teeccino-reports\creatives.html</a></td>
+                            <td class="success">2026-04-04 08:14</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <!-- 3. YTD Dashboard Builder -->
-        <div class="script-block">
-            <div class="script-header">
+        
+        <div class="card">
+            <h2>🔌 API Connections (.env Files)</h2>
+            
+            <div class="conn-item">
                 <div>
-                    <div class="script-name">&#128200; YTD KPI Dashboard Builder</div>
-                    <span class="path-link">analytics/build_ytd_dashboard.py</span>
+                    <div style="font-weight: 500;">Shopify API</div>
+                    <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/ShopifyProductData/.env" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\ShopifyProductData\.env</a>
                 </div>
-                <div class="status-badge success">AFTER PIPELINE</div>
+                <div class="status-badge success">CONNECTED</div>
             </div>
-            <div style="font-size: 0.9em; color: #999; margin-bottom: 12px;">
-                Year-to-date KPI dashboard. Same metrics as MTD aggregated by year with monthly breakdown table, cumulative pacing chart, and YoY comparison. Archives past years to <code>ytd/</code> subfolder.
+            <div class="conn-item">
+                <div>
+                    <div style="font-weight: 500;">Meta Ads API</div>
+                    <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/MetaAdsAPI/.env" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\MetaAdsAPI\.env</a>
+                </div>
+                <div class="status-badge success">CONNECTED</div>
             </div>
-            <table class="outputs-table">
-                <thead><tr><th width="40%">Output</th><th width="30%">Location</th><th width="30%">Notes</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Current Year</strong></td><td><a href="ytd.html" style="color:#D4A843;">ytd.html</a></td><td>3 years available (2024&ndash;2026)</td></tr>
-                    <tr><td><strong>Archive</strong></td><td><code>ytd/YYYY.html</code></td><td>Auto-generated for past years</td></tr>
-                </tbody>
-            </table>
+            <div class="conn-item">
+                <div>
+                    <div style="font-weight: 500;">Google Ads API</div>
+                    <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/GoogleAdsAPI/googleads.yaml" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\GoogleAdsAPI\googleads.yaml</a>
+                </div>
+                <div class="status-badge error">ERROR</div>
+            </div>
+            <div class="conn-item">
+                <div>
+                    <div style="font-weight: 500;">ShipStation API</div>
+                    <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/ShipStationAPI/.env" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\ShipStationAPI\.env</a>
+                </div>
+                <div class="status-badge success">CONNECTED</div>
+            </div>
+            <div class="conn-item">
+                <div>
+                    <div style="font-weight: 500;">TripleWhale API</div>
+                    <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/TripleWhaleAPI/.env" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\TripleWhaleAPI\.env</a>
+                </div>
+                <div class="status-badge success">CONNECTED</div>
+            </div>
+            <div class="conn-item">
+                <div>
+                    <div style="font-weight: 500;">Klaviyo API</div>
+                    <a href="file:///C:/Users/JustinAdler/OneDrive - teeccino.com/Apps/KlaviyoAPI/.env" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\OneDrive - teeccino.com\Apps\KlaviyoAPI\.env</a>
+                </div>
+                <div class="status-badge success">CONNECTED</div>
+            </div>
+            <div class="conn-item">
+                <div>
+                    <div style="font-weight: 500;">Gmail API</div>
+                    <a href="file:///C:/Users/JustinAdler/Documents/Obsidian Vault/Automations/token.json" class="path-link" target="_blank" style="margin-top:2px;">C:\Users\JustinAdler\Documents\Obsidian Vault\Automations\token.json</a>
+                </div>
+                <div class="status-badge success">CONNECTED</div>
+            </div>
         </div>
-
-        <!-- 4. Matrix Workbook Builder -->
-        <div class="script-block">
-            <div class="script-header">
-                <div>
-                    <div class="script-name">&#128203; Matrix Workbook Builder</div>
-                    <span class="path-link">analytics/build_all_matrices.py</span>
-                </div>
-                <div class="status-badge success">AFTER PIPELINE</div>
-            </div>
-            <div style="font-size: 0.9em; color: #999; margin-bottom: 12px;">
-                Builds 3 Excel workbooks (14 sheets total) from Analytics DB. Replaces the old 30-sheet monolith. Runs in ~0.7 seconds.
-            </div>
-            <table class="outputs-table">
-                <thead><tr><th width="40%">Output</th><th width="30%">Sheets</th><th width="30%">Notes</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Sales &amp; Revenue Matrix.xlsx</strong></td><td>WebSalesMatrix, Channel, Discount, Profit Waterfall</td><td>4 sheets</td></tr>
-                    <tr><td><strong>Product Performance.xlsx</strong></td><td>SKU Units/Revenue, Blend Units/Revenue, Type Units/Revenue, COGS</td><td>7 sheets</td></tr>
-                    <tr><td><strong>Advertising &amp; Attribution.xlsx</strong></td><td>Meta Matrix, Google Matrix, MER Matrix</td><td>3 sheets</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 5. Price List Generator -->
-        <div class="script-block">
-            <div class="script-header">
-                <div>
-                    <div class="script-name">&#128176; Monthly Price List Generator</div>
-                    <span class="path-link">generate_monthly_price_reference.py</span>
-                </div>
-                <div class="status-badge manual">MANUAL</div>
-            </div>
-            <div style="font-size: 0.9em; color: #999; margin-bottom: 12px;">
-                Fetches non-subscription DTC orders from Shopify GraphQL for a given month and derives the retail price for each SKU (mode of observed prices). Run manually when new months need prices or after price changes. <strong style="color:#ccc;">40 months covered</strong> (Jan 2023 &rarr; Apr 2026), 10,904 total price entries.
-            </div>
-            <table class="outputs-table">
-                <thead><tr><th width="40%">Output</th><th width="30%">Location</th><th width="30%">Notes</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Monthly Price JSONs</strong></td><td><code>PriceList/Monthly/prices_YYYY-MM.json</code></td><td>98&ndash;100% SKU coverage per month</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- 6. ECH Creative Check -->
-        <div class="script-block">
-            <div class="script-header">
-                <div>
-                    <div class="script-name">&#127912; ECH Ad Creative Check</div>
-                    <span class="path-link">check_new_ech_ads.py</span>
-                </div>
-                <div class="status-badge success">ON DEMAND</div>
-            </div>
-            <div style="font-size: 0.9em; color: #999; margin-bottom: 12px;">
-                Scans for new ECH ad creatives, downloads them, matches to Meta ad performance data via image hashing (images) or name matching (videos), and rebuilds the Creative Library page. 76 creatives (62 images, 14 videos).
-            </div>
-            <table class="outputs-table">
-                <thead><tr><th width="40%">Output</th><th width="30%">Location</th><th width="30%">Notes</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Creatives Library</strong></td><td><a href="creatives.html" style="color:#D4A843;">creatives.html</a></td><td>76 creatives matched to Meta ads</td></tr>
-                </tbody>
-            </table>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="location.reload()" style="padding: 10px 20px; background: #0969da; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Refresh Dashboard</button>
         </div>
     </div>
-
-    <!-- ── API Connections ────────────────────────────────────────── -->
-    <div class="card">
-        <h2>&#128268; API Connections</h2>
-        <div class="conn-item">
-            <div><div>Shopify GraphQL API</div><div style="font-size:0.8em;color:#888;">Primary data source for orders, line items, discounts</div></div>
-            <div class="status-badge success">CONNECTED</div>
-        </div>
-        <div class="conn-item">
-            <div><div>Meta Ads API</div><div style="font-size:0.8em;color:#888;">Ad spend, impressions, clicks, ROAS, creative performance</div></div>
-            <div class="status-badge success">CONNECTED</div>
-        </div>
-        <div class="conn-item">
-            <div><div>Google Ads API</div><div style="font-size:0.8em;color:#888;">Ad spend, impressions, clicks, conversions</div></div>
-            <div class="status-badge success">CONNECTED</div>
-        </div>
-        <div class="conn-item">
-            <div><div>ShipStation API</div><div style="font-size:0.8em;color:#888;">Shipping costs (not yet in analytics pipeline)</div></div>
-            <div class="status-badge success">CONNECTED</div>
-        </div>
-        <div class="conn-item">
-            <div><div>Klaviyo API</div><div style="font-size:0.8em;color:#888;">Email metrics (not yet in analytics pipeline)</div></div>
-            <div class="status-badge success">CONNECTED</div>
-        </div>
-    </div>
-
-    <!-- ── Data Architecture ──────────────────────────────────────── -->
-    <div class="card">
-        <h2>&#128451;&#65039; Data Architecture</h2>
-        <div style="font-size: 0.9em; color: #ccc; line-height: 1.8;">
-            <strong style="color:#D4A843;">Single Source of Truth:</strong> Analytics DB (<code>teeccino_analytics.db</code>)<br>
-            <strong style="color:#D4A843;">Tables:</strong> 14 (5 raw, 2 journey, 4 calculated, 2 reference, 1 cohort)<br>
-            <strong style="color:#D4A843;">Records:</strong> ~1.4M rows across all tables<br>
-            <strong style="color:#D4A843;">Coverage:</strong> Jan 2023 &rarr; present (daily)<br>
-            <strong style="color:#D4A843;">Schema docs:</strong> <a href="database.html" style="color:#D4A843;">database.html</a><br><br>
-            <strong style="color:#D4A843;">Pipeline flow:</strong><br>
-            Shopify GraphQL + Meta API + Google API &rarr; <code>run_pipeline.py</code> &rarr; Analytics DB &rarr; dashboards (MTD/YTD) + matrix workbooks + creative library
-        </div>
-    </div>
-
-    <!-- ── Archived Scripts ───────────────────────────────────────── -->
-    <div class="card">
-        <h2>&#128451;&#65039; Archived Scripts (Retired)</h2>
-        <div style="font-size: 0.85em; color: #888; margin-bottom: 12px;">
-            These scripts ran the old CSV-based pipeline. All retired April 2026 when the Analytics DB pipeline became the single source. Archived to <code>_archive/</code>.
-        </div>
-        <table class="archived-table">
-            <thead><tr><th>Old Script</th><th>Replaced By</th></tr></thead>
-            <tbody>
-                <tr><td>daily_shopify_orders.py</td><td>run_pipeline.py (ingest_shopify.py)</td></tr>
-                <tr><td>daily_sku_sales_report.py</td><td>run_pipeline.py (transform_daily.py)</td></tr>
-                <tr><td>daily_meta_report.py</td><td>run_pipeline.py --api (ingest_meta.py)</td></tr>
-                <tr><td>daily_google_report.py</td><td>run_pipeline.py --api (ingest_google.py)</td></tr>
-                <tr><td>daily_sync.py (KPI DB)</td><td>Analytics DB (retired Apr 2)</td></tr>
-                <tr><td>generate_monthly_matrices.py</td><td>build_all_matrices.py (3 workbooks)</td></tr>
-                <tr><td>generate_dashboard.py</td><td>build_mtd_dashboard.py</td></tr>
-                <tr><td>shipstation_shipping_costs.py</td><td>Pending: ShipStation integration into Analytics DB</td></tr>
-                <tr><td>shipping_analysis.py</td><td>Pending: ShipStation integration into Analytics DB</td></tr>
-                <tr><td>fulfillment_tracker.py</td><td>Pending: ShipStation integration into Analytics DB</td></tr>
-                <tr><td>daily_instagram_metrics.py</td><td>Pending: Instagram integration into Analytics DB</td></tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div style="margin-top: 20px; text-align: center;">
-        <button onclick="location.reload()" style="padding: 10px 20px; background: rgba(212,168,67,0.8); color: #1a1a2e; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Refresh Dashboard</button>
-    </div>
-</div>
 </body>
 </html>
