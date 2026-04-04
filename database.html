@@ -340,6 +340,7 @@
         <div class="step"><span class="script">ingest_shopify.py</span> <span class="arrow">â†'</span> Shopify GraphQL Admin API <span class="arrow">â†'</span> <span class="db">raw_orders</span> + <span class="db">raw_line_items</span> + <span class="db">raw_discount_allocations</span> + <span class="db">order_journey</span> + <span class="db">order_moments</span></div>
         <div class="step"><span class="script">ingest_meta.py</span> <span class="arrow">â†'</span> Daily Meta Ads CSV (or Meta API) <span class="arrow">â†'</span> <span class="db">raw_meta_ads</span></div>
         <div class="step"><span class="script">ingest_google.py</span> <span class="arrow">â†'</span> Daily Google Ads CSV (or Google API) <span class="arrow">â†'</span> <span class="db">raw_google_ads</span></div>
+        <div class="step"><span class="script">ingest_shipstation.py</span> <span class="arrow">&#8594;</span> ShipStation Shipments API <span class="arrow">&#8594;</span> <span class="db">raw_shipments</span></div>
         <br/>
         <div class="step"><span class="label">â"€â"€ Step 2: Transform â"€â"€</span></div>
         <div class="step"><span class="script">transform_daily.py</span> <span class="arrow">â†'</span> raw_orders + raw_line_items <span class="arrow">â†'</span> <span class="db">calc_daily_shopify</span> <span class="label">(43 daily aggregate columns)</span></div>
@@ -568,6 +569,52 @@
             </table>
             <div class="idx-info">
                 <strong>Indexes:</strong> <code>date</code> (unique PK)
+            </div>
+        </div>
+    </div>
+
+
+    <!-- raw_shipments -->
+    <div class="table-card" id="raw_shipments">
+        <div class="table-card-header" onclick="this.parentElement.classList.toggle('open')">
+            <div>
+                <span class="table-name">raw_shipments</span>
+            </div>
+            <div class="table-meta">
+                <span class="badge badge-raw">Raw</span>
+                <span>106,580 rows</span>
+                <span>Jan 2024 &rarr; Apr 2026</span>
+                <span class="expand-icon">&#9660;</span>
+            </div>
+        </div>
+        <div class="table-desc">
+            Shipment records from <strong>ShipStation</strong>. One row per shipment (a single order may have multiple shipments). Contains actual carrier costs, carrier/service codes, destination info, and weights.
+            <br/><br/>
+            <strong>Source:</strong> <code>ingest_shipstation.py</code> &rarr; ShipStation REST API <code>/shipments</code> endpoint
+        </div>
+        <div class="table-card-body">
+            <table class="col-table">
+                <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">shipment_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">ShipStation shipment ID</td></tr>
+                    <tr><td class="col-name">order_id</td><td class="col-type">TEXT</td><td class="col-desc">ShipStation order ID</td></tr>
+                    <tr><td class="col-name">order_number</td><td class="col-type">TEXT</td><td class="col-desc">Human-readable order number (matches Shopify order number)</td></tr>
+                    <tr><td class="col-name">ship_date</td><td class="col-type">TEXT</td><td class="col-desc">Date shipped (<code>YYYY-MM-DD</code>)</td></tr>
+                    <tr><td class="col-name">carrier_code</td><td class="col-type">TEXT</td><td class="col-desc">Carrier (<code>dhl_global_mail</code>, <code>stamps_com</code>, <code>fedex</code>)</td></tr>
+                    <tr><td class="col-name">service_code</td><td class="col-type">TEXT</td><td class="col-desc">Service (e.g. <code>dhl_parcel_ground</code>, <code>usps_priority_mail</code>)</td></tr>
+                    <tr><td class="col-name">shipment_cost</td><td class="col-type">REAL</td><td class="col-desc">Actual carrier cost paid ($) &mdash; what we pay to ship</td></tr>
+                    <tr><td class="col-name">insurance_cost</td><td class="col-type">REAL</td><td class="col-desc">Insurance cost ($)</td></tr>
+                    <tr><td class="col-name">weight_oz</td><td class="col-type">REAL</td><td class="col-desc">Package weight in ounces</td></tr>
+                    <tr><td class="col-name">tracking_number</td><td class="col-type">TEXT</td><td class="col-desc">Carrier tracking number</td></tr>
+                    <tr><td class="col-name">to_state</td><td class="col-type">TEXT</td><td class="col-desc">Destination state</td></tr>
+                    <tr><td class="col-name">to_country</td><td class="col-type">TEXT</td><td class="col-desc">Destination country code</td></tr>
+                    <tr><td class="col-name">is_voided</td><td class="col-type">INTEGER</td><td class="col-desc">1 if voided/cancelled</td></tr>
+                    <tr><td class="col-name">is_return</td><td class="col-type">INTEGER</td><td class="col-desc">1 if return label</td></tr>
+                    <tr><td class="col-name">fetched_at</td><td class="col-type">TEXT</td><td class="col-desc">When last fetched from API</td></tr>
+                </tbody>
+            </table>
+            <div class="idx-info">
+                <strong>Indexes:</strong> <code>shipment_id</code> (PK), <code>ship_date</code>, <code>order_number</code>
             </div>
         </div>
     </div>
