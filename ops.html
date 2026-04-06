@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ops Dashboard - Claude Code</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 20px;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 16px;
+            margin-bottom: 8px;
+        }
+        .header h1 {
+            color: #d4a843;
+            font-size: 1.6em;
+        }
+        .overall-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1em;
+            background: #fff8c5;
+            color: #9a6700;
+        }
+        .timestamp {
+            color: #8b949e;
+            font-size: 0.85em;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #d4a843;
+            font-size: 1.15em;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #21262d;
+            font-size: 0.9em;
+        }
+        .data-table th {
+            color: #8b949e;
+            font-weight: 600;
+            background: #0d1117;
+        }
+        .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-ok { background: #1a7f37; color: #dafbe1; }
+        .status-stale { background: #9a6700; color: #fff8c5; }
+        .status-warn { background: #9a6700; color: #fff8c5; }
+        .status-error { background: #cf222e; color: #ffebe9; }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+        }
+        .alert ul { margin: 8px 0 0 20px; }
+        .alert-ok { background: #0d2818; border: 1px solid #1a7f37; color: #7ee787; }
+        .alert-warn { background: #2a1f00; border: 1px solid #9a6700; color: #e3b341; }
+        .alert-error { background: #2d0000; border: 1px solid #cf222e; color: #ff7b72; }
+
+        .log-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            font-size: 0.85em;
+        }
+        .log-content {
+            padding: 12px 14px;
+            font-size: 0.8em;
+            font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #8b949e;
+        }
+
+        .ownership-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .owner-block {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+        }
+        .owner-block h3 {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+        .owner-block ul {
+            list-style: none;
+            padding: 0;
+        }
+        .owner-block li {
+            padding: 4px 0;
+            font-size: 0.85em;
+            color: #8b949e;
+        }
+        .owner-block li::before {
+            content: ">";
+            margin-right: 8px;
+            color: #d4a843;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #30363d;
+        }
+        .nav-links a {
+            color: #58a6ff;
+            text-decoration: none;
+            margin: 0 12px;
+            font-size: 0.85em;
+        }
+        .nav-links a:hover { text-decoration: underline; }
+
+        code {
+            background: #0d1117;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: #e3b341;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ops Dashboard</h1>
+            <span class="overall-badge">WARNING</span>
+        </div>
+        <div class="timestamp">
+            Generated by Claude Code -- 2026-04-06 11:31:43 PST<br>
+            Database: <code>C:\temp\analytics\teeccino_analytics.db</code>
+        </div>
+
+        <!-- Data Freshness -->
+        <div class="card">
+            <h2>Data Freshness</h2>
+            <table class="data-table">
+                <thead>
+                    <tr><th>Source</th><th>Last Date</th><th>Target</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td>Shopify Orders</td>
+                <td><code>2026-04-06</code></td>
+                <td>daily</td>
+                <td><span class="badge status-ok">CURRENT</span></td>
+            </tr>
+            <tr>
+                <td>Meta Ads</td>
+                <td><code>2026-04-06</code></td>
+                <td>daily</td>
+                <td><span class="badge status-ok">CURRENT</span></td>
+            </tr>
+            <tr>
+                <td>Google Ads</td>
+                <td><code>2026-04-01</code></td>
+                <td>daily (API not implemented)</td>
+                <td><span class="badge status-stale">STALE</span></td>
+            </tr>
+            <tr>
+                <td>ShipStation</td>
+                <td><code>2026-04-06</code></td>
+                <td>daily</td>
+                <td><span class="badge status-ok">CURRENT</span></td>
+            </tr>
+            <tr>
+                <td>Daily KPIs (calc_daily_shopify)</td>
+                <td><code>2026-04-06</code></td>
+                <td>daily</td>
+                <td><span class="badge status-ok">CURRENT</span></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        <!-- Date Gaps -->
+        <div class="card">
+            <h2>Date Coverage (Last 14 Days)</h2>
+            
+        <div class="alert alert-ok">
+            No date gaps in the last 14 days.
+        </div>
+        </div>
+
+        <!-- Data Quality -->
+        <div class="card">
+            <h2>Data Quality Checks</h2>
+            
+        <div class="alert alert-ok">
+            All data quality checks passed.
+        </div>
+        </div>
+
+        <!-- Pipeline Log -->
+        <div class="card">
+            <h2>Latest Pipeline Run</h2>
+            
+        <div class="alert alert-warn">No pipeline logs found</div>
+        </div>
+
+        <!-- Database Tables -->
+        <div class="card">
+            <h2>Database Tables</h2>
+            <table class="data-table">
+                <thead>
+                    <tr><th>Table</th><th style="text-align:right">Rows</th><th>Date Range</th></tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td><code>raw_orders</code></td>
+                <td class="num">148,083</td>
+                <td>2023-01-01 to 2026-04-06</td>
+            </tr>
+            <tr>
+                <td><code>raw_line_items</code></td>
+                <td class="num">506,331</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code>raw_discount_allocations</code></td>
+                <td class="num">169,700</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code>order_journey</code></td>
+                <td class="num">148,083</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code>order_moments</code></td>
+                <td class="num">265,241</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code>raw_meta_ads</code></td>
+                <td class="num">1,156</td>
+                <td>2023-02-01 to 2026-04-06</td>
+            </tr>
+            <tr>
+                <td><code>raw_google_ads</code></td>
+                <td class="num">1,180</td>
+                <td>2023-01-01 to 2026-04-01</td>
+            </tr>
+            <tr>
+                <td><code>raw_shipments</code></td>
+                <td class="num">107,560</td>
+                <td>2024-01-02 to 2026-04-06</td>
+            </tr>
+            <tr>
+                <td><code>price_list</code></td>
+                <td class="num">ERROR</td>
+                <td colspan="2" style="color:#cf222e">no such column: month</td>
+            </tr>
+            <tr>
+                <td><code>cogs</code></td>
+                <td class="num">1,517</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code>calc_daily_shopify</code></td>
+                <td class="num">1,192</td>
+                <td>2023-01-01 to 2026-04-06</td>
+            </tr>
+            <tr>
+                <td><code>calc_daily_sku_sales</code></td>
+                <td class="num">139,302</td>
+                <td>2023-01-01 to 2026-04-06</td>
+            </tr>
+            <tr>
+                <td><code>calc_attribution</code></td>
+                <td class="num">148,055</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code>calc_customer_cohorts</code></td>
+                <td class="num">60,591</td>
+                <td></td>
+            </tr></tbody>
+            </table>
+        </div>
+
+        <!-- Matrix Workbooks -->
+        <div class="card">
+            <h2>Matrix Workbooks</h2>
+            <table class="data-table">
+                <thead>
+                    <tr><th>Workbook</th><th>Last Modified</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+        <tr>
+            <td>Sales & Revenue Matrix.xlsx</td>
+            <td>2026-04-05 04:20</td>
+            <td><span class="badge status-ok">CURRENT</span></td>
+        </tr>
+        <tr>
+            <td>Product Performance.xlsx</td>
+            <td>2026-04-06 09:27</td>
+            <td><span class="badge status-ok">CURRENT</span></td>
+        </tr>
+        <tr>
+            <td>Advertising & Attribution.xlsx</td>
+            <td>2026-04-06 09:27</td>
+            <td><span class="badge status-ok">CURRENT</span></td>
+        </tr></tbody>
+            </table>
+        </div>
+
+        <!-- Dashboard Publishes -->
+        <div class="card">
+            <h2>Recent Dashboard Publishes</h2>
+            
+        <table class="data-table">
+            <thead><tr><th>Commit</th><th>Date</th><th>Message</th></tr></thead>
+            <tbody>
+            <tr>
+                <td><code>1b525a5</code></td>
+                <td>2026-04-06 09:39</td>
+                <td>Remove duplicate creative folder 2026-03-16_4, rebuild library (62 creatives)</td>
+            </tr>
+            <tr>
+                <td><code>e6abf5a</code></td>
+                <td>2026-04-06 09:27</td>
+                <td>YTD dashboard: 1 pages updated 2026-04-06 09:27</td>
+            </tr>
+            <tr>
+                <td><code>498dc9c</code></td>
+                <td>2026-04-06 09:27</td>
+                <td>MTD v2 dashboard: 1 pages rebuilt 2026-04-06 09:27</td>
+            </tr>
+            <tr>
+                <td><code>1d3a963</code></td>
+                <td>2026-04-06 09:27</td>
+                <td>YTD dashboard: 1 pages updated 2026-04-06 09:27</td>
+            </tr>
+            <tr>
+                <td><code>f1b0036</code></td>
+                <td>2026-04-06 09:27</td>
+                <td>MTD v2 dashboard: 1 pages rebuilt 2026-04-06 09:26</td>
+            </tr>
+            <tr>
+                <td><code>b2bdcda</code></td>
+                <td>2026-04-04 08:20</td>
+                <td>MTD v2 dashboard: 1 pages rebuilt 2026-04-04 08:20</td>
+            </tr>
+            <tr>
+                <td><code>cae0afd</code></td>
+                <td>2026-04-04 08:15</td>
+                <td>Update status dashboard - 2026-04-04</td>
+            </tr>
+            <tr>
+                <td><code>34a26f2</code></td>
+                <td>2026-04-04 08:14</td>
+                <td>Daily Creative Library refresh</td>
+            </tr>
+            <tr>
+                <td><code>ab8e00a</code></td>
+                <td>2026-04-04 07:10</td>
+                <td>YTD dashboard: 1 pages updated 2026-04-04 07:10</td>
+            </tr>
+            <tr>
+                <td><code>c821b50</code></td>
+                <td>2026-04-04 07:10</td>
+                <td>MTD v2 dashboard: 1 pages rebuilt 2026-04-04 07:10</td>
+            </tr></tbody>
+        </table>
+        </div>
+
+        <!-- Automation Ownership -->
+        <div class="card">
+            <h2>Automation Ownership</h2>
+            <div class="ownership-grid">
+                <div class="owner-block">
+                    <h3 style="color:#58a6ff">Claude Code (OpenClaw)</h3>
+                    <ul>
+                        <li>Analytics DB pipeline (run_pipeline.py)</li>
+                        <li>Shopify GraphQL ingestion</li>
+                        <li>Meta Ads API ingestion</li>
+                        <li>ShipStation API ingestion</li>
+                        <li>Daily transforms + KPI calculations</li>
+                        <li>Matrix workbook generation</li>
+                        <li>MTD / YTD dashboard builds + push</li>
+                        <li>This ops dashboard</li>
+                    </ul>
+                </div>
+                <div class="owner-block">
+                    <h3 style="color:#a371f7">Crowley</h3>
+                    <ul>
+                        <li>Legacy CSV pipeline (daily_shopify_orders.py)</li>
+                        <li>Creative library builds</li>
+                        <li>Mission control sync</li>
+                        <li>Status dashboard (status.html)</li>
+                        <li>Instagram / email automations</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="alert alert-warn" style="margin-top:16px">
+                <strong>Overlap watch:</strong> Both agents touch Shopify data. The Analytics DB pipeline
+                (Claude Code) is the source of truth for KPIs and dashboards. The legacy CSV pipeline
+                (Crowley) feeds older reports. If numbers disagree, trust the DB pipeline.
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="mtd.html">MTD Dashboard</a>
+            <a href="ytd.html">YTD Dashboard</a>
+            <a href="database.html">Database Reference</a>
+            <a href="status.html">Crowley Status</a>
+            <a href="analytics.html">Analytics</a>
+        </div>
+    </div>
+</body>
+</html>
