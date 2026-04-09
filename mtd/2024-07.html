@@ -161,7 +161,7 @@ body {
     margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;
 }
 
-/* ---- TOP ADS TABLE ---- */
+/* ---- TOP ADS CARDS ---- */
 .section-panel {
     background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px; margin-bottom: 24px;
@@ -170,30 +170,114 @@ body {
     color: #D4A843; font-size: 1em; font-weight: 700;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.ads-table {
-    width: 100%; border-collapse: collapse;
+.ads-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.ads-table th {
-    text-align: left; color: #64748b; font-size: 0.75em;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+.ad-card {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.ads-table td {
-    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.88em;
+.ad-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212,168,67,0.3);
 }
-.ads-table tr:hover td { background: rgba(255,255,255,0.02); }
-.ad-rank { color: #D4A843; font-weight: 700; width: 40px; }
-.ad-name-cell { max-width: 320px; }
-.ad-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-.ad-campaign { color: #64748b; font-size: 0.82em; margin-top: 2px; }
-.ad-spend { text-align: right; font-weight: 600; }
-.ad-pct { text-align: right; color: #64748b; }
-.ad-roas { text-align: right; font-weight: 700; }
-.ad-roas.good { color: #4ade80; }
-.ad-roas.ok { color: #fbbf24; }
-.ad-roas.bad { color: #f87171; }
-.ad-purchases { text-align: right; color: #94a3b8; }
+.ad-thumb {
+    position: relative; width: 100%; height: 160px;
+    background: #334155; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.ad-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.ad-thumb-placeholder {
+    font-size: 2.5em; opacity: 0.3;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+}
+.ad-video-badge {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.75); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7em; font-weight: 600;
+}
+.ad-card-body { padding: 12px; }
+.ad-card-name {
+    font-weight: 600; font-size: 0.82em; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-campaign {
+    color: #64748b; font-size: 0.72em; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 0.78em; align-items: center;
+}
+.ad-card-spend { font-weight: 700; }
+.ad-card-pct { color: #64748b; font-size: 0.9em; }
+.ad-card-roas { font-weight: 700; }
+.ad-card-purchases { color: #94a3b8; }
+
+/* ---- AD MODAL ---- */
+.ad-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+    justify-content: center; align-items: flex-start;
+}
+.ad-modal.active { display: flex; }
+.ad-modal-box {
+    background: #1e293b; border-radius: 16px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.ad-modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ad-modal-head h3 { font-size: 0.95em; font-weight: 600; }
+.ad-modal-close {
+    background: none; border: none; color: #94a3b8;
+    font-size: 1.5em; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+}
+.ad-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ad-modal-media {
+    background: #0f172a; display: flex; align-items: center;
+    justify-content: center; max-height: 380px; overflow: hidden;
+}
+.ad-modal-media img {
+    width: 100%; max-height: 380px; object-fit: contain;
+}
+.ad-modal-media video {
+    width: 100%; max-height: 380px; background: #000;
+}
+.ad-modal-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ad-modal-metric {
+    text-align: center; padding: 10px 0;
+    background: rgba(0,0,0,0.2); border-radius: 8px;
+}
+.ad-modal-metric .val { font-size: 1.1em; font-weight: 700; }
+.ad-modal-metric .lbl { font-size: 0.7em; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+.ad-modal-body {
+    padding: 16px 20px; color: #cbd5e1;
+    font-size: 0.88em; line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+}
+.ad-modal-campaign {
+    color: #94a3b8; font-size: 0.82em; padding: 0 20px 12px;
+}
+@media (max-width: 640px) {
+    .ads-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .ad-modal-metrics { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ---- PROMOTIONS ---- */
 .promo-table {
@@ -303,7 +387,7 @@ body {
 <div class="header">
     <h1>July 2024 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 09, 2026 at 09:51 AM</div>
+    <div class="updated">Last updated April 09, 2026 at 10:10 AM</div>
 </div>
 
 
@@ -802,124 +886,146 @@ body {
 <!-- ======== TOP ADS ======== -->
 <div class="section-panel">
     <h2>Top Meta Ads &mdash; July 2024</h2>
-    <table class="ads-table">
-        <thead><tr>
-            <th></th><th>Ad / Campaign</th><th style="text-align:right">Spend</th>
-            <th style="text-align:right">% of Total</th><th style="text-align:right">ROAS</th>
-            <th style="text-align:right">Purchases</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="ad-rank">#1</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Heather - 10 Best-Selling Blends - Copy 3</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC C</div>
-            </td>
-            <td class="ad-spend">$5,089</td>
-            <td class="ad-pct">23.8%</td>
-            <td class="ad-roas bad">0.57x</td>
-            <td class="ad-purchases">69</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#2</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC C</div>
-            </td>
-            <td class="ad-spend">$1,395</td>
-            <td class="ad-pct">6.5%</td>
-            <td class="ad-roas bad">0.54x</td>
-            <td class="ad-purchases">9</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#3</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Press Vice 02a_01 | Dynamic Copy | Sampler LP</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC C</div>
-            </td>
-            <td class="ad-spend">$1,267</td>
-            <td class="ad-pct">5.9%</td>
-            <td class="ad-roas bad">0.60x</td>
-            <td class="ad-purchases">20</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#4</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">(ECG) BOF - Tea Cross-Sell</div>
-                <div class="ad-campaign">LV | RTN | BOF | Sales | Website | 7DC/1DV | Cross Sell</div>
-            </td>
-            <td class="ad-spend">$1,239</td>
-            <td class="ad-pct">5.8%</td>
-            <td class="ad-roas good">3.37x</td>
-            <td class="ad-purchases">82</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#5</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Kyla Obsessed Testimonial V2 Greenscreen Hook | LP: Herb...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC</div>
-            </td>
-            <td class="ad-spend">$1,116</td>
-            <td class="ad-pct">5.2%</td>
-            <td class="ad-roas bad">0.78x</td>
-            <td class="ad-purchases">17</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#6</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Jack - Copy 2</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC C</div>
-            </td>
-            <td class="ad-spend">$852</td>
-            <td class="ad-pct">4.0%</td>
-            <td class="ad-roas bad">0.48x</td>
-            <td class="ad-purchases">15</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#7</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC</div>
-            </td>
-            <td class="ad-spend">$828</td>
-            <td class="ad-pct">3.9%</td>
-            <td class="ad-roas bad">0.20x</td>
-            <td class="ad-purchases">6</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#8</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Rachel Caffeine Free Frap V1 Caffeine Free Hook | LP: He...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC C</div>
-            </td>
-            <td class="ad-spend">$769</td>
-            <td class="ad-pct">3.6%</td>
-            <td class="ad-roas bad">0.72x</td>
-            <td class="ad-purchases">7</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#9</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Dandelion Promo - 20% Off - IG Video | LP: Dandelion PDP</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC C</div>
-            </td>
-            <td class="ad-spend">$735</td>
-            <td class="ad-pct">3.4%</td>
-            <td class="ad-roas ok">1.07x</td>
-            <td class="ad-purchases">10</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#10</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC</div>
-            </td>
-            <td class="ad-spend">$725</td>
-            <td class="ad-pct">3.4%</td>
-            <td class="ad-roas bad">0.48x</td>
-            <td class="ad-purchases">11</td>
-        </tr></tbody>
-    </table>
+    <div class="ads-grid">
+        <div class="ad-card" onclick="openAdModal(0)" title="Heather - 10 Best-Selling Blends - Copy 3">
+            <div class="ad-thumb"><img src="../images/120206250231820459.jpg" alt="Heather - 10 Best-Selling Blen" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Heather - 10 Best-Selling Blends - Copy 3</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | </div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$5,089 <span class="ad-card-pct">(23.8%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.57x</span>
+                    <span class="ad-card-purchases">69 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(1)" title="UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Starter PDP">
+            <div class="ad-thumb"><img src="../images/120211100921880459.jpg" alt="UGC Jeanna Zenz Overpaying V2 " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mus...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | </div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,395 <span class="ad-card-pct">(6.5%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.54x</span>
+                    <span class="ad-card-purchases">9 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(2)" title="Press Vice 02a_01 | Dynamic Copy | Sampler LP">
+            <div class="ad-thumb"><img src="../images/120206493392110459.jpg" alt="Press Vice 02a_01 | Dynamic Co" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Press Vice 02a_01 | Dynamic Copy | Sampler LP</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | </div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,267 <span class="ad-card-pct">(5.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.60x</span>
+                    <span class="ad-card-purchases">20 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(3)" title="(ECG) BOF - Tea Cross-Sell">
+            <div class="ad-thumb"><img src="../images/23849799545790458.jpg" alt="(ECG) BOF - Tea Cross-Sell" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">(ECG) BOF - Tea Cross-Sell</div>
+                <div class="ad-card-campaign">LV | RTN | BOF | Sales | Website | 7DC/1DV | Cross</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,239 <span class="ad-card-pct">(5.8%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">3.37x</span>
+                    <span class="ad-card-purchases">82 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(4)" title="UGC Kyla Obsessed Testimonial V2 Greenscreen Hook | LP: Herbal Coffee Variety Pack PDP - Copy">
+            <div class="ad-thumb"><img src="../images/120210803586450459.jpg" alt="UGC Kyla Obsessed Testimonial " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Kyla Obsessed Testimonial V2 Greenscreen Hook | LP:...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,116 <span class="ad-card-pct">(5.2%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.78x</span>
+                    <span class="ad-card-purchases">17 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(5)" title="Jack - Copy 2">
+            <div class="ad-thumb"><img src="../images/120206250231840459.jpg" alt="Jack - Copy 2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Jack - Copy 2</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | </div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$852 <span class="ad-card-pct">(4.0%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.48x</span>
+                    <span class="ad-card-purchases">15 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(6)" title="UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Starter PDP - Copy">
+            <div class="ad-thumb"><img src="../images/120211100959660459.jpg" alt="UGC Jeanna Zenz Overpaying V2 " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mus...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$828 <span class="ad-card-pct">(3.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.20x</span>
+                    <span class="ad-card-purchases">6 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(7)" title="UGC Rachel Caffeine Free Frap V1 Caffeine Free Hook | LP: Herbal Coffee Starter Kit PDP">
+            <div class="ad-thumb"><img src="../images/120211116513760459.jpg" alt="UGC Rachel Caffeine Free Frap " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Rachel Caffeine Free Frap V1 Caffeine Free Hook | L...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | </div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$769 <span class="ad-card-pct">(3.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.72x</span>
+                    <span class="ad-card-purchases">7 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(8)" title="Dandelion Promo - 20% Off - IG Video | LP: Dandelion PDP">
+            <div class="ad-thumb"><img src="../images/120211098760810459.jpg" alt="Dandelion Promo - 20% Off - IG" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Dandelion Promo - 20% Off - IG Video | LP: Dandelion PD...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | </div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$735 <span class="ad-card-pct">(3.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.07x</span>
+                    <span class="ad-card-purchases">10 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(9)" title="UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Starter PDP">
+            <div class="ad-thumb"><img src="../images/120211100959560459.jpg" alt="UGC Jeanna Zenz Overpaying V2 " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mus...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$725 <span class="ad-card-pct">(3.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.48x</span>
+                    <span class="ad-card-purchases">11 orders</span>
+                </div>
+            </div>
+        </div></div>
+</div>
+
+<!-- Ad Modal -->
+<div class="ad-modal" id="adModal" onclick="if(event.target===this)closeAdModal()">
+    <div class="ad-modal-box">
+        <div class="ad-modal-head">
+            <h3 id="adModalName"></h3>
+            <button class="ad-modal-close" onclick="closeAdModal()">&times;</button>
+        </div>
+        <div class="ad-modal-media" id="adModalMedia"></div>
+        <p class="ad-modal-campaign" id="adModalCampaign"></p>
+        <div class="ad-modal-metrics">
+            <div class="ad-modal-metric"><div class="val" id="adModalSpend"></div><div class="lbl">Spend</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRoas"></div><div class="lbl">ROAS</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRevenue"></div><div class="lbl">Revenue</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalPurchases"></div><div class="lbl">Orders</div></div>
+        </div>
+        <div class="ad-modal-body" id="adModalBody"></div>
+    </div>
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
@@ -1031,8 +1137,41 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.card-modal.active').forEach(m => m.classList.remove('active'));
+        closeAdModal();
     }
 });
+
+// Ad modal logic
+const adData = [{"img":"../images/120206250231820459.jpg","video":"","name":"Heather - 10 Best-Selling Blends - Copy 3","campaign":"LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC Campaign","spend":"$5,089","roas":"0.57x","revenue":"$2,879","purchases":69,"body":"Ever dreamt of savoring the warmth and comfort of coffee throughout the day, free from the dreaded caffeine crash? Well, now you can! ✨ Teeccino is a delicious blend of organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee. Taste 10 of our top-selling blends for only $19.99! ☕️❤️<br><br>• Caffeine-free energy boost from nutrients<br>• Acid-free for good digestion<br>• 650 mg of prebiotics to support probiotics<br>• Heart-healthy potassium<br>• Rich, bold, coffee-like flavor<br><br>Taste it now! 🙌🏼"},{"img":"../images/120211100921880459.jpg","video":"","name":"UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Starter PDP","campaign":"LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC Campaign","spend":"$1,395","roas":"0.54x","revenue":"$760","purchases":9,"body":""},{"img":"../images/120206493392110459.jpg","video":"","name":"Press Vice 02a_01 | Dynamic Copy | Sampler LP","campaign":"LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC Campaign","spend":"$1,267","roas":"0.60x","revenue":"$756","purchases":20,"body":""},{"img":"../images/23849799545790458.jpg","video":"","name":"(ECG) BOF - Tea Cross-Sell","campaign":"LV | RTN | BOF | Sales | Website | 7DC/1DV | Cross Sell Playground","spend":"$1,239","roas":"3.37x","revenue":"$4,177","purchases":82,"body":""},{"img":"../images/120210803586450459.jpg","video":"","name":"UGC Kyla Obsessed Testimonial V2 Greenscreen Hook | LP: Herbal Coffee Variety Pa","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC","spend":"$1,116","roas":"0.78x","revenue":"$871","purchases":17,"body":""},{"img":"../images/120206250231840459.jpg","video":"","name":"Jack - Copy 2","campaign":"LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC Campaign","spend":"$852","roas":"0.48x","revenue":"$405","purchases":15,"body":"Teeccino is the #1 caffeine-free coffee alternative made from organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee.<br><br>Every cup provides a natural energy boost without caffeine. Your digestion will love this acid-free brew with its prebiotic inulin from chicory root that nourishes your probiotics for good gut health. ☕🌟 <br><br>- Caffeine-free energy boost from nutrients <br>- Acid-free for good digestion <br>- 650 mg of prebiotics to support probiotics <br>- Heart-healthy potassium <br>- Rich, bold, coffee-like flavor  <br><br>Try Now! 👇"},{"img":"../images/120211100959660459.jpg","video":"","name":"UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Starter PDP - Copy","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC","spend":"$828","roas":"0.20x","revenue":"$164","purchases":6,"body":""},{"img":"../images/120211116513760459.jpg","video":"","name":"UGC Rachel Caffeine Free Frap V1 Caffeine Free Hook | LP: Herbal Coffee Starter ","campaign":"LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC Campaign","spend":"$769","roas":"0.72x","revenue":"$555","purchases":7,"body":""},{"img":"../images/120211098760810459.jpg","video":"","name":"Dandelion Promo - 20% Off - IG Video | LP: Dandelion PDP","campaign":"LV | ACQ | TOF | A+ | Site + Shop | 7DC | Broad | UGC Campaign","spend":"$735","roas":"1.07x","revenue":"$783","purchases":10,"body":"Beat the July heat with Teeccino’s Dandelion Coconut - 20% OFF all month long 🥥💦"},{"img":"../images/120211100959560459.jpg","video":"","name":"UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Starter PDP","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | UGC","spend":"$725","roas":"0.48x","revenue":"$350","purchases":11,"body":""}];
+function openAdModal(idx) {
+    const ad = adData[idx];
+    if (!ad) return;
+    document.getElementById('adModalName').textContent = ad.name;
+    document.getElementById('adModalCampaign').textContent = ad.campaign;
+    document.getElementById('adModalSpend').textContent = ad.spend;
+    document.getElementById('adModalRoas').textContent = ad.roas;
+    document.getElementById('adModalRevenue').textContent = ad.revenue;
+    document.getElementById('adModalPurchases').textContent = ad.purchases + ' orders';
+    document.getElementById('adModalBody').innerHTML = ad.body || '<span style="color:#64748b">(No ad copy available)</span>';
+
+    const media = document.getElementById('adModalMedia');
+    if (ad.video) {
+        media.innerHTML = '<video controls preload="metadata" src="' + ad.video + '" poster="' + (ad.img || '') + '" style="width:100%;max-height:380px;background:#000"></video>';
+    } else if (ad.img) {
+        media.innerHTML = '<img src="' + ad.img + '" alt="' + ad.name + '" style="width:100%;max-height:380px;object-fit:contain">';
+    } else {
+        media.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:3em;opacity:0.2">&#128247;</div>';
+    }
+    document.getElementById('adModal').classList.add('active');
+}
+function closeAdModal() {
+    const modal = document.getElementById('adModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const v = modal.querySelector('video');
+        if (v) v.pause();
+    }
+}
 
 // Charts
 const trendData = {"dates": ["2024-07-01", "2024-07-02", "2024-07-03", "2024-07-04", "2024-07-05", "2024-07-06", "2024-07-07", "2024-07-08", "2024-07-09", "2024-07-10", "2024-07-11", "2024-07-12", "2024-07-13", "2024-07-14", "2024-07-15", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-20", "2024-07-21", "2024-07-22", "2024-07-23", "2024-07-24", "2024-07-25", "2024-07-26", "2024-07-27", "2024-07-28", "2024-07-29", "2024-07-30", "2024-07-31"], "gross": [4292.0, 12442.0, 8026.0, 13413.0, 5673.0, 9435.0, 6913.0, 3530.0, 3431.0, 4628.0, 3935.0, 2954.0, 2445.0, 4210.0, 3733.0, 4294.0, 4020.0, 6351.0, 5543.0, 3737.0, 4454.0, 3186.0, 3235.0, 3776.0, 4055.0, 4338.0, 3389.0, 4689.0, 4441.0, 5833.0, 4373.0], "orders": [90, 169, 117, 177, 91, 124, 110, 72, 70, 90, 75, 64, 48, 97, 84, 90, 80, 106, 101, 76, 87, 73, 75, 77, 91, 92, 67, 96, 87, 119, 84], "ly_dates": ["2023-07-01", "2023-07-02", "2023-07-03", "2023-07-04", "2023-07-05", "2023-07-06", "2023-07-07", "2023-07-08", "2023-07-09", "2023-07-10", "2023-07-11", "2023-07-12", "2023-07-13", "2023-07-14", "2023-07-15", "2023-07-16", "2023-07-17", "2023-07-18", "2023-07-19", "2023-07-20", "2023-07-21", "2023-07-22", "2023-07-23", "2023-07-24", "2023-07-25", "2023-07-26", "2023-07-27", "2023-07-28", "2023-07-29", "2023-07-30", "2023-07-31"], "ly_gross": [5826.0, 9545.0, 10943.0, 13017.0, 5541.0, 2886.0, 3542.0, 2628.0, 2322.0, 4484.0, 2902.0, 2707.0, 2758.0, 3319.0, 3686.0, 3151.0, 4140.0, 3694.0, 3830.0, 3358.0, 6867.0, 2919.0, 2705.0, 4768.0, 3089.0, 4806.0, 3769.0, 4250.0, 2927.0, 5175.0, 4660.0], "ly_orders": [108, 140, 162, 191, 98, 79, 88, 73, 66, 105, 67, 65, 67, 71, 67, 81, 87, 85, 84, 79, 98, 58, 68, 104, 61, 107, 84, 93, 68, 104, 102]};

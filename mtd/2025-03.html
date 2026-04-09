@@ -161,7 +161,7 @@ body {
     margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;
 }
 
-/* ---- TOP ADS TABLE ---- */
+/* ---- TOP ADS CARDS ---- */
 .section-panel {
     background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px; margin-bottom: 24px;
@@ -170,30 +170,114 @@ body {
     color: #D4A843; font-size: 1em; font-weight: 700;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.ads-table {
-    width: 100%; border-collapse: collapse;
+.ads-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.ads-table th {
-    text-align: left; color: #64748b; font-size: 0.75em;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+.ad-card {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.ads-table td {
-    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.88em;
+.ad-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212,168,67,0.3);
 }
-.ads-table tr:hover td { background: rgba(255,255,255,0.02); }
-.ad-rank { color: #D4A843; font-weight: 700; width: 40px; }
-.ad-name-cell { max-width: 320px; }
-.ad-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-.ad-campaign { color: #64748b; font-size: 0.82em; margin-top: 2px; }
-.ad-spend { text-align: right; font-weight: 600; }
-.ad-pct { text-align: right; color: #64748b; }
-.ad-roas { text-align: right; font-weight: 700; }
-.ad-roas.good { color: #4ade80; }
-.ad-roas.ok { color: #fbbf24; }
-.ad-roas.bad { color: #f87171; }
-.ad-purchases { text-align: right; color: #94a3b8; }
+.ad-thumb {
+    position: relative; width: 100%; height: 160px;
+    background: #334155; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.ad-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.ad-thumb-placeholder {
+    font-size: 2.5em; opacity: 0.3;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+}
+.ad-video-badge {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.75); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7em; font-weight: 600;
+}
+.ad-card-body { padding: 12px; }
+.ad-card-name {
+    font-weight: 600; font-size: 0.82em; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-campaign {
+    color: #64748b; font-size: 0.72em; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 0.78em; align-items: center;
+}
+.ad-card-spend { font-weight: 700; }
+.ad-card-pct { color: #64748b; font-size: 0.9em; }
+.ad-card-roas { font-weight: 700; }
+.ad-card-purchases { color: #94a3b8; }
+
+/* ---- AD MODAL ---- */
+.ad-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+    justify-content: center; align-items: flex-start;
+}
+.ad-modal.active { display: flex; }
+.ad-modal-box {
+    background: #1e293b; border-radius: 16px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.ad-modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ad-modal-head h3 { font-size: 0.95em; font-weight: 600; }
+.ad-modal-close {
+    background: none; border: none; color: #94a3b8;
+    font-size: 1.5em; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+}
+.ad-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ad-modal-media {
+    background: #0f172a; display: flex; align-items: center;
+    justify-content: center; max-height: 380px; overflow: hidden;
+}
+.ad-modal-media img {
+    width: 100%; max-height: 380px; object-fit: contain;
+}
+.ad-modal-media video {
+    width: 100%; max-height: 380px; background: #000;
+}
+.ad-modal-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ad-modal-metric {
+    text-align: center; padding: 10px 0;
+    background: rgba(0,0,0,0.2); border-radius: 8px;
+}
+.ad-modal-metric .val { font-size: 1.1em; font-weight: 700; }
+.ad-modal-metric .lbl { font-size: 0.7em; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+.ad-modal-body {
+    padding: 16px 20px; color: #cbd5e1;
+    font-size: 0.88em; line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+}
+.ad-modal-campaign {
+    color: #94a3b8; font-size: 0.82em; padding: 0 20px 12px;
+}
+@media (max-width: 640px) {
+    .ads-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .ad-modal-metrics { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ---- PROMOTIONS ---- */
 .promo-table {
@@ -303,7 +387,7 @@ body {
 <div class="header">
     <h1>March 2025 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 09, 2026 at 09:51 AM</div>
+    <div class="updated">Last updated April 09, 2026 at 10:11 AM</div>
 </div>
 
 
@@ -802,124 +886,146 @@ body {
 <!-- ======== TOP ADS ======== -->
 <div class="section-panel">
     <h2>Top Meta Ads &mdash; March 2025</h2>
-    <table class="ads-table">
-        <thead><tr>
-            <th></th><th>Ad / Campaign</th><th style="text-align:right">Spend</th>
-            <th style="text-align:right">% of Total</th><th style="text-align:right">ROAS</th>
-            <th style="text-align:right">Purchases</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="ad-rank">#1</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Elaine Gordon (Influencer)</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$9,472</td>
-            <td class="ad-pct">34.3%</td>
-            <td class="ad-roas bad">0.89x</td>
-            <td class="ad-purchases">212</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#2</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">(ECG) TOF - Video - Mushroom - Brand - Jorge Edit - 0:21Sec</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$2,648</td>
-            <td class="ad-pct">9.6%</td>
-            <td class="ad-roas bad">0.95x</td>
-            <td class="ad-purchases">55</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#3</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">jkb.journal (Influencer)</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$2,091</td>
-            <td class="ad-pct">7.6%</td>
-            <td class="ad-roas ok">1.08x</td>
-            <td class="ad-purchases">66</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#4</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#001 - IG Posts - Video#3</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$1,941</td>
-            <td class="ad-pct">7.0%</td>
-            <td class="ad-roas ok">1.25x</td>
-            <td class="ad-purchases">42</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#5</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More | LP...</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$1,548</td>
-            <td class="ad-pct">5.6%</td>
-            <td class="ad-roas bad">0.77x</td>
-            <td class="ad-purchases">21</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#6</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Nikki Sult | Overpaying Hook 1 | CTA: Shop Now | LP: Mushroo...</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$1,515</td>
-            <td class="ad-pct">5.5%</td>
-            <td class="ad-roas ok">1.39x</td>
-            <td class="ad-purchases">37</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#7</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#001 - IG Posts - Video#2</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$1,269</td>
-            <td class="ad-pct">4.6%</td>
-            <td class="ad-roas ok">1.27x</td>
-            <td class="ad-purchases">25</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#8</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternat...</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$1,028</td>
-            <td class="ad-pct">3.7%</td>
-            <td class="ad-roas good">2.62x</td>
-            <td class="ad-purchases">43</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#9</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Alexandra Skyee (Influencer)</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$856</td>
-            <td class="ad-pct">3.1%</td>
-            <td class="ad-roas ok">1.60x</td>
-            <td class="ad-purchases">25</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#10</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Amanda Krenz | Herbal Coffee Is In | Teeccino Page | CTA: Sh...</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$694</td>
-            <td class="ad-pct">2.5%</td>
-            <td class="ad-roas ok">1.51x</td>
-            <td class="ad-purchases">20</td>
-        </tr></tbody>
-    </table>
+    <div class="ads-grid">
+        <div class="ad-card" onclick="openAdModal(0)" title="Elaine Gordon (Influencer)">
+            <div class="ad-thumb"><img src="../images/120218345791940459.jpg" alt="Elaine Gordon (Influencer)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Elaine Gordon (Influencer)</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$9,472 <span class="ad-card-pct">(34.3%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.89x</span>
+                    <span class="ad-card-purchases">212 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(1)" title="(ECG) TOF - Video - Mushroom - Brand - Jorge Edit - 0:21Sec">
+            <div class="ad-thumb"><img src="../images/120217256055820459.jpg" alt="(ECG) TOF - Video - Mushroom -" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">(ECG) TOF - Video - Mushroom - Brand - Jorge Edit - 0:2...</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$2,648 <span class="ad-card-pct">(9.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.95x</span>
+                    <span class="ad-card-purchases">55 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(2)" title="jkb.journal (Influencer)">
+            <div class="ad-thumb"><img src="../images/120218345721540459.jpg" alt="jkb.journal (Influencer)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">jkb.journal (Influencer)</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$2,091 <span class="ad-card-pct">(7.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.08x</span>
+                    <span class="ad-card-purchases">66 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(3)" title="#001 - IG Posts - Video#3">
+            <div class="ad-thumb"><img src="../images/120218325577790459.jpg" alt="#001 - IG Posts - Video#3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#001 - IG Posts - Video#3</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,941 <span class="ad-card-pct">(7.0%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.25x</span>
+                    <span class="ad-card-purchases">42 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(4)" title="UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More | LP: Sampler PDP">
+            <div class="ad-thumb"><img src="../images/120217255801540459.jpg" alt="UGC Callie Vitalo | Red Flags " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More...</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,548 <span class="ad-card-pct">(5.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.77x</span>
+                    <span class="ad-card-purchases">21 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(5)" title="Nikki Sult | Overpaying Hook 1 | CTA: Shop Now | LP: Mushroom Adaptogen Collection LP">
+            <div class="ad-thumb"><img src="../images/120217256261670459.jpg" alt="Nikki Sult | Overpaying Hook 1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Nikki Sult | Overpaying Hook 1 | CTA: Shop Now | LP: Mu...</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,515 <span class="ad-card-pct">(5.5%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.39x</span>
+                    <span class="ad-card-purchases">37 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(6)" title="#001 - IG Posts - Video#2">
+            <div class="ad-thumb"><img src="../images/120218325542940459.jpg" alt="#001 - IG Posts - Video#2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#001 - IG Posts - Video#2</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,269 <span class="ad-card-pct">(4.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.27x</span>
+                    <span class="ad-card-purchases">25 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(7)" title="ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternative - Copy">
+            <div class="ad-thumb"><img src="../images/120217256133200459.jpg" alt="ECG) TOF - Carousel - Coffee -" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alt...</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,028 <span class="ad-card-pct">(3.7%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">2.62x</span>
+                    <span class="ad-card-purchases">43 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(8)" title="Alexandra Skyee (Influencer)">
+            <div class="ad-thumb"><img src="../images/120218345173130459.jpg" alt="Alexandra Skyee (Influencer)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Alexandra Skyee (Influencer)</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$856 <span class="ad-card-pct">(3.1%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.60x</span>
+                    <span class="ad-card-purchases">25 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(9)" title="Amanda Krenz | Herbal Coffee Is In | Teeccino Page | CTA: Shop Now | LP: Dandelion Caramel Nut Chicory Herbal Coffee">
+            <div class="ad-thumb"><img src="../images/120217573257830459.jpg" alt="Amanda Krenz | Herbal Coffee I" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Amanda Krenz | Herbal Coffee Is In | Teeccino Page | CT...</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$694 <span class="ad-card-pct">(2.5%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.51x</span>
+                    <span class="ad-card-purchases">20 orders</span>
+                </div>
+            </div>
+        </div></div>
+</div>
+
+<!-- Ad Modal -->
+<div class="ad-modal" id="adModal" onclick="if(event.target===this)closeAdModal()">
+    <div class="ad-modal-box">
+        <div class="ad-modal-head">
+            <h3 id="adModalName"></h3>
+            <button class="ad-modal-close" onclick="closeAdModal()">&times;</button>
+        </div>
+        <div class="ad-modal-media" id="adModalMedia"></div>
+        <p class="ad-modal-campaign" id="adModalCampaign"></p>
+        <div class="ad-modal-metrics">
+            <div class="ad-modal-metric"><div class="val" id="adModalSpend"></div><div class="lbl">Spend</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRoas"></div><div class="lbl">ROAS</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRevenue"></div><div class="lbl">Revenue</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalPurchases"></div><div class="lbl">Orders</div></div>
+        </div>
+        <div class="ad-modal-body" id="adModalBody"></div>
+    </div>
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
@@ -1031,8 +1137,41 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.card-modal.active').forEach(m => m.classList.remove('active'));
+        closeAdModal();
     }
 });
+
+// Ad modal logic
+const adData = [{"img":"../images/120218345791940459.jpg","video":"","name":"Elaine Gordon (Influencer)","campaign":"eH | CBO | COLD | Main Campaign","spend":"$9,472","roas":"0.89x","revenue":"$8,441","purchases":212,"body":""},{"img":"../images/120217256055820459.jpg","video":"","name":"(ECG) TOF - Video - Mushroom - Brand - Jorge Edit - 0:21Sec","campaign":"eH | CBO | COLD | Main Campaign","spend":"$2,648","roas":"0.95x","revenue":"$2,505","purchases":55,"body":"The perfect pairing of wellness mushrooms and adaptogenic herbs, brewed or steeped; however you prefer! ☕ <br><br>Teeccino's mushroom adaptogen herbal coffees and teas are thoughtfully blended to provide rich, bold flavor, and maximum wellness in every cup!"},{"img":"../images/120218345721540459.jpg","video":"","name":"jkb.journal (Influencer)","campaign":"eH | CBO | COLD | Main Campaign","spend":"$2,091","roas":"1.08x","revenue":"$2,260","purchases":66,"body":"Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120218325577790459.jpg","video":"","name":"#001 - IG Posts - Video#3","campaign":"eH | CBO | COLD | Main Campaign","spend":"$1,941","roas":"1.25x","revenue":"$2,424","purchases":42,"body":"Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120217255801540459.jpg","video":"","name":"UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More | LP: Sampler PDP","campaign":"eH | CBO | COLD | Main Campaign","spend":"$1,548","roas":"0.77x","revenue":"$1,191","purchases":21,"body":"Tired of gas, bloating, heartburn, and brain fog? Teeccino Herbal Coffee is here to help! 🌿 With zero caffeine and zero acidity, it brews just like coffee but is packed with prebiotics that support your probiotics. Enjoy the rich taste without the gut issues. Try Teeccino today and feel the difference! 🌟"},{"img":"../images/120217256261670459.jpg","video":"","name":"Nikki Sult | Overpaying Hook 1 | CTA: Shop Now | LP: Mushroom Adaptogen Collecti","campaign":"eH | CBO | COLD | Main Campaign","spend":"$1,515","roas":"1.39x","revenue":"$2,100","purchases":37,"body":"🍄 Discover Teeccino Super Shroom Coffee 🍄<br><br>Enjoy the health benefits of functional mushrooms without the high price tag. At just $18 for a 10 oz bag, our caffeine-free mushroom coffees deliver bold flavor without the jitters.<br><br>Choose from 6 expertly crafted blends, including:<br>☕ Reishi – Deep, French roast flavor to start your day.<br>🌙 Chaga – Creamy butterscotch notes for a soothing nightcap.<br><br>No subscriptions. No mushroomy taste. Just delicious coffee alternatives that are good for your body and your wallet."},{"img":"../images/120218325542940459.jpg","video":"","name":"#001 - IG Posts - Video#2","campaign":"eH | CBO | COLD | Main Campaign","spend":"$1,269","roas":"1.27x","revenue":"$1,607","purchases":25,"body":"Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120217256133200459.jpg","video":"","name":"ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternative - Copy","campaign":"eH | CBO | COLD | Main Campaign","spend":"$1,028","roas":"2.62x","revenue":"$2,688","purchases":43,"body":"Have you been thinking about taking a break from your daily grind? ☕️<br><br>That's why we created Teeccino. With over 35 blends to choose from, you'll agree Teeccino is the best coffee alternative ever.<br><br>We carefully source the highest quality, organic ingredients from around the world, like ramón seeds wild harvested in Guatemala, chicory root from France, wild dandelion root from Eastern Europe, and carob pods from the mountains of Spain to provide a delicious experience from start to finish.<br><br>Brew it as you would your regular cup of coffee, and allow the rich, bold taste to transport you to a world of flavor that has no parallel."},{"img":"../images/120218345173130459.jpg","video":"","name":"Alexandra Skyee (Influencer)","campaign":"eH | CBO | COLD | Main Campaign","spend":"$856","roas":"1.60x","revenue":"$1,368","purchases":25,"body":"Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120217573257830459.jpg","video":"","name":"Amanda Krenz | Herbal Coffee Is In | Teeccino Page | CTA: Shop Now | LP: Dandeli","campaign":"eH | CBO | COLD | Main Campaign","spend":"$694","roas":"1.51x","revenue":"$1,051","purchases":20,"body":"Skip the jitters and the crash—start your day with a better latte, made with our Dandelion Caramel Nut Herbal Coffee. ☕✨ Our rich, creamy, and caffeine-free blend is the perfect coffee alternative, packed with the goodness of dandelion root to support liver health. 💛<br><br>Looking for a delicious way to upgrade your morning routine? Try it for yourself!"}];
+function openAdModal(idx) {
+    const ad = adData[idx];
+    if (!ad) return;
+    document.getElementById('adModalName').textContent = ad.name;
+    document.getElementById('adModalCampaign').textContent = ad.campaign;
+    document.getElementById('adModalSpend').textContent = ad.spend;
+    document.getElementById('adModalRoas').textContent = ad.roas;
+    document.getElementById('adModalRevenue').textContent = ad.revenue;
+    document.getElementById('adModalPurchases').textContent = ad.purchases + ' orders';
+    document.getElementById('adModalBody').innerHTML = ad.body || '<span style="color:#64748b">(No ad copy available)</span>';
+
+    const media = document.getElementById('adModalMedia');
+    if (ad.video) {
+        media.innerHTML = '<video controls preload="metadata" src="' + ad.video + '" poster="' + (ad.img || '') + '" style="width:100%;max-height:380px;background:#000"></video>';
+    } else if (ad.img) {
+        media.innerHTML = '<img src="' + ad.img + '" alt="' + ad.name + '" style="width:100%;max-height:380px;object-fit:contain">';
+    } else {
+        media.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:3em;opacity:0.2">&#128247;</div>';
+    }
+    document.getElementById('adModal').classList.add('active');
+}
+function closeAdModal() {
+    const modal = document.getElementById('adModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const v = modal.querySelector('video');
+        if (v) v.pause();
+    }
+}
 
 // Charts
 const trendData = {"dates": ["2025-03-01", "2025-03-02", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-08", "2025-03-09", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-15", "2025-03-16", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-22", "2025-03-23", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-29", "2025-03-30", "2025-03-31"], "gross": [8135.0, 6765.0, 6943.0, 5603.0, 7089.0, 5796.0, 4707.0, 6695.0, 4475.0, 5410.0, 4209.0, 4858.0, 4927.0, 4327.0, 5746.0, 8180.0, 8542.0, 4735.0, 7267.0, 14984.0, 9184.0, 6789.0, 7711.0, 9761.0, 5516.0, 7338.0, 5667.0, 8245.0, 4226.0, 6419.0, 5620.0], "orders": [142, 117, 129, 118, 144, 104, 90, 139, 84, 106, 94, 100, 96, 99, 101, 159, 160, 91, 133, 230, 146, 116, 147, 196, 112, 143, 106, 151, 80, 116, 116], "ly_dates": ["2024-03-01", "2024-03-02", "2024-03-03", "2024-03-04", "2024-03-05", "2024-03-06", "2024-03-07", "2024-03-08", "2024-03-09", "2024-03-10", "2024-03-11", "2024-03-12", "2024-03-13", "2024-03-14", "2024-03-15", "2024-03-16", "2024-03-17", "2024-03-18", "2024-03-19", "2024-03-20", "2024-03-21", "2024-03-22", "2024-03-23", "2024-03-24", "2024-03-25", "2024-03-26", "2024-03-27", "2024-03-28", "2024-03-29", "2024-03-30", "2024-03-31"], "ly_gross": [6170.0, 8596.0, 12640.0, 13580.0, 4914.0, 6222.0, 4571.0, 5042.0, 4472.0, 3149.0, 5738.0, 5794.0, 3705.0, 4445.0, 4715.0, 4070.0, 9618.0, 5991.0, 6142.0, 7747.0, 6686.0, 10269.0, 5114.0, 5818.0, 5165.0, 5107.0, 5321.0, 4558.0, 5511.0, 6311.0, 6675.0], "ly_orders": [128, 134, 178, 212, 99, 118, 100, 109, 103, 84, 106, 120, 79, 95, 106, 81, 224, 132, 134, 143, 137, 200, 112, 110, 116, 103, 127, 110, 124, 136, 128]};

@@ -161,7 +161,7 @@ body {
     margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;
 }
 
-/* ---- TOP ADS TABLE ---- */
+/* ---- TOP ADS CARDS ---- */
 .section-panel {
     background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px; margin-bottom: 24px;
@@ -170,30 +170,114 @@ body {
     color: #D4A843; font-size: 1em; font-weight: 700;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.ads-table {
-    width: 100%; border-collapse: collapse;
+.ads-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.ads-table th {
-    text-align: left; color: #64748b; font-size: 0.75em;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+.ad-card {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.ads-table td {
-    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.88em;
+.ad-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212,168,67,0.3);
 }
-.ads-table tr:hover td { background: rgba(255,255,255,0.02); }
-.ad-rank { color: #D4A843; font-weight: 700; width: 40px; }
-.ad-name-cell { max-width: 320px; }
-.ad-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-.ad-campaign { color: #64748b; font-size: 0.82em; margin-top: 2px; }
-.ad-spend { text-align: right; font-weight: 600; }
-.ad-pct { text-align: right; color: #64748b; }
-.ad-roas { text-align: right; font-weight: 700; }
-.ad-roas.good { color: #4ade80; }
-.ad-roas.ok { color: #fbbf24; }
-.ad-roas.bad { color: #f87171; }
-.ad-purchases { text-align: right; color: #94a3b8; }
+.ad-thumb {
+    position: relative; width: 100%; height: 160px;
+    background: #334155; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.ad-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.ad-thumb-placeholder {
+    font-size: 2.5em; opacity: 0.3;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+}
+.ad-video-badge {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.75); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7em; font-weight: 600;
+}
+.ad-card-body { padding: 12px; }
+.ad-card-name {
+    font-weight: 600; font-size: 0.82em; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-campaign {
+    color: #64748b; font-size: 0.72em; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 0.78em; align-items: center;
+}
+.ad-card-spend { font-weight: 700; }
+.ad-card-pct { color: #64748b; font-size: 0.9em; }
+.ad-card-roas { font-weight: 700; }
+.ad-card-purchases { color: #94a3b8; }
+
+/* ---- AD MODAL ---- */
+.ad-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+    justify-content: center; align-items: flex-start;
+}
+.ad-modal.active { display: flex; }
+.ad-modal-box {
+    background: #1e293b; border-radius: 16px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.ad-modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ad-modal-head h3 { font-size: 0.95em; font-weight: 600; }
+.ad-modal-close {
+    background: none; border: none; color: #94a3b8;
+    font-size: 1.5em; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+}
+.ad-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ad-modal-media {
+    background: #0f172a; display: flex; align-items: center;
+    justify-content: center; max-height: 380px; overflow: hidden;
+}
+.ad-modal-media img {
+    width: 100%; max-height: 380px; object-fit: contain;
+}
+.ad-modal-media video {
+    width: 100%; max-height: 380px; background: #000;
+}
+.ad-modal-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ad-modal-metric {
+    text-align: center; padding: 10px 0;
+    background: rgba(0,0,0,0.2); border-radius: 8px;
+}
+.ad-modal-metric .val { font-size: 1.1em; font-weight: 700; }
+.ad-modal-metric .lbl { font-size: 0.7em; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+.ad-modal-body {
+    padding: 16px 20px; color: #cbd5e1;
+    font-size: 0.88em; line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+}
+.ad-modal-campaign {
+    color: #94a3b8; font-size: 0.82em; padding: 0 20px 12px;
+}
+@media (max-width: 640px) {
+    .ads-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .ad-modal-metrics { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ---- PROMOTIONS ---- */
 .promo-table {
@@ -303,7 +387,7 @@ body {
 <div class="header">
     <h1>August 2025 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 09, 2026 at 09:52 AM</div>
+    <div class="updated">Last updated April 09, 2026 at 10:11 AM</div>
 </div>
 
 
@@ -802,124 +886,146 @@ body {
 <!-- ======== TOP ADS ======== -->
 <div class="section-panel">
     <h2>Top Meta Ads &mdash; August 2025</h2>
-    <table class="ads-table">
-        <thead><tr>
-            <th></th><th>Ad / Campaign</th><th style="text-align:right">Spend</th>
-            <th style="text-align:right">% of Total</th><th style="text-align:right">ROAS</th>
-            <th style="text-align:right">Purchases</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="ad-rank">#1</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#043 - Mushroom Ingredients - Image #1</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$2,871</td>
-            <td class="ad-pct">18.9%</td>
-            <td class="ad-roas bad">0.27x</td>
-            <td class="ad-purchases">21</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#2</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#028 - Miraculous Mushrooms Tea - Image #1</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$907</td>
-            <td class="ad-pct">6.0%</td>
-            <td class="ad-roas good">2.62x</td>
-            <td class="ad-purchases">55</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#3</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#029 - 3 New Process Videos - Video#3</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$666</td>
-            <td class="ad-pct">4.4%</td>
-            <td class="ad-roas bad">0.38x</td>
-            <td class="ad-purchases">9</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#4</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#005 - IG Posts - Video#6</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$614</td>
-            <td class="ad-pct">4.0%</td>
-            <td class="ad-roas good">3.37x</td>
-            <td class="ad-purchases">42</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#5</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#019 - New Versions of Best Ads - Image#2</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$467</td>
-            <td class="ad-pct">3.1%</td>
-            <td class="ad-roas good">4.07x</td>
-            <td class="ad-purchases">38</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#6</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Old Ad #7</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$319</td>
-            <td class="ad-pct">2.1%</td>
-            <td class="ad-roas good">5.10x</td>
-            <td class="ad-purchases">33</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#7</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#045 - Instant Miraculous Mushrooms - Ingredients Latte - Im...</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$293</td>
-            <td class="ad-pct">1.9%</td>
-            <td class="ad-roas bad">0.18x</td>
-            <td class="ad-purchases">2</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#8</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#013 - IG Posts - Video#2</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$290</td>
-            <td class="ad-pct">1.9%</td>
-            <td class="ad-roas good">2.86x</td>
-            <td class="ad-purchases">17</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#9</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#043 - Mushroom Ingredients - Image #3</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$290</td>
-            <td class="ad-pct">1.9%</td>
-            <td class="ad-roas bad">0.07x</td>
-            <td class="ad-purchases">1</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#10</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternat...</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$286</td>
-            <td class="ad-pct">1.9%</td>
-            <td class="ad-roas good">5.86x</td>
-            <td class="ad-purchases">36</td>
-        </tr></tbody>
-    </table>
+    <div class="ads-grid">
+        <div class="ad-card" onclick="openAdModal(0)" title="#043 - Mushroom Ingredients - Image #1">
+            <div class="ad-thumb"><img src="../images/120229955083680459.jpg" alt="#043 - Mushroom Ingredients - " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#043 - Mushroom Ingredients - Image #1</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$2,871 <span class="ad-card-pct">(18.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.27x</span>
+                    <span class="ad-card-purchases">21 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(1)" title="#028 - Miraculous Mushrooms Tea - Image #1">
+            <div class="ad-thumb"><img src="../images/120227913933840459.jpg" alt="#028 - Miraculous Mushrooms Te" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#028 - Miraculous Mushrooms Tea - Image #1</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$907 <span class="ad-card-pct">(6.0%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">2.62x</span>
+                    <span class="ad-card-purchases">55 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(2)" title="#029 - 3 New Process Videos - Video#3">
+            <div class="ad-thumb"><img src="../images/120226870767090459.jpg" alt="#029 - 3 New Process Videos - " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#029 - 3 New Process Videos - Video#3</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$666 <span class="ad-card-pct">(4.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.38x</span>
+                    <span class="ad-card-purchases">9 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(3)" title="#005 - IG Posts - Video#6">
+            <div class="ad-thumb"><img src="../images/120220866624820459.jpg" alt="#005 - IG Posts - Video#6" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#005 - IG Posts - Video#6</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$614 <span class="ad-card-pct">(4.0%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">3.37x</span>
+                    <span class="ad-card-purchases">42 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(4)" title="#019 - New Versions of Best Ads - Image#2">
+            <div class="ad-thumb"><img src="../images/120224371191970459.jpg" alt="#019 - New Versions of Best Ad" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#019 - New Versions of Best Ads - Image#2</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$467 <span class="ad-card-pct">(3.1%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">4.07x</span>
+                    <span class="ad-card-purchases">38 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(5)" title="Old Ad #7">
+            <div class="ad-thumb"><img src="../images/120220866624590459.jpg" alt="Old Ad #7" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Old Ad #7</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$319 <span class="ad-card-pct">(2.1%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">5.10x</span>
+                    <span class="ad-card-purchases">33 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(6)" title="#045 - Instant Miraculous Mushrooms - Ingredients Latte - Image #1">
+            <div class="ad-thumb"><img src="../images/120232045171980459.jpg" alt="#045 - Instant Miraculous Mush" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#045 - Instant Miraculous Mushrooms - Ingredients Latte...</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$293 <span class="ad-card-pct">(1.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.18x</span>
+                    <span class="ad-card-purchases">2 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(7)" title="#013 - IG Posts - Video#2">
+            <div class="ad-thumb"><img src="../images/120223406976130459.jpg" alt="#013 - IG Posts - Video#2" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#013 - IG Posts - Video#2</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$290 <span class="ad-card-pct">(1.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">2.86x</span>
+                    <span class="ad-card-purchases">17 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(8)" title="#043 - Mushroom Ingredients - Image #3">
+            <div class="ad-thumb"><img src="../images/120229955562130459.jpg" alt="#043 - Mushroom Ingredients - " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#043 - Mushroom Ingredients - Image #3</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$290 <span class="ad-card-pct">(1.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.07x</span>
+                    <span class="ad-card-purchases">1 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(9)" title="ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternative - Copy">
+            <div class="ad-thumb"><img src="../images/120220866624560459.jpg" alt="ECG) TOF - Carousel - Coffee -" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alt...</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$286 <span class="ad-card-pct">(1.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">5.86x</span>
+                    <span class="ad-card-purchases">36 orders</span>
+                </div>
+            </div>
+        </div></div>
+</div>
+
+<!-- Ad Modal -->
+<div class="ad-modal" id="adModal" onclick="if(event.target===this)closeAdModal()">
+    <div class="ad-modal-box">
+        <div class="ad-modal-head">
+            <h3 id="adModalName"></h3>
+            <button class="ad-modal-close" onclick="closeAdModal()">&times;</button>
+        </div>
+        <div class="ad-modal-media" id="adModalMedia"></div>
+        <p class="ad-modal-campaign" id="adModalCampaign"></p>
+        <div class="ad-modal-metrics">
+            <div class="ad-modal-metric"><div class="val" id="adModalSpend"></div><div class="lbl">Spend</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRoas"></div><div class="lbl">ROAS</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRevenue"></div><div class="lbl">Revenue</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalPurchases"></div><div class="lbl">Orders</div></div>
+        </div>
+        <div class="ad-modal-body" id="adModalBody"></div>
+    </div>
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
@@ -1031,8 +1137,41 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.card-modal.active').forEach(m => m.classList.remove('active'));
+        closeAdModal();
     }
 });
+
+// Ad modal logic
+const adData = [{"img":"../images/120229955083680459.jpg","video":"","name":"#043 - Mushroom Ingredients - Image #1","campaign":"eH | CBO | COLD | Main Campaign","spend":"$2,871","roas":"0.27x","revenue":"$774","purchases":21,"body":"Taste our most popular flavors and discover why we're America’s #1 coffee alternative.<br><br>Why wait? Order today and taste the difference."},{"img":"../images/120227913933840459.jpg","video":"","name":"#028 - Miraculous Mushrooms Tea - Image #1","campaign":"eH | CBO | Retargeting Campaign","spend":"$907","roas":"2.62x","revenue":"$2,375","purchases":55,"body":"All the satisfaction, none of the caffeine reaction? Try our new flavor with FIVE potent wellness mushrooms because America’s #1 coffee alternative just got even tastier.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Order today and taste the difference."},{"img":"../images/120226870767090459.jpg","video":"","name":"#029 - 3 New Process Videos - Video#3","campaign":"eH | CBO | COLD | Main Campaign","spend":"$666","roas":"0.38x","revenue":"$256","purchases":9,"body":"Morning boost? Afternoon pick-me-up? Late-night indulgence? With Teeccino Herbal Coffee, you never have to check the clock.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120220866624820459.jpg","video":"","name":"#005 - IG Posts - Video#6","campaign":"eH | CBO | Retargeting Campaign","spend":"$614","roas":"3.37x","revenue":"$2,068","purchases":42,"body":"Drink a warm, cozy cup, savor the taste, and feel good about it. Then take another sip and improve your health. Sounds impossible? Not with Teeccino. With us, you never have to worry about additives, fillers, the jitters, or anxiety. <br><br>✅ Rich, Bold Taste In Every Cup<br>✅ 100% Caffeine-Free<br>✅ Just Pennies Per Cup!<br>✅ Prebiotics For Better Gut Health<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Relax, order your new favorite drink today, and enjoy the taste in every cup."},{"img":"../images/120224371191970459.jpg","video":"","name":"#019 - New Versions of Best Ads - Image#2","campaign":"eH | CBO | Retargeting Campaign","spend":"$467","roas":"4.07x","revenue":"$1,901","purchases":38,"body":"Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120220866624590459.jpg","video":"","name":"Old Ad #7","campaign":"eH | CBO | Retargeting Campaign","spend":"$319","roas":"5.10x","revenue":"$1,625","purchases":33,"body":"More than just a tasty, herbal drink. 😋 <br><br>Our soothing brew nourishes your body with prebiotics, antioxidants, and adaptogens for natural, long lasting energy. So you can start your day the healthy way! 🧘🍵"},{"img":"../images/120232045171980459.jpg","video":"","name":"#045 - Instant Miraculous Mushrooms - Ingredients Latte - Image #1","campaign":"eH | CBO | COLD | Main Campaign","spend":"$293","roas":"0.18x","revenue":"$53","purchases":2,"body":""},{"img":"../images/120223406976130459.jpg","video":"","name":"#013 - IG Posts - Video#2","campaign":"eH | CBO | Retargeting Campaign","spend":"$290","roas":"2.86x","revenue":"$830","purchases":17,"body":"Craving the rich, bold taste of coffee without the caffeine crashes, acid reflux, or sleep struggles? If yes, then you'll LOVE Teeccino.<br><br>✅ Tastes Just Like Coffee – But It's 100% caffeine-free<br>✅ Gut-Friendly & Acid-Free – Say goodbye to heartburn<br>✅ Super Affordable – Just pennies per cup!<br>✅ Prebiotic Benefits – Nourish your gut while you sip<br>✅ Trusted for 30+ Years – With 50,000+ five-star reviews<br><br>Ditch the downsides of coffee and hop on our site today!"},{"img":"../images/120229955562130459.jpg","video":"","name":"#043 - Mushroom Ingredients - Image #3","campaign":"eH | CBO | COLD | Main Campaign","spend":"$290","roas":"0.07x","revenue":"$20","purchases":1,"body":"Taste our most popular flavors and discover why we're America’s #1 coffee alternative.<br><br>Why wait? Order today and taste the difference."},{"img":"../images/120220866624560459.jpg","video":"","name":"ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternative - Copy","campaign":"eH | CBO | Retargeting Campaign","spend":"$286","roas":"5.86x","revenue":"$1,674","purchases":36,"body":"Have you been thinking about taking a break from your daily grind? ☕️<br><br>That's why we created Teeccino. With over 35 blends to choose from, you'll agree Teeccino is the best coffee alternative ever.<br><br>We carefully source the highest quality, organic ingredients from around the world, like ramón seeds wild harvested in Guatemala, chicory root from France, wild dandelion root from Eastern Europe, and carob pods from the mountains of Spain to provide a delicious experience from start to finish.<br><br>Brew it as you would your regular cup of coffee, and allow the rich, bold taste to transport you to a world of flavor that has no parallel."}];
+function openAdModal(idx) {
+    const ad = adData[idx];
+    if (!ad) return;
+    document.getElementById('adModalName').textContent = ad.name;
+    document.getElementById('adModalCampaign').textContent = ad.campaign;
+    document.getElementById('adModalSpend').textContent = ad.spend;
+    document.getElementById('adModalRoas').textContent = ad.roas;
+    document.getElementById('adModalRevenue').textContent = ad.revenue;
+    document.getElementById('adModalPurchases').textContent = ad.purchases + ' orders';
+    document.getElementById('adModalBody').innerHTML = ad.body || '<span style="color:#64748b">(No ad copy available)</span>';
+
+    const media = document.getElementById('adModalMedia');
+    if (ad.video) {
+        media.innerHTML = '<video controls preload="metadata" src="' + ad.video + '" poster="' + (ad.img || '') + '" style="width:100%;max-height:380px;background:#000"></video>';
+    } else if (ad.img) {
+        media.innerHTML = '<img src="' + ad.img + '" alt="' + ad.name + '" style="width:100%;max-height:380px;object-fit:contain">';
+    } else {
+        media.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:3em;opacity:0.2">&#128247;</div>';
+    }
+    document.getElementById('adModal').classList.add('active');
+}
+function closeAdModal() {
+    const modal = document.getElementById('adModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const v = modal.querySelector('video');
+        if (v) v.pause();
+    }
+}
 
 // Charts
 const trendData = {"dates": ["2025-08-01", "2025-08-02", "2025-08-03", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-09", "2025-08-10", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-16", "2025-08-17", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-23", "2025-08-24", "2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-08-30", "2025-08-31"], "gross": [6210.0, 4602.0, 4616.0, 6537.0, 2980.0, 3927.0, 4267.0, 5917.0, 3702.0, 4680.0, 6105.0, 4008.0, 4635.0, 9518.0, 8009.0, 9183.0, 8829.0, 10544.0, 4458.0, 4253.0, 3364.0, 3894.0, 4990.0, 5567.0, 4858.0, 4750.0, 5714.0, 5697.0, 9015.0, 8009.0, 8028.0], "orders": [127, 94, 82, 107, 71, 83, 86, 110, 65, 91, 116, 82, 80, 129, 116, 139, 139, 154, 76, 81, 72, 71, 89, 97, 85, 91, 104, 102, 144, 132, 127], "ly_dates": ["2024-08-01", "2024-08-02", "2024-08-03", "2024-08-04", "2024-08-05", "2024-08-06", "2024-08-07", "2024-08-08", "2024-08-09", "2024-08-10", "2024-08-11", "2024-08-12", "2024-08-13", "2024-08-14", "2024-08-15", "2024-08-16", "2024-08-17", "2024-08-18", "2024-08-19", "2024-08-20", "2024-08-21", "2024-08-22", "2024-08-23", "2024-08-24", "2024-08-25", "2024-08-26", "2024-08-27", "2024-08-28", "2024-08-29", "2024-08-30", "2024-08-31"], "ly_gross": [3952.0, 4495.0, 4407.0, 3918.0, 4645.0, 5159.0, 4840.0, 3788.0, 4046.0, 3841.0, 3021.0, 3782.0, 4305.0, 4903.0, 7589.0, 12775.0, 9905.0, 11278.0, 15224.0, 6492.0, 3838.0, 4323.0, 3834.0, 3412.0, 3970.0, 4930.0, 3985.0, 4618.0, 7206.0, 6767.0, 5481.0], "ly_orders": [80, 85, 89, 79, 94, 94, 85, 76, 88, 81, 74, 83, 89, 92, 129, 213, 155, 171, 231, 95, 82, 88, 69, 67, 89, 88, 78, 97, 139, 133, 108]};

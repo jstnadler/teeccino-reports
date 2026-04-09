@@ -161,7 +161,7 @@ body {
     margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;
 }
 
-/* ---- TOP ADS TABLE ---- */
+/* ---- TOP ADS CARDS ---- */
 .section-panel {
     background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px; margin-bottom: 24px;
@@ -170,30 +170,114 @@ body {
     color: #D4A843; font-size: 1em; font-weight: 700;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.ads-table {
-    width: 100%; border-collapse: collapse;
+.ads-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.ads-table th {
-    text-align: left; color: #64748b; font-size: 0.75em;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+.ad-card {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.ads-table td {
-    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.88em;
+.ad-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212,168,67,0.3);
 }
-.ads-table tr:hover td { background: rgba(255,255,255,0.02); }
-.ad-rank { color: #D4A843; font-weight: 700; width: 40px; }
-.ad-name-cell { max-width: 320px; }
-.ad-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-.ad-campaign { color: #64748b; font-size: 0.82em; margin-top: 2px; }
-.ad-spend { text-align: right; font-weight: 600; }
-.ad-pct { text-align: right; color: #64748b; }
-.ad-roas { text-align: right; font-weight: 700; }
-.ad-roas.good { color: #4ade80; }
-.ad-roas.ok { color: #fbbf24; }
-.ad-roas.bad { color: #f87171; }
-.ad-purchases { text-align: right; color: #94a3b8; }
+.ad-thumb {
+    position: relative; width: 100%; height: 160px;
+    background: #334155; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.ad-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.ad-thumb-placeholder {
+    font-size: 2.5em; opacity: 0.3;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+}
+.ad-video-badge {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.75); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7em; font-weight: 600;
+}
+.ad-card-body { padding: 12px; }
+.ad-card-name {
+    font-weight: 600; font-size: 0.82em; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-campaign {
+    color: #64748b; font-size: 0.72em; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 0.78em; align-items: center;
+}
+.ad-card-spend { font-weight: 700; }
+.ad-card-pct { color: #64748b; font-size: 0.9em; }
+.ad-card-roas { font-weight: 700; }
+.ad-card-purchases { color: #94a3b8; }
+
+/* ---- AD MODAL ---- */
+.ad-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+    justify-content: center; align-items: flex-start;
+}
+.ad-modal.active { display: flex; }
+.ad-modal-box {
+    background: #1e293b; border-radius: 16px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.ad-modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ad-modal-head h3 { font-size: 0.95em; font-weight: 600; }
+.ad-modal-close {
+    background: none; border: none; color: #94a3b8;
+    font-size: 1.5em; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+}
+.ad-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ad-modal-media {
+    background: #0f172a; display: flex; align-items: center;
+    justify-content: center; max-height: 380px; overflow: hidden;
+}
+.ad-modal-media img {
+    width: 100%; max-height: 380px; object-fit: contain;
+}
+.ad-modal-media video {
+    width: 100%; max-height: 380px; background: #000;
+}
+.ad-modal-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ad-modal-metric {
+    text-align: center; padding: 10px 0;
+    background: rgba(0,0,0,0.2); border-radius: 8px;
+}
+.ad-modal-metric .val { font-size: 1.1em; font-weight: 700; }
+.ad-modal-metric .lbl { font-size: 0.7em; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+.ad-modal-body {
+    padding: 16px 20px; color: #cbd5e1;
+    font-size: 0.88em; line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+}
+.ad-modal-campaign {
+    color: #94a3b8; font-size: 0.82em; padding: 0 20px 12px;
+}
+@media (max-width: 640px) {
+    .ads-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .ad-modal-metrics { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ---- PROMOTIONS ---- */
 .promo-table {
@@ -303,7 +387,7 @@ body {
 <div class="header">
     <h1>February 2024 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 29 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 09, 2026 at 09:51 AM</div>
+    <div class="updated">Last updated April 09, 2026 at 10:10 AM</div>
 </div>
 
 
@@ -802,124 +886,146 @@ body {
 <!-- ======== TOP ADS ======== -->
 <div class="section-panel">
     <h2>Top Meta Ads &mdash; February 2024</h2>
-    <table class="ads-table">
-        <thead><tr>
-            <th></th><th>Ad / Campaign</th><th style="text-align:right">Spend</th>
-            <th style="text-align:right">% of Total</th><th style="text-align:right">ROAS</th>
-            <th style="text-align:right">Purchases</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="ad-rank">#1</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Heather - 10 Best-Selling Blends - Copy 3</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | 7DC | Broad | UGC</div>
-            </td>
-            <td class="ad-spend">$9,674</td>
-            <td class="ad-pct">50.8%</td>
-            <td class="ad-roas bad">0.91x</td>
-            <td class="ad-purchases">294</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#2</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Advantage+ Creative for Catalog</div>
-                <div class="ad-campaign">< 3 | RMK | MOF | Catalog Sales | Website | 7DC/1DV | D</div>
-            </td>
-            <td class="ad-spend">$2,422</td>
-            <td class="ad-pct">12.7%</td>
-            <td class="ad-roas ok">1.81x</td>
-            <td class="ad-purchases">82</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#3</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">(ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alterna...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interest T</div>
-            </td>
-            <td class="ad-spend">$1,737</td>
-            <td class="ad-pct">9.1%</td>
-            <td class="ad-roas ok">1.77x</td>
-            <td class="ad-purchases">70</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#4</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Heather - 10 Best-Selling Blends - Copy 2</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests </div>
-            </td>
-            <td class="ad-spend">$1,041</td>
-            <td class="ad-pct">5.5%</td>
-            <td class="ad-roas ok">1.83x</td>
-            <td class="ad-purchases">55</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#5</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">(ECG) BOF - Tea Cross-Sell</div>
-                <div class="ad-campaign">LV | RTN | BOF | Sales | Website | 7DC/1DV | Cross Sell</div>
-            </td>
-            <td class="ad-spend">$968</td>
-            <td class="ad-pct">5.1%</td>
-            <td class="ad-roas good">3.34x</td>
-            <td class="ad-purchases">67</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#6</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Heather - 10 Best-Selling Blends - Copy 2</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests </div>
-            </td>
-            <td class="ad-spend">$587</td>
-            <td class="ad-pct">3.1%</td>
-            <td class="ad-roas ok">1.41x</td>
-            <td class="ad-purchases">23</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#7</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Copy 3</div>
-                <div class="ad-campaign">(ECG) Quitting Caffeine Painlessly</div>
-            </td>
-            <td class="ad-spend">$265</td>
-            <td class="ad-pct">1.4%</td>
-            <td class="ad-roas bad">0.37x</td>
-            <td class="ad-purchases">1</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#8</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Lynn - Video 1 - Copy 1</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests </div>
-            </td>
-            <td class="ad-spend">$177</td>
-            <td class="ad-pct">0.9%</td>
-            <td class="ad-roas good">2.09x</td>
-            <td class="ad-purchases">10</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#9</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Jack Day Mushroom Sampler</div>
-                <div class="ad-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests </div>
-            </td>
-            <td class="ad-spend">$174</td>
-            <td class="ad-pct">0.9%</td>
-            <td class="ad-roas good">3.39x</td>
-            <td class="ad-purchases">13</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#10</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Promo President's Day Static | Dynamic Copy | Best Sellers -...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | 7DC | Broad | President's Day Sal</div>
-            </td>
-            <td class="ad-spend">$171</td>
-            <td class="ad-pct">0.9%</td>
-            <td class="ad-roas good">2.11x</td>
-            <td class="ad-purchases">6</td>
-        </tr></tbody>
-    </table>
+    <div class="ads-grid">
+        <div class="ad-card" onclick="openAdModal(0)" title="Heather - 10 Best-Selling Blends - Copy 3">
+            <div class="ad-thumb"><img src="../images/120205183447780459.jpg" alt="Heather - 10 Best-Selling Blen" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Heather - 10 Best-Selling Blends - Copy 3</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | 7DC | Broad | UGC</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$9,674 <span class="ad-card-pct">(50.8%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.91x</span>
+                    <span class="ad-card-purchases">294 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(1)" title="Advantage+ Creative for Catalog">
+            <div class="ad-thumb"><img src="../images/23857214989810458.jpg" alt="Advantage+ Creative for Catalo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Advantage+ Creative for Catalog</div>
+                <div class="ad-card-campaign">< 3 | RMK | MOF | Catalog Sales | Website | 7DC/1D</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$2,422 <span class="ad-card-pct">(12.7%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.81x</span>
+                    <span class="ad-card-purchases">82 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(2)" title="(ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternative - Copy">
+            <div class="ad-thumb"><img src="../images/23858639006610458.jpg" alt="(ECG) TOF - Carousel - Coffee " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">(ECG) TOF - Carousel - Coffee - Ingredients - Coffee Al...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Inter</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,737 <span class="ad-card-pct">(9.1%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.77x</span>
+                    <span class="ad-card-purchases">70 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(3)" title="Heather - 10 Best-Selling Blends - Copy 2">
+            <div class="ad-thumb"><img src="../images/120204426806180459.jpg" alt="Heather - 10 Best-Selling Blen" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Heather - 10 Best-Selling Blends - Copy 2</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Inter</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,041 <span class="ad-card-pct">(5.5%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.83x</span>
+                    <span class="ad-card-purchases">55 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(4)" title="(ECG) BOF - Tea Cross-Sell">
+            <div class="ad-thumb"><img src="../images/23849799545790458.jpg" alt="(ECG) BOF - Tea Cross-Sell" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">(ECG) BOF - Tea Cross-Sell</div>
+                <div class="ad-card-campaign">LV | RTN | BOF | Sales | Website | 7DC/1DV | Cross</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$968 <span class="ad-card-pct">(5.1%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">3.34x</span>
+                    <span class="ad-card-purchases">67 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(5)" title="Heather - 10 Best-Selling Blends - Copy 2">
+            <div class="ad-thumb"><img src="../images/120204426874970459.jpg" alt="Heather - 10 Best-Selling Blen" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Heather - 10 Best-Selling Blends - Copy 2</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Inter</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$587 <span class="ad-card-pct">(3.1%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.41x</span>
+                    <span class="ad-card-purchases">23 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(6)" title="Copy 3">
+            <div class="ad-thumb"><img src="../images/23859946371020458.jpg" alt="Copy 3" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Copy 3</div>
+                <div class="ad-card-campaign">(ECG) Quitting Caffeine Painlessly</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$265 <span class="ad-card-pct">(1.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.37x</span>
+                    <span class="ad-card-purchases">1 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(7)" title="Lynn - Video 1 - Copy 1">
+            <div class="ad-thumb"><img src="../images/120203254499000459.jpg" alt="Lynn - Video 1 - Copy 1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div><span class="ad-video-badge">&#9654; Video</span></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Lynn - Video 1 - Copy 1</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Inter</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$177 <span class="ad-card-pct">(0.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">2.09x</span>
+                    <span class="ad-card-purchases">10 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(8)" title="Jack Day Mushroom Sampler">
+            <div class="ad-thumb"><img src="../images/120204426874980459.jpg" alt="Jack Day Mushroom Sampler" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Jack Day Mushroom Sampler</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | Sales | Website | 7DC/1DV | Inter</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$174 <span class="ad-card-pct">(0.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">3.39x</span>
+                    <span class="ad-card-purchases">13 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(9)" title="Promo President's Day Static | Dynamic Copy | Best Sellers - Copy">
+            <div class="ad-thumb"><img src="../images/120205712554090459.jpg" alt="Promo President's Day Static |" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Promo President's Day Static | Dynamic Copy | Best Sell...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | 7DC | Broad | President's Da</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$171 <span class="ad-card-pct">(0.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">2.11x</span>
+                    <span class="ad-card-purchases">6 orders</span>
+                </div>
+            </div>
+        </div></div>
+</div>
+
+<!-- Ad Modal -->
+<div class="ad-modal" id="adModal" onclick="if(event.target===this)closeAdModal()">
+    <div class="ad-modal-box">
+        <div class="ad-modal-head">
+            <h3 id="adModalName"></h3>
+            <button class="ad-modal-close" onclick="closeAdModal()">&times;</button>
+        </div>
+        <div class="ad-modal-media" id="adModalMedia"></div>
+        <p class="ad-modal-campaign" id="adModalCampaign"></p>
+        <div class="ad-modal-metrics">
+            <div class="ad-modal-metric"><div class="val" id="adModalSpend"></div><div class="lbl">Spend</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRoas"></div><div class="lbl">ROAS</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRevenue"></div><div class="lbl">Revenue</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalPurchases"></div><div class="lbl">Orders</div></div>
+        </div>
+        <div class="ad-modal-body" id="adModalBody"></div>
+    </div>
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
@@ -1031,8 +1137,41 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.card-modal.active').forEach(m => m.classList.remove('active'));
+        closeAdModal();
     }
 });
+
+// Ad modal logic
+const adData = [{"img":"../images/120205183447780459.jpg","video":"","name":"Heather - 10 Best-Selling Blends - Copy 3","campaign":"LV | ACQ | TOF | A+ | 7DC | Broad | UGC","spend":"$9,674","roas":"0.91x","revenue":"$8,832","purchases":294,"body":"Ever dreamt of savoring the warmth and comfort of coffee throughout the day, free from the dreaded caffeine crash? Well, now you can! ✨ Teeccino is a delicious blend of organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee. Taste 10 of our top-selling blends for only $19.99! ☕️❤️<br><br>• Caffeine-free energy boost from nutrients<br>• Acid-free for good digestion<br>• 650 mg of prebiotics to support probiotics<br>• Heart-healthy potassium<br>• Rich, bold, coffee-like flavor<br><br>Taste it now! 🙌🏼"},{"img":"../images/23857214989810458.jpg","video":"","name":"Advantage+ Creative for Catalog","campaign":"< 3 | RMK | MOF | Catalog Sales | Website | 7DC/1DV | DPA Retargeting","spend":"$2,422","roas":"1.81x","revenue":"$4,374","purchases":82,"body":"Put maximum wellness in your cup and shift your health meter to optimal!<br><br>Discover a new taste experience with Teeccino's rich, bold herbal blends that can be brewed like coffee.<br><br>Ditch the caffeine, and experience zen-like energy from nutrients!"},{"img":"../images/23858639006610458.jpg","video":"","name":"(ECG) TOF - Carousel - Coffee - Ingredients - Coffee Alternative - Copy","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interest Tests | UGC","spend":"$1,737","roas":"1.77x","revenue":"$3,068","purchases":70,"body":"Have you been thinking about taking a break from your daily grind? ☕️<br><br>That's why we created Teeccino. With over 35 blends to choose from, you'll agree Teeccino is the best coffee alternative ever.<br><br>We carefully source the highest quality, organic ingredients from around the world, like ramón seeds wild harvested in Guatemala, chicory root from France, wild dandelion root from Eastern Europe, and carob pods from the mountains of Spain to provide a delicious experience from start to finish.<br><br>Brew it as you would your regular cup of coffee, and allow the rich, bold taste to transport you to a world of flavor that has no parallel."},{"img":"../images/120204426806180459.jpg","video":"","name":"Heather - 10 Best-Selling Blends - Copy 2","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests + Broad | UGC","spend":"$1,041","roas":"1.83x","revenue":"$1,909","purchases":55,"body":"Ever dreamt of savoring the warmth and comfort of coffee throughout the day, free from the dreaded caffeine crash? Well, now you can! ✨ Teeccino is a delicious blend of organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee. Taste 10 of our top-selling blends for only $19.99! ☕️❤️<br><br>• Caffeine-free energy boost from nutrients<br>• Acid-free for good digestion<br>• 650 mg of prebiotics to support probiotics<br>• Heart-healthy potassium<br>• Rich, bold, coffee-like flavor<br><br>Taste it now! 🙌🏼"},{"img":"../images/23849799545790458.jpg","video":"","name":"(ECG) BOF - Tea Cross-Sell","campaign":"LV | RTN | BOF | Sales | Website | 7DC/1DV | Cross Sell Playground","spend":"$968","roas":"3.34x","revenue":"$3,229","purchases":67,"body":""},{"img":"../images/120204426874970459.jpg","video":"","name":"Heather - 10 Best-Selling Blends - Copy 2","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests + Broad | UGC","spend":"$587","roas":"1.41x","revenue":"$826","purchases":23,"body":"Ever dreamt of savoring the warmth and comfort of coffee throughout the day, free from the dreaded caffeine crash? Well, now you can! ✨ Teeccino is a delicious blend of organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee. Taste 10 of our top-selling blends for only $19.99! ☕️❤️<br><br>• Caffeine-free energy boost from nutrients<br>• Acid-free for good digestion<br>• 650 mg of prebiotics to support probiotics<br>• Heart-healthy potassium<br>• Rich, bold, coffee-like flavor<br><br>Taste it now! 🙌🏼"},{"img":"../images/23859946371020458.jpg","video":"","name":"Copy 3","campaign":"(ECG) Quitting Caffeine Painlessly","spend":"$265","roas":"0.37x","revenue":"$97","purchases":1,"body":"Quitting caffeine is a challenge, but it's a challenge worth taking on. <br><br>Our FREE ebook, \"Quitting Caffeine Painlessly,\" is your companion on this journey. Dive into the science behind caffeine addiction, understand the withdrawal process, and explore techniques to ease the transition. <br><br>It's time to feel more focused, energized, and free from caffeine's rollercoaster. <br><br>Start your journey now by downloading the ebook!"},{"img":"../images/120203254499000459.jpg","video":"","name":"Lynn - Video 1 - Copy 1","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests + Broad | UGC","spend":"$177","roas":"2.09x","revenue":"$369","purchases":10,"body":"Ever dreamt of savoring the warmth and comfort of coffee throughout the day, free from the dreaded caffeine crash? Well, now you can! ✨ Teeccino is a delicious blend of organic roasted herbs, wellness mushrooms, roots, and seeds that tastes and brews like coffee. Taste 10 of our top-selling blends for only $19.99! ☕️❤️<br><br>• Caffeine-free energy boost from nutrients<br>• Acid-free for good digestion<br>• 650 mg of prebiotics to support probiotics<br>• Heart-healthy potassium<br>• Rich, bold, coffee-like flavor<br><br>Taste it now! 🙌🏼"},{"img":"../images/120204426874980459.jpg","video":"","name":"Jack Day Mushroom Sampler","campaign":"LV | ACQ | TOF | Sales | Website | 7DC/1DV | Interests + Broad | UGC","spend":"$174","roas":"3.39x","revenue":"$591","purchases":13,"body":"Sip with purpose! Teeccino's Mushroom Herbal Coffee is a well-being powerhouse. Packed with stress-supporting wellness mushrooms, adaptogens, and gut-friendly prebiotics, each caffeine-free cup defines the essence of rich, bold, and delicious. Elevate your morning ritual with a game-changing immunity boost and sustainable energy. Teeccino – where health and yumminess seamlessly unite in every transformative sip. ☕🌿<br><br>Taste 6 blends when you order the Mushroom Herbal Coffee Sampler for only $14.99!"},{"img":"../images/120205712554090459.jpg","video":"","name":"Promo President's Day Static | Dynamic Copy | Best Sellers - Copy","campaign":"LV | ACQ | TOF | A+ | 7DC | Broad | President's Day Sale","spend":"$171","roas":"2.11x","revenue":"$361","purchases":6,"body":""}];
+function openAdModal(idx) {
+    const ad = adData[idx];
+    if (!ad) return;
+    document.getElementById('adModalName').textContent = ad.name;
+    document.getElementById('adModalCampaign').textContent = ad.campaign;
+    document.getElementById('adModalSpend').textContent = ad.spend;
+    document.getElementById('adModalRoas').textContent = ad.roas;
+    document.getElementById('adModalRevenue').textContent = ad.revenue;
+    document.getElementById('adModalPurchases').textContent = ad.purchases + ' orders';
+    document.getElementById('adModalBody').innerHTML = ad.body || '<span style="color:#64748b">(No ad copy available)</span>';
+
+    const media = document.getElementById('adModalMedia');
+    if (ad.video) {
+        media.innerHTML = '<video controls preload="metadata" src="' + ad.video + '" poster="' + (ad.img || '') + '" style="width:100%;max-height:380px;background:#000"></video>';
+    } else if (ad.img) {
+        media.innerHTML = '<img src="' + ad.img + '" alt="' + ad.name + '" style="width:100%;max-height:380px;object-fit:contain">';
+    } else {
+        media.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:3em;opacity:0.2">&#128247;</div>';
+    }
+    document.getElementById('adModal').classList.add('active');
+}
+function closeAdModal() {
+    const modal = document.getElementById('adModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const v = modal.querySelector('video');
+        if (v) v.pause();
+    }
+}
 
 // Charts
 const trendData = {"dates": ["2024-02-01", "2024-02-02", "2024-02-03", "2024-02-04", "2024-02-05", "2024-02-06", "2024-02-07", "2024-02-08", "2024-02-09", "2024-02-10", "2024-02-11", "2024-02-12", "2024-02-13", "2024-02-14", "2024-02-15", "2024-02-16", "2024-02-17", "2024-02-18", "2024-02-19", "2024-02-20", "2024-02-21", "2024-02-22", "2024-02-23", "2024-02-24", "2024-02-25", "2024-02-26", "2024-02-27", "2024-02-28", "2024-02-29"], "gross": [5774.0, 6662.0, 4962.0, 5756.0, 5438.0, 4902.0, 6415.0, 4525.0, 3105.0, 4938.0, 5489.0, 6972.0, 5061.0, 4473.0, 6015.0, 8207.0, 7184.0, 8751.0, 11334.0, 5628.0, 6266.0, 5881.0, 5110.0, 5602.0, 5312.0, 4525.0, 5589.0, 4767.0, 7113.0], "orders": [117, 114, 97, 110, 103, 102, 129, 80, 78, 105, 101, 127, 111, 101, 121, 167, 145, 183, 216, 121, 135, 133, 107, 118, 122, 110, 122, 104, 159], "ly_dates": ["2023-02-01", "2023-02-02", "2023-02-03", "2023-02-04", "2023-02-05", "2023-02-06", "2023-02-07", "2023-02-08", "2023-02-09", "2023-02-10", "2023-02-11", "2023-02-12", "2023-02-13", "2023-02-14", "2023-02-15", "2023-02-16", "2023-02-17", "2023-02-18", "2023-02-19", "2023-02-20", "2023-02-21", "2023-02-22", "2023-02-23", "2023-02-24", "2023-02-25", "2023-02-26", "2023-02-27", "2023-02-28"], "ly_gross": [5380.0, 5359.0, 5846.0, 4539.0, 5985.0, 5758.0, 4471.0, 5825.0, 4477.0, 6945.0, 5884.0, 4802.0, 5510.0, 3427.0, 4717.0, 5802.0, 9173.0, 9761.0, 8807.0, 11642.0, 4135.0, 5406.0, 3681.0, 4078.0, 4903.0, 5937.0, 4296.0, 5122.0], "ly_orders": [110, 121, 117, 117, 129, 138, 102, 118, 87, 126, 118, 104, 105, 77, 102, 118, 192, 195, 184, 215, 93, 112, 82, 71, 100, 114, 86, 111]};

@@ -161,7 +161,7 @@ body {
     margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;
 }
 
-/* ---- TOP ADS TABLE ---- */
+/* ---- TOP ADS CARDS ---- */
 .section-panel {
     background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px; margin-bottom: 24px;
@@ -170,30 +170,114 @@ body {
     color: #D4A843; font-size: 1em; font-weight: 700;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.ads-table {
-    width: 100%; border-collapse: collapse;
+.ads-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.ads-table th {
-    text-align: left; color: #64748b; font-size: 0.75em;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+.ad-card {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.ads-table td {
-    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.88em;
+.ad-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212,168,67,0.3);
 }
-.ads-table tr:hover td { background: rgba(255,255,255,0.02); }
-.ad-rank { color: #D4A843; font-weight: 700; width: 40px; }
-.ad-name-cell { max-width: 320px; }
-.ad-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-.ad-campaign { color: #64748b; font-size: 0.82em; margin-top: 2px; }
-.ad-spend { text-align: right; font-weight: 600; }
-.ad-pct { text-align: right; color: #64748b; }
-.ad-roas { text-align: right; font-weight: 700; }
-.ad-roas.good { color: #4ade80; }
-.ad-roas.ok { color: #fbbf24; }
-.ad-roas.bad { color: #f87171; }
-.ad-purchases { text-align: right; color: #94a3b8; }
+.ad-thumb {
+    position: relative; width: 100%; height: 160px;
+    background: #334155; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.ad-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.ad-thumb-placeholder {
+    font-size: 2.5em; opacity: 0.3;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+}
+.ad-video-badge {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.75); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7em; font-weight: 600;
+}
+.ad-card-body { padding: 12px; }
+.ad-card-name {
+    font-weight: 600; font-size: 0.82em; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-campaign {
+    color: #64748b; font-size: 0.72em; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 0.78em; align-items: center;
+}
+.ad-card-spend { font-weight: 700; }
+.ad-card-pct { color: #64748b; font-size: 0.9em; }
+.ad-card-roas { font-weight: 700; }
+.ad-card-purchases { color: #94a3b8; }
+
+/* ---- AD MODAL ---- */
+.ad-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+    justify-content: center; align-items: flex-start;
+}
+.ad-modal.active { display: flex; }
+.ad-modal-box {
+    background: #1e293b; border-radius: 16px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.ad-modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ad-modal-head h3 { font-size: 0.95em; font-weight: 600; }
+.ad-modal-close {
+    background: none; border: none; color: #94a3b8;
+    font-size: 1.5em; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+}
+.ad-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ad-modal-media {
+    background: #0f172a; display: flex; align-items: center;
+    justify-content: center; max-height: 380px; overflow: hidden;
+}
+.ad-modal-media img {
+    width: 100%; max-height: 380px; object-fit: contain;
+}
+.ad-modal-media video {
+    width: 100%; max-height: 380px; background: #000;
+}
+.ad-modal-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ad-modal-metric {
+    text-align: center; padding: 10px 0;
+    background: rgba(0,0,0,0.2); border-radius: 8px;
+}
+.ad-modal-metric .val { font-size: 1.1em; font-weight: 700; }
+.ad-modal-metric .lbl { font-size: 0.7em; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+.ad-modal-body {
+    padding: 16px 20px; color: #cbd5e1;
+    font-size: 0.88em; line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+}
+.ad-modal-campaign {
+    color: #94a3b8; font-size: 0.82em; padding: 0 20px 12px;
+}
+@media (max-width: 640px) {
+    .ads-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .ad-modal-metrics { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ---- PROMOTIONS ---- */
 .promo-table {
@@ -303,7 +387,7 @@ body {
 <div class="header">
     <h1>October 2024 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 09, 2026 at 09:51 AM</div>
+    <div class="updated">Last updated April 09, 2026 at 10:11 AM</div>
 </div>
 
 
@@ -802,124 +886,146 @@ body {
 <!-- ======== TOP ADS ======== -->
 <div class="section-panel">
     <h2>Top Meta Ads &mdash; October 2024</h2>
-    <table class="ads-table">
-        <thead><tr>
-            <th></th><th>Ad / Campaign</th><th style="text-align:right">Spend</th>
-            <th style="text-align:right">% of Total</th><th style="text-align:right">ROAS</th>
-            <th style="text-align:right">Purchases</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="ad-rank">#1</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">RTN Catalog | Missed Us | VIP10 Discount</div>
-                <div class="ad-campaign">< 3 | RTN | BOF | Sales | Website | Catalog | Winback +</div>
-            </td>
-            <td class="ad-spend">$3,682</td>
-            <td class="ad-pct">23.5%</td>
-            <td class="ad-roas good">3.15x</td>
-            <td class="ad-purchases">228</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#2</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom...</div>
-                <div class="ad-campaign">< 3 | ACQ | ASC | TOF | Site + Shop | 7DC 1DV | Broad |</div>
-            </td>
-            <td class="ad-spend">$892</td>
-            <td class="ad-pct">5.7%</td>
-            <td class="ad-roas ok">1.06x</td>
-            <td class="ad-purchases">6</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#3</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">15% OFF 1st Purchase | Fb10</div>
-                <div class="ad-campaign">< 3 | RMK | MOF | Catalog Sales | Website | 7DC/1DV | D</div>
-            </td>
-            <td class="ad-spend">$887</td>
-            <td class="ad-pct">5.7%</td>
-            <td class="ad-roas good">2.59x</td>
-            <td class="ad-purchases">47</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#4</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Rachel Caffeine Free Frap | RTN Messaging | Herbal Coffe...</div>
-                <div class="ad-campaign">< 3 | RTN | BOF | Sales | Website | Lapsed Customers + </div>
-            </td>
-            <td class="ad-spend">$872</td>
-            <td class="ad-pct">5.6%</td>
-            <td class="ad-roas bad">0.58x</td>
-            <td class="ad-purchases">11</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#5</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Callie Vitalo | Acidity Question Hook V2 | CTA: Learn Mo...</div>
-                <div class="ad-campaign">< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testing</div>
-            </td>
-            <td class="ad-spend">$817</td>
-            <td class="ad-pct">5.2%</td>
-            <td class="ad-roas bad">0.56x</td>
-            <td class="ad-purchases">10</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#6</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">01_Teeccino-FallFlavors | National Coffee Day Promo | Static...</div>
-                <div class="ad-campaign">< 3 | ACQ | Sales | Site Only | 7DC | Broad | Promo | C</div>
-            </td>
-            <td class="ad-spend">$780</td>
-            <td class="ad-pct">5.0%</td>
-            <td class="ad-roas ok">1.14x</td>
-            <td class="ad-purchases">21</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#7</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom...</div>
-                <div class="ad-campaign">LV | ACQ | TOF | A+ | Site | 7DC | Broad | UGC Campaign</div>
-            </td>
-            <td class="ad-spend">$739</td>
-            <td class="ad-pct">4.7%</td>
-            <td class="ad-roas bad">0.65x</td>
-            <td class="ad-purchases">14</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#8</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More | LP...</div>
-                <div class="ad-campaign">< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testing</div>
-            </td>
-            <td class="ad-spend">$723</td>
-            <td class="ad-pct">4.6%</td>
-            <td class="ad-roas bad">0.37x</td>
-            <td class="ad-purchases">6</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#9</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">UGC Bearded Guy | Negative Research_HOOK_01 | CTA: Shop Now ...</div>
-                <div class="ad-campaign">< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testing</div>
-            </td>
-            <td class="ad-spend">$536</td>
-            <td class="ad-pct">3.4%</td>
-            <td class="ad-roas ok">1.84x</td>
-            <td class="ad-purchases">16</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#10</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Press Highlights | Vice V4 | Dynamic Copy | Sampler LP</div>
-                <div class="ad-campaign">< 3 | RMK | MOF | Sales | Website | Statics + Video</div>
-            </td>
-            <td class="ad-spend">$531</td>
-            <td class="ad-pct">3.4%</td>
-            <td class="ad-roas bad">0.86x</td>
-            <td class="ad-purchases">14</td>
-        </tr></tbody>
-    </table>
+    <div class="ads-grid">
+        <div class="ad-card" onclick="openAdModal(0)" title="RTN Catalog | Missed Us | VIP10 Discount">
+            <div class="ad-thumb"><img src="../images/120211973535870459.jpg" alt="RTN Catalog | Missed Us | VIP1" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">RTN Catalog | Missed Us | VIP10 Discount</div>
+                <div class="ad-card-campaign">< 3 | RTN | BOF | Sales | Website | Catalog | Winb</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$3,682 <span class="ad-card-pct">(23.5%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">3.15x</span>
+                    <span class="ad-card-purchases">228 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(1)" title="UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Adaptogen Collection Dupe">
+            <div class="ad-thumb"><img src="../images/120213325279740459.jpg" alt="UGC Jeanna Zenz Overpaying V2 " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mus...</div>
+                <div class="ad-card-campaign">< 3 | ACQ | ASC | TOF | Site + Shop | 7DC 1DV | Br</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$892 <span class="ad-card-pct">(5.7%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.06x</span>
+                    <span class="ad-card-purchases">6 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(2)" title="15% OFF 1st Purchase | Fb10">
+            <div class="ad-thumb"><img src="../images/120211973322780459.jpg" alt="15% OFF 1st Purchase | Fb10" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">15% OFF 1st Purchase | Fb10</div>
+                <div class="ad-card-campaign">< 3 | RMK | MOF | Catalog Sales | Website | 7DC/1D</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$887 <span class="ad-card-pct">(5.7%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">2.59x</span>
+                    <span class="ad-card-purchases">47 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(3)" title="UGC Rachel Caffeine Free Frap | RTN Messaging | Herbal Coffee Starter Kit - Copy">
+            <div class="ad-thumb"><img src="../images/120212053833850459.jpg" alt="UGC Rachel Caffeine Free Frap " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Rachel Caffeine Free Frap | RTN Messaging | Herbal ...</div>
+                <div class="ad-card-campaign">< 3 | RTN | BOF | Sales | Website | Lapsed Custome</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$872 <span class="ad-card-pct">(5.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.58x</span>
+                    <span class="ad-card-purchases">11 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(4)" title="UGC Callie Vitalo | Acidity Question Hook V2 | CTA: Learn More | LP: Herbal Coffee Starter Kit">
+            <div class="ad-thumb"><img src="../images/120212442096930459.jpg" alt="UGC Callie Vitalo | Acidity Qu" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Callie Vitalo | Acidity Question Hook V2 | CTA: Lea...</div>
+                <div class="ad-card-campaign">< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testi</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$817 <span class="ad-card-pct">(5.2%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.56x</span>
+                    <span class="ad-card-purchases">10 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(5)" title="01_Teeccino-FallFlavors | National Coffee Day Promo | Static | Coffee Day LP">
+            <div class="ad-thumb"><img src="../images/120212718778970459.jpg" alt="01_Teeccino-FallFlavors | Nati" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">01_Teeccino-FallFlavors | National Coffee Day Promo | S...</div>
+                <div class="ad-card-campaign">< 3 | ACQ | Sales | Site Only | 7DC | Broad | Prom</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$780 <span class="ad-card-pct">(5.0%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.14x</span>
+                    <span class="ad-card-purchases">21 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(6)" title="UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Adaptogen Collection Dupe">
+            <div class="ad-thumb"><img src="../images/120211858283260459.jpg" alt="UGC Jeanna Zenz Overpaying V2 " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mus...</div>
+                <div class="ad-card-campaign">LV | ACQ | TOF | A+ | Site | 7DC | Broad | UGC Cam</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$739 <span class="ad-card-pct">(4.7%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.65x</span>
+                    <span class="ad-card-purchases">14 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(7)" title="UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More | LP: Herbal Coffee Starter Kit">
+            <div class="ad-thumb"><img src="../images/120212441704770459.jpg" alt="UGC Callie Vitalo | Red Flags " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More...</div>
+                <div class="ad-card-campaign">< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testi</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$723 <span class="ad-card-pct">(4.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.37x</span>
+                    <span class="ad-card-purchases">6 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(8)" title="UGC Bearded Guy | Negative Research_HOOK_01 | CTA: Shop Now LP: Shop All Herbal Collection">
+            <div class="ad-thumb"><img src="../images/120212871254330459.jpg" alt="UGC Bearded Guy | Negative Res" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">UGC Bearded Guy | Negative Research_HOOK_01 | CTA: Shop...</div>
+                <div class="ad-card-campaign">< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testi</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$536 <span class="ad-card-pct">(3.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.84x</span>
+                    <span class="ad-card-purchases">16 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(9)" title="Press Highlights | Vice V4 | Dynamic Copy | Sampler LP">
+            <div class="ad-thumb"><img src="../images/120212215200570459.jpg" alt="Press Highlights | Vice V4 | D" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Press Highlights | Vice V4 | Dynamic Copy | Sampler LP</div>
+                <div class="ad-card-campaign">< 3 | RMK | MOF | Sales | Website | Statics + Vide</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$531 <span class="ad-card-pct">(3.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.86x</span>
+                    <span class="ad-card-purchases">14 orders</span>
+                </div>
+            </div>
+        </div></div>
+</div>
+
+<!-- Ad Modal -->
+<div class="ad-modal" id="adModal" onclick="if(event.target===this)closeAdModal()">
+    <div class="ad-modal-box">
+        <div class="ad-modal-head">
+            <h3 id="adModalName"></h3>
+            <button class="ad-modal-close" onclick="closeAdModal()">&times;</button>
+        </div>
+        <div class="ad-modal-media" id="adModalMedia"></div>
+        <p class="ad-modal-campaign" id="adModalCampaign"></p>
+        <div class="ad-modal-metrics">
+            <div class="ad-modal-metric"><div class="val" id="adModalSpend"></div><div class="lbl">Spend</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRoas"></div><div class="lbl">ROAS</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRevenue"></div><div class="lbl">Revenue</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalPurchases"></div><div class="lbl">Orders</div></div>
+        </div>
+        <div class="ad-modal-body" id="adModalBody"></div>
+    </div>
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
@@ -1031,8 +1137,41 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.card-modal.active').forEach(m => m.classList.remove('active'));
+        closeAdModal();
     }
 });
+
+// Ad modal logic
+const adData = [{"img":"../images/120211973535870459.jpg","video":"","name":"RTN Catalog | Missed Us | VIP10 Discount","campaign":"< 3 | RTN | BOF | Sales | Website | Catalog | Winback + Upsell","spend":"$3,682","roas":"3.15x","revenue":"$11,604","purchases":228,"body":"Missed us? We missed you! Enjoy 10% OFF your next Teeccino purchase. Reignite your love for our herbal coffee and start your morning right."},{"img":"../images/120213325279740459.jpg","video":"","name":"UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Adaptogen Collectio","campaign":"< 3 | ACQ | ASC | TOF | Site + Shop | 7DC 1DV | Broad | CBO | Testing |  Campaig","spend":"$892","roas":"1.06x","revenue":"$943","purchases":6,"body":""},{"img":"../images/120211973322780459.jpg","video":"","name":"15% OFF 1st Purchase | Fb10","campaign":"< 3 | RMK | MOF | Catalog Sales | Website | 7DC/1DV | DPA Retargeting","spend":"$887","roas":"2.59x","revenue":"$2,300","purchases":47,"body":"There's never been a better time to try Teeccino. Get 10% OFF your first order with code: FB10"},{"img":"../images/120212053833850459.jpg","video":"","name":"UGC Rachel Caffeine Free Frap | RTN Messaging | Herbal Coffee Starter Kit - Copy","campaign":"< 3 | RTN | BOF | Sales | Website | Lapsed Customers + Sample Purchasers","spend":"$872","roas":"0.58x","revenue":"$508","purchases":11,"body":""},{"img":"../images/120212442096930459.jpg","video":"","name":"UGC Callie Vitalo | Acidity Question Hook V2 | CTA: Learn More | LP: Herbal Coff","campaign":"< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testing","spend":"$817","roas":"0.56x","revenue":"$455","purchases":10,"body":""},{"img":"../images/120212718778970459.jpg","video":"","name":"01_Teeccino-FallFlavors | National Coffee Day Promo | Static | Coffee Day LP","campaign":"< 3 | ACQ | Sales | Site Only | 7DC | Broad | Promo | Coffee Day Sale | 092624","spend":"$780","roas":"1.14x","revenue":"$886","purchases":21,"body":""},{"img":"../images/120211858283260459.jpg","video":"","name":"UGC Jeanna Zenz Overpaying V2 Mythbuster Hook | LP: Mushroom Adaptogen Collectio","campaign":"LV | ACQ | TOF | A+ | Site | 7DC | Broad | UGC Campaign","spend":"$739","roas":"0.65x","revenue":"$480","purchases":14,"body":""},{"img":"../images/120212441704770459.jpg","video":"","name":"UGC Callie Vitalo | Red Flags Hook V1 | CTA: Learn More | LP: Herbal Coffee Star","campaign":"< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testing","spend":"$723","roas":"0.37x","revenue":"$268","purchases":6,"body":""},{"img":"../images/120212871254330459.jpg","video":"","name":"UGC Bearded Guy | Negative Research_HOOK_01 | CTA: Shop Now LP: Shop All Herbal ","campaign":"< 3 | ACQ | TOF | Site | 7DC | Broad | ABO | Testing","spend":"$536","roas":"1.84x","revenue":"$986","purchases":16,"body":""},{"img":"../images/120212215200570459.jpg","video":"","name":"Press Highlights | Vice V4 | Dynamic Copy | Sampler LP","campaign":"< 3 | RMK | MOF | Sales | Website | Statics + Video","spend":"$531","roas":"0.86x","revenue":"$458","purchases":14,"body":""}];
+function openAdModal(idx) {
+    const ad = adData[idx];
+    if (!ad) return;
+    document.getElementById('adModalName').textContent = ad.name;
+    document.getElementById('adModalCampaign').textContent = ad.campaign;
+    document.getElementById('adModalSpend').textContent = ad.spend;
+    document.getElementById('adModalRoas').textContent = ad.roas;
+    document.getElementById('adModalRevenue').textContent = ad.revenue;
+    document.getElementById('adModalPurchases').textContent = ad.purchases + ' orders';
+    document.getElementById('adModalBody').innerHTML = ad.body || '<span style="color:#64748b">(No ad copy available)</span>';
+
+    const media = document.getElementById('adModalMedia');
+    if (ad.video) {
+        media.innerHTML = '<video controls preload="metadata" src="' + ad.video + '" poster="' + (ad.img || '') + '" style="width:100%;max-height:380px;background:#000"></video>';
+    } else if (ad.img) {
+        media.innerHTML = '<img src="' + ad.img + '" alt="' + ad.name + '" style="width:100%;max-height:380px;object-fit:contain">';
+    } else {
+        media.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:3em;opacity:0.2">&#128247;</div>';
+    }
+    document.getElementById('adModal').classList.add('active');
+}
+function closeAdModal() {
+    const modal = document.getElementById('adModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const v = modal.querySelector('video');
+        if (v) v.pause();
+    }
+}
 
 // Charts
 const trendData = {"dates": ["2024-10-01", "2024-10-02", "2024-10-03", "2024-10-04", "2024-10-05", "2024-10-06", "2024-10-07", "2024-10-08", "2024-10-09", "2024-10-10", "2024-10-11", "2024-10-12", "2024-10-13", "2024-10-14", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-19", "2024-10-20", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-26", "2024-10-27", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31"], "gross": [9811.0, 12200.0, 6863.0, 5937.0, 6697.0, 6771.0, 5331.0, 4972.0, 5293.0, 4586.0, 6590.0, 4107.0, 4616.0, 7283.0, 6015.0, 7068.0, 7443.0, 5334.0, 4402.0, 5738.0, 4208.0, 6616.0, 5463.0, 7269.0, 6492.0, 8016.0, 7800.0, 7573.0, 5169.0, 7713.0, 6815.0], "orders": [175, 194, 122, 106, 117, 137, 97, 93, 105, 96, 132, 83, 89, 133, 104, 134, 138, 103, 80, 115, 92, 120, 93, 126, 115, 144, 155, 133, 97, 142, 122], "ly_dates": ["2023-10-01", "2023-10-02", "2023-10-03", "2023-10-04", "2023-10-05", "2023-10-06", "2023-10-07", "2023-10-08", "2023-10-09", "2023-10-10", "2023-10-11", "2023-10-12", "2023-10-13", "2023-10-14", "2023-10-15", "2023-10-16", "2023-10-17", "2023-10-18", "2023-10-19", "2023-10-20", "2023-10-21", "2023-10-22", "2023-10-23", "2023-10-24", "2023-10-25", "2023-10-26", "2023-10-27", "2023-10-28", "2023-10-29", "2023-10-30", "2023-10-31"], "ly_gross": [9394.0, 12259.0, 5467.0, 5764.0, 3894.0, 5099.0, 2973.0, 3085.0, 4935.0, 4899.0, 4848.0, 4442.0, 4240.0, 4264.0, 5741.0, 6450.0, 6202.0, 5977.0, 4522.0, 5647.0, 4610.0, 5787.0, 5994.0, 5063.0, 4617.0, 6598.0, 4456.0, 4316.0, 4819.0, 5773.0, 5094.0], "ly_orders": [158, 221, 115, 119, 95, 110, 64, 82, 120, 104, 100, 97, 96, 88, 118, 138, 128, 117, 96, 116, 95, 129, 134, 113, 91, 137, 98, 81, 111, 136, 117]};

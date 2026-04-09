@@ -161,7 +161,7 @@ body {
     margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.3px;
 }
 
-/* ---- TOP ADS TABLE ---- */
+/* ---- TOP ADS CARDS ---- */
 .section-panel {
     background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px; margin-bottom: 24px;
@@ -170,30 +170,114 @@ body {
     color: #D4A843; font-size: 1em; font-weight: 700;
     margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.ads-table {
-    width: 100%; border-collapse: collapse;
+.ads-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
 }
-.ads-table th {
-    text-align: left; color: #64748b; font-size: 0.75em;
-    font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-    padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+.ad-card {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden; cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
 }
-.ads-table td {
-    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.88em;
+.ad-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(212,168,67,0.3);
 }
-.ads-table tr:hover td { background: rgba(255,255,255,0.02); }
-.ad-rank { color: #D4A843; font-weight: 700; width: 40px; }
-.ad-name-cell { max-width: 320px; }
-.ad-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-.ad-campaign { color: #64748b; font-size: 0.82em; margin-top: 2px; }
-.ad-spend { text-align: right; font-weight: 600; }
-.ad-pct { text-align: right; color: #64748b; }
-.ad-roas { text-align: right; font-weight: 700; }
-.ad-roas.good { color: #4ade80; }
-.ad-roas.ok { color: #fbbf24; }
-.ad-roas.bad { color: #f87171; }
-.ad-purchases { text-align: right; color: #94a3b8; }
+.ad-thumb {
+    position: relative; width: 100%; height: 160px;
+    background: #334155; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.ad-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.ad-thumb-placeholder {
+    font-size: 2.5em; opacity: 0.3;
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+}
+.ad-video-badge {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.75); color: #fff;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7em; font-weight: 600;
+}
+.ad-card-body { padding: 12px; }
+.ad-card-name {
+    font-weight: 600; font-size: 0.82em; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-campaign {
+    color: #64748b; font-size: 0.72em; margin-top: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ad-card-metrics {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    font-size: 0.78em; align-items: center;
+}
+.ad-card-spend { font-weight: 700; }
+.ad-card-pct { color: #64748b; font-size: 0.9em; }
+.ad-card-roas { font-weight: 700; }
+.ad-card-purchases { color: #94a3b8; }
+
+/* ---- AD MODAL ---- */
+.ad-modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
+    z-index: 300; overflow-y: auto; padding: 40px 20px;
+    justify-content: center; align-items: flex-start;
+}
+.ad-modal.active { display: flex; }
+.ad-modal-box {
+    background: #1e293b; border-radius: 16px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.ad-modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.ad-modal-head h3 { font-size: 0.95em; font-weight: 600; }
+.ad-modal-close {
+    background: none; border: none; color: #94a3b8;
+    font-size: 1.5em; cursor: pointer; padding: 4px 8px;
+    border-radius: 6px; transition: all 0.2s;
+}
+.ad-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.ad-modal-media {
+    background: #0f172a; display: flex; align-items: center;
+    justify-content: center; max-height: 380px; overflow: hidden;
+}
+.ad-modal-media img {
+    width: 100%; max-height: 380px; object-fit: contain;
+}
+.ad-modal-media video {
+    width: 100%; max-height: 380px; background: #000;
+}
+.ad-modal-metrics {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ad-modal-metric {
+    text-align: center; padding: 10px 0;
+    background: rgba(0,0,0,0.2); border-radius: 8px;
+}
+.ad-modal-metric .val { font-size: 1.1em; font-weight: 700; }
+.ad-modal-metric .lbl { font-size: 0.7em; color: #64748b; margin-top: 2px; text-transform: uppercase; }
+.ad-modal-body {
+    padding: 16px 20px; color: #cbd5e1;
+    font-size: 0.88em; line-height: 1.6;
+    max-height: 200px; overflow-y: auto;
+}
+.ad-modal-campaign {
+    color: #94a3b8; font-size: 0.82em; padding: 0 20px 12px;
+}
+@media (max-width: 640px) {
+    .ads-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .ad-modal-metrics { grid-template-columns: repeat(2, 1fr); }
+}
 
 /* ---- PROMOTIONS ---- */
 .promo-table {
@@ -303,7 +387,7 @@ body {
 <div class="header">
     <h1>March 2026 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 09, 2026 at 09:52 AM</div>
+    <div class="updated">Last updated April 09, 2026 at 10:11 AM</div>
 </div>
 
 
@@ -802,124 +886,146 @@ body {
 <!-- ======== TOP ADS ======== -->
 <div class="section-panel">
     <h2>Top Meta Ads &mdash; March 2026</h2>
-    <table class="ads-table">
-        <thead><tr>
-            <th></th><th>Ad / Campaign</th><th style="text-align:right">Spend</th>
-            <th style="text-align:right">% of Total</th><th style="text-align:right">ROAS</th>
-            <th style="text-align:right">Purchases</th>
-        </tr></thead>
-        <tbody>
-        <tr>
-            <td class="ad-rank">#1</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#092 -  Dark Chocolate Taste - Image #02</div>
-                <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
-            </td>
-            <td class="ad-spend">$8,591</td>
-            <td class="ad-pct">43.2%</td>
-            <td class="ad-roas bad">0.64x</td>
-            <td class="ad-purchases">206</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#2</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#092 -  Dark Chocolate Taste - Image #04</div>
-                <div class="ad-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
-            </td>
-            <td class="ad-spend">$1,937</td>
-            <td class="ad-pct">9.8%</td>
-            <td class="ad-roas bad">0.62x</td>
-            <td class="ad-purchases">53</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#3</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#092 - Dark Chocolate Tas - Image #04</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$909</td>
-            <td class="ad-pct">4.6%</td>
-            <td class="ad-roas bad">0.98x</td>
-            <td class="ad-purchases">23</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#4</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#098 - FOTM Gluten Free - Image #03</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$874</td>
-            <td class="ad-pct">4.4%</td>
-            <td class="ad-roas bad">0.62x</td>
-            <td class="ad-purchases">16</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#5</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#091 -  Dark Chocolate Toxins - Image #03</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$698</td>
-            <td class="ad-pct">3.5%</td>
-            <td class="ad-roas ok">1.38x</td>
-            <td class="ad-purchases">29</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#6</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#091 -  Dark Chocolate Toxins - Image #03</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$532</td>
-            <td class="ad-pct">2.7%</td>
-            <td class="ad-roas good">5.34x</td>
-            <td class="ad-purchases">58</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#7</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Equinox And Rewilding Sale (18th-25th March) - Image #01</div>
-                <div class="ad-campaign">eH | CBO | Equinox And Rewilding Sale (18th-25th March)</div>
-            </td>
-            <td class="ad-spend">$511</td>
-            <td class="ad-pct">2.6%</td>
-            <td class="ad-roas good">3.37x</td>
-            <td class="ad-purchases">32</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#8</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">Equinox And Rewilding Sale (18th-25th March) - Image #03</div>
-                <div class="ad-campaign">eH | CBO | Equinox And Rewilding Sale (18th-25th March)</div>
-            </td>
-            <td class="ad-spend">$471</td>
-            <td class="ad-pct">2.4%</td>
-            <td class="ad-roas good">4.57x</td>
-            <td class="ad-purchases">31</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#9</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#098 - FOTM Gluten Free - Image #03</div>
-                <div class="ad-campaign">eH | CBO | Retargeting Campaign</div>
-            </td>
-            <td class="ad-spend">$382</td>
-            <td class="ad-pct">1.9%</td>
-            <td class="ad-roas good">5.10x</td>
-            <td class="ad-purchases">38</td>
-        </tr>
-        <tr>
-            <td class="ad-rank">#10</td>
-            <td class="ad-name-cell">
-                <div class="ad-name">#092 - Dark Chocolate Tas - Image #03</div>
-                <div class="ad-campaign">eH | CBO | COLD | Main Campaign</div>
-            </td>
-            <td class="ad-spend">$374</td>
-            <td class="ad-pct">1.9%</td>
-            <td class="ad-roas bad">0.86x</td>
-            <td class="ad-purchases">13</td>
-        </tr></tbody>
-    </table>
+    <div class="ads-grid">
+        <div class="ad-card" onclick="openAdModal(0)" title="#092 -  Dark Chocolate Taste - Image #02">
+            <div class="ad-thumb"><img src="../images/120241448664080459.jpg" alt="#092 -  Dark Chocolate Taste -" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#092 -  Dark Chocolate Taste - Image #02</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$8,591 <span class="ad-card-pct">(43.2%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.64x</span>
+                    <span class="ad-card-purchases">206 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(1)" title="#092 -  Dark Chocolate Taste - Image #04">
+            <div class="ad-thumb"><img src="../images/120241448911110459.jpg" alt="#092 -  Dark Chocolate Taste -" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#092 -  Dark Chocolate Taste - Image #04</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | TOF Herbal Tea</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$1,937 <span class="ad-card-pct">(9.8%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.62x</span>
+                    <span class="ad-card-purchases">53 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(2)" title="#092 - Dark Chocolate Tas - Image #04">
+            <div class="ad-thumb"><img src="../images/120241448268580459.jpg" alt="#092 - Dark Chocolate Tas - Im" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#092 - Dark Chocolate Tas - Image #04</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$909 <span class="ad-card-pct">(4.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.98x</span>
+                    <span class="ad-card-purchases">23 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(3)" title="#098 - FOTM Gluten Free - Image #03">
+            <div class="ad-thumb"><img src="../images/120242252111690459.jpg" alt="#098 - FOTM Gluten Free - Imag" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#098 - FOTM Gluten Free - Image #03</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$874 <span class="ad-card-pct">(4.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.62x</span>
+                    <span class="ad-card-purchases">16 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(4)" title="#091 -  Dark Chocolate Toxins - Image #03">
+            <div class="ad-thumb"><img src="../images/120241444573400459.jpg" alt="#091 -  Dark Chocolate Toxins " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#091 -  Dark Chocolate Toxins - Image #03</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$698 <span class="ad-card-pct">(3.5%)</span></span>
+                    <span class="ad-card-roas" style="color:#fbbf24">1.38x</span>
+                    <span class="ad-card-purchases">29 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(5)" title="#091 -  Dark Chocolate Toxins - Image #03">
+            <div class="ad-thumb"><img src="../images/120241444806880459.jpg" alt="#091 -  Dark Chocolate Toxins " onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#091 -  Dark Chocolate Toxins - Image #03</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$532 <span class="ad-card-pct">(2.7%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">5.34x</span>
+                    <span class="ad-card-purchases">58 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(6)" title="Equinox And Rewilding Sale (18th-25th March) - Image #01">
+            <div class="ad-thumb"><img src="../images/120242325703660459.jpg" alt="Equinox And Rewilding Sale (18" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Equinox And Rewilding Sale (18th-25th March) - Image #0...</div>
+                <div class="ad-card-campaign">eH | CBO | Equinox And Rewilding Sale (18th-25th M</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$511 <span class="ad-card-pct">(2.6%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">3.37x</span>
+                    <span class="ad-card-purchases">32 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(7)" title="Equinox And Rewilding Sale (18th-25th March) - Image #03">
+            <div class="ad-thumb"><img src="../images/120242325791180459.jpg" alt="Equinox And Rewilding Sale (18" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">Equinox And Rewilding Sale (18th-25th March) - Image #0...</div>
+                <div class="ad-card-campaign">eH | CBO | Equinox And Rewilding Sale (18th-25th M</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$471 <span class="ad-card-pct">(2.4%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">4.57x</span>
+                    <span class="ad-card-purchases">31 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(8)" title="#098 - FOTM Gluten Free - Image #03">
+            <div class="ad-thumb"><img src="../images/120242252241810459.jpg" alt="#098 - FOTM Gluten Free - Imag" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#098 - FOTM Gluten Free - Image #03</div>
+                <div class="ad-card-campaign">eH | CBO | Retargeting Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$382 <span class="ad-card-pct">(1.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#4ade80">5.10x</span>
+                    <span class="ad-card-purchases">38 orders</span>
+                </div>
+            </div>
+        </div>
+        <div class="ad-card" onclick="openAdModal(9)" title="#092 - Dark Chocolate Tas - Image #03">
+            <div class="ad-thumb"><img src="../images/120241447985220459.jpg" alt="#092 - Dark Chocolate Tas - Im" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="ad-thumb-placeholder" style="display:none">&#128247;</div></div>
+            <div class="ad-card-body">
+                <div class="ad-card-name">#092 - Dark Chocolate Tas - Image #03</div>
+                <div class="ad-card-campaign">eH | CBO | COLD | Main Campaign</div>
+                <div class="ad-card-metrics">
+                    <span class="ad-card-spend">$374 <span class="ad-card-pct">(1.9%)</span></span>
+                    <span class="ad-card-roas" style="color:#f87171">0.86x</span>
+                    <span class="ad-card-purchases">13 orders</span>
+                </div>
+            </div>
+        </div></div>
+</div>
+
+<!-- Ad Modal -->
+<div class="ad-modal" id="adModal" onclick="if(event.target===this)closeAdModal()">
+    <div class="ad-modal-box">
+        <div class="ad-modal-head">
+            <h3 id="adModalName"></h3>
+            <button class="ad-modal-close" onclick="closeAdModal()">&times;</button>
+        </div>
+        <div class="ad-modal-media" id="adModalMedia"></div>
+        <p class="ad-modal-campaign" id="adModalCampaign"></p>
+        <div class="ad-modal-metrics">
+            <div class="ad-modal-metric"><div class="val" id="adModalSpend"></div><div class="lbl">Spend</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRoas"></div><div class="lbl">ROAS</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalRevenue"></div><div class="lbl">Revenue</div></div>
+            <div class="ad-modal-metric"><div class="val" id="adModalPurchases"></div><div class="lbl">Orders</div></div>
+        </div>
+        <div class="ad-modal-body" id="adModalBody"></div>
+    </div>
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
@@ -1031,8 +1137,41 @@ document.addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.card-modal.active').forEach(m => m.classList.remove('active'));
+        closeAdModal();
     }
 });
+
+// Ad modal logic
+const adData = [{"img":"../images/120241448664080459.jpg","video":"","name":"#092 -  Dark Chocolate Taste - Image #02","campaign":"eH | CBO | COLD | TOF Herbal Tea","spend":"$8,591","roas":"0.64x","revenue":"$5,495","purchases":206,"body":""},{"img":"../images/120241448911110459.jpg","video":"","name":"#092 -  Dark Chocolate Taste - Image #04","campaign":"eH | CBO | COLD | TOF Herbal Tea","spend":"$1,937","roas":"0.62x","revenue":"$1,200","purchases":53,"body":""},{"img":"../images/120241448268580459.jpg","video":"","name":"#092 - Dark Chocolate Tas - Image #04","campaign":"eH | CBO | COLD | Main Campaign","spend":"$909","roas":"0.98x","revenue":"$889","purchases":23,"body":""},{"img":"../images/120242252111690459.jpg","video":"","name":"#098 - FOTM Gluten Free - Image #03","campaign":"eH | CBO | COLD | Main Campaign","spend":"$874","roas":"0.62x","revenue":"$544","purchases":16,"body":""},{"img":"../images/120241444573400459.jpg","video":"","name":"#091 -  Dark Chocolate Toxins - Image #03","campaign":"eH | CBO | COLD | Main Campaign","spend":"$698","roas":"1.38x","revenue":"$964","purchases":29,"body":""},{"img":"../images/120241444806880459.jpg","video":"","name":"#091 -  Dark Chocolate Toxins - Image #03","campaign":"eH | CBO | Retargeting Campaign","spend":"$532","roas":"5.34x","revenue":"$2,840","purchases":58,"body":""},{"img":"../images/120242325703660459.jpg","video":"","name":"Equinox And Rewilding Sale (18th-25th March) - Image #01","campaign":"eH | CBO | Equinox And Rewilding Sale (18th-25th March)","spend":"$511","roas":"3.37x","revenue":"$1,725","purchases":32,"body":""},{"img":"../images/120242325791180459.jpg","video":"","name":"Equinox And Rewilding Sale (18th-25th March) - Image #03","campaign":"eH | CBO | Equinox And Rewilding Sale (18th-25th March)","spend":"$471","roas":"4.57x","revenue":"$2,151","purchases":31,"body":""},{"img":"../images/120242252241810459.jpg","video":"","name":"#098 - FOTM Gluten Free - Image #03","campaign":"eH | CBO | Retargeting Campaign","spend":"$382","roas":"5.10x","revenue":"$1,947","purchases":38,"body":""},{"img":"../images/120241447985220459.jpg","video":"","name":"#092 - Dark Chocolate Tas - Image #03","campaign":"eH | CBO | COLD | Main Campaign","spend":"$374","roas":"0.86x","revenue":"$321","purchases":13,"body":""}];
+function openAdModal(idx) {
+    const ad = adData[idx];
+    if (!ad) return;
+    document.getElementById('adModalName').textContent = ad.name;
+    document.getElementById('adModalCampaign').textContent = ad.campaign;
+    document.getElementById('adModalSpend').textContent = ad.spend;
+    document.getElementById('adModalRoas').textContent = ad.roas;
+    document.getElementById('adModalRevenue').textContent = ad.revenue;
+    document.getElementById('adModalPurchases').textContent = ad.purchases + ' orders';
+    document.getElementById('adModalBody').innerHTML = ad.body || '<span style="color:#64748b">(No ad copy available)</span>';
+
+    const media = document.getElementById('adModalMedia');
+    if (ad.video) {
+        media.innerHTML = '<video controls preload="metadata" src="' + ad.video + '" poster="' + (ad.img || '') + '" style="width:100%;max-height:380px;background:#000"></video>';
+    } else if (ad.img) {
+        media.innerHTML = '<img src="' + ad.img + '" alt="' + ad.name + '" style="width:100%;max-height:380px;object-fit:contain">';
+    } else {
+        media.innerHTML = '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:3em;opacity:0.2">&#128247;</div>';
+    }
+    document.getElementById('adModal').classList.add('active');
+}
+function closeAdModal() {
+    const modal = document.getElementById('adModal');
+    if (modal) {
+        modal.classList.remove('active');
+        const v = modal.querySelector('video');
+        if (v) v.pause();
+    }
+}
 
 // Charts
 const trendData = {"dates": ["2026-03-01", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-07", "2026-03-08", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31"], "gross": [6127.0, 5832.0, 5196.0, 5432.0, 7287.0, 11004.0, 12548.0, 9935.0, 5727.0, 4692.0, 4531.0, 4092.0, 5275.0, 4846.0, 6493.0, 5528.0, 5809.0, 6935.0, 12416.0, 10209.0, 7029.0, 9779.0, 8870.0, 10545.0, 11635.0, 5483.0, 5006.0, 6156.0, 4604.0, 5365.0, 6301.0], "orders": [138, 122, 111, 96, 136, 191, 219, 166, 121, 111, 96, 101, 118, 107, 144, 124, 112, 122, 184, 166, 112, 136, 169, 180, 192, 115, 93, 134, 109, 101, 121], "ly_dates": ["2025-03-01", "2025-03-02", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-08", "2025-03-09", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-15", "2025-03-16", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-22", "2025-03-23", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-29", "2025-03-30", "2025-03-31"], "ly_gross": [8135.0, 6765.0, 6943.0, 5603.0, 7089.0, 5796.0, 4707.0, 6695.0, 4475.0, 5410.0, 4209.0, 4858.0, 4927.0, 4327.0, 5746.0, 8180.0, 8542.0, 4735.0, 7267.0, 14984.0, 9184.0, 6789.0, 7711.0, 9761.0, 5516.0, 7338.0, 5667.0, 8245.0, 4226.0, 6419.0, 5620.0], "ly_orders": [142, 117, 129, 118, 144, 104, 90, 139, 84, 106, 94, 100, 96, 99, 101, 159, 160, 91, 133, 230, 146, 116, 147, 196, 112, 143, 106, 151, 80, 116, 116]};
