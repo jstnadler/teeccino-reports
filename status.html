@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teeccino DataOps Pipeline</title>
+<title>Teeccino DataOps Status</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -27,18 +27,53 @@ body {
 .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
 
 /* ---- HEADER ---- */
-.header { text-align: center; margin-bottom: 32px; }
+.header { text-align: center; margin-bottom: 28px; }
 .header h1 {
     font-size: 2.2em; font-weight: 800; letter-spacing: -0.5px;
     background: linear-gradient(135deg, #D4A843, #F5D784, #D4A843);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 .header .sub { color: #94a3b8; margin-top: 6px; font-size: 1em; }
+.header .updated { color: #64748b; font-size: 0.8em; margin-top: 4px; }
+
+/* ---- HEALTH BANNER ---- */
+.health-banner {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    padding: 18px 28px; border-radius: 14px; margin-bottom: 24px;
+    font-weight: 700; font-size: 1.1em;
+}
+.health-banner.ok {
+    background: rgba(74,222,128,0.08);
+    border: 1px solid rgba(74,222,128,0.25);
+    color: #4ade80;
+}
+.health-banner.warn {
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    color: #fbbf24;
+}
+.health-banner.err {
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.25);
+    color: #f87171;
+}
+.health-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+.health-dot.ok { background: #4ade80; box-shadow: 0 0 12px rgba(74,222,128,0.5); }
+.health-dot.warn { background: #fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.5); }
+.health-dot.err { background: #f87171; box-shadow: 0 0 12px rgba(248,113,113,0.5); }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+.health-meta { color: #64748b; font-weight: 400; font-size: 0.82em; margin-left: 8px; }
 
 /* ---- SECTION HEADERS ---- */
 .section-header {
     display: flex; align-items: center; gap: 12px;
-    margin: 36px 0 16px 0; padding-bottom: 8px;
+    margin: 32px 0 16px 0; padding-bottom: 8px;
     border-bottom: 2px solid rgba(212,168,67,0.2);
 }
 .section-header h2 {
@@ -48,14 +83,149 @@ body {
 .section-icon {
     width: 32px; height: 32px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.1em;
+    font-size: 0.85em; font-weight: 700;
 }
-.section-icon.pipeline { background: rgba(74,222,128,0.12); }
-.section-icon.db { background: rgba(96,165,250,0.12); }
-.section-icon.api { background: rgba(167,139,250,0.12); }
-.section-icon.schedule { background: rgba(251,191,36,0.12); }
-.section-icon.output { background: rgba(244,114,182,0.12); }
-.section-icon.issues { background: rgba(248,113,113,0.12); }
+.section-icon.conn { background: rgba(167,139,250,0.12); color: #a78bfa; }
+.section-icon.pipe { background: rgba(74,222,128,0.12); color: #4ade80; }
+.section-icon.cov { background: rgba(96,165,250,0.12); color: #60a5fa; }
+.section-icon.db { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.section-icon.arch { background: rgba(244,114,182,0.12); color: #f472b6; }
+.section-icon.issues { background: rgba(248,113,113,0.12); color: #f87171; }
+
+/* ---- STATUS DOTS ---- */
+.status-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px; vertical-align: middle;
+}
+.status-dot.ok { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.4); }
+.status-dot.warn { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.4); }
+.status-dot.err { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.4); }
+
+/* ---- CONNECTION CARDS ---- */
+.conn-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+}
+.conn-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 0;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+.conn-card:hover {
+    border-color: rgba(212,168,67,0.15);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.conn-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px 14px;
+}
+.conn-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1em; font-weight: 800;
+}
+.conn-icon.conn-ok { background: rgba(74,222,128,0.12); color: #4ade80; }
+.conn-icon.conn-warn { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.conn-icon.conn-err { background: rgba(248,113,113,0.12); color: #f87171; }
+.conn-title { flex: 1; }
+.conn-name { font-weight: 700; font-size: 1.05em; color: #e2e8f0; }
+.conn-api { font-size: 0.78em; color: #64748b; margin-top: 2px; }
+.conn-status-badge {
+    padding: 4px 12px; border-radius: 8px;
+    font-size: 0.78em; font-weight: 600;
+    white-space: nowrap;
+}
+.conn-status-badge.conn-ok { background: rgba(74,222,128,0.1); color: #4ade80; }
+.conn-status-badge.conn-warn { background: rgba(251,191,36,0.1); color: #fbbf24; }
+.conn-status-badge.conn-err { background: rgba(248,113,113,0.1); color: #f87171; }
+.conn-body {
+    display: flex; gap: 0;
+    padding: 0 20px 14px;
+}
+.conn-stat {
+    flex: 1; display: flex; flex-direction: column; gap: 2px;
+}
+.conn-stat-label { font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
+.conn-stat-value { font-size: 0.92em; font-weight: 600; color: #e2e8f0; font-family: 'SF Mono', 'Fira Code', monospace; }
+.conn-footer {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.02);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.78em; color: #64748b;
+}
+.conn-issue {
+    padding: 8px 20px 12px;
+    font-size: 0.8em;
+}
+.issue-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.82em; font-weight: 600;
+}
+.issue-tag.blocked { background: rgba(248,113,113,0.15); color: #f87171; }
+.issue-tag.warning { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.issue-tag.info { background: rgba(96,165,250,0.15); color: #60a5fa; }
+
+/* ---- LAST RUN TABLE ---- */
+.run-table {
+    width: 100%; border-collapse: collapse; font-size: 0.85em;
+}
+.run-table th {
+    text-align: left; padding: 10px 16px;
+    color: #D4A843; font-weight: 600; font-size: 0.82em;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(212,168,67,0.15);
+}
+.run-table td {
+    padding: 8px 16px; color: #94a3b8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.run-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ---- COVERAGE TABLE ---- */
+.cov-table {
+    width: 100%; border-collapse: collapse; font-size: 0.85em;
+}
+.cov-table th {
+    text-align: left; padding: 8px 16px;
+    color: #D4A843; font-weight: 600; font-size: 0.82em;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(212,168,67,0.15);
+}
+.cov-table td {
+    padding: 6px 16px; color: #94a3b8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ---- DB TABLE ---- */
+.db-table {
+    width: 100%; border-collapse: collapse; font-size: 0.85em;
+}
+.db-table th {
+    text-align: left; padding: 8px 14px;
+    color: #D4A843; font-weight: 600; font-size: 0.82em;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(212,168,67,0.15);
+}
+.db-table td {
+    padding: 6px 14px; color: #94a3b8;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.db-table code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #e2e8f0; font-size: 0.95em;
+}
+.row-count { text-align: right; font-variant-numeric: tabular-nums; }
+.tbl-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.78em; font-weight: 600;
+}
+.tbl-raw { background: rgba(212,168,67,0.1); color: #D4A843; }
+.tbl-calc { background: rgba(74,222,128,0.1); color: #4ade80; }
+.tbl-ref { background: rgba(251,191,36,0.1); color: #fbbf24; }
+.tbl-journey { background: rgba(167,139,250,0.1); color: #a78bfa; }
 
 /* ---- CARDS ---- */
 .card {
@@ -63,24 +233,12 @@ body {
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px; padding: 24px;
     margin-bottom: 14px;
-    transition: all 0.25s ease;
 }
 .card:hover {
     border-color: rgba(212,168,67,0.15);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
-.card h3 {
-    font-size: 1.05em; font-weight: 700; color: #e2e8f0;
-    margin-bottom: 12px;
-}
-.card p, .card li {
-    color: #94a3b8; font-size: 0.9em; line-height: 1.7;
-}
-.card ul { list-style: none; padding: 0; }
-.card ul li { padding: 4px 0; }
-.card ul li::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 10px; vertical-align: middle; }
 
-/* ---- ARCHITECTURE DIAGRAM ---- */
+/* ---- ARCHITECTURE ---- */
 .arch-flow {
     display: grid;
     grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
@@ -109,7 +267,7 @@ body {
     color: rgba(212,168,67,0.5); font-size: 1.4em; padding: 0 4px;
 }
 
-/* ---- PIPELINE STEPS ---- */
+/* ---- PIPELINE STEPS GRID ---- */
 .pipeline-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -121,122 +279,29 @@ body {
     border-radius: 12px; padding: 18px 20px;
     transition: all 0.25s ease;
 }
-.step-card:hover {
-    border-color: rgba(212,168,67,0.15);
-}
-.step-card .step-num {
+.step-card:hover { border-color: rgba(212,168,67,0.15); }
+.step-num {
     display: inline-block;
     width: 24px; height: 24px; line-height: 24px;
     text-align: center; border-radius: 6px;
     font-size: 0.75em; font-weight: 700;
     margin-right: 8px;
 }
-.step-card .step-num.ingest { background: rgba(74,222,128,0.15); color: #4ade80; }
-.step-card .step-num.transform { background: rgba(96,165,250,0.15); color: #60a5fa; }
-.step-card .step-num.build { background: rgba(167,139,250,0.15); color: #a78bfa; }
-.step-card .step-name {
-    font-weight: 600; color: #e2e8f0; font-size: 0.95em;
-}
-.step-card .step-desc {
+.step-num.ingest { background: rgba(74,222,128,0.15); color: #4ade80; }
+.step-num.transform { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.step-num.build { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.step-name { font-weight: 600; color: #e2e8f0; font-size: 0.95em; }
+.step-desc {
     color: #64748b; font-size: 0.82em; margin-top: 6px; line-height: 1.5;
 }
-.step-card code {
+.step-desc code {
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 0.88em; color: #94a3b8;
     background: rgba(255,255,255,0.04);
     padding: 1px 5px; border-radius: 4px;
 }
 
-/* ---- API GRID ---- */
-.api-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-}
-.api-card {
-    background: #1e293b;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px; padding: 20px;
-    text-align: center;
-    transition: all 0.25s ease;
-}
-.api-card:hover {
-    border-color: rgba(212,168,67,0.15);
-}
-.api-card .api-icon {
-    font-size: 1.8em; margin-bottom: 10px;
-}
-.api-card .api-name {
-    font-weight: 700; font-size: 1em; color: #e2e8f0;
-    margin-bottom: 6px;
-}
-.api-card .api-detail {
-    font-size: 0.78em; color: #64748b; line-height: 1.5;
-}
-.status-dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    margin-right: 4px; vertical-align: middle;
-}
-.status-dot.ok { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.4); }
-.status-dot.warn { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.4); }
-.status-dot.err { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.4); }
-
-/* ---- DB TABLE ---- */
-.db-table {
-    width: 100%; border-collapse: collapse;
-    font-size: 0.85em;
-}
-.db-table th {
-    text-align: left; padding: 10px 14px;
-    color: #D4A843; font-weight: 600; font-size: 0.82em;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    border-bottom: 1px solid rgba(212,168,67,0.15);
-}
-.db-table td {
-    padding: 8px 14px; color: #94a3b8;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.db-table tr:hover td { background: rgba(255,255,255,0.02); }
-.db-table code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    color: #e2e8f0; font-size: 0.95em;
-}
-.db-table .row-count { text-align: right; font-variant-numeric: tabular-nums; }
-.db-table .tbl-type {
-    display: inline-block; padding: 2px 8px; border-radius: 4px;
-    font-size: 0.8em; font-weight: 600;
-}
-.tbl-type.raw { background: rgba(74,222,128,0.1); color: #4ade80; }
-.tbl-type.calc { background: rgba(96,165,250,0.1); color: #60a5fa; }
-.tbl-type.ref { background: rgba(167,139,250,0.1); color: #a78bfa; }
-
-/* ---- OUTPUT GRID ---- */
-.output-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-}
-.output-card {
-    background: #1e293b;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px; padding: 20px;
-    transition: all 0.25s ease;
-}
-.output-card:hover {
-    border-color: rgba(212,168,67,0.15);
-}
-.output-card .out-icon { font-size: 1.5em; margin-bottom: 8px; }
-.output-card .out-title {
-    font-weight: 700; font-size: 0.95em; color: #e2e8f0;
-    margin-bottom: 6px;
-}
-.output-card .out-desc {
-    font-size: 0.8em; color: #64748b; line-height: 1.5;
-}
-.output-card a { color: #D4A843; text-decoration: none; }
-.output-card a:hover { text-decoration: underline; }
-
-/* ---- ISSUES ---- */
+/* ---- ISSUES LIST ---- */
 .issue-list { list-style: none; padding: 0; }
 .issue-list li {
     padding: 12px 16px;
@@ -245,55 +310,31 @@ body {
     color: #94a3b8;
 }
 .issue-list li:last-child { border-bottom: none; }
-.issue-tag {
-    display: inline-block; padding: 2px 8px; border-radius: 4px;
-    font-size: 0.78em; font-weight: 600; margin-right: 6px;
-    vertical-align: middle;
-}
-.issue-tag.blocked { background: rgba(248,113,113,0.15); color: #f87171; }
-.issue-tag.warning { background: rgba(251,191,36,0.15); color: #fbbf24; }
-.issue-tag.info { background: rgba(96,165,250,0.15); color: #60a5fa; }
 
-/* ---- SCHEDULER ---- */
-.sched-card {
-    background: #1e293b;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px; padding: 24px;
-}
-.sched-row {
-    display: flex; gap: 24px; flex-wrap: wrap;
-}
-.sched-item {
-    flex: 1; min-width: 200px;
-}
-.sched-item .sched-label {
-    font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.5px;
-    color: #D4A843; font-weight: 600; margin-bottom: 4px;
-}
-.sched-item .sched-value {
-    font-size: 1em; color: #e2e8f0; font-weight: 600;
-}
-.sched-item .sched-sub {
-    font-size: 0.8em; color: #64748b; margin-top: 2px;
-}
-.sched-item code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 0.88em; color: #94a3b8;
-    background: rgba(255,255,255,0.04);
-    padding: 1px 5px; border-radius: 4px;
+/* ---- TWO-COL LAYOUT ---- */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
 }
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 900px) {
+    .conn-grid { grid-template-columns: 1fr; }
     .pipeline-grid { grid-template-columns: 1fr; }
-    .api-grid { grid-template-columns: repeat(2, 1fr); }
-    .output-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
     .arch-flow { grid-template-columns: 1fr; gap: 8px; }
     .arch-arrow { transform: rotate(90deg); padding: 4px 0; }
 }
-@media (max-width: 600px) {
-    .api-grid { grid-template-columns: 1fr; }
-    .sched-row { flex-direction: column; gap: 12px; }
+
+/* ---- FOOTER ---- */
+.footer {
+    text-align: center; color: #475569; font-size: 0.78em;
+    margin-top: 40px; padding-bottom: 20px;
+}
+.footer code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #64748b; font-size: 0.95em;
 }
 </style>
 </head>
@@ -315,13 +356,371 @@ body {
 <div class="header">
     <h1>DataOps Pipeline</h1>
     <p class="sub">Teeccino eCommerce Analytics Infrastructure</p>
+    <p class="updated">Last generated: 2026-04-09 11:48:08</p>
 </div>
 
-<!-- ================================================================ -->
-<!-- ARCHITECTURE                                                      -->
-<!-- ================================================================ -->
+<!-- ============================================================ -->
+<!-- HEALTH BANNER                                                 -->
+<!-- ============================================================ -->
+<div class="health-banner ok">
+    <div class="health-dot ok"></div>
+    Pipeline Healthy
+    <span class="health-meta">&nbsp;&mdash;&nbsp;Thu 04/09/2026  7:00:01.11</span>
+</div>
+
+<!-- ============================================================ -->
+<!-- API CONNECTIONS                                                -->
+<!-- ============================================================ -->
 <div class="section-header">
-    <div class="section-icon pipeline">P</div>
+    <div class="section-icon conn">API</div>
+    <h2>Connections</h2>
+</div>
+
+<div class="conn-grid">
+
+        <div class="conn-card">
+            <div class="conn-header">
+                <div class="conn-icon conn-ok">S</div>
+                <div class="conn-title">
+                    <div class="conn-name">Shopify</div>
+                    <div class="conn-api">GraphQL Admin API</div>
+                </div>
+                <div class="conn-status-badge conn-ok">
+                    <span class="status-dot ok"></span>
+                    1 day ago
+                </div>
+            </div>
+            <div class="conn-body">
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Latest Data</span>
+                    <span class="conn-stat-value">2026-04-08</span>
+                </div>
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Rows</span>
+                    <span class="conn-stat-value">148,362</span>
+                </div>
+            </div>
+            <div class="conn-footer">KPI through: 2026-04-08</div>
+            
+        </div>
+        <div class="conn-card">
+            <div class="conn-header">
+                <div class="conn-icon conn-ok">M</div>
+                <div class="conn-title">
+                    <div class="conn-name">Meta Ads</div>
+                    <div class="conn-api">Marketing API v21.0</div>
+                </div>
+                <div class="conn-status-badge conn-ok">
+                    <span class="status-dot ok"></span>
+                    Today
+                </div>
+            </div>
+            <div class="conn-body">
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Latest Data</span>
+                    <span class="conn-stat-value">2026-04-09</span>
+                </div>
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Rows</span>
+                    <span class="conn-stat-value">1,161</span>
+                </div>
+            </div>
+            <div class="conn-footer">Ad insights: 2026-04 (28 months, 2,970 ads)</div>
+            <div class="conn-issue"><span class="issue-tag warning">Token expires ~60 days</span></div>
+        </div>
+        <div class="conn-card">
+            <div class="conn-header">
+                <div class="conn-icon conn-err">G</div>
+                <div class="conn-title">
+                    <div class="conn-name">Google Ads</div>
+                    <div class="conn-api">CSV import only</div>
+                </div>
+                <div class="conn-status-badge conn-err">
+                    <span class="status-dot err"></span>
+                    8 days ago
+                </div>
+            </div>
+            <div class="conn-body">
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Latest Data</span>
+                    <span class="conn-stat-value">2026-04-01</span>
+                </div>
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Rows</span>
+                    <span class="conn-stat-value">1,180</span>
+                </div>
+            </div>
+            <div class="conn-footer">8 days since last import</div>
+            <div class="conn-issue"><span class="issue-tag blocked">API NOT IMPLEMENTED</span></div>
+        </div>
+        <div class="conn-card">
+            <div class="conn-header">
+                <div class="conn-icon conn-ok">SS</div>
+                <div class="conn-title">
+                    <div class="conn-name">ShipStation</div>
+                    <div class="conn-api">REST API v2</div>
+                </div>
+                <div class="conn-status-badge conn-ok">
+                    <span class="status-dot ok"></span>
+                    Today
+                </div>
+            </div>
+            <div class="conn-body">
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Latest Data</span>
+                    <span class="conn-stat-value">2026-04-09</span>
+                </div>
+                <div class="conn-stat">
+                    <span class="conn-stat-label">Rows</span>
+                    <span class="conn-stat-value">107,990</span>
+                </div>
+            </div>
+            <div class="conn-footer">Rate limit: 40 req/min</div>
+            
+        </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- LAST PIPELINE RUN                                             -->
+<!-- ============================================================ -->
+<div class="section-header">
+    <div class="section-icon pipe">RUN</div>
+    <h2>Last Pipeline Run &mdash; pipeline_20260409.log</h2>
+</div>
+
+<div class="card">
+<table class="run-table">
+    <thead><tr><th>Step</th><th>Status</th><th>Details</th></tr></thead>
+    <tbody>
+<tr>
+                <td style="color:#e2e8f0;">Price list</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">204 SKUs for 2026-04</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Extend parser</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">3 new transactions ($688)</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Shopify ingest</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">106 orders, 253 line items for Apr 8</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Meta Ads</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">$88.73 spend, 178 clicks for Apr 9</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Google Ads</td>
+                <td><span class="status-dot warn"></span> Skipped</td>
+                <td style="color:#64748b;">API not implemented (known issue)</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">ShipStation</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">992 shipments stored</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Transforms</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">Daily, SKU, attribution all ran</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Matrix workbooks</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">All 3 built (3.1s)</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">MTD dashboard</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">$33,324 gross / 711 orders / 8 days</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">YTD dashboard</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">$713,746 gross / 13,585 orders / 98 days</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Ops dashboard</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">Built and pushed</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Quality checks</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">All passed</td>
+            </tr>
+<tr>
+                <td style="color:#e2e8f0;">Discord</td>
+                <td><span class="status-dot ok"></span> OK</td>
+                <td style="color:#64748b;">Notification sent</td>
+            </tr>
+
+    </tbody>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<!-- DATA COVERAGE                                                 -->
+<!-- ============================================================ -->
+<div class="section-header">
+    <div class="section-icon cov">COV</div>
+    <h2>Data Coverage</h2>
+</div>
+
+<div class="two-col">
+    <div class="card">
+        <h3 style="font-size:0.95em;font-weight:700;color:#e2e8f0;margin-bottom:12px;">7-Day KPI Coverage</h3>
+        <table class="cov-table">
+            <thead><tr><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-08</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-07</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-06</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-05</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-04</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-03</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+<tr>
+            <td style="color:#e2e8f0;">2026-04-02</td>
+            <td><span class="status-dot ok"></span> OK</td>
+        </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <div class="card">
+        <h3 style="font-size:0.95em;font-weight:700;color:#e2e8f0;margin-bottom:12px;">Transform Timestamps</h3>
+        <table class="cov-table">
+            <thead><tr><th>Transform</th><th>Last Run</th></tr></thead>
+            <tbody>
+                <tr><td style="color:#e2e8f0;">calc_daily_shopify</td><td>2026-04-09 14:00:30</td></tr>
+                <tr><td style="color:#e2e8f0;">calc_daily_sku_sales</td><td>2026-04-09 14:00:30</td></tr>
+                <tr><td style="color:#e2e8f0;">Shopify orders fetched</td><td>2026-04-09 14:00:25</td></tr>
+                <tr><td style="color:#e2e8f0;">Meta ads fetched</td><td>2026-04-09 14:00:26</td></tr>
+                <tr><td style="color:#e2e8f0;">Meta ad insights fetched</td><td>2026-04-09 10:10:30</td></tr>
+                <tr><td style="color:#e2e8f0;">ShipStation fetched</td><td>2026-04-09 14:00:30</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DATABASE                                                      -->
+<!-- ============================================================ -->
+<div class="section-header">
+    <div class="section-icon db">DB</div>
+    <h2>Database &mdash; 388 MB &mdash; 1,714,855 rows</h2>
+</div>
+
+<div class="card">
+    <table class="db-table">
+        <thead><tr><th>Table</th><th>Type</th><th style="text-align:right;">Rows</th></tr></thead>
+        <tbody>
+<tr>
+            <td><code>raw_orders</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">148,362</td>
+        </tr>
+<tr>
+            <td><code>raw_line_items</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">507,030</td>
+        </tr>
+<tr>
+            <td><code>raw_discount_allocations</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">169,926</td>
+        </tr>
+<tr>
+            <td><code>order_journey</code></td>
+            <td><span class="tbl-badge tbl-journey">JOURNEY</span></td>
+            <td class="row-count">148,362</td>
+        </tr>
+<tr>
+            <td><code>order_moments</code></td>
+            <td><span class="tbl-badge tbl-journey">JOURNEY</span></td>
+            <td class="row-count">265,640</td>
+        </tr>
+<tr>
+            <td><code>raw_meta_ads</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">1,161</td>
+        </tr>
+<tr>
+            <td><code>raw_meta_ad_insights</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">2,970</td>
+        </tr>
+<tr>
+            <td><code>raw_google_ads</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">1,180</td>
+        </tr>
+<tr>
+            <td><code>raw_shipments</code></td>
+            <td><span class="tbl-badge tbl-raw">RAW</span></td>
+            <td class="row-count">107,990</td>
+        </tr>
+<tr>
+            <td><code>price_list</code></td>
+            <td><span class="tbl-badge tbl-ref">REF</span></td>
+            <td class="row-count">11,092</td>
+        </tr>
+<tr>
+            <td><code>cogs</code></td>
+            <td><span class="tbl-badge tbl-ref">REF</span></td>
+            <td class="row-count">1,517</td>
+        </tr>
+<tr>
+            <td><code>calc_daily_shopify</code></td>
+            <td><span class="tbl-badge tbl-calc">CALC</span></td>
+            <td class="row-count">1,194</td>
+        </tr>
+<tr>
+            <td><code>calc_daily_sku_sales</code></td>
+            <td><span class="tbl-badge tbl-calc">CALC</span></td>
+            <td class="row-count">139,528</td>
+        </tr>
+<tr>
+            <td><code>calc_attribution</code></td>
+            <td><span class="tbl-badge tbl-calc">CALC</span></td>
+            <td class="row-count">148,312</td>
+        </tr>
+<tr>
+            <td><code>calc_customer_cohorts</code></td>
+            <td><span class="tbl-badge tbl-calc">CALC</span></td>
+            <td class="row-count">60,591</td>
+        </tr>
+
+        </tbody>
+    </table>
+</div>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE                                                  -->
+<!-- ============================================================ -->
+<div class="section-header">
+    <div class="section-icon arch">ARC</div>
     <h2>Architecture</h2>
 </div>
 
@@ -367,16 +766,11 @@ body {
     </div>
 </div>
 
-<div class="card" style="margin-top:14px;">
-    <h3>Orchestrator</h3>
-    <p>Single entry point: <code style="font-family:'SF Mono','Fira Code',monospace;color:#e2e8f0;background:rgba(255,255,255,0.04);padding:2px 6px;border-radius:4px;">python daily_run.py</code> &mdash; detects missing dates, runs all stages in sequence, and performs data quality checks. Individual scripts can also be run standalone for targeted operations.</p>
-</div>
-
-<!-- ================================================================ -->
-<!-- PIPELINE STEPS                                                    -->
-<!-- ================================================================ -->
+<!-- ============================================================ -->
+<!-- PIPELINE SCRIPTS                                              -->
+<!-- ============================================================ -->
 <div class="section-header">
-    <div class="section-icon pipeline">S</div>
+    <div class="section-icon pipe">SCR</div>
     <h2>Pipeline Scripts</h2>
 </div>
 
@@ -384,341 +778,58 @@ body {
     <div class="step-card">
         <span class="step-num ingest">1</span>
         <span class="step-name">ingest_shopify.py</span>
-        <div class="step-desc">
-            Fetches orders from Shopify GraphQL Admin API. Populates <code>raw_orders</code>, <code>raw_line_items</code>, <code>raw_discount_allocations</code>, <code>order_journey</code>, and <code>order_moments</code>. Supports single-date, date-range, and backfill modes.
-        </div>
+        <div class="step-desc">Shopify GraphQL Admin API &rarr; <code>raw_orders</code>, <code>raw_line_items</code>, <code>raw_discount_allocations</code>, <code>order_journey</code>, <code>order_moments</code></div>
     </div>
     <div class="step-card">
         <span class="step-num ingest">2</span>
         <span class="step-name">ingest_meta.py</span>
-        <div class="step-desc">
-            Fetches account-level daily data and per-ad monthly insights from Meta Marketing API. Stores in <code>raw_meta_ads</code> and <code>raw_meta_ad_insights</code>. Downloads ad thumbnails locally. Supports <code>--api</code>, <code>--ads</code>, and <code>backfill-ads</code> modes.
-        </div>
+        <div class="step-desc">Meta Marketing API &rarr; <code>raw_meta_ads</code> + <code>raw_meta_ad_insights</code>. Daily account-level + per-ad monthly insights with thumbnails.</div>
     </div>
     <div class="step-card">
         <span class="step-num ingest">3</span>
         <span class="step-name">ingest_google.py</span>
-        <div class="step-desc">
-            Loads Google Ads data into <code>raw_google_ads</code>. Currently CSV-import only &mdash; the <code>--api</code> flag prints a warning. Needs API implementation or regular CSV export.
-        </div>
+        <div class="step-desc">Google Ads CSV &rarr; <code>raw_google_ads</code>. API not implemented &mdash; manual CSV import only.</div>
     </div>
     <div class="step-card">
         <span class="step-num ingest">4</span>
         <span class="step-name">ingest_shipstation.py</span>
-        <div class="step-desc">
-            Fetches shipment data from the ShipStation REST API. Populates <code>raw_shipments</code>. Supports <code>--days N</code>, <code>--month YYYY-MM</code>, and full <code>backfill</code> modes. Rate-limited to 40 req/min.
-        </div>
+        <div class="step-desc">ShipStation REST API &rarr; <code>raw_shipments</code>. Supports <code>--days N</code>, <code>--month</code>, and full <code>backfill</code>.</div>
     </div>
     <div class="step-card">
         <span class="step-num transform">5</span>
         <span class="step-name">transform_daily.py</span>
-        <div class="step-desc">
-            Aggregates raw order data into <code>calc_daily_shopify</code> &mdash; the core KPI table. Computes DTC/wholesale splits, True Gross, discount breakdowns, subscription metrics, and free item tracking.
-        </div>
+        <div class="step-desc">Aggregates raw data &rarr; <code>calc_daily_shopify</code>. DTC/wholesale splits, True Gross, discount breakdown, subscriptions.</div>
     </div>
     <div class="step-card">
         <span class="step-num transform">6</span>
         <span class="step-name">transform_sku.py</span>
-        <div class="step-desc">
-            Aggregates line items into <code>calc_daily_sku_sales</code> with per-SKU daily units, gross, net, discounts, and COGS. Separates DTC, wholesale, and subscription channels.
-        </div>
+        <div class="step-desc">Line items &rarr; <code>calc_daily_sku_sales</code>. Per-SKU daily units, gross, net, COGS by channel.</div>
     </div>
     <div class="step-card">
         <span class="step-num transform">7</span>
         <span class="step-name">transform_attribution.py</span>
-        <div class="step-desc">
-            Processes <code>order_journey</code> touchpoints into <code>calc_attribution</code> with first-touch/last-touch source, medium, campaign, and attributed channel classification.
-        </div>
+        <div class="step-desc">Journey data &rarr; <code>calc_attribution</code>. First/last touch source, medium, campaign, attributed channel.</div>
     </div>
     <div class="step-card">
         <span class="step-num build">8</span>
         <span class="step-name">build_mtd_dashboard.py</span>
-        <div class="step-desc">
-            Generates MTD KPI HTML dashboards with YoY comparisons, daily trend charts, discount waterfall, top ads cards, and forecast pacing. Pushes to GitHub Pages.
-        </div>
+        <div class="step-desc">MTD KPI HTML with YoY, daily trends, discount waterfall, top ads. Pushes to GitHub Pages.</div>
     </div>
     <div class="step-card">
         <span class="step-num build">9</span>
         <span class="step-name">build_ytd_dashboard.py</span>
-        <div class="step-desc">
-            Generates YTD KPI HTML dashboards with monthly breakdowns, cumulative trends, and year-over-year comparisons. Pushes to GitHub Pages.
-        </div>
+        <div class="step-desc">YTD KPI HTML with monthly breakdowns and cumulative pacing. Pushes to GitHub Pages.</div>
     </div>
     <div class="step-card">
         <span class="step-num build">10</span>
         <span class="step-name">build_all_matrices.py</span>
-        <div class="step-desc">
-            Builds Excel workbooks: Sales &amp; Revenue Matrix (4 sheets), Product Performance (7 sheets), and Advertising &amp; Attribution (3 sheets). Output to OneDrive.
-        </div>
+        <div class="step-desc">Sales &amp; Revenue (4 sheets), Product Performance (7 sheets), Advertising &amp; Attribution (3 sheets). Excel to OneDrive.</div>
     </div>
 </div>
 
-<!-- ================================================================ -->
-<!-- SCHEDULER                                                         -->
-<!-- ================================================================ -->
-<div class="section-header">
-    <div class="section-icon schedule">T</div>
-    <h2>Scheduler</h2>
-</div>
-
-<div class="sched-card">
-    <div class="sched-row">
-        <div class="sched-item">
-            <div class="sched-label">Task Name</div>
-            <div class="sched-value">TeeccinoDataOps-DailyRun</div>
-        </div>
-        <div class="sched-item">
-            <div class="sched-label">Schedule</div>
-            <div class="sched-value">Daily at 6:00 AM</div>
-            <div class="sched-sub">Runs on next boot if missed</div>
-        </div>
-        <div class="sched-item">
-            <div class="sched-label">Entry Point</div>
-            <div class="sched-value"><code>run_daily.bat</code></div>
-            <div class="sched-sub">Calls <code>daily_run.py</code></div>
-        </div>
-        <div class="sched-item">
-            <div class="sched-label">On Failure</div>
-            <div class="sched-value">Discord Webhook</div>
-            <div class="sched-sub">Via <code>notify_discord.py</code></div>
-        </div>
-    </div>
-    <div class="sched-row" style="margin-top:16px;">
-        <div class="sched-item">
-            <div class="sched-label">Log File</div>
-            <div class="sched-value" style="font-size:0.85em;"><code>C:\temp\analytics\logs\scheduler.log</code></div>
-        </div>
-        <div class="sched-item">
-            <div class="sched-label">Pipeline Sequence</div>
-            <div class="sched-value" style="font-size:0.85em; color:#94a3b8;">
-                Backfill check &rarr; Price list &rarr; Ingest (4) &rarr; Transform (3) &rarr; Build (4) &rarr; Quality checks
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================================================================ -->
-<!-- API CONNECTIONS                                                    -->
-<!-- ================================================================ -->
-<div class="section-header">
-    <div class="section-icon api">A</div>
-    <h2>API Connections</h2>
-</div>
-
-<div class="api-grid">
-    <div class="api-card">
-        <div class="api-icon">S</div>
-        <div class="api-name">Shopify</div>
-        <div class="api-detail">
-            <span class="status-dot ok"></span> Active<br>
-            GraphQL Admin API<br>
-            Orders, line items, discounts, customer journeys
-        </div>
-    </div>
-    <div class="api-card">
-        <div class="api-icon">M</div>
-        <div class="api-name">Meta Ads</div>
-        <div class="api-detail">
-            <span class="status-dot warn"></span> Active (token expires ~60 days)<br>
-            Marketing API v21.0<br>
-            Account: 559530661221525<br>
-            Daily spend + ad-level insights
-        </div>
-    </div>
-    <div class="api-card">
-        <div class="api-icon">G</div>
-        <div class="api-name">Google Ads</div>
-        <div class="api-detail">
-            <span class="status-dot err"></span> CSV Only<br>
-            API not implemented<br>
-            Customer: 806-386-6750<br>
-            Data through manual CSV import
-        </div>
-    </div>
-    <div class="api-card">
-        <div class="api-icon">SS</div>
-        <div class="api-name">ShipStation</div>
-        <div class="api-detail">
-            <span class="status-dot ok"></span> Active<br>
-            REST API v2<br>
-            Shipments, tracking, costs<br>
-            Rate limit: 40 req/min
-        </div>
-    </div>
-</div>
-
-<!-- ================================================================ -->
-<!-- DATABASE                                                          -->
-<!-- ================================================================ -->
-<div class="section-header">
-    <div class="section-icon db">D</div>
-    <h2>Database</h2>
-</div>
-
-<div class="card">
-    <h3>teeccino_analytics.db</h3>
-    <p style="margin-bottom:16px;">SQLite with WAL journal mode &mdash; 388 MB &mdash; 16 tables &mdash; Data from Jan 2023 to present</p>
-
-    <table class="db-table">
-        <thead>
-            <tr><th>Table</th><th>Type</th><th style="text-align:right;">Rows</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><code>raw_orders</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">148,362</td>
-                <td>Shopify orders (2023-01 to present)</td>
-            </tr>
-            <tr>
-                <td><code>raw_line_items</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">507,030</td>
-                <td>Order line items with SKU, price, quantity</td>
-            </tr>
-            <tr>
-                <td><code>raw_discount_allocations</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">169,926</td>
-                <td>Per-line-item discount breakdown</td>
-            </tr>
-            <tr>
-                <td><code>order_journey</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">148,362</td>
-                <td>Customer journey (first/last visit, UTM)</td>
-            </tr>
-            <tr>
-                <td><code>order_moments</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">265,640</td>
-                <td>Multi-touch attribution touchpoints</td>
-            </tr>
-            <tr>
-                <td><code>raw_meta_ads</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">1,161</td>
-                <td>Daily Meta Ads spend/performance</td>
-            </tr>
-            <tr>
-                <td><code>raw_meta_ad_insights</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">2,970</td>
-                <td>Monthly per-ad Meta insights + creatives</td>
-            </tr>
-            <tr>
-                <td><code>raw_google_ads</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">1,180</td>
-                <td>Daily Google Ads spend/performance</td>
-            </tr>
-            <tr>
-                <td><code>raw_shipments</code></td>
-                <td><span class="tbl-type raw">RAW</span></td>
-                <td class="row-count">107,990</td>
-                <td>ShipStation shipment records</td>
-            </tr>
-            <tr>
-                <td><code>price_list</code></td>
-                <td><span class="tbl-type ref">REF</span></td>
-                <td class="row-count">11,092</td>
-                <td>Monthly SKU retail prices (40 months)</td>
-            </tr>
-            <tr>
-                <td><code>cogs</code></td>
-                <td><span class="tbl-type ref">REF</span></td>
-                <td class="row-count">1,517</td>
-                <td>SKU cost of goods sold</td>
-            </tr>
-            <tr>
-                <td><code>calc_daily_shopify</code></td>
-                <td><span class="tbl-type calc">CALC</span></td>
-                <td class="row-count">1,194</td>
-                <td>Daily aggregated KPIs (the core table)</td>
-            </tr>
-            <tr>
-                <td><code>calc_daily_sku_sales</code></td>
-                <td><span class="tbl-type calc">CALC</span></td>
-                <td class="row-count">139,528</td>
-                <td>Daily per-SKU sales metrics</td>
-            </tr>
-            <tr>
-                <td><code>calc_attribution</code></td>
-                <td><span class="tbl-type calc">CALC</span></td>
-                <td class="row-count">148,312</td>
-                <td>Order-level channel attribution</td>
-            </tr>
-            <tr>
-                <td><code>calc_customer_cohorts</code></td>
-                <td><span class="tbl-type calc">CALC</span></td>
-                <td class="row-count">60,591</td>
-                <td>Customer LTV cohort analysis</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- ================================================================ -->
-<!-- OUTPUTS                                                           -->
-<!-- ================================================================ -->
-<div class="section-header">
-    <div class="section-icon output">O</div>
-    <h2>Outputs</h2>
-</div>
-
-<div class="output-grid">
-    <div class="output-card">
-        <div class="out-icon">M</div>
-        <div class="out-title">MTD Dashboard</div>
-        <div class="out-desc">
-            Month-to-date KPI tracking with YoY comparisons, daily trend charts, discount waterfall, and top performing Meta ads.<br>
-            <a href="mtd.html">View MTD Dashboard</a>
-        </div>
-    </div>
-    <div class="output-card">
-        <div class="out-icon">Y</div>
-        <div class="out-title">YTD Dashboard</div>
-        <div class="out-desc">
-            Year-to-date KPI tracking with monthly breakdowns, cumulative pacing, and year-over-year analysis.<br>
-            <a href="ytd.html">View YTD Dashboard</a>
-        </div>
-    </div>
-    <div class="output-card">
-        <div class="out-icon">A</div>
-        <div class="out-title">Analytics Dashboard</div>
-        <div class="out-desc">
-            Attribution analysis, customer cohorts, SKU performance, and retention metrics.<br>
-            <a href="analytics.html">View Analytics</a>
-        </div>
-    </div>
-    <div class="output-card">
-        <div class="out-icon">C</div>
-        <div class="out-title">Creative Library</div>
-        <div class="out-desc">
-            Meta ad creatives with thumbnails, video playback, performance data, spend tracking, and ROAS metrics.<br>
-            <a href="creatives.html">View Creatives</a>
-        </div>
-    </div>
-    <div class="output-card">
-        <div class="out-icon">X</div>
-        <div class="out-title">Excel Matrices</div>
-        <div class="out-desc">
-            Sales &amp; Revenue Matrix (4 sheets), Product Performance (7 sheets), Advertising &amp; Attribution (3 sheets). Output to OneDrive.
-        </div>
-    </div>
-    <div class="output-card">
-        <div class="out-icon">O</div>
-        <div class="out-title">Ops Dashboard</div>
-        <div class="out-desc">
-            Operational shipping metrics, fulfillment tracking, and carrier performance from ShipStation data.<br>
-            <a href="ops.html">View Ops Dashboard</a>
-        </div>
-    </div>
-</div>
-
-<!-- ================================================================ -->
-<!-- KNOWN ISSUES                                                      -->
-<!-- ================================================================ -->
+<!-- ============================================================ -->
+<!-- KNOWN ISSUES                                                  -->
+<!-- ============================================================ -->
 <div class="section-header">
     <div class="section-icon issues">!</div>
     <h2>Known Issues</h2>
@@ -728,36 +839,55 @@ body {
     <ul class="issue-list">
         <li>
             <span class="issue-tag blocked">BLOCKED</span>
-            <strong>Google Ads API not implemented</strong> &mdash; <code style="font-family:'SF Mono','Fira Code',monospace;color:#94a3b8;font-size:0.9em;">ingest_google.py --api</code> prints a warning and exits. Data comes from manual CSV import only. Last import: 2026-04-01.
+            <strong>Google Ads API not implemented</strong> &mdash; <code style="font-family:monospace;color:#94a3b8;">ingest_google.py --api</code> prints a warning and exits. Data from manual CSV import only. Last import: 2026-04-01.
         </li>
         <li>
             <span class="issue-tag warning">WARNING</span>
-            <strong>Meta API token expires ~every 60 days</strong> &mdash; If Meta data stops updating, the access token needs a manual refresh. Check <code style="font-family:'SF Mono','Fira Code',monospace;color:#94a3b8;font-size:0.9em;">ingest_meta.py</code> logs for auth errors.
+            <strong>Meta API token expires ~every 60 days</strong> &mdash; If Meta data stops updating, the access token needs a manual refresh.
         </li>
         <li>
             <span class="issue-tag warning">WARNING</span>
-            <strong>Excel file locks</strong> &mdash; Matrix builds fail with <code style="font-family:'SF Mono','Fira Code',monospace;color:#94a3b8;font-size:0.9em;">PermissionError</code> if workbooks are open in Excel/OneDrive. Logged as non-critical.
+            <strong>Excel file locks</strong> &mdash; Matrix builds fail with <code style="font-family:monospace;color:#94a3b8;">PermissionError</code> if workbooks are open in Excel/OneDrive. Non-critical.
         </li>
         <li>
             <span class="issue-tag info">INFO</span>
-            <strong>ShipStation rate limit</strong> &mdash; 40 requests per minute. Normal daily runs are fine; large backfills (28+ months) take 15-20 minutes with throttling.
+            <strong>ShipStation rate limit</strong> &mdash; 40 req/min. Large backfills take 15-20 minutes with throttling.
         </li>
         <li>
             <span class="issue-tag info">INFO</span>
-            <strong>Forecast file is hardcoded</strong> &mdash; <code style="font-family:'SF Mono','Fira Code',monospace;color:#94a3b8;font-size:0.9em;">2026 Forecast v3.xlsx</code> is referenced directly. Needs manual update when a new forecast file is created.
-        </li>
-        <li>
-            <span class="issue-tag info">INFO</span>
-            <strong>Windows encoding</strong> &mdash; Console output uses ASCII only. Set <code style="font-family:'SF Mono','Fira Code',monospace;color:#94a3b8;font-size:0.9em;">PYTHONIOENCODING=utf-8</code> if running manually from terminal.
+            <strong>Forecast file hardcoded</strong> &mdash; <code style="font-family:monospace;color:#94a3b8;">2026 Forecast v3.xlsx</code> referenced directly. Update manually when new file is created.
         </li>
     </ul>
 </div>
 
-<!-- ================================================================ -->
-<!-- FOOTER                                                            -->
-<!-- ================================================================ -->
-<div style="text-align:center; color:#475569; font-size:0.78em; margin-top:40px; padding-bottom:20px;">
-    Maintained by DataOps &mdash; Pipeline: <code style="font-family:'SF Mono','Fira Code',monospace;color:#64748b;font-size:0.95em;">C:\Users\JustinAdler\clawd\Automations\analytics\</code>
+<!-- ============================================================ -->
+<!-- SCHEDULER                                                     -->
+<!-- ============================================================ -->
+<div class="card" style="margin-top:14px;">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+            <div style="font-size:0.72em;text-transform:uppercase;letter-spacing:0.5px;color:#D4A843;font-weight:600;margin-bottom:4px;">Task</div>
+            <div style="font-weight:600;color:#e2e8f0;">TeeccinoDataOps-DailyRun</div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+            <div style="font-size:0.72em;text-transform:uppercase;letter-spacing:0.5px;color:#D4A843;font-weight:600;margin-bottom:4px;">Schedule</div>
+            <div style="font-weight:600;color:#e2e8f0;">Daily at 6:00 AM</div>
+            <div style="font-size:0.8em;color:#64748b;">Runs on next boot if missed</div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+            <div style="font-size:0.72em;text-transform:uppercase;letter-spacing:0.5px;color:#D4A843;font-weight:600;margin-bottom:4px;">Entry Point</div>
+            <div style="font-weight:600;color:#e2e8f0;"><code style="font-family:monospace;color:#94a3b8;">run_daily.bat</code> &rarr; <code style="font-family:monospace;color:#94a3b8;">daily_run.py</code></div>
+        </div>
+        <div style="flex:1;min-width:180px;">
+            <div style="font-size:0.72em;text-transform:uppercase;letter-spacing:0.5px;color:#D4A843;font-weight:600;margin-bottom:4px;">On Failure</div>
+            <div style="font-weight:600;color:#e2e8f0;">Discord Webhook</div>
+            <div style="font-size:0.8em;color:#64748b;">via <code style="font-family:monospace;color:#94a3b8;">notify_discord.py</code></div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    Maintained by DataOps &mdash; Pipeline: <code>C:\Users\JustinAdler\clawd\Automations\analytics\</code>
 </div>
 
 </div><!-- /container -->
