@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mission Control — Crowley HQ</title>
+<title>Mission Control — Teeccino Agent Guild</title>
 <style>
   :root {
     --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
     --text: #e2e8f0; --text-dim: #888; --accent: #D4A843;
     --green: #4ade80; --yellow: #fbbf24; --red: #f87171;
-    --orange: #fb923c; --purple: #a78bfa;
+    --orange: #fb923c; --purple: #a78bfa; --blue: #60a5fa;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -17,6 +17,8 @@
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: var(--text); padding: 24px; padding-top: 70px; line-height: 1.5; min-height: 100vh;
   }
+
+  /* ── NAV ── */
   .top-nav {
     position: fixed; top: 0; left: 0; right: 0;
     background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
@@ -26,160 +28,209 @@
   }
   .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
   .top-nav a:hover { color: #D4A843; }
+  .top-nav a.active { color: #D4A843; font-weight: 600; }
   .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
+  /* ── HEADER ── */
   header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
   h1 { font-size: 1.6rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .header-actions { display: flex; gap: 8px; align-items: center; }
   .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
+
   .btn {
     background: var(--card); border: 1px solid var(--border); color: var(--text);
     padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
     transition: border-color 0.2s, background 0.2s;
   }
-  .btn:hover { border-color: var(--accent); background: rgba(88,166,255,0.08); }
-  .btn.active { border-color: var(--accent); background: rgba(88,166,255,0.12); }
-  .btn-refresh { position: relative; }
-  .btn-refresh.spinning::after {
-    content: ''; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinning .refresh-icon { animation: spin 0.6s linear; }
+  .btn:hover { border-color: var(--accent); background: rgba(212,168,67,0.08); }
+  .btn.active { border-color: var(--accent); background: rgba(212,168,67,0.12); }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
-    padding: 16px; cursor: pointer; transition: border-color 0.2s, transform 0.1s;
-  }
-  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .card.expanded { border-color: var(--accent); }
-  .card h3 { font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-  .card .role { color: var(--text-dim); font-size: 0.8rem; }
-  .card .channel { color: var(--accent); font-size: 0.8rem; }
-  .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .status-online { background: var(--green); box-shadow: 0 0 6px rgba(63,185,80,0.4); }
-  .status-busy { background: var(--yellow); box-shadow: 0 0 6px rgba(210,153,34,0.4); }
-  .status-idle { background: var(--text-dim); }
-  .status-error { background: var(--red); box-shadow: 0 0 6px rgba(248,81,73,0.4); }
-  .status-offline { background: var(--border); }
+  /* ── STATS BAR ── */
+  .stats-bar { display: flex; gap: 32px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
-  .work-item {
-    background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent);
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-size: 1.15rem; margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border); color: var(--text);
+  }
+
+  /* ── AGENT CARDS ── */
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .agent-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px; transition: border-color 0.2s, transform 0.1s;
+  }
+  .agent-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .agent-card.working { border-left: 3px solid var(--yellow); }
+  .agent-card.interrupted { border-left: 3px solid var(--red); }
+
+  .agent-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .agent-header h3 { font-size: 1rem; flex: 1; }
+  .agent-role { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 10px; }
+
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .status-idle { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,0.3); }
+  .status-working { background: var(--yellow); box-shadow: 0 0 6px rgba(251,191,36,0.3); animation: pulse 2s ease-in-out infinite; }
+  .status-interrupted { background: var(--red); box-shadow: 0 0 6px rgba(248,113,113,0.3); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .source-badge {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .source-gateway { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .source-interactive { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+  .agent-task {
+    background: rgba(251,191,36,0.08); border-left: 3px solid var(--yellow);
     padding: 8px 12px; margin: 8px 0; border-radius: 0 4px 4px 0; font-size: 0.85rem;
   }
-  .work-item.idle { background: rgba(139,148,158,0.08); border-left-color: var(--border); color: var(--text-dim); font-style: italic; }
-
-  .detail-panel {
-    display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
-    font-size: 0.85rem;
+  .agent-task.idle-task {
+    background: rgba(139,148,158,0.06); border-left-color: var(--border);
+    color: var(--text-dim); font-style: italic;
   }
-  .card.expanded .detail-panel { display: block; }
-  .detail-section { margin-bottom: 10px; }
-  .detail-section h4 { font-size: 0.8rem; color: var(--accent); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .detail-row { display: flex; justify-content: space-between; padding: 2px 0; }
-  .detail-row .label { color: var(--text-dim); }
+  .agent-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
 
-  .section-title { font-size: 1.2rem; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .agent-activity { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .activity-item { font-size: 0.8rem; color: var(--text-dim); padding: 3px 0; }
+  .activity-item .time { font-size: 0.7rem; }
 
+  .pending-badge {
+    background: rgba(251,191,36,0.15); color: var(--yellow);
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  }
+
+  /* ── ALERTS ── */
+  .alerts-section { margin-bottom: 32px; }
+  .alert-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 10px;
+  }
+  .alert-card.urgent { border-left: 3px solid var(--red); }
+  .alert-card.normal { border-left: 3px solid var(--yellow); }
+  .alert-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+  .alert-detail { font-size: 0.8rem; color: var(--text-dim); }
+  .alert-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
+
+  /* ── TWO COLUMN ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── PROJECTS ── */
   .project-row {
     display: flex; align-items: center; gap: 12px; padding: 10px 0;
     border-bottom: 1px solid var(--border); font-size: 0.9rem;
   }
   .project-row:last-child { border-bottom: none; }
   .badge {
-    font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;
-    text-transform: uppercase; white-space: nowrap;
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: 600;
+    text-transform: uppercase; white-space: nowrap; letter-spacing: 0.3px;
   }
-  .badge-active { background: rgba(88,166,255,0.15); color: var(--accent); }
-  .badge-complete { background: rgba(63,185,80,0.15); color: var(--green); }
-  .badge-planning { background: rgba(210,153,34,0.15); color: var(--yellow); }
-  .badge-blocked { background: rgba(248,81,73,0.15); color: var(--red); }
-  .progress-bar { width: 100px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .badge-active { background: rgba(212,168,67,0.15); color: var(--accent); }
+  .badge-complete { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-planning { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-blocked { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-unknown { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+  .progress-bar { width: 80px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--green); border-radius: 3px; transition: width 0.3s; }
   .project-name { flex: 1; }
   .project-owner { color: var(--text-dim); font-size: 0.8rem; min-width: 80px; }
   .project-tasks { color: var(--text-dim); font-size: 0.8rem; min-width: 60px; text-align: right; }
 
-  .human-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .human-item:last-child { border-bottom: none; }
-  .human-item .title { font-size: 0.9rem; }
-  .human-item .detail { color: var(--text-dim); font-size: 0.8rem; margin-top: 2px; }
-  .human-item.done { opacity: 0.4; }
-  .human-item.done .title { text-decoration: line-through; }
+  /* ── DISPATCHES ── */
+  .dispatch-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .dispatch-item:last-child { border-bottom: none; }
+  .dispatch-arrow { color: var(--accent); font-weight: 600; }
+  .dispatch-status { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .ds-complete { background: rgba(74,222,128,0.15); color: var(--green); }
+  .ds-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .ds-in-progress { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .ds-failed { background: rgba(248,113,113,0.15); color: var(--red); }
 
-  .activity-item { font-size: 0.8rem; color: var(--text-dim); padding: 3px 0; }
-  .cron-item { font-size: 0.8rem; padding: 2px 0; }
-  .cron-ok { color: var(--green); }
-  .cron-error { color: var(--red); }
-  .cron-summary { font-size: 0.8rem; color: var(--text-dim); }
+  /* ── INFRA ── */
+  .infra-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .infra-item:last-child { border-bottom: none; }
+  .infra-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .infra-healthy { background: var(--green); }
+  .infra-stale { background: var(--yellow); }
+  .infra-unknown { background: var(--text-dim); }
 
-  .stats-bar { display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
-  .stat { text-align: center; }
-  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
-  .stat .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; }
-
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
-  @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
-
-  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .pulse { animation: pulse-glow 2s ease-in-out infinite; }
-  @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-  .timestamp { color: var(--text-dim); font-size: 0.75rem; }
   .empty-state { color: var(--text-dim); padding: 16px; font-style: italic; }
+  .timestamp { color: var(--text-dim); font-size: 0.75rem; }
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
 
 <nav class="top-nav">
-    <span class="brand">☕ Teeccino</span>
-    <a href="index.html">Home</a>
-    <a href="mtd.html">MTD</a>
-    <a href="ytd.html">YTD</a>
-    <a href="analytics.html">Analytics</a>
-    <a href="creatives.html">Creatives</a>
-    <a href="status.html">Status</a>
-    <a href="database.html">Database</a>
+  <span class="brand">&#9749; Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="creatives.html">Creatives</a>
+  <a href="status.html">Status</a>
+  <a href="database.html">Database</a>
+  <a href="mission-control.html" class="active">Mission Control</a>
 </nav>
 
 <header>
-  <h1>🐍 Mission Control — Crowley HQ</h1>
+  <h1>Mission Control</h1>
   <div class="header-actions">
-    <button class="btn btn-refresh" onclick="refresh()" title="Refresh data">
-      <span class="refresh-icon">🔄</span> Refresh
-    </button>
-    <button class="btn" id="autoToggle" onclick="toggleAuto()" title="Toggle auto-refresh">
-      Auto: <span id="autoLabel">60s</span>
-    </button>
+    <button class="btn" onclick="refresh()">Refresh</button>
+    <button class="btn" id="autoToggle" onclick="toggleAuto()">Auto: <span id="autoLabel">60s</span></button>
   </div>
 </header>
 <div class="subtitle" id="lastUpdated">Loading...</div>
 
 <div class="stats-bar" id="statsBar"></div>
 
-<h2 class="section-title">Agents</h2>
-<div class="grid" id="agentsGrid"></div>
+<!-- Alerts -->
+<div class="alerts-section" id="alertsSection" style="display:none">
+  <h2 class="section-title">Action Required</h2>
+  <div id="alertsList"></div>
+</div>
 
+<!-- Agents -->
+<h2 class="section-title">Agents</h2>
+<div class="agents-grid" id="agentsGrid"></div>
+
+<!-- Two-column: Dispatches + Active Projects -->
 <div class="two-col">
   <div>
-    <h2 class="section-title">⚡ Human Action Items</h2>
-    <div id="humanActions"></div>
+    <h2 class="section-title">Recent Dispatches</h2>
+    <div id="dispatches"></div>
   </div>
   <div>
-    <h2 class="section-title">📋 Active Projects</h2>
+    <h2 class="section-title">Active Projects</h2>
     <div id="activeProjects"></div>
   </div>
 </div>
 
+<!-- All Projects -->
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-  <h2 class="section-title" style="border:none;margin:0;padding:0">📁 All Projects</h2>
+  <h2 class="section-title" style="border:none;margin:0;padding:0">All Projects</h2>
   <div class="filter-bar" id="filterBar"></div>
 </div>
 <div id="allProjects"></div>
+
+<!-- Infrastructure -->
+<h2 class="section-title" style="margin-top:32px">Infrastructure</h2>
+<div id="infrastructure"></div>
 
 <script>
 const DATA_URL = 'mission-control.json';
 let autoInterval = null;
 let autoMs = 60000;
-let expandedAgents = new Set();
 let activeFilter = 'all';
 
 function timeAgo(dateStr) {
@@ -191,7 +242,15 @@ function timeAgo(dateStr) {
   if (mins < 60) return mins + 'm ago';
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return hrs + 'h ago';
-  return Math.floor(hrs / 24) + 'd ago';
+  const days = Math.floor(hrs / 24);
+  return days + 'd ago';
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 async function loadData() {
@@ -200,15 +259,12 @@ async function loadData() {
 }
 
 async function refresh() {
-  const btn = document.querySelector('.btn-refresh');
-  btn.classList.add('spinning');
   try {
     const data = await loadData();
     render(data);
   } catch(e) {
     document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
   }
-  setTimeout(() => btn.classList.remove('spinning'), 600);
 }
 
 function toggleAuto() {
@@ -222,172 +278,197 @@ function toggleAuto() {
   }
 }
 
-function toggleAgent(id) {
-  if (expandedAgents.has(id)) expandedAgents.delete(id);
-  else expandedAgents.add(id);
-  // Re-render just updates classes
-  document.querySelectorAll('.agent-card').forEach(el => {
-    if (el.dataset.agentId === id) el.classList.toggle('expanded');
-  });
-}
-
+// ── Stats ──
 function renderStats(data) {
   const agents = data.agents || [];
   const projects = data.projects || [];
-  const online = agents.filter(a => ['online','busy'].includes(a.status)).length;
+  const working = agents.filter(a => a.status === 'working').length;
   const active = projects.filter(p => p.status === 'active').length;
-  const complete = projects.filter(p => p.status === 'complete').length;
-  const pending = (data.humanActions || []).filter(a => !a.done).length;
+  const alerts = (data.humanActions || []).filter(a => a.status === 'pending').length;
+  const dispatches = (data.recentDispatches || []).length;
 
-  document.getElementById('statsBar').innerHTML = `
-    <div class="stat"><div class="num">${online}/${agents.length}</div><div class="label">Agents Online</div></div>
-    <div class="stat"><div class="num">${active}</div><div class="label">Active Projects</div></div>
-    <div class="stat"><div class="num">${complete}</div><div class="label">Completed</div></div>
-    <div class="stat"><div class="num" style="color:${pending > 0 ? 'var(--yellow)' : 'var(--green)'}">${pending}</div><div class="label">Action Items</div></div>
-  `;
+  document.getElementById('statsBar').innerHTML =
+    '<div class="stat"><div class="num">' + agents.length + '</div><div class="label">Agents</div></div>' +
+    '<div class="stat"><div class="num" style="color:' + (working > 0 ? 'var(--yellow)' : 'var(--green)') + '">' + working + '</div><div class="label">Working</div></div>' +
+    '<div class="stat"><div class="num">' + active + '</div><div class="label">Active Projects</div></div>' +
+    '<div class="stat"><div class="num">' + dispatches + '</div><div class="label">Dispatches (7d)</div></div>' +
+    '<div class="stat"><div class="num" style="color:' + (alerts > 0 ? 'var(--red)' : 'var(--green)') + '">' + alerts + '</div><div class="label">Alerts</div></div>';
 }
 
-function renderAgents(agents) {
-  document.getElementById('agentsGrid').innerHTML = agents.map(a => {
-    const sc = 'status-' + (a.status || 'offline');
-    const work = a.activeWork || [];
-    const expanded = expandedAgents.has(a.id) ? 'expanded' : '';
-    const logs = (a.activityLog || []).slice(0, 5);
-    const crons = a.cronJobs || [];
-    const lastLog = logs[0];
+// ── Alerts ──
+function renderAlerts(data) {
+  const actions = (data.humanActions || []).filter(a => a.status === 'pending');
+  const section = document.getElementById('alertsSection');
+  const list = document.getElementById('alertsList');
 
-    let workHtml = work.length > 0
-      ? work.map(w => `<div class="work-item">🔧 ${esc(w.task)}<div class="timestamp">${timeAgo(w.startedAt)}</div></div>`).join('')
-      : '<div class="work-item idle">Idle</div>';
-
-    let lastHtml = lastLog
-      ? `<div class="activity-item">Last: ${esc(lastLog.task)} <span class="timestamp">(${timeAgo(lastLog.completedAt)})</span></div>`
-      : '';
-
-    let cronSummary = '';
-    if (crons.length > 0) {
-      const ok = crons.filter(c => c.status === 'ok' || c.status === 'fixed').length;
-      const err = crons.length - ok;
-      cronSummary = `<div class="cron-summary">${crons.length} crons: <span class="cron-ok">${ok} ok</span>${err > 0 ? ` <span class="cron-error">${err} err</span>` : ''}</div>`;
-    }
-
-    // Detail panel
-    let cronDetail = crons.length > 0
-      ? crons.map(c => {
-          const cls = (c.status === 'ok' || c.status === 'fixed') ? 'cron-ok' : 'cron-error';
-          return `<div class="cron-item"><span class="${cls}">●</span> ${esc(c.name)} — ${esc(c.schedule)}</div>`;
-        }).join('')
-      : '<div class="activity-item">No crons configured</div>';
-
-    let logDetail = logs.length > 0
-      ? logs.map(l => `<div class="activity-item">${esc(l.task)} <span class="timestamp">${timeAgo(l.completedAt)}</span></div>`).join('')
-      : '<div class="activity-item">No recent activity</div>';
-
-    return `
-      <div class="card agent-card ${expanded}" data-agent-id="${a.id}" onclick="toggleAgent('${a.id}')">
-        <h3><span class="status-dot ${sc}"></span> ${a.emoji || ''} ${esc(a.name)}</h3>
-        <div class="role">${esc(a.role)}</div>
-        <div class="channel">${esc(a.channel)}</div>
-        ${workHtml}
-        ${cronSummary}
-        ${lastHtml}
-        <div class="detail-panel" onclick="event.stopPropagation()">
-          <div class="detail-section">
-            <h4>Agent Info</h4>
-            <div class="detail-row"><span class="label">ID</span><span>${a.id}</span></div>
-            <div class="detail-row"><span class="label">Status</span><span>${a.status}</span></div>
-            <div class="detail-row"><span class="label">Heartbeat</span><span>${a.heartbeat ? a.heartbeat.interval : 'n/a'}</span></div>
-          </div>
-          <div class="detail-section">
-            <h4>Cron Jobs (${crons.length})</h4>
-            ${cronDetail}
-          </div>
-          <div class="detail-section">
-            <h4>Recent Activity</h4>
-            ${logDetail}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderHumanActions(actions) {
-  const el = document.getElementById('humanActions');
-  const items = actions || [];
-  const pending = items.filter(a => !a.done);
-  if (pending.length === 0) {
-    el.innerHTML = '<div class="empty-state">✅ All clear — nothing needs your attention</div>';
+  if (actions.length === 0) {
+    section.style.display = 'none';
     return;
   }
-  el.innerHTML = pending.map(a => {
-    const icon = a.priority === 'urgent' ? '🔴' : '🟡';
-    return `
-      <div class="human-item">
-        <div class="title">${icon} ${esc(a.title)}</div>
-        <div class="detail">${esc(a.detail || '')} — flagged by ${esc(a.flaggedBy)} ${timeAgo(a.created)}</div>
-      </div>`;
+  section.style.display = 'block';
+
+  list.innerHTML = actions.map(function(a) {
+    var cls = a.priority === 'urgent' ? 'urgent' : 'normal';
+    var icon = a.priority === 'urgent' ? '!!' : '!';
+    return '<div class="alert-card ' + cls + '">' +
+      '<div class="alert-title">' + icon + ' ' + esc(a.title) + '</div>' +
+      '<div class="alert-detail">' + esc(a.detail) + '</div>' +
+      '<div class="alert-meta">Flagged by ' + esc(a.flaggedBy) + ' &middot; ' + timeAgo(a.created) + '</div>' +
+    '</div>';
   }).join('');
 }
 
+// ── Agents ──
+function renderAgents(agents) {
+  document.getElementById('agentsGrid').innerHTML = agents.map(function(a) {
+    var dotCls = 'status-' + (a.health === 'interrupted' ? 'interrupted' : a.status);
+    var cardCls = a.status === 'working' ? 'working' : (a.health === 'interrupted' ? 'interrupted' : '');
+
+    var taskHtml;
+    if (a.status === 'working' && a.currentTask) {
+      var sourceCls = a.currentTask.source === 'gateway' ? 'source-gateway' : 'source-interactive';
+      var sourceLabel = a.currentTask.source === 'gateway' ? 'Gateway' : 'Interactive';
+      taskHtml = '<div class="agent-task">' +
+        esc(a.currentTask.summary) +
+        '<div class="agent-meta"><span class="' + sourceCls + ' source-badge">' + sourceLabel + '</span>' +
+        ' &middot; started ' + timeAgo(a.currentTask.startedAt) + '</div></div>';
+    } else if (a.lastActivity) {
+      taskHtml = '<div class="agent-task idle-task">Last: ' + esc(a.lastActivity.summary) +
+        '<div class="agent-meta">' + timeAgo(a.lastActivity.at) + '</div></div>';
+    } else {
+      taskHtml = '<div class="agent-task idle-task">No recent activity</div>';
+    }
+
+    var pendingHtml = '';
+    if (a.pendingTasks > 0) {
+      pendingHtml = '<span class="pending-badge">' + a.pendingTasks + ' pending</span>';
+    }
+
+    var activityHtml = '';
+    if (a.recentActivity && a.recentActivity.length > 0) {
+      var items = a.recentActivity.slice(0, 3).map(function(r) {
+        var sCls = r.source === 'gateway' ? 'source-gateway' : 'source-interactive';
+        var sLabel = r.source === 'gateway' ? 'GW' : 'INT';
+        return '<div class="activity-item"><span class="' + sCls + ' source-badge">' + sLabel + '</span> ' +
+          esc(r.summary).substring(0, 80) + ' <span class="time">' + timeAgo(r.at) + '</span></div>';
+      }).join('');
+      activityHtml = '<div class="agent-activity">' + items + '</div>';
+    }
+
+    return '<div class="agent-card ' + cardCls + '">' +
+      '<div class="agent-header"><span class="status-dot ' + dotCls + '"></span>' +
+      '<h3>' + esc(a.name) + '</h3>' + pendingHtml + '</div>' +
+      '<div class="agent-role">' + esc(a.role) + '</div>' +
+      taskHtml + activityHtml + '</div>';
+  }).join('');
+}
+
+// ── Dispatches ──
+function renderDispatches(dispatches) {
+  var el = document.getElementById('dispatches');
+  if (!dispatches || dispatches.length === 0) {
+    el.innerHTML = '<div class="empty-state">No recent dispatches</div>';
+    return;
+  }
+  el.innerHTML = dispatches.map(function(d) {
+    var clsMap = { complete: 'ds-complete', pending: 'ds-pending', 'in-progress': 'ds-in-progress', failed: 'ds-failed' };
+    var cls = clsMap[d.status] || 'ds-pending';
+    return '<div class="dispatch-item">' +
+      '<span class="dispatch-status ' + cls + '">' + esc(d.status) + '</span>' +
+      '<span class="dispatch-arrow">' + esc(d.from) + '</span>' +
+      '<span style="color:var(--text-dim)">&rarr;</span>' +
+      '<span style="color:var(--accent)">' + esc(d.to) + '</span>' +
+      '<span style="flex:1">' + esc(d.summary) + '</span>' +
+      '<span class="timestamp">' + timeAgo(d.dispatched) + '</span></div>';
+  }).join('');
+}
+
+// ── Projects ──
 function renderProjects(projects) {
-  const active = (projects || []).filter(p => p.status === 'active');
-  const el = document.getElementById('activeProjects');
+  var active = (projects || []).filter(function(p) { return p.status === 'active'; });
+  var el = document.getElementById('activeProjects');
   el.innerHTML = active.length === 0
     ? '<div class="empty-state">No active projects</div>'
-    : active.map(p => projRow(p)).join('');
+    : active.map(projRow).join('');
 
-  // Filters
-  const statuses = [...new Set((projects || []).map(p => p.status))];
-  const filterBar = document.getElementById('filterBar');
-  filterBar.innerHTML = `<button class="btn ${activeFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">All</button>` +
-    statuses.map(s => `<button class="btn ${activeFilter === s ? 'active' : ''}" onclick="setFilter('${s}')">${s}</button>`).join('');
+  var statuses = [];
+  (projects || []).forEach(function(p) {
+    if (statuses.indexOf(p.status) === -1) statuses.push(p.status);
+  });
+  var filterBar = document.getElementById('filterBar');
+  filterBar.innerHTML = '<button class="btn ' + (activeFilter === 'all' ? 'active' : '') + '" onclick="setFilter(\'all\')">All</button>' +
+    statuses.map(function(s) {
+      return '<button class="btn ' + (activeFilter === s ? 'active' : '') + '" onclick="setFilter(\'' + s + '\')">' + s + '</button>';
+    }).join('');
 
-  const filtered = activeFilter === 'all' ? projects : (projects || []).filter(p => p.status === activeFilter);
+  var filtered = activeFilter === 'all' ? projects : (projects || []).filter(function(p) { return p.status === activeFilter; });
   document.getElementById('allProjects').innerHTML = filtered.length === 0
     ? '<div class="empty-state">No projects match filter</div>'
-    : filtered.map(p => {
-        const bc = 'badge-' + (p.status || 'active');
-        const pct = p.milestoneTotal > 0 ? Math.round((p.milestoneDone / p.milestoneTotal) * 100) : 0;
-        const totalTasks = (p.tasksDone || 0) + (p.tasksPending || 0);
-        return `
-          <div class="project-row">
-            <span class="badge ${bc}">${p.status}</span>
-            <span class="project-name">${esc(p.name)}</span>
-            <span class="project-owner">${esc(p.owner)}</span>
-            <span style="color:var(--text-dim);font-size:0.8rem">${esc(p.category || '')}</span>
-            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-            <span class="project-tasks">${totalTasks} tasks</span>
-          </div>`;
+    : filtered.map(function(p) {
+        var bcMap = { active: 'badge-active', complete: 'badge-complete', planning: 'badge-planning', blocked: 'badge-blocked' };
+        var bc = bcMap[p.status] || 'badge-unknown';
+        var total = p.milestoneTotal || 0;
+        var pct = total > 0 ? Math.round((p.milestoneDone / total) * 100) : 0;
+        var totalTasks = (p.tasksDone || 0) + (p.tasksPending || 0);
+        return '<div class="project-row">' +
+          '<span class="badge ' + bc + '">' + esc(p.status) + '</span>' +
+          '<span class="project-name">' + esc(p.name) + '</span>' +
+          '<span class="project-owner">' + esc(p.owner) + '</span>' +
+          '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="project-tasks">' + totalTasks + ' tasks</span></div>';
       }).join('');
 }
 
 function projRow(p) {
-  const pct = p.milestoneTotal > 0 ? Math.round((p.milestoneDone / p.milestoneTotal) * 100) : 0;
-  return `
-    <div class="project-row">
-      <span class="badge badge-active">Active</span>
-      <span class="project-name">${esc(p.name)}</span>
-      <span class="project-owner">${esc(p.owner)}</span>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <span class="project-tasks">${p.tasksPending || 0} pending</span>
-    </div>`;
+  var total = p.milestoneTotal || 0;
+  var pct = total > 0 ? Math.round((p.milestoneDone / total) * 100) : 0;
+  return '<div class="project-row">' +
+    '<span class="badge badge-active">Active</span>' +
+    '<span class="project-name">' + esc(p.name) + '</span>' +
+    '<span class="project-owner">' + esc(p.owner) + '</span>' +
+    '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+    '<span class="project-tasks">' + (p.tasksPending || 0) + ' pending</span></div>';
+}
+
+// ── Infrastructure ──
+function renderInfra(infra) {
+  var el = document.getElementById('infrastructure');
+  if (!infra || !infra.scheduledTasks || infra.scheduledTasks.length === 0) {
+    el.innerHTML = '<div class="empty-state">No scheduled tasks configured</div>';
+    return;
+  }
+  el.innerHTML = infra.scheduledTasks.map(function(t) {
+    var dotCls = t.status === 'healthy' ? 'infra-healthy' : (t.status === 'stale' ? 'infra-stale' : 'infra-unknown');
+    return '<div class="infra-item">' +
+      '<div class="infra-dot ' + dotCls + '"></div>' +
+      '<span style="flex:1">' + esc(t.name) + '</span>' +
+      '<span class="timestamp">' + esc(t.schedule) + '</span>' +
+      '<span class="timestamp">Last: ' + (t.lastRun ? timeAgo(t.lastRun) : 'never') + '</span></div>';
+  }).join('');
 }
 
 function setFilter(f) { activeFilter = f; refresh(); }
-function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+// ── Main Render ──
 function render(data) {
-  document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date(data.lastUpdated).toLocaleString() + ' — refreshed ' + new Date().toLocaleTimeString();
+  var updated = new Date(data.lastUpdated);
+  var gateway = data.system ? data.system.gateway : 'unknown';
+  document.getElementById('lastUpdated').textContent =
+    'Last updated: ' + updated.toLocaleString() +
+    ' \u00B7 Gateway: ' + gateway +
+    ' \u00B7 v' + (data.system ? data.system.version : '?');
+
   renderStats(data);
+  renderAlerts(data);
   renderAgents(data.agents || []);
-  renderHumanActions(data.humanActions);
+  renderDispatches(data.recentDispatches);
   renderProjects(data.projects);
+  renderInfra(data.infrastructure);
 }
 
 async function init() {
   try {
-    const data = await loadData();
+    var data = await loadData();
     render(data);
     autoInterval = setInterval(refresh, autoMs);
   } catch(e) {
