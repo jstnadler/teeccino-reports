@@ -299,7 +299,7 @@
         <p><code>teeccino_analytics.db</code> &mdash; The single source of truth for all Teeccino ecommerce reporting</p>
         <div class="stats">
             <div class="stat">
-                <div class="value">16</div>
+                <div class="value">18</div>
                 <div class="label">Tables</div>
             </div>
             <div class="stat">
@@ -338,8 +338,8 @@
     <div class="pipeline">
         <div class="step"><span class="label">&mdash; Step 1: Ingestion &mdash;</span></div>
         <div class="step"><span class="script">ingest_shopify.py</span> <span class="arrow">&rarr;</span> Shopify GraphQL Admin API <span class="arrow">&rarr;</span> <span class="db">raw_orders</span> + <span class="db">raw_line_items</span> + <span class="db">raw_discount_allocations</span> + <span class="db">order_journey</span> + <span class="db">order_moments</span></div>
-        <div class="step"><span class="script">ingest_meta.py</span> <span class="arrow">&rarr;</span> Meta Marketing API <span class="arrow">&rarr;</span> <span class="db">raw_meta_ads</span> + <span class="db">raw_meta_ad_insights</span></div>
-        <div class="step"><span class="script">ingest_google.py</span> <span class="arrow">&rarr;</span> Google Ads API <span class="arrow">&rarr;</span> <span class="db">raw_google_ads</span></div>
+        <div class="step"><span class="script">ingest_meta.py</span> <span class="arrow">&rarr;</span> Meta Marketing API <span class="arrow">&rarr;</span> <span class="db">raw_meta_ads</span> + <span class="db">raw_meta_ad_insights</span> + <span class="db">raw_meta_ads_campaigns</span></div>
+        <div class="step"><span class="script">ingest_google.py</span> <span class="arrow">&rarr;</span> Google Ads API <span class="arrow">&rarr;</span> <span class="db">raw_google_ads</span> + <span class="db">raw_google_ads_campaigns</span></div>
         <div class="step"><span class="script">ingest_shipstation.py</span> <span class="arrow">&rarr;</span> ShipStation REST API <span class="arrow">&rarr;</span> <span class="db">raw_shipments</span></div>
         <br/>
         <div class="step"><span class="label">&mdash; Step 2: Transform &mdash;</span></div>
@@ -579,6 +579,53 @@
         </div>
     </div>
 
+    <!-- raw_meta_ads_campaigns -->
+    <div class="table-card" id="raw_meta_ads_campaigns">
+        <div class="table-card-header" onclick="this.parentElement.classList.toggle('open')">
+            <div>
+                <span class="table-name">raw_meta_ads_campaigns</span>
+            </div>
+            <div class="table-meta">
+                <span class="badge badge-raw">Raw</span>
+                <span>1,040 rows</span>
+                <span>Apr 2025 &rarr; Apr 2026</span>
+                <span class="expand-icon">&#9654;</span>
+            </div>
+        </div>
+        <div class="table-desc">
+            Daily per-campaign Meta (Facebook/Instagram) advertising performance. One row per campaign per day. Enables campaign-level ROAS analysis, spend allocation, and frequency monitoring.
+            <br/><br/>
+            <strong>Source:</strong> <code>ingest_meta.py --campaigns</code> &rarr; Meta Marketing API, campaign-level insights
+        </div>
+        <div class="table-card-body">
+            <table class="col-table">
+                <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">date <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Date (<code>YYYY-MM-DD</code>)</td></tr>
+                    <tr><td class="col-name">campaign_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Meta campaign ID</td></tr>
+                    <tr><td class="col-name">campaign_name</td><td class="col-type">TEXT</td><td class="col-desc">Campaign name</td></tr>
+                    <tr><td class="col-name">objective</td><td class="col-type">TEXT</td><td class="col-desc">Campaign objective (e.g. <code>OUTCOME_SALES</code>, <code>OUTCOME_AWARENESS</code>)</td></tr>
+                    <tr><td class="col-name">campaign_status</td><td class="col-type">TEXT</td><td class="col-desc">Campaign status (<code>ACTIVE</code>, <code>PAUSED</code>)</td></tr>
+                    <tr><td class="col-name">spend</td><td class="col-type">REAL</td><td class="col-desc">Daily spend on this campaign ($)</td></tr>
+                    <tr><td class="col-name">impressions</td><td class="col-type">INTEGER</td><td class="col-desc">Impressions for this campaign</td></tr>
+                    <tr><td class="col-name">clicks</td><td class="col-type">INTEGER</td><td class="col-desc">Total clicks</td></tr>
+                    <tr><td class="col-name">link_clicks</td><td class="col-type">INTEGER</td><td class="col-desc">Outbound link clicks</td></tr>
+                    <tr><td class="col-name">reach</td><td class="col-type">INTEGER</td><td class="col-desc">Unique users reached</td></tr>
+                    <tr><td class="col-name">frequency</td><td class="col-type">REAL</td><td class="col-desc">Average times each user saw the ad</td></tr>
+                    <tr><td class="col-name">cpm</td><td class="col-type">REAL</td><td class="col-desc">Cost per mille (cost per 1,000 impressions)</td></tr>
+                    <tr><td class="col-name">purchases</td><td class="col-type">INTEGER</td><td class="col-desc">Attributed purchases</td></tr>
+                    <tr><td class="col-name">purchase_value</td><td class="col-type">REAL</td><td class="col-desc">Attributed purchase revenue ($)</td></tr>
+                    <tr><td class="col-name">landing_page_views</td><td class="col-type">INTEGER</td><td class="col-desc">Landing page views from this campaign</td></tr>
+                    <tr><td class="col-name">add_to_carts</td><td class="col-type">INTEGER</td><td class="col-desc">Add-to-cart actions attributed to this campaign</td></tr>
+                    <tr><td class="col-name">fetched_at</td><td class="col-type">TEXT</td><td class="col-desc">When this row was last fetched from the API</td></tr>
+                </tbody>
+            </table>
+            <div class="idx-info">
+                <strong>Indexes:</strong> <code>date + campaign_id</code> (composite PK)
+            </div>
+        </div>
+    </div>
+
     <!-- raw_google_ads -->
     <div class="table-card" id="raw_google_ads">
         <div class="table-card-header" onclick="this.parentElement.classList.toggle('open')">
@@ -612,6 +659,54 @@
             </table>
             <div class="idx-info">
                 <strong>Indexes:</strong> <code>date</code> (unique PK)
+            </div>
+        </div>
+    </div>
+
+    <!-- raw_google_ads_campaigns -->
+    <div class="table-card" id="raw_google_ads_campaigns">
+        <div class="table-card-header" onclick="this.parentElement.classList.toggle('open')">
+            <div>
+                <span class="table-name">raw_google_ads_campaigns</span>
+            </div>
+            <div class="table-meta">
+                <span class="badge badge-raw">Raw</span>
+                <span>3,408 rows</span>
+                <span>Apr 2025 &rarr; Apr 2026</span>
+                <span class="expand-icon">&#9654;</span>
+            </div>
+        </div>
+        <div class="table-desc">
+            Daily per-campaign Google Ads performance. One row per campaign per day. Includes bidding strategy, budget, impression share metrics, and conversion data. Enables campaign-level spend analysis and competitive positioning.
+            <br/><br/>
+            <strong>Source:</strong> <code>ingest_google.py --campaigns</code> &rarr; Google Ads API v18, campaign-level metrics
+        </div>
+        <div class="table-card-body">
+            <table class="col-table">
+                <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td class="col-name">date <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Date (<code>YYYY-MM-DD</code>)</td></tr>
+                    <tr><td class="col-name">campaign_id <span class="pk">PK</span></td><td class="col-type">TEXT</td><td class="col-desc">Google Ads campaign ID</td></tr>
+                    <tr><td class="col-name">campaign_name</td><td class="col-type">TEXT</td><td class="col-desc">Campaign name</td></tr>
+                    <tr><td class="col-name">campaign_type</td><td class="col-type">TEXT</td><td class="col-desc">Campaign type (e.g. <code>SEARCH</code>, <code>PERFORMANCE_MAX</code>, <code>SHOPPING</code>)</td></tr>
+                    <tr><td class="col-name">campaign_status</td><td class="col-type">TEXT</td><td class="col-desc">Campaign status (<code>ENABLED</code>, <code>PAUSED</code>, <code>REMOVED</code>)</td></tr>
+                    <tr><td class="col-name">bidding_strategy</td><td class="col-type">TEXT</td><td class="col-desc">Bidding strategy type (e.g. <code>TARGET_ROAS</code>, <code>MAXIMIZE_CONVERSIONS</code>)</td></tr>
+                    <tr><td class="col-name">daily_budget_micros</td><td class="col-type">INTEGER</td><td class="col-desc">Daily budget in micros (divide by 1,000,000 for dollars)</td></tr>
+                    <tr><td class="col-name">spend_micros</td><td class="col-type">INTEGER</td><td class="col-desc">Actual spend in micros (divide by 1,000,000 for dollars)</td></tr>
+                    <tr><td class="col-name">impressions</td><td class="col-type">INTEGER</td><td class="col-desc">Total impressions</td></tr>
+                    <tr><td class="col-name">clicks</td><td class="col-type">INTEGER</td><td class="col-desc">Total clicks</td></tr>
+                    <tr><td class="col-name">conversions</td><td class="col-type">REAL</td><td class="col-desc">Attributed conversions (fractional &mdash; data-driven attribution)</td></tr>
+                    <tr><td class="col-name">conversion_value</td><td class="col-type">REAL</td><td class="col-desc">Attributed conversion revenue ($)</td></tr>
+                    <tr><td class="col-name">all_conversions</td><td class="col-type">REAL</td><td class="col-desc">All conversions including cross-device and view-through</td></tr>
+                    <tr><td class="col-name">all_conversion_value</td><td class="col-type">REAL</td><td class="col-desc">Revenue from all conversions ($)</td></tr>
+                    <tr><td class="col-name">search_impression_share</td><td class="col-type">REAL</td><td class="col-desc">Share of eligible search impressions received (0.0&ndash;1.0)</td></tr>
+                    <tr><td class="col-name">search_budget_lost_is</td><td class="col-type">REAL</td><td class="col-desc">Impression share lost due to budget (0.0&ndash;1.0)</td></tr>
+                    <tr><td class="col-name">search_rank_lost_is</td><td class="col-type">REAL</td><td class="col-desc">Impression share lost due to ad rank (0.0&ndash;1.0)</td></tr>
+                    <tr><td class="col-name">fetched_at</td><td class="col-type">TEXT</td><td class="col-desc">When this row was last fetched from the API</td></tr>
+                </tbody>
+            </table>
+            <div class="idx-info">
+                <strong>Indexes:</strong> <code>date + campaign_id</code> (composite PK)
             </div>
         </div>
     </div>
