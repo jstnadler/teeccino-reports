@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packaging Rollover — Teeccino</title>
+<style>
+  :root {
+    --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
+    --text: #e2e8f0; --text-dim: #888; --accent: #D4A843;
+    --green: #4ade80; --yellow: #fbbf24; --red: #f87171;
+    --orange: #fb923c; --purple: #a78bfa; --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: var(--text); padding: 24px; padding-top: 70px; line-height: 1.5; min-height: 100vh;
+  }
+
+  /* -- NAV -- */
+  .top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+    z-index: 200; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
+  .top-nav a:hover { color: #D4A843; }
+  .top-nav a.active { color: #D4A843; font-weight: 600; }
+  .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
+  /* -- HEADER -- */
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 1.6rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
+  .btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); background: rgba(212,168,67,0.08); }
+
+  /* -- STATS BAR -- */
+  .stats-bar { display: flex; gap: 28px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat { text-align: center; min-width: 80px; }
+  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* -- SECTION TITLES -- */
+  .section-title {
+    font-size: 1.15rem; margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border); color: var(--text); margin-top: 28px;
+  }
+
+  /* -- PIPELINE VIZ -- */
+  .pipeline { display: flex; align-items: stretch; gap: 0; margin-bottom: 32px; }
+  .pipeline-stage {
+    flex: 1; padding: 18px 16px; text-align: center; position: relative;
+    background: var(--card); border: 1px solid var(--border);
+  }
+  .pipeline-stage:first-child { border-radius: 10px 0 0 10px; }
+  .pipeline-stage:last-child { border-radius: 0 10px 10px 0; }
+  .pipeline-stage .stage-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .pipeline-stage .stage-num { font-size: 1.6rem; font-weight: 700; }
+  .pipeline-stage .stage-detail { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+  .pipeline-stage .stage-agent { font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 6px; font-weight: 600; }
+  .agent-assetsmith { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .agent-shopkeeper { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .agent-designer { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .pipeline-arrow {
+    display: flex; align-items: center; padding: 0 4px; color: var(--accent); font-size: 1.4rem; font-weight: 700;
+  }
+  .pipeline-stage.active { border-color: var(--yellow); background: rgba(251,191,36,0.06); }
+  .pipeline-stage.done { border-color: var(--green); }
+  .pipeline-stage.done .stage-num { color: var(--green); }
+  .pipeline-stage.blocked { border-color: var(--red); }
+  .pipeline-stage.blocked .stage-num { color: var(--red); }
+  .pipeline-stage.waiting .stage-num { color: var(--text-dim); }
+
+  /* -- PROGRESS BAR (big) -- */
+  .big-progress { margin-bottom: 28px; }
+  .big-progress-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+  .big-progress-bar { height: 14px; background: var(--border); border-radius: 7px; overflow: hidden; }
+  .big-progress-fill { height: 100%; border-radius: 7px; transition: width 0.5s ease; }
+  .fill-green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .fill-yellow { background: linear-gradient(90deg, #d97706, #fbbf24); }
+  .fill-blue { background: linear-gradient(90deg, #2563eb, #60a5fa); }
+
+  /* -- BLOCKER CARDS -- */
+  .blocker-card {
+    background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--red);
+    border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 10px;
+  }
+  .blocker-card.resolved { border-left-color: var(--green); opacity: 0.6; }
+  .blocker-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+  .blocker-detail { font-size: 0.8rem; color: var(--text-dim); }
+  .blocker-meta { font-size: 0.72rem; color: var(--text-dim); margin-top: 6px; }
+
+  /* -- COHORT TABLE -- */
+  .cohort-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .cohort-table th {
+    text-align: left; padding: 8px 12px; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-dim); border-bottom: 1px solid var(--border);
+  }
+  .cohort-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .cohort-table tr:last-child td { border-bottom: none; }
+  .status-badge {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+  }
+  .sb-deposited { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .sb-published { background: rgba(74,222,128,0.15); color: var(--green); }
+  .sb-awaiting { background: rgba(248,113,113,0.15); color: var(--red); }
+  .sb-pending { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+
+  /* -- ACTIVITY LOG -- */
+  .activity-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-assetsmith { background: var(--orange); }
+  .dot-shopkeeper { background: var(--blue); }
+  .dot-agentsmith { background: var(--accent); }
+  .timestamp { color: var(--text-dim); font-size: 0.75rem; white-space: nowrap; }
+
+  .empty-state { color: var(--text-dim); padding: 16px; font-style: italic; }
+
+  /* -- TWO COLUMN -- */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) {
+    .pipeline { flex-direction: column; }
+    .pipeline-arrow { justify-content: center; transform: rotate(90deg); padding: 2px 0; }
+    .pipeline-stage:first-child { border-radius: 10px 10px 0 0; }
+    .pipeline-stage:last-child { border-radius: 0 0 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <span class="brand">&#9749; Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="creatives.html">Creatives</a>
+  <a href="status.html">Status</a>
+  <a href="database.html">Database</a>
+  <a href="mission-control.html">Mission Control</a>
+  <a href="rollover.html" class="active">Rollover</a>
+</nav>
+
+<header>
+  <h1>New Packaging Rollover</h1>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn" onclick="refresh()">Refresh</button>
+    <a class="btn" href="mission-control.html" style="text-decoration:none">Mission Control</a>
+  </div>
+</header>
+<div class="subtitle" id="lastUpdated">Loading...</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar" id="statsBar"></div>
+
+<!-- Pipeline Visualization -->
+<h2 class="section-title" style="margin-top:0">Pipeline</h2>
+<div class="pipeline" id="pipeline"></div>
+
+<!-- Progress Bars -->
+<div id="progressBars"></div>
+
+<!-- Blockers -->
+<div id="blockersSection" style="display:none">
+  <h2 class="section-title">Blockers</h2>
+  <div id="blockersList"></div>
+</div>
+
+<!-- Two Column: Cohorts + Activity -->
+<div class="two-col">
+  <div>
+    <h2 class="section-title">Cohorts</h2>
+    <div id="cohortsTable"></div>
+  </div>
+  <div>
+    <h2 class="section-title">Recent Activity</h2>
+    <div id="activityLog"></div>
+  </div>
+</div>
+
+<script>
+const DATA_URL = 'rollover-status.json';
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'never';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const mins = Math.floor((now - d) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  return days + 'd ago';
+}
+
+function esc(s) {
+  if (!s) return '';
+  if (typeof s !== 'string') s = JSON.stringify(s);
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function pct(n, total) {
+  if (!total) return 0;
+  return Math.round((n / total) * 100);
+}
+
+async function loadData() {
+  const resp = await fetch(DATA_URL + '?t=' + Date.now());
+  return resp.json();
+}
+
+async function refresh() {
+  try {
+    const data = await loadData();
+    render(data);
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
+  }
+}
+
+// -- Stats --
+function renderStats(data) {
+  const s = data.summary || {};
+  const p = data.pipeline || {};
+  const dep = p.deposited || {};
+  const pub = p.published || {};
+
+  document.getElementById('statsBar').innerHTML =
+    stat(s.newPackageTotal || 0, 'New Package SKUs') +
+    stat(s.trackerCompletionPct + '%', 'Tracker Slots Done') +
+    stat((p.onDisk || {}).skus || 0, 'SKUs on Disk') +
+    stat(dep.skus || 0, 'Deposited') +
+    stat(pub.skus || 0, 'Published', pub.skus > 0 ? 'var(--green)' : null) +
+    stat(s.newPackageTotal ? (s.newPackageTotal - (pub.skus || 0)) : '?', 'Remaining');
+}
+
+function stat(num, label, color) {
+  var style = color ? ' style="color:' + color + '"' : '';
+  return '<div class="stat"><div class="num"' + style + '>' + num + '</div><div class="label">' + label + '</div></div>';
+}
+
+// -- Pipeline --
+function renderPipeline(data) {
+  const p = data.pipeline || {};
+  const disk = p.onDisk || {};
+  const dep = p.deposited || {};
+  const await_ = p.awaitingApproval || {};
+  const pub = p.published || {};
+  const total = (data.summary || {}).newPackageTotal || 67;
+
+  // Determine which stage is "active"
+  var stages = [
+    {
+      label: 'On Disk', num: disk.skus || 0, detail: (disk.webOptimized || 0) + ' web-optimized',
+      agent: 'Designer', agentCls: 'agent-designer',
+      cls: (disk.skus || 0) > 0 ? 'done' : 'waiting'
+    },
+    {
+      label: 'Deposited', num: dep.skus || 0, detail: (dep.files || 0) + ' files',
+      agent: 'AssetSmith', agentCls: 'agent-assetsmith',
+      cls: (dep.skus || 0) > 0 ? ((await_.skus || 0) > 0 ? 'active' : 'done') : 'waiting'
+    },
+    {
+      label: 'Awaiting Approval', num: await_.skus || 0, detail: (await_.safetyFlags || []).length + ' flags',
+      agent: 'Justin', agentCls: '',
+      cls: (await_.skus || 0) > 0 ? 'blocked' : 'waiting'
+    },
+    {
+      label: 'Published', num: pub.skus || 0, detail: pct(pub.skus || 0, total) + '% of ' + total,
+      agent: 'Shopkeeper', agentCls: 'agent-shopkeeper',
+      cls: (pub.skus || 0) >= total ? 'done' : ((pub.skus || 0) > 0 ? 'active' : 'waiting')
+    }
+  ];
+
+  var html = '';
+  stages.forEach(function(s, i) {
+    if (i > 0) html += '<div class="pipeline-arrow">&rarr;</div>';
+    html += '<div class="pipeline-stage ' + s.cls + '">' +
+      '<div class="stage-label">' + s.label + '</div>' +
+      '<div class="stage-num">' + s.num + '</div>' +
+      '<div class="stage-detail">' + s.detail + '</div>' +
+      (s.agent ? '<span class="stage-agent ' + s.agentCls + '">' + s.agent + '</span>' : '') +
+    '</div>';
+  });
+
+  document.getElementById('pipeline').innerHTML = html;
+}
+
+// -- Progress Bars --
+function renderProgress(data) {
+  const s = data.summary || {};
+  const p = data.pipeline || {};
+  const total = s.newPackageTotal || 67;
+  const dep = (p.deposited || {}).skus || 0;
+  const pub = (p.published || {}).skus || 0;
+
+  var html = '';
+
+  // Tracker completion
+  html += progressBar('Excel Tracker Slots', s.trackerSlotsComplete || 0, s.trackerSlotsTotal || 469, 'fill-yellow');
+  // Deposited
+  html += progressBar('SKUs Deposited to NEW PACKAGE', dep, total, 'fill-blue');
+  // Published
+  html += progressBar('SKUs Published to Shopify', pub, total, 'fill-green');
+
+  document.getElementById('progressBars').innerHTML = html;
+}
+
+function progressBar(label, done, total, fillCls) {
+  var p = pct(done, total);
+  return '<div class="big-progress">' +
+    '<div class="big-progress-label"><span>' + label + '</span><span>' + done + ' / ' + total + ' (' + p + '%)</span></div>' +
+    '<div class="big-progress-bar"><div class="big-progress-fill ' + fillCls + '" style="width:' + p + '%"></div></div>' +
+  '</div>';
+}
+
+// -- Blockers --
+function renderBlockers(data) {
+  const blockers = (data.blockers || []).filter(function(b) { return b.status === 'open'; });
+  const section = document.getElementById('blockersSection');
+
+  if (blockers.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+
+  document.getElementById('blockersList').innerHTML = blockers.map(function(b) {
+    return '<div class="blocker-card">' +
+      '<div class="blocker-title">' + esc(b.summary) + '</div>' +
+      '<div class="blocker-detail">' + esc(b.detail) + '</div>' +
+      '<div class="blocker-meta">Affects ' + (b.affectsSkus || '?') + ' SKUs &middot; Since ' + timeAgo(b.since) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// -- Cohorts --
+function renderCohorts(data) {
+  const cohorts = data.cohorts || [];
+  const el = document.getElementById('cohortsTable');
+
+  if (cohorts.length === 0) {
+    el.innerHTML = '<div class="empty-state">No cohorts processed yet</div>';
+    return;
+  }
+
+  var html = '<table class="cohort-table"><thead><tr>' +
+    '<th>Cohort</th><th>SKUs</th><th>Files</th><th>Status</th><th>Deposited</th><th>Published</th>' +
+    '</tr></thead><tbody>';
+
+  cohorts.forEach(function(c) {
+    var statusCls = 'sb-pending';
+    var statusLabel = c.publishStatus || 'pending';
+    if (statusLabel === 'published') statusCls = 'sb-published';
+    else if (statusLabel === 'deposited') statusCls = 'sb-deposited';
+    else if (statusLabel === 'awaiting-approval') { statusCls = 'sb-awaiting'; statusLabel = 'awaiting approval'; }
+
+    html += '<tr>' +
+      '<td>' + esc(c.id) + '</td>' +
+      '<td>' + (c.skus ? c.skus.length : 0) + '</td>' +
+      '<td>' + (c.fileCount || 0) + '</td>' +
+      '<td><span class="status-badge ' + statusCls + '">' + statusLabel + '</span></td>' +
+      '<td>' + (c.depositedAt ? timeAgo(c.depositedAt) : '--') + '</td>' +
+      '<td>' + (c.publishedAt ? timeAgo(c.publishedAt) : '--') + '</td>' +
+    '</tr>';
+  });
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// -- Activity Log --
+function renderActivity(data) {
+  const activity = data.recentActivity || [];
+  const el = document.getElementById('activityLog');
+
+  if (activity.length === 0) {
+    el.innerHTML = '<div class="empty-state">No recent activity</div>';
+    return;
+  }
+
+  el.innerHTML = activity.map(function(a) {
+    var dotCls = 'dot-' + (a.agent || 'agentsmith');
+    return '<div class="activity-item">' +
+      '<div class="activity-dot ' + dotCls + '"></div>' +
+      '<span style="flex:1">' + esc(a.summary) + '</span>' +
+      '<span class="timestamp">' + timeAgo(a.at) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// -- Main Render --
+function render(data) {
+  var updated = new Date(data.lastUpdated);
+  document.getElementById('lastUpdated').textContent =
+    'Last updated: ' + updated.toLocaleString() + ' | Project: ' + (data.project || 'packaging-rollover');
+
+  renderStats(data);
+  renderPipeline(data);
+  renderProgress(data);
+  renderBlockers(data);
+  renderCohorts(data);
+  renderActivity(data);
+}
+
+async function init() {
+  try {
+    var data = await loadData();
+    render(data);
+    setInterval(refresh, 60000);
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = 'Error loading data: ' + e.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
