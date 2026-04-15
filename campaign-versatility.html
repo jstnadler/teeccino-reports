@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="pageTitle">Project Dashboard — Teeccino</title>
+<title>Versatility Campaign — Teeccino</title>
 <style>
   :root {
     --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
@@ -18,7 +18,6 @@
     color: var(--text); padding: 24px; padding-top: 70px; line-height: 1.5; min-height: 100vh;
   }
 
-  /* -- NAV -- */
   .top-nav {
     position: fixed; top: 0; left: 0; right: 0;
     background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
@@ -28,127 +27,89 @@
   }
   .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
   .top-nav a:hover { color: #D4A843; }
-  .top-nav a.active { color: #D4A843; font-weight: 600; }
   .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
 
-  /* -- HEADER -- */
-  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
-  h1 { font-size: 1.6rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 1.7rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 1.1rem; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-top: 32px; color: var(--text); }
   .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
-  .btn {
-    background: var(--card); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
-    transition: border-color 0.2s, background 0.2s;
-  }
+  .btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; text-decoration: none; display: inline-block; }
   .btn:hover { border-color: var(--accent); background: rgba(212,168,67,0.08); }
 
-  /* -- STATS BAR -- */
-  .stats-bar { display: flex; gap: 28px; margin-bottom: 28px; flex-wrap: wrap; }
-  .stat { text-align: center; min-width: 80px; }
-  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; display: inline-block; }
+  .badge-planning { background: rgba(167,139,250,0.18); color: var(--purple); }
+  .badge-live     { background: rgba(74,222,128,0.18);  color: var(--green); }
+  .badge-complete { background: rgba(96,165,250,0.18);  color: var(--blue); }
+  .badge-locked   { background: rgba(74,222,128,0.18);  color: var(--green); }
+  .badge-open     { background: rgba(251,191,36,0.18);  color: var(--yellow); }
+
+  .stats-bar { display: flex; gap: 32px; margin: 24px 0 28px; flex-wrap: wrap; }
+  .stat { }
+  .stat .num { font-size: 2rem; font-weight: 700; color: var(--accent); }
   .stat .label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
-  /* -- SECTION -- */
-  .section-title {
-    font-size: 1.15rem; margin-bottom: 14px; padding-bottom: 8px;
-    border-bottom: 1px solid var(--border); color: var(--text); margin-top: 28px;
-  }
-  .section-title:first-of-type { margin-top: 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
 
-  /* -- BADGES -- */
-  .badge {
-    font-size: 0.65rem; padding: 2px 10px; border-radius: 12px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.3px; display: inline-block;
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px;
   }
-  .badge-active { background: rgba(212,168,67,0.15); color: var(--accent); }
-  .badge-complete { background: rgba(74,222,128,0.15); color: var(--green); }
-  .badge-planning { background: rgba(167,139,250,0.15); color: var(--purple); }
-  .badge-blocked { background: rgba(248,113,113,0.15); color: var(--red); }
-  .badge-high { background: rgba(248,113,113,0.15); color: var(--red); }
-  .badge-medium { background: rgba(251,191,36,0.15); color: var(--yellow); }
-  .badge-low { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+  .card-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .card-hdr h3 { font-size: 0.95rem; color: var(--accent); font-weight: 600; }
+  .card .kv { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.88rem; }
+  .card .kv .k { color: var(--text-dim); }
+  .card .kv .v { color: var(--text); font-weight: 500; }
+  .card .narrative { font-size: 0.85rem; color: var(--text-dim); font-style: italic; line-height: 1.55; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
 
-  /* -- PROGRESS BAR -- */
-  .big-progress { margin-bottom: 20px; }
-  .big-progress-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
-  .big-progress-bar { height: 14px; background: var(--border); border-radius: 7px; overflow: hidden; }
-  .big-progress-fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg, #22c55e, #4ade80); transition: width 0.5s; }
+  .countdown-card {
+    background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(139,105,20,0.08));
+    border: 1px solid rgba(212,168,67,0.3);
+  }
+  .countdown-num { font-size: 3rem; font-weight: 700; color: var(--accent); line-height: 1; }
+  .countdown-label { font-size: 0.85rem; color: var(--text-dim); margin-top: 4px; }
 
-  /* -- MILESTONE LIST -- */
-  .milestone-list { list-style: none; }
-  .milestone-item {
-    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .milestone-item:last-child { border-bottom: none; }
-  .milestone-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
-  .milestone-check.done { border-color: var(--green); background: rgba(74,222,128,0.15); color: var(--green); }
-  .milestone-check.pending { border-color: var(--border); }
-  .milestone-label.done { color: var(--text-dim); text-decoration: line-through; }
+  .sku-matrix { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .sku-matrix th, .sku-matrix td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .sku-matrix th { background: rgba(212,168,67,0.08); color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.4px; }
+  .sku-matrix td:first-child { text-align: left; font-weight: 600; color: var(--text); }
+  .sku-matrix .sku { font-family: 'SF Mono', Consolas, monospace; font-size: 0.82rem; color: var(--text-dim); }
+  .sku-matrix tbody tr:hover { background: rgba(255,255,255,0.02); }
 
-  /* -- TASK LIST -- */
-  .task-item {
-    display: flex; align-items: center; gap: 12px; padding: 8px 0;
-    border-bottom: 1px solid var(--border); font-size: 0.85rem;
-  }
-  .task-item:last-child { border-bottom: none; }
-  .task-status {
-    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
-    text-transform: uppercase; white-space: nowrap;
-  }
-  .ts-done { background: rgba(74,222,128,0.15); color: var(--green); }
-  .ts-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .progress-bar { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin: 6px 0 14px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #4ade80); transition: width 0.5s; }
 
-  /* -- WORKFLOW -- */
-  .workflow { display: flex; align-items: stretch; gap: 0; margin-bottom: 24px; flex-wrap: wrap; }
-  .workflow-stage {
-    flex: 1; min-width: 150px; padding: 16px 14px; text-align: center;
-    background: var(--card); border: 1px solid var(--border);
+  .milestone-list, .task-list, .question-list { list-style: none; }
+  .milestone-item, .task-item {
+    padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+    display: flex; align-items: center; gap: 12px;
   }
-  .workflow-stage:first-child { border-radius: 10px 0 0 10px; }
-  .workflow-stage:last-child { border-radius: 0 10px 10px 0; }
-  .workflow-stage:only-child { border-radius: 10px; }
-  .workflow-stage .wf-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .workflow-stage .wf-desc { font-size: 0.8rem; color: var(--text); }
-  .workflow-stage .wf-agent {
-    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; display: inline-block;
-    margin-top: 6px; font-weight: 600; background: rgba(96,165,250,0.15); color: var(--blue);
-  }
-  .workflow-arrow { display: flex; align-items: center; padding: 0 4px; color: var(--accent); font-size: 1.4rem; font-weight: 700; }
+  .milestone-item:last-child, .task-item:last-child { border-bottom: none; }
+  .check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+  .check.done { border-color: var(--green); background: rgba(74,222,128,0.15); color: var(--green); }
+  .check.current { border-color: var(--accent); background: rgba(212,168,67,0.15); color: var(--accent); }
+  .label.done { color: var(--text-dim); text-decoration: line-through; }
+  .label.current { color: var(--accent); font-weight: 600; }
+  .ms-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 8px; background: rgba(96,165,250,0.12); color: var(--blue); font-weight: 600; }
 
-  /* -- META -- */
-  .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
-  .meta-item {
-    background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
+  .question-item {
+    padding: 12px 14px; background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2);
+    border-left: 3px solid var(--yellow); border-radius: 0 8px 8px 0; margin-bottom: 10px;
+    font-size: 0.88rem;
   }
-  .meta-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .meta-value { font-size: 0.95rem; }
+  .question-item .blocker { font-size: 0.7rem; color: var(--yellow); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; display: block; }
 
-  /* -- STATE DATA (from optional stateFile) -- */
-  .state-section { margin-top: 28px; }
-  .state-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
-  .state-kv-item { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
-  .state-kv-key { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; }
-  .state-kv-val { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
-
-  /* -- ACTIVITY -- */
-  .activity-item {
-    display: flex; align-items: center; gap: 12px; padding: 8px 0;
-    border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  .assumption {
+    padding: 10px 14px; background: rgba(96,165,250,0.05); border-left: 2px solid var(--blue);
+    margin-bottom: 8px; font-size: 0.85rem; color: var(--text); border-radius: 0 6px 6px 0;
   }
-  .activity-item:last-child { border-bottom: none; }
-  .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-  .timestamp { color: var(--text-dim); font-size: 0.75rem; white-space: nowrap; }
-  .empty-state { color: var(--text-dim); padding: 16px; font-style: italic; }
 
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-  @media (max-width: 600px) {
-    .workflow { flex-direction: column; }
-    .workflow-arrow { justify-content: center; transform: rotate(90deg); padding: 2px 0; }
-    .workflow-stage:first-child { border-radius: 10px 10px 0 0; }
-    .workflow-stage:last-child { border-radius: 0 0 10px 10px; }
-  }
+  .chip { display: inline-block; padding: 3px 10px; margin: 3px; background: rgba(212,168,67,0.08); border: 1px solid rgba(212,168,67,0.25); border-radius: 14px; font-size: 0.8rem; color: var(--accent); }
+  .chip-muted { background: rgba(139,148,158,0.08); border-color: rgba(139,148,158,0.2); color: var(--text-dim); }
+
+  .updated-stamp { color: var(--text-dim); font-size: 0.75rem; }
 </style>
 </head>
 <body>
@@ -159,334 +120,357 @@
   <a href="mtd.html">MTD</a>
   <a href="ytd.html">YTD</a>
   <a href="analytics.html">Analytics</a>
-  <a href="creatives.html">Creatives</a>
-  <a href="status.html">Status</a>
-  <a href="database.html">Database</a>
   <a href="mission-control.html">Mission Control</a>
 </nav>
 
 <header>
-  <h1 id="projectName">Project Dashboard</h1>
-  <div style="display:flex;gap:8px;align-items:center">
-    <button class="btn" onclick="refresh()">Refresh</button>
-    <a class="btn" href="mission-control.html" style="text-decoration:none">Mission Control</a>
-  </div>
+  <h1 id="campaignTitle">Versatility Campaign</h1>
+  <div id="headerMeta" class="subtitle"></div>
 </header>
-<div class="subtitle" id="subtitle">Loading...</div>
+<div id="subtitle" class="subtitle">Loading…</div>
 
-<!-- Stats -->
+<!-- Top stats -->
 <div class="stats-bar" id="statsBar"></div>
 
-<!-- Meta -->
-<div class="meta-grid" id="metaGrid"></div>
-
-<!-- Milestones -->
-<div id="milestoneSection" style="display:none">
-  <h2 class="section-title">Milestones</h2>
-  <div id="milestoneProgress"></div>
-  <ul class="milestone-list" id="milestoneList"></ul>
-</div>
-
-<!-- Workflow -->
-<div id="workflowSection" style="display:none">
-  <h2 class="section-title">Workflow</h2>
-  <div class="workflow" id="workflowViz"></div>
-</div>
-
-<!-- State Data (from optional stateFile) -->
-<div id="stateSection" style="display:none">
-  <h2 class="section-title" id="stateTitle">Live Data</h2>
-  <div id="stateContent"></div>
-</div>
-
-<!-- Tasks + Activity -->
-<div class="two-col">
-  <div id="taskSection" style="display:none">
-    <h2 class="section-title">Tasks</h2>
-    <div id="taskList"></div>
+<!-- Brief grid -->
+<div class="grid-2" style="margin-bottom: 24px;">
+  <div class="card">
+    <div class="card-hdr"><h3>Brief</h3><span id="briefStatus" class="badge"></span></div>
+    <div id="briefKvs"></div>
   </div>
-  <div id="activitySection" style="display:none">
-    <h2 class="section-title">Recent Activity</h2>
-    <div id="activityLog"></div>
+  <div class="card countdown-card">
+    <div class="card-hdr"><h3>Countdown</h3></div>
+    <div style="text-align:center; padding: 12px 0;">
+      <div id="countdownNum" class="countdown-num">--</div>
+      <div id="countdownLabel" class="countdown-label">days</div>
+    </div>
+    <div id="flightInfo" style="text-align:center; font-size:0.85rem; color:var(--text-dim); margin-top: 10px;"></div>
   </div>
+</div>
+
+<!-- Hero × Format Matrix -->
+<h2>Hero × Format SKU Matrix</h2>
+<div class="card" style="padding: 0; overflow: hidden;">
+  <table class="sku-matrix" id="skuMatrix">
+    <thead>
+      <tr>
+        <th>Hero Flavor</th>
+        <th>Full-Grind Coffee</th>
+        <th>Tee-Bags</th>
+        <th>Maya Instant Coffee</th>
+        <th>Maya Instant Latte</th>
+      </tr>
+    </thead>
+    <tbody id="skuMatrixBody"></tbody>
+  </table>
+</div>
+
+<!-- Milestones + Tasks -->
+<div class="grid-2">
+  <div>
+    <h2>Milestones</h2>
+    <div class="progress-bar"><div id="msProgressFill" class="progress-fill" style="width:0%"></div></div>
+    <div id="msProgressLabel" class="updated-stamp" style="margin-bottom: 10px;"></div>
+    <ul class="milestone-list" id="milestoneList"></ul>
+  </div>
+  <div>
+    <h2>Tasks</h2>
+    <div class="progress-bar"><div id="taskProgressFill" class="progress-fill" style="width:0%"></div></div>
+    <div id="taskProgressLabel" class="updated-stamp" style="margin-bottom: 10px;"></div>
+    <ul class="task-list" id="taskList"></ul>
+  </div>
+</div>
+
+<!-- Audience + Budget -->
+<h2>Audience &amp; Budget</h2>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-hdr"><h3>Audience</h3></div>
+    <div id="audienceBody"></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><h3>Budget Allocation</h3></div>
+    <div id="budgetBody"></div>
+  </div>
+</div>
+
+<!-- Open questions -->
+<h2>Open Questions <span id="oqCount" class="badge badge-open"></span></h2>
+<div id="openQuestions" class="question-list"></div>
+
+<!-- Assumptions -->
+<h2>Assumptions (flag for revisiting)</h2>
+<div id="assumptionsList"></div>
+
+<!-- Live metrics (hidden until campaign launches) -->
+<div id="liveMetricsSection" style="display:none">
+  <h2>Live Metrics</h2>
+  <div class="grid-4" id="liveMetrics"></div>
+</div>
+
+<div style="margin-top: 40px; text-align: center;">
+  <span id="updatedStamp" class="updated-stamp"></span>
 </div>
 
 <script>
-// Data file is same name as this page but .json instead of .html
-var pageName = location.pathname.split('/').pop().replace('.html', '');
-var DATA_URL = pageName + '-data.json';
-
-function timeAgo(dateStr) {
-  if (!dateStr) return 'never';
-  var d = new Date(dateStr);
-  var now = new Date();
-  var mins = Math.floor((now - d) / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return mins + 'm ago';
-  var hrs = Math.floor(mins / 60);
-  if (hrs < 24) return hrs + 'h ago';
-  return Math.floor(hrs / 24) + 'd ago';
-}
+var DATA_URL = 'campaign-versatility-state.json';
 
 function esc(s) {
-  if (!s) return '';
-  if (typeof s !== 'string') s = JSON.stringify(s);
+  if (s === null || s === undefined) return '';
+  if (typeof s !== 'string') s = String(s);
   var d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
 }
 
-function pct(n, t) { return t > 0 ? Math.round((n / t) * 100) : 0; }
+function fmtMoney(n) {
+  if (n == null) return '--';
+  return '$' + n.toLocaleString();
+}
+
+function fmtPct(n) {
+  if (n == null) return '--';
+  return (n * 100).toFixed(0) + '%';
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  var target = new Date(dateStr + 'T00:00:00');
+  var now = new Date();
+  var ms = target - now;
+  return Math.ceil(ms / 86400000);
+}
 
 async function loadData() {
   var resp = await fetch(DATA_URL + '?t=' + Date.now());
   return resp.json();
 }
 
-async function refresh() {
-  try { render(await loadData()); }
-  catch(e) { document.getElementById('subtitle').textContent = 'Error: ' + e.message; }
+function render(d) {
+  // Header
+  document.title = (d.campaignName || 'Campaign') + ' — Teeccino';
+  document.getElementById('campaignTitle').textContent = d.campaignName || 'Campaign';
+
+  var stageLabel = (d.stage || 'planning').toUpperCase();
+  var currentMs = d.currentMilestone || '--';
+  document.getElementById('headerMeta').innerHTML =
+    '<span class="badge badge-' + (d.stage || 'planning') + '">' + esc(stageLabel) + '</span>' +
+    ' &middot; Current milestone: <strong>' + esc(currentMs) + '</strong>' +
+    ' &middot; Owner: AdSmith';
+
+  document.getElementById('subtitle').textContent = d.description || '';
+
+  renderStats(d);
+  renderBrief(d);
+  renderCountdown(d);
+  renderSkuMatrix(d);
+  renderMilestones(d);
+  renderTasks(d);
+  renderAudience(d);
+  renderBudget(d);
+  renderOpenQuestions(d);
+  renderAssumptions(d);
+  renderLiveMetrics(d);
+
+  document.getElementById('updatedStamp').textContent = 'Updated ' + new Date(d.updated).toLocaleString();
 }
 
-function render(data) {
-  var proj = data.project || {};
-  var state = data.state || null;
+function renderStats(d) {
+  var ms = d.milestones || [];
+  var msDone = ms.filter(function(m){return m.done;}).length;
+  var tasks = d.tasks || [];
+  var tasksDone = tasks.filter(function(t){return t.status === 'complete';}).length;
 
-  document.getElementById('pageTitle').textContent = (proj.name || 'Project') + ' — Teeccino';
-  document.getElementById('projectName').textContent = proj.name || 'Project Dashboard';
-
-  var parts = [];
-  if (proj.status) parts.push(statusBadge(proj.status));
-  if (proj.priority) parts.push(priorityBadge(proj.priority));
-  parts.push('Owner: ' + esc(proj.owner || 'unassigned'));
-  if (proj.started) parts.push('Started: ' + esc(proj.started));
-  if (data.generatedAt) parts.push('Updated: ' + new Date(data.generatedAt).toLocaleString());
-  document.getElementById('subtitle').innerHTML = parts.join(' &middot; ');
-
-  renderStats(proj, state);
-  renderMeta(proj);
-  renderMilestones(proj);
-  renderWorkflow(proj);
-  renderTasks(proj);
-  renderState(state);
-  renderActivity(state);
-}
-
-function statusBadge(s) {
-  var m = {active:'badge-active',complete:'badge-complete',planning:'badge-planning',blocked:'badge-blocked'};
-  return '<span class="badge ' + (m[s]||'') + '">' + esc(s) + '</span>';
-}
-function priorityBadge(p) {
-  var m = {high:'badge-high',medium:'badge-medium',low:'badge-low'};
-  return '<span class="badge ' + (m[p]||'') + '">' + esc(p) + ' priority</span>';
-}
-
-function renderStats(proj, state) {
-  var ms = proj.milestones || [];
-  var done = ms.filter(function(m){return m.done;}).length;
-  var tasks = proj.tasks || [];
-  var tasksDone = tasks.filter(function(t){return t.status==='done';}).length;
-  var tasksPending = tasks.length - tasksDone;
-  var contribs = (proj.contributors || []).length + 1; // +1 for owner
+  var flavors = (d.brief && d.brief.heroFlavors) || [];
+  var formats = (d.brief && d.brief.formats) || [];
+  var skuCount = flavors.length * formats.length;
 
   var html = '';
-  html += '<div class="stat"><div class="num">' + done + '/' + ms.length + '</div><div class="label">Milestones</div></div>';
-  html += '<div class="stat"><div class="num">' + pct(done, ms.length) + '%</div><div class="label">Complete</div></div>';
-  if (tasks.length > 0) {
-    html += '<div class="stat"><div class="num">' + tasksPending + '</div><div class="label">Tasks Pending</div></div>';
-    html += '<div class="stat"><div class="num">' + tasksDone + '</div><div class="label">Tasks Done</div></div>';
-  }
-  html += '<div class="stat"><div class="num">' + contribs + '</div><div class="label">Contributors</div></div>';
-
-  // Pull extra stats from state summary if available
-  if (state && state.summary) {
-    var summ = state.summary;
-    Object.keys(summ).forEach(function(k) {
-      var v = summ[k];
-      if (typeof v === 'number' || (typeof v === 'string' && v.match(/^\d/))) {
-        var label = k.replace(/([A-Z])/g, ' $1').replace(/[_]/g, ' ').trim();
-        html += '<div class="stat"><div class="num">' + v + '</div><div class="label">' + esc(label) + '</div></div>';
-      }
-    });
+  html += '<div class="stat"><div class="num">' + msDone + '/' + ms.length + '</div><div class="label">Milestones Complete</div></div>';
+  html += '<div class="stat"><div class="num">' + tasksDone + '/' + tasks.length + '</div><div class="label">Tasks Complete</div></div>';
+  html += '<div class="stat"><div class="num">' + flavors.length + '</div><div class="label">Hero Flavors</div></div>';
+  html += '<div class="stat"><div class="num">' + formats.length + '</div><div class="label">Formats</div></div>';
+  html += '<div class="stat"><div class="num">' + skuCount + '</div><div class="label">SKUs in Scope</div></div>';
+  if (d.brief && d.brief.budgetTotal) {
+    html += '<div class="stat"><div class="num">' + fmtMoney(d.brief.budgetTotal) + '</div><div class="label">Total Budget</div></div>';
   }
 
   document.getElementById('statsBar').innerHTML = html;
 }
 
-function renderMeta(proj) {
-  var items = [];
-  if (proj.description) items.push({label: 'Description', value: proj.description});
-  if (proj.category) items.push({label: 'Category', value: proj.category});
-  if (proj.lastActivity) items.push({label: 'Last Activity', value: proj.lastActivity});
-  if (proj.contributors && proj.contributors.length > 0) {
-    items.push({label: 'Contributors', value: proj.contributors.join(', ')});
+function renderBrief(d) {
+  var b = d.brief || {};
+  document.getElementById('briefStatus').innerHTML = b.locked ? '<span class="badge badge-locked">Locked</span>' : '<span class="badge badge-open">Draft</span>';
+
+  var html = '';
+  html += '<div class="kv"><span class="k">Objective</span><span class="v">' + esc(b.objective || '--') + '</span></div>';
+  html += '<div class="kv"><span class="k">Primary KPI</span><span class="v">' + esc(b.primaryKpi || '--') + '</span></div>';
+  html += '<div class="kv"><span class="k">Target</span><span class="v">' + esc(b.kpiTarget || '--') + '</span></div>';
+  html += '<div class="kv"><span class="k">Start Date</span><span class="v">' + esc(b.startDate || '--') + '</span></div>';
+  html += '<div class="kv"><span class="k">End Date</span><span class="v">' + esc(b.endDate || '--') + '</span></div>';
+  html += '<div class="kv"><span class="k">Duration</span><span class="v">' + esc(b.duration || '--') + '</span></div>';
+  if (b.objectiveNarrative) {
+    html += '<div class="narrative">' + esc(b.objectiveNarrative) + '</div>';
+  }
+  document.getElementById('briefKvs').innerHTML = html;
+}
+
+function renderCountdown(d) {
+  var b = d.brief || {};
+  if (!b.startDate) { document.getElementById('countdownNum').textContent = '--'; return; }
+  var days = daysUntil(b.startDate);
+  var numEl = document.getElementById('countdownNum');
+  var lblEl = document.getElementById('countdownLabel');
+
+  if (days > 0) {
+    numEl.textContent = days;
+    lblEl.textContent = days === 1 ? 'day until launch' : 'days until launch';
+  } else if (days === 0) {
+    numEl.textContent = 'LAUNCH';
+    lblEl.textContent = 'Today';
+  } else {
+    var endDays = daysUntil(b.endDate);
+    if (endDays > 0) {
+      numEl.textContent = endDays;
+      lblEl.textContent = endDays === 1 ? 'day remaining in flight' : 'days remaining in flight';
+    } else {
+      numEl.textContent = 'DONE';
+      lblEl.textContent = 'Campaign ended';
+    }
   }
 
-  if (items.length === 0) { document.getElementById('metaGrid').style.display = 'none'; return; }
-
-  document.getElementById('metaGrid').innerHTML = items.map(function(i) {
-    return '<div class="meta-item"><div class="meta-label">' + esc(i.label) + '</div><div class="meta-value">' + esc(i.value) + '</div></div>';
-  }).join('');
+  document.getElementById('flightInfo').innerHTML =
+    'Flight: <strong>' + esc(b.startDate || '--') + '</strong> → <strong>' + esc(b.endDate || '--') + '</strong>';
 }
 
-function renderMilestones(proj) {
-  var ms = proj.milestones || [];
-  if (ms.length === 0) return;
+function renderSkuMatrix(d) {
+  var mat = (d.brief && d.brief.skuMatrix) || [];
+  var html = '';
+  mat.forEach(function(row) {
+    html += '<tr>' +
+      '<td>' + esc(row.hero) + '</td>' +
+      '<td class="sku">' + esc(row.coffee) + '</td>' +
+      '<td class="sku">' + esc(row.tea) + '</td>' +
+      '<td class="sku">' + esc(row.instantCoffee) + '</td>' +
+      '<td class="sku">' + esc(row.instantLatte) + '</td>' +
+    '</tr>';
+  });
+  document.getElementById('skuMatrixBody').innerHTML = html;
+}
 
-  var section = document.getElementById('milestoneSection');
-  section.style.display = 'block';
-
+function renderMilestones(d) {
+  var ms = d.milestones || [];
   var done = ms.filter(function(m){return m.done;}).length;
-  var p = pct(done, ms.length);
-  document.getElementById('milestoneProgress').innerHTML =
-    '<div class="big-progress"><div class="big-progress-label"><span>Progress</span><span>' + done + ' / ' + ms.length + ' (' + p + '%)</span></div>' +
-    '<div class="big-progress-bar"><div class="big-progress-fill" style="width:' + p + '%"></div></div></div>';
+  var pct = ms.length ? Math.round(done / ms.length * 100) : 0;
 
-  document.getElementById('milestoneList').innerHTML = ms.map(function(m) {
-    var cls = m.done ? 'done' : 'pending';
-    var check = m.done ? '&#10003;' : '';
-    return '<li class="milestone-item"><span class="milestone-check ' + cls + '">' + check + '</span><span class="milestone-label ' + cls + '">' + esc(m.label) + '</span></li>';
-  }).join('');
-}
-
-function renderWorkflow(proj) {
-  var wf = proj.workflow;
-  if (!wf || !wf.stages || wf.stages.length === 0) return;
-
-  var section = document.getElementById('workflowSection');
-  section.style.display = 'block';
+  document.getElementById('msProgressFill').style.width = pct + '%';
+  document.getElementById('msProgressLabel').textContent = done + ' of ' + ms.length + ' milestones complete (' + pct + '%)';
 
   var html = '';
-  wf.stages.forEach(function(s, i) {
-    if (i > 0) html += '<div class="workflow-arrow">&rarr;</div>';
-    html += '<div class="workflow-stage">' +
-      '<div class="wf-label">' + esc(s.id.replace(/-/g, ' ')) + '</div>' +
-      '<div class="wf-desc">' + esc(s.description || '') + '</div>' +
-      (s.agent ? '<span class="wf-agent">' + esc(s.agent) + '</span>' : '') +
-    '</div>';
+  ms.forEach(function(m) {
+    var isCurrent = (m.id === d.currentMilestone) && !m.done;
+    var cls = m.done ? 'done' : (isCurrent ? 'current' : 'pending');
+    var check = m.done ? '&#10003;' : (isCurrent ? '&#9679;' : '');
+    html += '<li class="milestone-item">' +
+      '<span class="check ' + cls + '">' + check + '</span>' +
+      '<span class="ms-tag">' + esc(m.id) + '</span>' +
+      '<span class="label ' + cls + '">' + esc(m.label) + '</span>' +
+    '</li>';
   });
-
-  document.getElementById('workflowViz').innerHTML = html;
+  document.getElementById('milestoneList').innerHTML = html;
 }
 
-function renderTasks(proj) {
-  var tasks = proj.tasks || [];
-  if (tasks.length === 0) return;
+function renderTasks(d) {
+  var tasks = d.tasks || [];
+  var done = tasks.filter(function(t){return t.status === 'complete';}).length;
+  var pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
 
-  var section = document.getElementById('taskSection');
-  section.style.display = 'block';
-
-  document.getElementById('taskList').innerHTML = tasks.map(function(t) {
-    var cls = t.status === 'done' ? 'ts-done' : 'ts-pending';
-    var label = typeof t === 'string' ? t : (t.task || t.summary || 'Unnamed task');
-    var status = typeof t === 'string' ? 'pending' : (t.status || 'pending');
-    return '<div class="task-item">' +
-      '<span class="task-status ' + cls + '">' + esc(status) + '</span>' +
-      '<span style="flex:1">' + esc(label) + '</span>' +
-      (t.agent ? '<span class="timestamp">' + esc(t.agent) + '</span>' : '') +
-    '</div>';
-  }).join('');
-}
-
-function renderState(state) {
-  if (!state) return;
-
-  // Render pipeline or any top-level object from state as key-value cards
-  var interesting = ['pipeline', 'assets', 'publishing'];
-  var found = false;
-
-  interesting.forEach(function(key) {
-    if (!state[key]) return;
-    found = true;
-  });
-
-  // Also check for recentActivity, blockers
-  if (state.recentActivity && state.recentActivity.length > 0) found = true;
-  if (state.blockers && state.blockers.length > 0) found = true;
-
-  if (!found && !state.summary) return;
-
-  var section = document.getElementById('stateSection');
-  section.style.display = 'block';
+  document.getElementById('taskProgressFill').style.width = pct + '%';
+  document.getElementById('taskProgressLabel').textContent = done + ' of ' + tasks.length + ' tasks complete (' + pct + '%)';
 
   var html = '';
+  tasks.forEach(function(t) {
+    var cls = t.status === 'complete' ? 'done' : 'pending';
+    var check = t.status === 'complete' ? '&#10003;' : '';
+    html += '<li class="task-item">' +
+      '<span class="check ' + cls + '">' + check + '</span>' +
+      '<span class="ms-tag">' + esc(t.milestone) + '</span>' +
+      '<span class="label ' + cls + '">' + esc(t.label) + '</span>' +
+    '</li>';
+  });
+  document.getElementById('taskList').innerHTML = html;
+}
 
-  // Render each top-level object as a card group
-  interesting.forEach(function(key) {
-    var obj = state[key];
-    if (!obj || typeof obj !== 'object') return;
-
-    html += '<h3 style="font-size:0.9rem;color:var(--accent);margin:16px 0 8px;text-transform:capitalize">' + key.replace(/([A-Z])/g, ' $1') + '</h3>';
-    html += '<div class="state-kv">';
-    flattenForDisplay(obj, '').forEach(function(kv) {
-      html += '<div class="state-kv-item"><div class="state-kv-key">' + esc(kv.key) + '</div><div class="state-kv-val">' + esc(String(kv.value)) + '</div></div>';
+function renderAudience(d) {
+  var a = (d.brief && d.brief.audience) || {};
+  var html = '';
+  html += '<div class="kv"><span class="k">Meta</span><span class="v" style="max-width:70%;text-align:right">' + esc(a.meta || '--') + '</span></div>';
+  html += '<div class="kv"><span class="k">Google</span><span class="v" style="max-width:70%;text-align:right">' + esc(a.google || '--') + '</span></div>';
+  if (a.exclusions && a.exclusions.length) {
+    html += '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">';
+    html += '<div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:6px;">Exclusions:</div>';
+    a.exclusions.forEach(function(x) {
+      html += '<span class="chip chip-muted">' + esc(x) + '</span>';
     });
     html += '</div>';
-  });
-
-  // Blockers
-  if (state.blockers && state.blockers.length > 0) {
-    var open = state.blockers.filter(function(b){return b.status === 'open';});
-    if (open.length > 0) {
-      html += '<h3 style="font-size:0.9rem;color:var(--red);margin:16px 0 8px">Blockers (' + open.length + ')</h3>';
-      open.forEach(function(b) {
-        html += '<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:8px">' +
-          '<div style="font-weight:600;font-size:0.9rem">' + esc(b.summary || b.detail) + '</div>' +
-          (b.detail && b.summary ? '<div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px">' + esc(b.detail) + '</div>' : '') +
-        '</div>';
-      });
-    }
   }
-
-  document.getElementById('stateContent').innerHTML = html || '<div class="empty-state">No live data</div>';
+  document.getElementById('audienceBody').innerHTML = html;
 }
 
-function flattenForDisplay(obj, prefix) {
-  var result = [];
-  Object.keys(obj).forEach(function(k) {
-    var v = obj[k];
-    var key = prefix ? prefix + '.' + k : k;
-    var displayKey = k.replace(/([A-Z])/g, ' $1').replace(/[_]/g, ' ').trim();
-
-    if (v === null || v === undefined) return;
-    if (Array.isArray(v)) {
-      if (v.length > 0 && typeof v[0] === 'string') {
-        result.push({key: displayKey, value: v.join(', ')});
-      } else {
-        result.push({key: displayKey, value: v.length + ' items'});
-      }
-    } else if (typeof v === 'object') {
-      // One level of nesting
-      flattenForDisplay(v, key).forEach(function(sub) {
-        result.push({key: displayKey + ' > ' + sub.key, value: sub.value});
-      });
-    } else {
-      result.push({key: displayKey, value: v});
-    }
-  });
-  return result;
+function renderBudget(d) {
+  var b = d.brief || {};
+  var html = '';
+  html += '<div class="kv"><span class="k">Total Envelope</span><span class="v">' + fmtMoney(b.budgetTotal) + '</span></div>';
+  html += '<div class="kv"><span class="k">Daily Total</span><span class="v">' + fmtMoney(b.budgetDaily) + '</span></div>';
+  html += '<div class="kv"><span class="k">Meta Daily</span><span class="v">' + fmtMoney(b.budgetDailyMeta) + ' (' + fmtPct(b.platformSplit && b.platformSplit.Meta) + ')</span></div>';
+  html += '<div class="kv"><span class="k">Google Daily</span><span class="v">' + fmtMoney(b.budgetDailyGoogle) + ' (' + fmtPct(b.platformSplit && b.platformSplit.Google) + ')</span></div>';
+  if (b.budgetSource) {
+    html += '<div class="narrative"><strong>Source:</strong> ' + esc(b.budgetSource) + '</div>';
+  }
+  document.getElementById('budgetBody').innerHTML = html;
 }
 
-function renderActivity(state) {
-  if (!state || !state.recentActivity || state.recentActivity.length === 0) return;
-
-  var section = document.getElementById('activitySection');
-  section.style.display = 'block';
-
-  document.getElementById('activityLog').innerHTML = state.recentActivity.map(function(a) {
-    return '<div class="activity-item">' +
-      '<div class="activity-dot"></div>' +
-      '<span style="flex:1">' + esc(a.summary || a.action) + '</span>' +
-      '<span class="timestamp">' + timeAgo(a.at) + '</span>' +
+function renderOpenQuestions(d) {
+  var qs = d.openQuestions || [];
+  document.getElementById('oqCount').textContent = qs.length + ' open';
+  var html = '';
+  qs.forEach(function(q) {
+    html += '<div class="question-item">' +
+      esc(q.q) +
+      (q.blocker ? '<span class="blocker">Blocks: ' + esc(q.blocker) + '</span>' : '') +
     '</div>';
-  }).join('');
+  });
+  document.getElementById('openQuestions').innerHTML = html || '<div style="color:var(--text-dim);font-style:italic;padding:8px 0;">None</div>';
+}
+
+function renderAssumptions(d) {
+  var list = d.assumptions || [];
+  var html = '';
+  list.forEach(function(a) {
+    html += '<div class="assumption">' + esc(a) + '</div>';
+  });
+  document.getElementById('assumptionsList').innerHTML = html || '<div style="color:var(--text-dim);font-style:italic;padding:8px 0;">None</div>';
+}
+
+function renderLiveMetrics(d) {
+  var m = d.metrics || {};
+  if (!m.impressions && !m.revenue) return;  // hide until live
+
+  var section = document.getElementById('liveMetricsSection');
+  section.style.display = 'block';
+  var html = '';
+  html += '<div class="card"><div class="card-hdr"><h3>Impressions</h3></div><div class="stat"><div class="num">' + (m.impressions || 0).toLocaleString() + '</div></div></div>';
+  html += '<div class="card"><div class="card-hdr"><h3>Clicks</h3></div><div class="stat"><div class="num">' + (m.clicks || 0).toLocaleString() + '</div></div></div>';
+  html += '<div class="card"><div class="card-hdr"><h3>Revenue</h3></div><div class="stat"><div class="num">' + fmtMoney(m.revenue) + '</div></div></div>';
+  html += '<div class="card"><div class="card-hdr"><h3>ROAS</h3></div><div class="stat"><div class="num">' + (m.roas ? m.roas.toFixed(2) + 'x' : '--') + '</div></div></div>';
+  document.getElementById('liveMetrics').innerHTML = html;
 }
 
 async function init() {
   try {
     render(await loadData());
-    setInterval(refresh, 60000);
-  } catch(e) {
+    setInterval(async function() { try { render(await loadData()); } catch(e){} }, 60000);
+  } catch (e) {
     document.getElementById('subtitle').textContent = 'Error loading data: ' + e.message;
   }
 }
