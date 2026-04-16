@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T12:41:48.504534-07:00",
+  "generatedAt": "2026-04-16T14:13:50.175720-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T19:40:00Z",
+    "lastActivity": "2026-04-16T21:13:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -255,6 +255,22 @@
         "status": "done",
         "completedOn": "2026-04-16",
         "notes": "Root cause: layout/theme.liquid lines 74-76 + 488 load details-disclosure.js / details-modal.js / search-form.js / cart-drawer.js globally. sections/header.liquid lines 203-208 also load the exact same 4 files, causing each class to be re-declared. Fix: removed those 4 `<script>` tags from header.liquid, kept cart-notification.js (unique to header). Also found a second dupe: swiper-bundle.min.js was loaded by both main-pdp-hero.liquid and pdp-cross-sell.liquid — removed from cross-sell since hero always renders first in template order. Post-fix: all 4 'Identifier … has already been declared' errors gone (console errors 5→1, remaining is unrelated 3rd-party 'unable to find element'). Remaining script dupes are 3rd-party (embed.js, dtag.js, loox, pixel.modern, Klaviyo vendor bundles) — those come from apps injecting themselves from multiple hooks, out of scope. Commit c9b422c."
+      },
+      {
+        "id": "t24",
+        "milestone": "M4",
+        "description": "POLISH (2026-04-16): Hide the current-format tab entirely in the hero format switcher (e.g., don't show Coffee tab on a Coffee PDP). Also support a current_format override so test products with non-standard handles can simulate the active format.",
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "snippets/pdp-format-switcher.liquid: switched render gate from `{% if exists %}` to `{% if exists and is_current == false %}` so the active-format tab is fully removed, not dimmed. Dropped the `is-current` class and 'Current' span from the tab button and simplified JS activate() accordingly. Added `current_format_override` param on the snippet + `format_switcher_current_format` select in main-pdp-hero schema so edge-case handles (the PDP Rebuild Test product's handle doesn't compute to any derived sibling handle) can force the current-format lock. Template product.pdp-rebuild.json sets format_switcher_current_format: 'coffee' for the test product — Shopify CLI push dropped it on first attempt, so force-pushed via Asset API PUT directly. Verified: tabCount 4→3 on test PDP (Tea / Instant Coffee / Instant Latte), Tea default-active, mobile 375px still fits cleanly. Commits 8bea41f + 95adda2."
+      },
+      {
+        "id": "t25",
+        "milestone": "M5",
+        "description": "POLISH (2026-04-16): Enlarge product card images in the flavor cross-sell — previous 1:1 square with internal padding read too small; want a pack-forward card with bigger pack photography.",
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "assets/component-pdp-sections.css: .pdp-cross-sell__card-frame padding 1.2rem → 0 with overflow:hidden; .pdp-cross-sell__card-media aspect-ratio 1/1 → 4/5 (portrait, matches bag proportions) with top corners rounded to inherit frame radius; .pdp-cross-sell__card-body gets 1.4rem 1.4rem 1.6rem padding of its own. Net effect: image area is ~40% larger visually and now reaches edge-to-edge for a cleaner storefront-tile feel. Commit 8bea41f."
       }
     ],
     "docs": [
