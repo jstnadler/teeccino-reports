@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T14:13:50.175720-07:00",
+  "generatedAt": "2026-04-16T14:24:36.122974-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T21:13:00Z",
+    "lastActivity": "2026-04-16T21:25:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -271,6 +271,14 @@
         "status": "done",
         "completedOn": "2026-04-16",
         "notes": "assets/component-pdp-sections.css: .pdp-cross-sell__card-frame padding 1.2rem → 0 with overflow:hidden; .pdp-cross-sell__card-media aspect-ratio 1/1 → 4/5 (portrait, matches bag proportions) with top corners rounded to inherit frame radius; .pdp-cross-sell__card-body gets 1.4rem 1.4rem 1.6rem padding of its own. Net effect: image area is ~40% larger visually and now reaches edge-to-edge for a cleaner storefront-tile feel. Commit 8bea41f."
+      },
+      {
+        "id": "t26",
+        "milestone": "M3",
+        "description": "BUG (2026-04-16 QA): Clicking the Subscribe & Save radio flipped the hidden selling_plan input but the visible price, compare-at, and SAVE% pill stayed frozen on one-time values — shopper saw no price feedback for choosing subscribe.",
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "sections/main-pdp-hero.liquid: subscribe_pct now computed against max(compare_at, price) so the SAVE pill works even on non-sale variants; compare-at <s> + save pill <span> are now always rendered (hidden when empty) so JS toggles visibility rather than injecting DOM. Stamped data-price / data-compare-at / data-save-pct (pre-formatted money strings) on both radios so JS does zero currency math. assets/pdp-hero.js: new applyPriceFromRadio() reads the active radio's attrs and writes them into [data-pdp-price]/[data-pdp-compare-at]/[data-pdp-save-pill]. Verified on test PDP (11 oz French Roast): one-time $16.99 / compare $18.49 / SAVE 8%; subscribe $13.25 / compare $18.49 / SAVE 28%; round-trips clean. Commits 2e66095 + 76a49a3."
       }
     ],
     "docs": [
