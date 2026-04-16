@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T11:37:05.880291-07:00",
+  "generatedAt": "2026-04-16T12:02:23.230177-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T18:45:00Z",
+    "lastActivity": "2026-04-16T19:05:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -232,19 +232,25 @@
         "id": "t21",
         "milestone": "M4",
         "description": "POLISH (live QA 2026-04-16): Trust bar color scheme — text (Made with organic herbs / Acid Free / Rich in prebiotics / GMO Free) barely legible on dark background. Switch to lighter scheme or increase contrast.",
-        "status": "pending"
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "Root cause: original bug report was against an earlier darker scheme; by polish time the template already used background-2 (cream #fff1db with #121212 text, 15.33:1 AAA contrast). Real polish opportunity was the empty image_picker slots leaving the bar text-only and sparse. Added 4 inline SVG fallback icons (leaf / droplet / sprout / shield-check) with select-option schema binding, wrapped in circular tinted chip (bg rgba(fg,0.06), color #6b3327 dark-roast brown), sized 4.8rem with 2.8rem glyph. Tightened typography (title 1.55rem, subtitle 1.3rem at 0.82 opacity vs 0.72). Verified at 1440 + 375. Commit cb2c65b."
       },
       {
         "id": "t22",
         "milestone": "M4",
         "description": "POLISH (live QA 2026-04-16): How to Brew lifestyle image slot renders as an empty grey box on live test PDP. Either upload a default image or hide the side-image container when image setting is empty.",
-        "status": "pending"
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "Removed Shopify's `placeholder_svg_tag 'lifestyle-1'` fallback entirely. When section.settings.lifestyle_image is blank, the entire .pdp-brew__visual wrapper is not rendered and the grid gets a .pdp-brew__grid--solo modifier that drops the desktop 2-col layout and constrains copy to max-width 82rem centered. Liquid syntax gotcha caught on deploy: `assign X = Y != blank` is invalid — Liquid assign only accepts filters, not comparisons. Fixed with explicit if/endif flag assignment (commit f99cebb hotfix after cb2c65b). Verified: .pdp-brew__image-placeholder gone from DOM, .pdp-brew__grid--solo applied, copy column renders at 820px centered on desktop. Commits 43159fd + f99cebb."
       },
       {
         "id": "t23",
         "milestone": "M6",
         "description": "BUG (live QA 2026-04-16): Console errors on live test PDP — 'Identifier DetailsDisclosure has already been declared' + same for DetailsModal, SearchForm, CartDrawer. Theme JS appears to be loading twice. Not PDP-specific but surfaced during PDP rebuild testing. Investigate theme.liquid script loading and deduplicate.",
-        "status": "pending"
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "Root cause: layout/theme.liquid lines 74-76 + 488 load details-disclosure.js / details-modal.js / search-form.js / cart-drawer.js globally. sections/header.liquid lines 203-208 also load the exact same 4 files, causing each class to be re-declared. Fix: removed those 4 `<script>` tags from header.liquid, kept cart-notification.js (unique to header). Also found a second dupe: swiper-bundle.min.js was loaded by both main-pdp-hero.liquid and pdp-cross-sell.liquid — removed from cross-sell since hero always renders first in template order. Post-fix: all 4 'Identifier … has already been declared' errors gone (console errors 5→1, remaining is unrelated 3rd-party 'unable to find element'). Remaining script dupes are 3rd-party (embed.js, dtag.js, loox, pixel.modern, Klaviyo vendor bundles) — those come from apps injecting themselves from multiple hooks, out of scope. Commit c9b422c."
       }
     ],
     "docs": [
