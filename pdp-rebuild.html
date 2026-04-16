@@ -98,6 +98,12 @@
   }
   .ts-done { background: rgba(74,222,128,0.15); color: var(--green); }
   .ts-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .task-id {
+    font-family: 'SF Mono', Consolas, 'Courier New', monospace; font-size: 0.72rem;
+    color: var(--accent); background: rgba(212,168,67,0.1); padding: 2px 8px;
+    border-radius: 4px; white-space: nowrap; min-width: 56px; text-align: center;
+    font-weight: 600; letter-spacing: 0.3px;
+  }
 
   /* -- WORKFLOW -- */
   .workflow { display: flex; align-items: stretch; gap: 0; margin-bottom: 24px; flex-wrap: wrap; }
@@ -378,12 +384,22 @@ function renderTasks(proj) {
 
   document.getElementById('taskList').innerHTML = tasks.map(function(t) {
     var cls = t.status === 'done' ? 'ts-done' : 'ts-pending';
-    var label = typeof t === 'string' ? t : (t.task || t.summary || 'Unnamed task');
+    var label = typeof t === 'string' ? t : (t.task || t.summary || t.description || t.label || t.title || 'Unnamed task');
+    var taskId = (t && t.id) ? t.id : '';
+    var milestone = (t && t.milestone) ? t.milestone : '';
     var status = typeof t === 'string' ? 'pending' : (t.status || 'pending');
+    var prefix = '';
+    if (milestone && taskId) prefix = milestone + '/' + taskId;
+    else if (milestone) prefix = milestone;
+    else if (taskId) prefix = taskId;
+    var prefixHtml = prefix ? '<span class="task-id">' + esc(prefix) + '</span>' : '';
+    var completedHtml = (t && (t.completed || t.completedOn)) ? '<span class="timestamp">' + esc(t.completed || t.completedOn) + '</span>' : '';
     return '<div class="task-item">' +
       '<span class="task-status ' + cls + '">' + esc(status) + '</span>' +
+      prefixHtml +
       '<span style="flex:1">' + esc(label) + '</span>' +
       (t.agent ? '<span class="timestamp">' + esc(t.agent) + '</span>' : '') +
+      completedHtml +
     '</div>';
   }).join('');
 }
