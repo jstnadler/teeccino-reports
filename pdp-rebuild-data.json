@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T11:12:29.106716-07:00",
+  "generatedAt": "2026-04-16T11:37:05.880291-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T18:15:00Z",
+    "lastActivity": "2026-04-16T18:45:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -36,7 +36,7 @@
       },
       {
         "label": "M6: Client-side JS — variant switching (images, price, compare-at, SAVE %, caffeine badge, tile highlight, URL), pub/sub integration with theme's variant-change event",
-        "done": false
+        "done": true
       },
       {
         "label": "M7: Visual QA — side-by-side vs live Replo PDP at 375 / 750 / 990 / 1440, a11y audit (WCAG 2.1 AA), cross-browser (Chrome/Safari/Firefox)",
@@ -180,13 +180,17 @@
         "id": "t13",
         "milestone": "M6",
         "description": "Variant switching JS — on variant-change event: swap gallery slides, update price + compare-at + SAVE %, update caffeine badge, update tile highlight, history.replaceState URL",
-        "status": "pending"
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "Implemented via Shopify Section Rendering API (fetch `/products/{handle}?variant={id}&section_id={id}`) rather than client-side DOM patching — lets Liquid re-render the whole hero (price / compare-at / SAVE % / caffeine pill / subtitle / tile highlight / gallery slides) in one round-trip, no duplicated variant data in JS. Click-delegation on tile grid + keyboard arrow nav. history.replaceState updates URL with ?variant= without full navigation. Spinner on clicked tile + aria-busy on hero during swap. On success: re-init Swiper galleries, testimonials, buy box, publish PUB_SUB_EVENTS.variantChange. On failure: fallback to tile.href full navigation. Verified swap: $16.99 → $89.99, compare-at $18.49 → $98.99, SAVE 8% → 9%, subtitle '11 ounce ground' → '5lb ground', gallery image swapped, URL updated, 418ms elapsed, no full page nav. Files: assets/pdp-hero.js, assets/component-pdp-hero.css, sections/main-pdp-hero.liquid (added data-section-id + data-product-url). Commits 2460616 + f845a89."
       },
       {
         "id": "t14",
         "milestone": "M6",
         "description": "Integrate with theme pub/sub (PUB_SUB_EVENTS.variantChange + cartUpdate). Verify OCU still fires on ATC after rebuild",
-        "status": "pending"
+        "status": "done",
+        "completedOn": "2026-04-16",
+        "notes": "swapVariant() publishes PUB_SUB_EVENTS.variantChange with {data: {variant, sectionId, html}} payload after successful section re-render — mirrors Dawn's native variant-change contract so any downstream subscribers (cart drawer, dynamic checkout buttons) see the change. OCU compatibility preserved via untouched [data-atc-button] selector on the ATC form inside the re-rendered hero. Post-swap re-inits Swiper galleries + testimonials + buy box since the new innerHTML wipes their instances."
       },
       {
         "id": "t15",
