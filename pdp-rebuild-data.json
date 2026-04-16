@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T14:34:53.819038-07:00",
+  "generatedAt": "2026-04-16T14:49:39.573195-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T21:32:00Z",
+    "lastActivity": "2026-04-16T21:50:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -287,6 +287,14 @@
         "status": "done",
         "completedOn": "2026-04-16",
         "notes": "Visual: in subscribe state, green pill 'SUBSCRIPTION PRICE' sits above the price row at natural width; OTP price ($16.99) is struck through; subscribe price ($13.25) is the current; SAVE 22% pill replaces SAVE 28%. One-time unchanged (~$18.49~ $16.99 SAVE 8%). Architectural changes: (1) subscribe_pct now computed vs v.price (OTP) not compare_at — gives 22% which matches Teeccino's long-standing 22%-off subscription messaging AND the literal SellingPlan discount. Buy-box option header 'X% OFF Recurring' now reads 22% consistently. (2) Price block restructured into column flex: .pdp-hero__price-block (column) > badge + .pdp-hero__price-row (flex-wrap baseline row). Previous flex-basis:100% trick fought itself against width:fit-content. (3) Explicit [hidden]{display:none} rule — UA default lost specificity vs display:inline-flex on the badge, caused a pre-fix screenshot where badge showed in one-time state. Files: sections/main-pdp-hero.liquid, assets/pdp-hero.js, assets/component-pdp-hero.css. Commits 3942dc7 + be91443."
+      },
+      {
+        "id": "t28",
+        "milestone": "M8",
+        "description": "QA catch: restore product description block under price row in PDP hero (two-paragraph product.description_html render — flavor line + roast/organic tagline)",
+        "status": "done",
+        "completed": "2026-04-16",
+        "notes": "Files: sections/main-pdp-hero.liquid, assets/component-pdp-hero.css. Source: product.description_html (already 2 <p> tags for all 99 products — no metafield authoring needed). Position: between .pdp-hero__price-block and testimonial. Styling: 16px body / lh 1.7 / var(--color-foreground) / tight stack. Commits 8bef4e5 + fa64789 on dev. Verified on test French Roast."
       }
     ],
     "docs": [
