@@ -129,6 +129,64 @@
 
   .empty-state { color: var(--text-dim); padding: 16px; font-style: italic; }
 
+  /* -- PRODUCT GRID -- */
+  .grid-controls {
+    display: flex; gap: 14px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;
+    font-size: 0.8rem;
+  }
+  .grid-controls label { color: var(--text-dim); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .grid-controls input[type=checkbox] { accent-color: var(--accent); }
+  .grid-controls input[type=text] {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; min-width: 160px;
+  }
+  .grid-legend {
+    display: inline-flex; gap: 16px; align-items: center; font-size: 0.72rem; color: var(--text-dim);
+    background: var(--card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px;
+  }
+  .grid-legend .key { display: inline-flex; gap: 6px; align-items: center; }
+
+  .grid-wrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    overflow: auto; max-height: 620px; position: relative;
+  }
+  .product-grid { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .product-grid thead th {
+    position: sticky; top: 0; background: #1e1e36; z-index: 2;
+    padding: 8px 6px; font-size: 0.68rem; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--text-dim); border-bottom: 1px solid var(--border);
+    text-align: center; white-space: nowrap;
+  }
+  .product-grid thead th.sku-col,
+  .product-grid thead th.name-col { text-align: left; background: #1e1e36; }
+  .product-grid thead th.sku-col { position: sticky; left: 0; z-index: 3; }
+  .product-grid thead th.name-col { position: sticky; left: 70px; z-index: 3; }
+
+  .product-grid tbody td { padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  .product-grid tbody tr:hover { background: rgba(212,168,67,0.04); }
+  .product-grid tbody tr.row-legacy { opacity: 0.45; }
+  .product-grid tbody tr.row-ready  { background: rgba(251,191,36,0.05); }
+  .product-grid tbody tr.row-done   td.status-cell { color: var(--green); }
+
+  .product-grid td.sku-col, .product-grid td.name-col { position: sticky; background: #1a1a2e; }
+  .product-grid td.sku-col  { left: 0;  font-family: monospace; font-size: 0.75rem; color: var(--text-dim); min-width: 70px; }
+  .product-grid td.name-col { left: 70px; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+  .product-grid td.slot-cell { text-align: center; padding: 4px; }
+  .product-grid td.status-cell { text-align: center; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-dim); white-space: nowrap; }
+
+  .dot-pair { display: inline-flex; gap: 3px; align-items: center; justify-content: center; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  }
+  .dot.delivered { background: var(--yellow); border-color: var(--yellow); }
+  .dot.live      { background: var(--green);  border-color: var(--green); }
+  .dot.stale     { background: var(--purple); border-color: var(--purple); }
+  .dot-pair[title] { cursor: help; }
+
+  .badge-npkg { font-size: 0.6rem; padding: 1px 5px; border-radius: 3px; background: rgba(212,168,67,0.2); color: var(--accent); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .badge-legacy { font-size: 0.6rem; padding: 1px 5px; border-radius: 3px; background: rgba(139,148,158,0.15); color: var(--text-dim); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+
   /* -- TWO COLUMN -- */
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
@@ -190,6 +248,26 @@
     <h2 class="section-title">Recent Activity</h2>
     <div id="activityLog"></div>
   </div>
+</div>
+
+<!-- Product Status Grid -->
+<h2 class="section-title">Product Status Grid
+  <span style="font-size:0.7rem;font-weight:400;color:var(--text-dim);margin-left:8px" id="gridSummary"></span>
+</h2>
+<div class="grid-controls">
+  <label><input type="checkbox" id="ctlOnlyNew" checked> Only new-package SKUs</label>
+  <label><input type="checkbox" id="ctlOnlyShopify"> Only Shopify products</label>
+  <label><input type="checkbox" id="ctlReadyOnly"> Ready to publish (delivered but not live)</label>
+  <input type="text" id="ctlSearch" placeholder="Search SKU or name...">
+  <span class="grid-legend">
+    <span class="key"><span class="dot delivered"></span>delivered</span>
+    <span class="key"><span class="dot live"></span>live on Shopify</span>
+    <span class="key"><span class="dot"></span>missing</span>
+    <span class="key"><span class="dot stale"></span>live but not in manifest</span>
+  </span>
+</div>
+<div class="grid-wrap" id="productGridWrap">
+  <div class="empty-state">Loading product grid...</div>
 </div>
 
 <script>
@@ -406,6 +484,123 @@ function renderActivity(data) {
   }).join('');
 }
 
+// -- Product Status Grid --
+var LAST_DATA = null;
+
+function rowStatus(row) {
+  var slots = (LAST_DATA && LAST_DATA.productGrid && LAST_DATA.productGrid.slots) || [];
+  // Only consider the 6 core slots (skip instructions/lifestyle which many products don't have)
+  var core = ['hero', 'new_look', 'nutrition', 'benefits', 'reviews', 'flavor'];
+  var delCount = 0, liveCount = 0;
+  core.forEach(function(s) {
+    if (row.delivered && row.delivered[s]) delCount++;
+    if (row.live && row.live[s]) liveCount++;
+  });
+  if (!row.new_package) return 'legacy';
+  if (liveCount >= core.length) return 'done';
+  if (delCount >= core.length && liveCount === 0) return 'ready';
+  if (delCount > 0 && liveCount > 0 && liveCount < core.length) return 'partial';
+  if (delCount > 0) return 'delivered';
+  return 'pending';
+}
+
+function renderGrid(data) {
+  LAST_DATA = data;
+  var grid = data.productGrid;
+  var wrap = document.getElementById('productGridWrap');
+  if (!grid || !grid.rows || grid.rows.length === 0) {
+    wrap.innerHTML = '<div class="empty-state">No product grid data yet. Run <code>python Automations/collect_live_rollover_status.py</code> to populate.</div>';
+    return;
+  }
+
+  var slots = grid.slots;
+  var labels = grid.slotLabels || {};
+  var onlyNew = document.getElementById('ctlOnlyNew').checked;
+  var onlyShopify = document.getElementById('ctlOnlyShopify').checked;
+  var readyOnly = document.getElementById('ctlReadyOnly').checked;
+  var search = (document.getElementById('ctlSearch').value || '').toLowerCase().trim();
+
+  var filtered = grid.rows.filter(function(r) {
+    if (onlyNew && !r.new_package) return false;
+    if (onlyShopify && !r.has_shopify_product) return false;
+    if (readyOnly && rowStatus(r) !== 'ready') return false;
+    if (search) {
+      var hay = (r.sku + ' ' + r.name).toLowerCase();
+      if (hay.indexOf(search) === -1) return false;
+    }
+    return true;
+  });
+
+  // Sort: ready > partial > delivered > pending > done > legacy
+  var order = { ready: 0, partial: 1, delivered: 2, pending: 3, done: 4, legacy: 5 };
+  filtered.sort(function(a, b) {
+    var sa = rowStatus(a), sb = rowStatus(b);
+    if (order[sa] !== order[sb]) return order[sa] - order[sb];
+    return a.sku.localeCompare(b.sku);
+  });
+
+  // Summary line
+  var counts = { ready: 0, partial: 0, done: 0, delivered: 0, pending: 0, legacy: 0 };
+  grid.rows.forEach(function(r) { counts[rowStatus(r)]++; });
+  document.getElementById('gridSummary').textContent =
+    counts.done + ' done · ' + counts.ready + ' ready-to-publish · ' + counts.partial + ' partial · ' +
+    counts.delivered + ' delivered · ' + counts.pending + ' pending · ' + counts.legacy + ' legacy · showing ' + filtered.length + '/' + grid.rows.length;
+
+  var html = '<table class="product-grid"><thead><tr>' +
+    '<th class="sku-col">SKU</th>' +
+    '<th class="name-col">Product</th>';
+  slots.forEach(function(s) {
+    html += '<th>' + esc(labels[s] || s) + '</th>';
+  });
+  html += '<th>Status</th>' +
+    '</tr></thead><tbody>';
+
+  filtered.forEach(function(r) {
+    var status = rowStatus(r);
+    var rowCls = 'row-' + status;
+    var badges = '';
+    if (!r.new_package) badges += '<span class="badge-legacy">legacy</span>';
+    if (r.new_package && !r.has_shopify_product) badges += '<span class="badge-legacy">no shopify</span>';
+
+    html += '<tr class="' + rowCls + '">' +
+      '<td class="sku-col">' + esc(r.sku) + '</td>' +
+      '<td class="name-col" title="' + esc(r.name) + '">' + esc(r.name) + badges + '</td>';
+
+    slots.forEach(function(s) {
+      var d = r.delivered && r.delivered[s];
+      var l = r.live && r.live[s];
+      var delCls = d ? 'dot delivered' : 'dot';
+      var liveCls = l ? 'dot live' : 'dot';
+      // Stale case: live but not delivered (live on Shopify but manifest says not DONE)
+      if (l && !d) liveCls = 'dot stale';
+      var title = (labels[s] || s) + ': ' + (d ? 'delivered' : 'not delivered') + ' / ' + (l ? 'live' : 'not live');
+      html += '<td class="slot-cell">' +
+        '<span class="dot-pair" title="' + esc(title) + '">' +
+          '<span class="' + delCls + '"></span>' +
+          '<span class="' + liveCls + '"></span>' +
+        '</span></td>';
+    });
+
+    var statusLabel = status.toUpperCase();
+    html += '<td class="status-cell">' + statusLabel + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function attachGridControls() {
+  ['ctlOnlyNew', 'ctlOnlyShopify', 'ctlReadyOnly'].forEach(function(id) {
+    document.getElementById(id).addEventListener('change', function() {
+      if (LAST_DATA) renderGrid(LAST_DATA);
+    });
+  });
+  document.getElementById('ctlSearch').addEventListener('input', function() {
+    if (LAST_DATA) renderGrid(LAST_DATA);
+  });
+}
+
 // -- Main Render --
 function render(data) {
   var updated = new Date(data.lastUpdated);
@@ -418,10 +613,12 @@ function render(data) {
   renderBlockers(data);
   renderCohorts(data);
   renderActivity(data);
+  renderGrid(data);
 }
 
 async function init() {
   try {
+    attachGridControls();
     var data = await loadData();
     render(data);
     setInterval(refresh, 60000);
