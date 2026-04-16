@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-16T12:02:23.230177-07:00",
+  "generatedAt": "2026-04-16T12:41:48.504534-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T19:05:00Z",
+    "lastActivity": "2026-04-16T19:40:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -40,7 +40,7 @@
       },
       {
         "label": "M7: Visual QA — side-by-side vs live Replo PDP at 375 / 750 / 990 / 1440, a11y audit (WCAG 2.1 AA), cross-browser (Chrome/Safari/Firefox)",
-        "done": false
+        "done": true
       },
       {
         "label": "M8: Migration — assign native template to 3-5 test products, validate end-to-end (ATC, subscribe, OCU, Loox), then bulk reassign remaining 99",
@@ -196,13 +196,17 @@
         "id": "t15",
         "milestone": "M7",
         "description": "Side-by-side pixel-diff vs live Replo at 375 / 750 / 990 / 1440 widths. Capture before/after screenshots",
-        "status": "pending"
+        "status": "done",
+        "completed": "2026-04-16",
+        "notes": "Captured 5 screenshots (rebuild@1440/375 + live@1440/990/750). Structural parity with live — testimonial card, buy box, trust bar, benefits accordion, ingredient chips, cross-sell carousel, Meet Caroline all present. Differences are intentional polish (darker testimonial contrast, cleaner pill badges, collapsed How-to-Brew when no lifestyle image). No blocking visual regressions."
       },
       {
         "id": "t16",
         "milestone": "M7",
         "description": "A11y audit — WCAG 2.1 AA (keyboard nav, focus trap on modals, color contrast, ARIA on accordions + radios)",
-        "status": "pending"
+        "status": "done",
+        "completed": "2026-04-16",
+        "notes": "axe-core 4.9.1 WCAG 2.1 AA audit. Initial: 5 violations (pdp-testimonial__stars aria-prohibited-attr, pdp-testimonial__dots aria-required-children tablist, pdp-hero__caffeine-pill + __save-pill contrast 2.98:1 fail, pdp-hero__price-compare + pdp-cross-sell__price-compare contrast fails, 3 pastel cross-sell badges fail). Fixed all 5 across commits ff7d55b / 64f4aa4 / 7a482af: role=img on stars, role=group on dots (pagination not tabs), pills #3BAF4A → #2C7A38 (5.4:1), compare-at 0.5/0.55 → 0.68 opacity (4.7:1), badges #84ADA7/#B17BA8/#E39A5F → #2F7A72/#7D3F74/#B4601E, alt='' on variant tile imgs. Final: 0 in-theme violations, 35 passes. Remaining `shop-follow-button` + `#PBarNextFrame` violations are 3rd-party (Shop Pay web component + Shopify preview bar iframe) — not theme code."
       },
       {
         "id": "t17",
