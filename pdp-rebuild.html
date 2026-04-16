@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Project Dashboard — Teeccino</title>
+<style>
+  :root {
+    --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
+    --text: #e2e8f0; --text-dim: #888; --accent: #D4A843;
+    --green: #4ade80; --yellow: #fbbf24; --red: #f87171;
+    --orange: #fb923c; --purple: #a78bfa; --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: var(--text); padding: 24px; padding-top: 70px; line-height: 1.5; min-height: 100vh;
+  }
+
+  /* -- NAV -- */
+  .top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+    z-index: 200; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
+  .top-nav a:hover { color: #D4A843; }
+  .top-nav a.active { color: #D4A843; font-weight: 600; }
+  .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
+  /* -- HEADER -- */
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 1.6rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
+  .btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); background: rgba(212,168,67,0.08); }
+
+  /* -- STATS BAR -- */
+  .stats-bar { display: flex; gap: 28px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat { text-align: center; min-width: 80px; }
+  .stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat .label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* -- SECTION -- */
+  .section-title {
+    font-size: 1.15rem; margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border); color: var(--text); margin-top: 28px;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+
+  /* -- BADGES -- */
+  .badge {
+    font-size: 0.65rem; padding: 2px 10px; border-radius: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px; display: inline-block;
+  }
+  .badge-active { background: rgba(212,168,67,0.15); color: var(--accent); }
+  .badge-complete { background: rgba(74,222,128,0.15); color: var(--green); }
+  .badge-planning { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-blocked { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-high { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-medium { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .badge-low { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+
+  /* -- PROGRESS BAR -- */
+  .big-progress { margin-bottom: 20px; }
+  .big-progress-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px; }
+  .big-progress-bar { height: 14px; background: var(--border); border-radius: 7px; overflow: hidden; }
+  .big-progress-fill { height: 100%; border-radius: 7px; background: linear-gradient(90deg, #22c55e, #4ade80); transition: width 0.5s; }
+
+  /* -- MILESTONE LIST -- */
+  .milestone-list { list-style: none; }
+  .milestone-item {
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .milestone-item:last-child { border-bottom: none; }
+  .milestone-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+  .milestone-check.done { border-color: var(--green); background: rgba(74,222,128,0.15); color: var(--green); }
+  .milestone-check.pending { border-color: var(--border); }
+  .milestone-label.done { color: var(--text-dim); text-decoration: line-through; }
+
+  /* -- TASK LIST -- */
+  .task-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-status {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .ts-done { background: rgba(74,222,128,0.15); color: var(--green); }
+  .ts-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+
+  /* -- WORKFLOW -- */
+  .workflow { display: flex; align-items: stretch; gap: 0; margin-bottom: 24px; flex-wrap: wrap; }
+  .workflow-stage {
+    flex: 1; min-width: 150px; padding: 16px 14px; text-align: center;
+    background: var(--card); border: 1px solid var(--border);
+  }
+  .workflow-stage:first-child { border-radius: 10px 0 0 10px; }
+  .workflow-stage:last-child { border-radius: 0 10px 10px 0; }
+  .workflow-stage:only-child { border-radius: 10px; }
+  .workflow-stage .wf-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .workflow-stage .wf-desc { font-size: 0.8rem; color: var(--text); }
+  .workflow-stage .wf-agent {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; display: inline-block;
+    margin-top: 6px; font-weight: 600; background: rgba(96,165,250,0.15); color: var(--blue);
+  }
+  .workflow-arrow { display: flex; align-items: center; padding: 0 4px; color: var(--accent); font-size: 1.4rem; font-weight: 700; }
+
+  /* -- META -- */
+  .meta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .meta-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
+  }
+  .meta-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .meta-value { font-size: 0.95rem; }
+
+  /* -- STATE DATA (from optional stateFile) -- */
+  .state-section { margin-top: 28px; }
+  .state-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .state-kv-item { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+  .state-kv-key { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; }
+  .state-kv-val { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+
+  /* -- ACTIVITY -- */
+  .activity-item {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .timestamp { color: var(--text-dim); font-size: 0.75rem; white-space: nowrap; }
+  .empty-state { color: var(--text-dim); padding: 16px; font-style: italic; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) {
+    .workflow { flex-direction: column; }
+    .workflow-arrow { justify-content: center; transform: rotate(90deg); padding: 2px 0; }
+    .workflow-stage:first-child { border-radius: 10px 10px 0 0; }
+    .workflow-stage:last-child { border-radius: 0 0 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <span class="brand">&#9749; Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="creatives.html">Creatives</a>
+  <a href="status.html">Status</a>
+  <a href="database.html">Database</a>
+  <a href="mission-control.html">Mission Control</a>
+</nav>
+
+<header>
+  <h1 id="projectName">Project Dashboard</h1>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn" onclick="refresh()">Refresh</button>
+    <a class="btn" href="mission-control.html" style="text-decoration:none">Mission Control</a>
+  </div>
+</header>
+<div class="subtitle" id="subtitle">Loading...</div>
+
+<!-- Stats -->
+<div class="stats-bar" id="statsBar"></div>
+
+<!-- Meta -->
+<div class="meta-grid" id="metaGrid"></div>
+
+<!-- Milestones -->
+<div id="milestoneSection" style="display:none">
+  <h2 class="section-title">Milestones</h2>
+  <div id="milestoneProgress"></div>
+  <ul class="milestone-list" id="milestoneList"></ul>
+</div>
+
+<!-- Workflow -->
+<div id="workflowSection" style="display:none">
+  <h2 class="section-title">Workflow</h2>
+  <div class="workflow" id="workflowViz"></div>
+</div>
+
+<!-- State Data (from optional stateFile) -->
+<div id="stateSection" style="display:none">
+  <h2 class="section-title" id="stateTitle">Live Data</h2>
+  <div id="stateContent"></div>
+</div>
+
+<!-- Tasks + Activity -->
+<div class="two-col">
+  <div id="taskSection" style="display:none">
+    <h2 class="section-title">Tasks</h2>
+    <div id="taskList"></div>
+  </div>
+  <div id="activitySection" style="display:none">
+    <h2 class="section-title">Recent Activity</h2>
+    <div id="activityLog"></div>
+  </div>
+</div>
+
+<script>
+// Data file is same name as this page but .json instead of .html
+var pageName = location.pathname.split('/').pop().replace('.html', '');
+var DATA_URL = pageName + '-data.json';
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'never';
+  var d = new Date(dateStr);
+  var now = new Date();
+  var mins = Math.floor((now - d) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+function esc(s) {
+  if (!s) return '';
+  if (typeof s !== 'string') s = JSON.stringify(s);
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function pct(n, t) { return t > 0 ? Math.round((n / t) * 100) : 0; }
+
+async function loadData() {
+  var resp = await fetch(DATA_URL + '?t=' + Date.now());
+  return resp.json();
+}
+
+async function refresh() {
+  try { render(await loadData()); }
+  catch(e) { document.getElementById('subtitle').textContent = 'Error: ' + e.message; }
+}
+
+function render(data) {
+  var proj = data.project || {};
+  var state = data.state || null;
+
+  document.getElementById('pageTitle').textContent = (proj.name || 'Project') + ' — Teeccino';
+  document.getElementById('projectName').textContent = proj.name || 'Project Dashboard';
+
+  var parts = [];
+  if (proj.status) parts.push(statusBadge(proj.status));
+  if (proj.priority) parts.push(priorityBadge(proj.priority));
+  parts.push('Owner: ' + esc(proj.owner || 'unassigned'));
+  if (proj.started) parts.push('Started: ' + esc(proj.started));
+  if (data.generatedAt) parts.push('Updated: ' + new Date(data.generatedAt).toLocaleString());
+  document.getElementById('subtitle').innerHTML = parts.join(' &middot; ');
+
+  renderStats(proj, state);
+  renderMeta(proj);
+  renderMilestones(proj);
+  renderWorkflow(proj);
+  renderTasks(proj);
+  renderState(state);
+  renderActivity(state);
+}
+
+function statusBadge(s) {
+  var m = {active:'badge-active',complete:'badge-complete',planning:'badge-planning',blocked:'badge-blocked'};
+  return '<span class="badge ' + (m[s]||'') + '">' + esc(s) + '</span>';
+}
+function priorityBadge(p) {
+  var m = {high:'badge-high',medium:'badge-medium',low:'badge-low'};
+  return '<span class="badge ' + (m[p]||'') + '">' + esc(p) + ' priority</span>';
+}
+
+function renderStats(proj, state) {
+  var ms = proj.milestones || [];
+  var done = ms.filter(function(m){return m.done;}).length;
+  var tasks = proj.tasks || [];
+  var tasksDone = tasks.filter(function(t){return t.status==='done';}).length;
+  var tasksPending = tasks.length - tasksDone;
+  var contribs = (proj.contributors || []).length + 1; // +1 for owner
+
+  var html = '';
+  html += '<div class="stat"><div class="num">' + done + '/' + ms.length + '</div><div class="label">Milestones</div></div>';
+  html += '<div class="stat"><div class="num">' + pct(done, ms.length) + '%</div><div class="label">Complete</div></div>';
+  if (tasks.length > 0) {
+    html += '<div class="stat"><div class="num">' + tasksPending + '</div><div class="label">Tasks Pending</div></div>';
+    html += '<div class="stat"><div class="num">' + tasksDone + '</div><div class="label">Tasks Done</div></div>';
+  }
+  html += '<div class="stat"><div class="num">' + contribs + '</div><div class="label">Contributors</div></div>';
+
+  // Pull extra stats from state summary if available
+  if (state && state.summary) {
+    var summ = state.summary;
+    Object.keys(summ).forEach(function(k) {
+      var v = summ[k];
+      if (typeof v === 'number' || (typeof v === 'string' && v.match(/^\d/))) {
+        var label = k.replace(/([A-Z])/g, ' $1').replace(/[_]/g, ' ').trim();
+        html += '<div class="stat"><div class="num">' + v + '</div><div class="label">' + esc(label) + '</div></div>';
+      }
+    });
+  }
+
+  document.getElementById('statsBar').innerHTML = html;
+}
+
+function renderMeta(proj) {
+  var items = [];
+  if (proj.description) items.push({label: 'Description', value: proj.description});
+  if (proj.category) items.push({label: 'Category', value: proj.category});
+  if (proj.lastActivity) items.push({label: 'Last Activity', value: proj.lastActivity});
+  if (proj.contributors && proj.contributors.length > 0) {
+    items.push({label: 'Contributors', value: proj.contributors.join(', ')});
+  }
+
+  if (items.length === 0) { document.getElementById('metaGrid').style.display = 'none'; return; }
+
+  document.getElementById('metaGrid').innerHTML = items.map(function(i) {
+    return '<div class="meta-item"><div class="meta-label">' + esc(i.label) + '</div><div class="meta-value">' + esc(i.value) + '</div></div>';
+  }).join('');
+}
+
+function renderMilestones(proj) {
+  var ms = proj.milestones || [];
+  if (ms.length === 0) return;
+
+  var section = document.getElementById('milestoneSection');
+  section.style.display = 'block';
+
+  var done = ms.filter(function(m){return m.done;}).length;
+  var p = pct(done, ms.length);
+  document.getElementById('milestoneProgress').innerHTML =
+    '<div class="big-progress"><div class="big-progress-label"><span>Progress</span><span>' + done + ' / ' + ms.length + ' (' + p + '%)</span></div>' +
+    '<div class="big-progress-bar"><div class="big-progress-fill" style="width:' + p + '%"></div></div></div>';
+
+  document.getElementById('milestoneList').innerHTML = ms.map(function(m) {
+    var cls = m.done ? 'done' : 'pending';
+    var check = m.done ? '&#10003;' : '';
+    return '<li class="milestone-item"><span class="milestone-check ' + cls + '">' + check + '</span><span class="milestone-label ' + cls + '">' + esc(m.label) + '</span></li>';
+  }).join('');
+}
+
+function renderWorkflow(proj) {
+  var wf = proj.workflow;
+  if (!wf || !wf.stages || wf.stages.length === 0) return;
+
+  var section = document.getElementById('workflowSection');
+  section.style.display = 'block';
+
+  var html = '';
+  wf.stages.forEach(function(s, i) {
+    if (i > 0) html += '<div class="workflow-arrow">&rarr;</div>';
+    html += '<div class="workflow-stage">' +
+      '<div class="wf-label">' + esc(s.id.replace(/-/g, ' ')) + '</div>' +
+      '<div class="wf-desc">' + esc(s.description || '') + '</div>' +
+      (s.agent ? '<span class="wf-agent">' + esc(s.agent) + '</span>' : '') +
+    '</div>';
+  });
+
+  document.getElementById('workflowViz').innerHTML = html;
+}
+
+function renderTasks(proj) {
+  var tasks = proj.tasks || [];
+  if (tasks.length === 0) return;
+
+  var section = document.getElementById('taskSection');
+  section.style.display = 'block';
+
+  document.getElementById('taskList').innerHTML = tasks.map(function(t) {
+    var cls = t.status === 'done' ? 'ts-done' : 'ts-pending';
+    var label = typeof t === 'string' ? t : (t.task || t.summary || 'Unnamed task');
+    var status = typeof t === 'string' ? 'pending' : (t.status || 'pending');
+    return '<div class="task-item">' +
+      '<span class="task-status ' + cls + '">' + esc(status) + '</span>' +
+      '<span style="flex:1">' + esc(label) + '</span>' +
+      (t.agent ? '<span class="timestamp">' + esc(t.agent) + '</span>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function renderState(state) {
+  if (!state) return;
+
+  // Render pipeline or any top-level object from state as key-value cards
+  var interesting = ['pipeline', 'assets', 'publishing'];
+  var found = false;
+
+  interesting.forEach(function(key) {
+    if (!state[key]) return;
+    found = true;
+  });
+
+  // Also check for recentActivity, blockers
+  if (state.recentActivity && state.recentActivity.length > 0) found = true;
+  if (state.blockers && state.blockers.length > 0) found = true;
+
+  if (!found && !state.summary) return;
+
+  var section = document.getElementById('stateSection');
+  section.style.display = 'block';
+
+  var html = '';
+
+  // Render each top-level object as a card group
+  interesting.forEach(function(key) {
+    var obj = state[key];
+    if (!obj || typeof obj !== 'object') return;
+
+    html += '<h3 style="font-size:0.9rem;color:var(--accent);margin:16px 0 8px;text-transform:capitalize">' + key.replace(/([A-Z])/g, ' $1') + '</h3>';
+    html += '<div class="state-kv">';
+    flattenForDisplay(obj, '').forEach(function(kv) {
+      html += '<div class="state-kv-item"><div class="state-kv-key">' + esc(kv.key) + '</div><div class="state-kv-val">' + esc(String(kv.value)) + '</div></div>';
+    });
+    html += '</div>';
+  });
+
+  // Blockers
+  if (state.blockers && state.blockers.length > 0) {
+    var open = state.blockers.filter(function(b){return b.status === 'open';});
+    if (open.length > 0) {
+      html += '<h3 style="font-size:0.9rem;color:var(--red);margin:16px 0 8px">Blockers (' + open.length + ')</h3>';
+      open.forEach(function(b) {
+        html += '<div style="background:var(--card);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:8px">' +
+          '<div style="font-weight:600;font-size:0.9rem">' + esc(b.summary || b.detail) + '</div>' +
+          (b.detail && b.summary ? '<div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px">' + esc(b.detail) + '</div>' : '') +
+        '</div>';
+      });
+    }
+  }
+
+  document.getElementById('stateContent').innerHTML = html || '<div class="empty-state">No live data</div>';
+}
+
+function flattenForDisplay(obj, prefix) {
+  var result = [];
+  Object.keys(obj).forEach(function(k) {
+    var v = obj[k];
+    var key = prefix ? prefix + '.' + k : k;
+    var displayKey = k.replace(/([A-Z])/g, ' $1').replace(/[_]/g, ' ').trim();
+
+    if (v === null || v === undefined) return;
+    if (Array.isArray(v)) {
+      if (v.length > 0 && typeof v[0] === 'string') {
+        result.push({key: displayKey, value: v.join(', ')});
+      } else {
+        result.push({key: displayKey, value: v.length + ' items'});
+      }
+    } else if (typeof v === 'object') {
+      // One level of nesting
+      flattenForDisplay(v, key).forEach(function(sub) {
+        result.push({key: displayKey + ' > ' + sub.key, value: sub.value});
+      });
+    } else {
+      result.push({key: displayKey, value: v});
+    }
+  });
+  return result;
+}
+
+function renderActivity(state) {
+  if (!state || !state.recentActivity || state.recentActivity.length === 0) return;
+
+  var section = document.getElementById('activitySection');
+  section.style.display = 'block';
+
+  document.getElementById('activityLog').innerHTML = state.recentActivity.map(function(a) {
+    return '<div class="activity-item">' +
+      '<div class="activity-dot"></div>' +
+      '<span style="flex:1">' + esc(a.summary || a.action) + '</span>' +
+      '<span class="timestamp">' + timeAgo(a.at) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+async function init() {
+  try {
+    render(await loadData());
+    setInterval(refresh, 60000);
+  } catch(e) {
+    document.getElementById('subtitle').textContent = 'Error loading data: ' + e.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

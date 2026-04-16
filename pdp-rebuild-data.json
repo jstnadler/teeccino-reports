@@ -1,0 +1,239 @@
+{
+  "generatedAt": "2026-04-16T10:50:08.260389-07:00",
+  "project": {
+    "id": "pdp-rebuild",
+    "name": "PDP Rebuild (Replo → Native Liquid)",
+    "status": "active",
+    "priority": "high",
+    "owner": "themesmith",
+    "contributors": [
+      "Justin"
+    ],
+    "category": "Storefront",
+    "started": "2026-04-14",
+    "lastActivity": "2026-04-16T00:42:00Z",
+    "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
+    "milestones": [
+      {
+        "label": "M1: Spec & project plan complete (live-page spec v2 authored 2026-04-15)",
+        "done": true
+      },
+      {
+        "label": "M2: Hero — image gallery (Swiper, variant_image_1-6), product info card (title, price, caffeine badge, description, testimonial, nutrition link), variant tile grid",
+        "done": true
+      },
+      {
+        "label": "M3: Buy box — Subscribe & Save / One-Time toggle (One-Time default), selling_plan hidden input, ADD TO CART button, OCU hook preserved",
+        "done": true
+      },
+      {
+        "label": "M4: Supporting sections — FAQ accordion (3 items), 'Discover the Benefits' accordion (5 items), trust bar (4 icons), 'Bold Flavors' ingredient chips, 'How to brew' 2-col accordion (hard-coded, product-type switched — metaobject deemed unnecessary after Shopkeeper audit), Nutrition+Ingredients modal, Meet Caroline, Loox embed anchor",
+        "done": true
+      },
+      {
+        "label": "M5: Cross-sell carousel — sister-product slider (handle-suffix matching, renders N cards for every existing sibling format; e.g. French Roast = Coffee+Tea+Instant Coffee+Instant Latte)",
+        "done": false
+      },
+      {
+        "label": "M6: Client-side JS — variant switching (images, price, compare-at, SAVE %, caffeine badge, tile highlight, URL), pub/sub integration with theme's variant-change event",
+        "done": false
+      },
+      {
+        "label": "M7: Visual QA — side-by-side vs live Replo PDP at 375 / 750 / 990 / 1440, a11y audit (WCAG 2.1 AA), cross-browser (Chrome/Safari/Firefox)",
+        "done": false
+      },
+      {
+        "label": "M8: Migration — assign native template to 3-5 test products, validate end-to-end (ATC, subscribe, OCU, Loox), then bulk reassign remaining 99",
+        "done": false
+      },
+      {
+        "label": "M9: Secondary templates — rebuild 0e592c64 (samplers, 9 products), e8db7446 (gift boxes, 4 products), 2b04f633 (seasonal, 2 products)",
+        "done": false
+      },
+      {
+        "label": "M10: Retire Replo runtime on PDPs — remove Replo template files, unsubscribe from Replo CDN script for product pages",
+        "done": false
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "milestone": "M2",
+        "description": "Build variant image gallery section (Swiper v11 main + thumbnail strip, mobile swipe + desktop arrows, 1:1 ratio, 5-6 slides from custom.variant_image_1-6, 'New Look / Same Great Taste' corner ribbon on slide 1 when variant.custom.new_packaging == true with gradient #B17BA8→#7998AE→#84ADA7→#7998AE)",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "Files: sections/main-pdp-hero.liquid, snippets/pdp-hero-ribbon.liquid, assets/component-pdp-hero.css, assets/pdp-hero.js, templates/product.pdp-rebuild.json. Test product: gid://shopify/Product/9478059000056 ('[PDP Rebuild Test] French Roast'). Commit 32b7e62 on dev branch. Verified 6 slides + 6 thumbs + ribbon on slide 1 at 1440/990/375."
+      },
+      {
+        "id": "t2",
+        "milestone": "M2",
+        "description": "Product info card — title, Loox inline stars + review count, subtitle (type | size), caffeine pill badge (green, from custom.caffeine_mg), price + compare-at + SAVE % tag",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "Added to sections/main-pdp-hero.liquid: Loox inline stars anchor, h1 title, subtitle (type | variant title) + green caffeine pill, price block with compare-at strikethrough + SAVE % math (save_amount * 100 / compare_at). Styles in component-pdp-hero.css. Verified at 1440/990/375 on French Roast test product."
+      },
+      {
+        "id": "t3",
+        "milestone": "M2",
+        "description": "Testimonial rotating card — new 'testimonial' metaobject (image, customer_name, quote, star_rating) + product-level list-reference metafield. Section rotates through N testimonials with prev/next chevrons",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "Cream-bg card with 6rem avatar, gold #F5B000 stars, prev/next chevron nav (prev top / next bottom) + dots. initTestimonials() in pdp-hero.js: .is-active class toggling, 7s auto-advance, hover/focus pause. Verified next-button advanced JACQUELINE O. → PRIYA S. Metaobject + metafield definitions created in t1 prep."
+      },
+      {
+        "id": "t4",
+        "milestone": "M2",
+        "description": "Variant tile grid — up to 4 tiles, variant image + label, active state (cream fill + checkmark), sold-out state (55% opacity), full-navigation links",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "Grid: auto-fit minmax(12rem, 1fr) on mobile, repeat(4, 1fr) at 750px+. Each tile = <a> to variant URL, image from variant.metafields.custom.variant_image_1 (fallback to featured_media), label=variant.title. .is-selected gets cream fill + green circular checkmark badge; .is-sold-out gets 55% opacity + pointer-events:none. Client-side swap in M6."
+      },
+      {
+        "id": "t5",
+        "milestone": "M3",
+        "description": "Subscribe & Save / One-Time radio group. One-Time default selected. Subscribe card shows '22% OFF Recurring' + 4 benefit bullets + chevron expand",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "Subscribe row renders only when variant.selling_plan_allocations is non-empty (graceful fallback otherwise). Discount % computed as (compare_at - subscribe_price) / compare_at — matches live page math. Chevron expand/collapse with aria-expanded + hidden attribute on benefits list; stopPropagation prevents chevron click from flipping the radio. Created throwaway SellingPlanGroup/2247327992 (SellingPlan 5908758776 @ 22% off) for QA; left in place for future M3/M6 testing — delete when project closes."
+      },
+      {
+        "id": "t6",
+        "milestone": "M3",
+        "description": "Add-to-cart form — standard Shopify <form action='/cart/add'> with hidden id, quantity=1, selling_plan. Wire selling_plan assignment to sub-radio. Preserve OCU compatibility",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "Standard Shopify <form action='/cart/add'> with hidden id, quantity=1, selling_plan. Radios dispatch change events that swap selling_plan input between '' (one-time) and plan.id (subscribe). Button carries [data-atc-button] for OCU compatibility. Disabled + 'SOLD OUT' label when !variant.available. Verified via page.evaluate: selling_plan input flips '' → 5908758776 on subscribe-radio change."
+      },
+      {
+        "id": "t7",
+        "milestone": "M4",
+        "description": "FAQ accordion section — 3 schema-driven collapsibles with chevron rotation, ARIA (aria-expanded/controls, role=button)",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "sections/pdp-faq.liquid + assets/component-pdp-sections.css. Uses native <details>/<summary> for free a11y (keyboard, screen reader). Chevron rotates 180deg via [open] selector. 3 default blocks preset with live-page questions. Wired into templates/product.pdp-rebuild.json as 'faq' section."
+      },
+      {
+        "id": "t8",
+        "milestone": "M4",
+        "description": "'Discover the Benefits' section — 5-block accordion (No Jitters / Acid Free / Antioxidants / Natural Energy Boost / Happy Gut), colored icons, side hero image",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "sections/pdp-benefits.liquid. 5 blocks (No Jitters 😌 / Acid Free 💧 / Antioxidants 🧪 / Natural Energy Boost ⚡ / Happy Gut 🌿) with per-block color picker for icon bg. Icon accepts image_picker OR emoji fallback. Optional side_image on desktop. <details>-based accordion. Brand palette colors (#F5B000, #7998AE, #84ADA7, #E39A5F, #B17BA8) preset."
+      },
+      {
+        "id": "t9",
+        "milestone": "M4",
+        "description": "Trust bar — 4-icon row (Organic Herbs / Acid Free / Prebiotics / GMO Free), schema-driven so blocks are editable",
+        "status": "done",
+        "completed": "2026-04-15",
+        "notes": "sections/pdp-trust-bar.liquid. 4 blocks: Organic Herbs / Acid Free / Prebiotics / GMO Free (per live spec). image_picker per block, title + subtitle text fields. Responsive: 1-col mobile → 2-col tablet (750px) → 4-col desktop (990px). Color scheme settable (default background-2 = beige band)."
+      },
+      {
+        "id": "t9b",
+        "milestone": "M4",
+        "description": "'Bold Flavors' ingredient chips section — pill-row of key ingredients (e.g. Carob / Barley / Chicory / Dates). Data source: catalog existing metafield or introduce new one (e.g. custom.bold_flavors as list.single_line_text_field)",
+        "status": "done",
+        "completedOn": "2026-04-15",
+        "notes": "sections/pdp-bold-flavors.liquid. Data source: existing product metafields (no new schema needed) — custom.ingredient_header_1..8 for labels, custom.ingredient_image_1..8 for images, custom.flavornotes2 for subheading. Live PDP caps at 4 chips despite 5-8 slots populated; section defaults max_chips=4 with schema range 1-8. Dynamic bracket access silently fails in Liquid — unrolled 1..8 with case/when. Empty state flagged in theme editor preview only. Commit 4e5c54d."
+      },
+      {
+        "id": "t9c",
+        "milestone": "M4",
+        "description": "'How to brew' section — 2-col split (accordion + lifestyle image). After Shopkeeper audit, simplified to hard-coded product-type switched content (no metaobject needed — live Replo PDP uses identical 3 content variants across 101 products; metaobject would add data-entry cost for zero personalization benefit).",
+        "status": "done",
+        "completedOn": "2026-04-15",
+        "notes": "sections/pdp-how-to-brew.liquid + snippets/pdp-brew-method.liquid. Switches on product.type: 'Herbal Coffee'/'Herbal Tea' → 4-method accordion (French Press, Drip, Pour-over, Tea Bags, inline SVG icons); 'Instant Coffee' → 3-step Sip Instantly w/ 1½ tsp; 'Instant Latte' → 3-step Sip Instantly w/ 2 tbsp; else section not rendered. Uses native <details>/<summary> (zero JS), same a11y pattern as pdp-faq. Copy extracted verbatim from live Replo. Shopkeeper audit confirmed no per-product brewing metafield exists. Verified on all 4 product-type paths (flipped 3 products' templates for QA, reverted). Parser gotcha fixed: Liquid single-quoted strings can't escape apostrophes with ''; swapped for curly ’ (memory rule saved). Commit 99b15f9, pushed to origin/dev @ b54a626."
+      },
+      {
+        "id": "t9d",
+        "milestone": "M4",
+        "description": "Nutrition + Ingredients modal — builds nutrition-facts block from existing nutrition metafields (catalog them: serving size, calories, fat, sodium, etc.). Focus trap + ESC close per a11y",
+        "status": "done",
+        "completedOn": "2026-04-15",
+        "notes": "sections/pdp-nutrition.liquid + snippets/pdp-nutrition-row.liquid + assets/pdp-nutrition.js. Trigger pill between Bold Flavors and FAQ opens a native <dialog> with FDA-style nutrition label (rule lines, bold nutrient labels, % Daily Value col, indented Saturated/Trans Fat + Sugars rows) + Inulin soluble-fiber highlight + rich-text ingredients from tab_content.ingredients. Consumes 16 custom.* metafields + 1 tab_content metafield. A11y: aria-haspopup/controls, aria-labelledby, ESC + backdrop dismiss, focus return to trigger on close, body scroll-lock. Verified desktop + mobile on test product 9478059000056. Commit 0c1eda5, pushed to origin/dev @ 91096c1."
+      },
+      {
+        "id": "t10",
+        "milestone": "M4",
+        "description": "Meet Caroline founder section — static block with image + tagline + bio + 'Read our story' link",
+        "status": "done",
+        "completedOn": "2026-04-15",
+        "notes": "sections/pdp-meet-caroline.liquid — 2-col desktop (image + copy), stacked mobile. Eyebrow 'BLENDING FOR YOU SINCE 1993', heading, richtext bio, CTA link to /pages/our-story. Shared styles in component-pdp-sections.css (.pdp-caroline). Image picker is optional — gracefully degrades to copy-only when empty. Commit 703758e."
+      },
+      {
+        "id": "t11",
+        "milestone": "M4",
+        "description": "Loox anchor + inline stars — <div id='looxReviews' data-product-id='{{ product.id }}'> embed + inline Loox stars in hero",
+        "status": "done",
+        "completedOn": "2026-04-15",
+        "notes": "sections/pdp-loox.liquid — slot for Loox external widget binding. Contains <div id='looxReviews' data-product-id='{{ product.id }}'>. Heading + padding configurable. Matches M2 info-card inline-stars anchor (#looxReviews scroll target). Inline stars in hero already shipped in M2. Commit 703758e."
+      },
+      {
+        "id": "t12",
+        "milestone": "M5",
+        "description": "Sister-product carousel — handle-suffix matching detects all sibling formats (coffee/tea/instant-coffee/instant-latte). Render N cards in a sliding carousel with gold-dashed borders. Example: French Roast = 4 cards; Almond Amaretto ground = 1 card (tea only). Scroll-snap or Swiper implementation TBD.",
+        "status": "pending"
+      },
+      {
+        "id": "t13",
+        "milestone": "M6",
+        "description": "Variant switching JS — on variant-change event: swap gallery slides, update price + compare-at + SAVE %, update caffeine badge, update tile highlight, history.replaceState URL",
+        "status": "pending"
+      },
+      {
+        "id": "t14",
+        "milestone": "M6",
+        "description": "Integrate with theme pub/sub (PUB_SUB_EVENTS.variantChange + cartUpdate). Verify OCU still fires on ATC after rebuild",
+        "status": "pending"
+      },
+      {
+        "id": "t15",
+        "milestone": "M7",
+        "description": "Side-by-side pixel-diff vs live Replo at 375 / 750 / 990 / 1440 widths. Capture before/after screenshots",
+        "status": "pending"
+      },
+      {
+        "id": "t16",
+        "milestone": "M7",
+        "description": "A11y audit — WCAG 2.1 AA (keyboard nav, focus trap on modals, color contrast, ARIA on accordions + radios)",
+        "status": "pending"
+      },
+      {
+        "id": "t17",
+        "milestone": "M8",
+        "description": "Assign native template to 3-5 test products (Almond Amaretto coffee + 1 tea + 1 instant + 1 latte). Validate ATC, subscribe flow, OCU upsell, Loox rendering, variant switching end-to-end",
+        "status": "pending"
+      },
+      {
+        "id": "t18",
+        "milestone": "M8",
+        "description": "Bulk reassign remaining 99 products from replo.10dc3372 template to new native template",
+        "status": "pending"
+      },
+      {
+        "id": "t19",
+        "milestone": "M9",
+        "description": "Analyze secondary Replo templates (0e592c64 samplers, e8db7446 gift boxes, 2b04f633 seasonal) against live pages and build native equivalents",
+        "status": "pending"
+      },
+      {
+        "id": "t20",
+        "milestone": "M10",
+        "description": "Remove Replo template files + Replo CDN script for product pages. Verify no PDP still routes through Replo. Close project.",
+        "status": "pending"
+      }
+    ],
+    "docs": [
+      {
+        "desc": "Source of truth — reverse-engineered from the LIVE teeccino.com PDP on 2026-04-15 (supersedes pdp-replo-spec.md)"
+      },
+      {
+        "desc": "Legacy Replo-chunk reverse-engineering — kept for history. Do not build against this."
+      },
+      {
+        "desc": "Existing early native product template (uses main-product-custom section)"
+      }
+    ]
+  },
+  "state": null
+}
