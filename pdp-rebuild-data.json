@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T16:45:59.565512-07:00",
+  "generatedAt": "2026-04-17T16:57:55.325548-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-17T23:48:00Z",
+    "lastActivity": "2026-04-18T00:15:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -228,15 +228,18 @@
         "id": "t17",
         "milestone": "M8",
         "description": "Assign native template to 3-5 test products (one per format). Validate ATC, subscribe flow, OCU upsell, Loox rendering, variant switching end-to-end",
-        "status": "in-progress",
-        "progress": "CANARY 1/4 LIVE: Hazelnut Chicory Herbal Coffee (gid://shopify/Product/6681931972777) flipped from replo.10dc3372 -> pdp-rebuild on 2026-04-17T23:42:20Z. 23/23 server-side smoke checks pass (format switcher renders exactly 3 sibling tabs, cross-sell shows 10 real Herbal Coffee siblings, all sections present, no Liquid errors, no Replo runtime script). JS-dependent flows (ATC/sub/OCU/Loox/variant-swap/nutrition-modal) pending Justin's interactive validation on https://teeccino.com/products/hazelnut-herbal-coffee. If clean, pick a Tea / Instant Coffee / Instant Latte canary next to exercise the template across all 4 product types.",
-        "rollback": "productUpdate mutation with templateSuffix: 'replo.10dc3372-99a2-4f75-9141-c7b4923521b2' — instant effect, no redeploy needed"
+        "status": "done",
+        "completed": "2026-04-18",
+        "progress": "CANARY 4/4 COMPLETE — full Hazelnut family on pdp-rebuild, one product per product.type: (1) hazelnut-herbal-coffee [Herbal Coffee] flipped 2026-04-17T23:42Z, all 6 JS flows (ATC/sub/OCU/Loox/variant/nutrition) validated interactively by Justin; (2) hazelnut-herbal-tea [Herbal Tea]; (3) instant-hazelnut-herbal-coffee [Instant Coffee]; (4) instant-hazelnut-herbal-latte [Instant Latte] — all 3 flipped and smoke-tested 2026-04-18. Format switcher on all 4 renders exactly 3 sibling tabs with correct cross-links and current-type tab hidden. How-to-brew branches correctly per product.type (4-method for Coffee/Tea, 3-step for Instant variants). Template preparatory cleanup shipped separately (commits 3f223d3 dev + f6b4f55 main) blanking format_switcher_base_handle / format_switcher_current_format / base_handle_override. Ready for bulk migration via Shopkeeper.",
+        "rollback": "productUpdate mutation with templateSuffix: 'replo.10dc3372-99a2-4f75-9141-c7b4923521b2' — instant effect per product, no redeploy needed"
       },
       {
         "id": "t18",
         "milestone": "M8",
         "description": "Bulk reassign remaining 99 products from replo.10dc3372 template to new native template",
-        "status": "pending"
+        "status": "pending",
+        "owner": "shopkeeper",
+        "handoffPlan": "ThemeSmith produces task brief at inbox/<id>-shopkeeper-bulk-pdp-migration.json. Target filter: templateSuffix == 'replo.10dc3372-99a2-4f75-9141-c7b4923521b2' AND productType IN {'Herbal Coffee','Herbal Tea','Instant Coffee','Instant Latte'} AND status == 'ACTIVE'. Exclusion: the 4 Hazelnut SKUs already on pdp-rebuild (gids: 6681931972777 + Tea/Instant Coffee/Instant Latte equivalents). Wave plan: ~24 products per wave, 4 waves. After each wave: Shopkeeper runs storefront HTTP smoke test on 3 random flipped PDPs (200 OK, no Liquid error string, format switcher renders at least 1 sibling tab, cross-sell has at least 4 sibling cards), pauses for ThemeSmith/Justin green light before next wave. Per-wave rollback manifest stored alongside the task so any wave can be reverted in bulk. Secondary templates (samplers 0e592c64, gift boxes e8db7446, seasonal 2b04f633) MUST be excluded — they are M9 scope."
       },
       {
         "id": "t19",
