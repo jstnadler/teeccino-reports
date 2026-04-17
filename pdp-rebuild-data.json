@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T16:35:00.291835-07:00",
+  "generatedAt": "2026-04-17T16:45:59.565512-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-17T22:50:00Z",
+    "lastActivity": "2026-04-17T23:48:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -217,10 +217,20 @@
         "notes": "Cherry-picked 16 files (4 new + 11 modified PDP + header.liquid) from dev into fresh branch ship/pdp-rebuild-2026-04-17 off main, single commit 911e264 with detailed message, fast-forwarded main, pushed. Shopify auto-deploy to live theme 160800145656 completed within ~45s. Verified live: all four previously-duplicated <script> tags (details-disclosure.js, details-modal.js, search-form.js, cart-drawer.js) now load exactly once on teeccino.com. PDP files dormant until M8 t17 template migration. Ship branch deleted. NOTE: ship/pdp-assets-2026-04-16 still lingers locally — git says 'not fully merged' even though its commit 7747889 is on main (fast-forward bookkeeping quirk); safe to force-delete with -D but left alone pending Justin's call."
       },
       {
+        "id": "t16c",
+        "milestone": "M8",
+        "description": "Template prep: cleared 3 test-product override defaults from product.pdp-rebuild.json (format_switcher_base_handle, format_switcher_current_format, base_handle_override — all hardcoded to 'french-roast'/'coffee' for the draft test product). Blanked so any real product auto-derives siblings from its own handle.",
+        "status": "done",
+        "completedOn": "2026-04-17",
+        "notes": "feature/pdp-template-clear-test-overrides 3f223d3 -> merged to dev -> cherry-picked to ship/pdp-template-cleanup-2026-04-17 f6b4f55 -> fast-forwarded into main -> pushed. Shopify auto-sync to live theme completed ~10s. Verified via Admin Asset API: french-roast/coffee strings no longer present in live template."
+      },
+      {
         "id": "t17",
         "milestone": "M8",
-        "description": "Assign native template to 3-5 test products (Almond Amaretto coffee + 1 tea + 1 instant + 1 latte). Validate ATC, subscribe flow, OCU upsell, Loox rendering, variant switching end-to-end",
-        "status": "pending"
+        "description": "Assign native template to 3-5 test products (one per format). Validate ATC, subscribe flow, OCU upsell, Loox rendering, variant switching end-to-end",
+        "status": "in-progress",
+        "progress": "CANARY 1/4 LIVE: Hazelnut Chicory Herbal Coffee (gid://shopify/Product/6681931972777) flipped from replo.10dc3372 -> pdp-rebuild on 2026-04-17T23:42:20Z. 23/23 server-side smoke checks pass (format switcher renders exactly 3 sibling tabs, cross-sell shows 10 real Herbal Coffee siblings, all sections present, no Liquid errors, no Replo runtime script). JS-dependent flows (ATC/sub/OCU/Loox/variant-swap/nutrition-modal) pending Justin's interactive validation on https://teeccino.com/products/hazelnut-herbal-coffee. If clean, pick a Tea / Instant Coffee / Instant Latte canary next to exercise the template across all 4 product types.",
+        "rollback": "productUpdate mutation with templateSuffix: 'replo.10dc3372-99a2-4f75-9141-c7b4923521b2' — instant effect, no redeploy needed"
       },
       {
         "id": "t18",
