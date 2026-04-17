@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teeccino Discount Deep-Dive — May 2024</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh; color: #fff;
+    padding: 20px; padding-top: 70px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+
+/* ---- NAV ---- */
+.top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(12px);
+    z-index: 100; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; transition: color 0.2s; }
+.top-nav a:hover { color: #D4A843; }
+.top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
+/* ---- HEADER ---- */
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 {
+    font-size: 2.2em; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #D4A843, #F5D784, #D4A843);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header .sub { color: #94a3b8; margin-top: 6px; font-size: 1em; }
+
+.month-nav { text-align: center; margin-bottom: 28px; }
+.month-nav select {
+    background: rgba(255,255,255,0.06); color: #D4A843;
+    border: 1px solid rgba(212,168,67,0.3); border-radius: 10px;
+    padding: 10px 40px 10px 16px; font-size: 1em;
+    cursor: pointer; appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D4A843' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    min-width: 200px; transition: border-color 0.2s;
+}
+.month-nav select:hover { border-color: #D4A843; }
+.month-nav select option { background: #1a1a2e; color: #fff; }
+
+/* ---- SECTION HEADERS ---- */
+.section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin: 36px 0 16px 0; padding-bottom: 8px;
+    border-bottom: 2px solid rgba(212,168,67,0.2);
+}
+.section-header h2 {
+    font-size: 1.15em; font-weight: 700; color: #D4A843;
+    letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+/* ---- HERO CARD ---- */
+.hero-card {
+    background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.04));
+    border: 1px solid rgba(212,168,67,0.35);
+    border-radius: 18px; padding: 28px 32px;
+    margin-bottom: 24px;
+}
+.hero-label { color: #94a3b8; font-size: 0.9em; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 12px; }
+.hero-value { font-size: 3.2em; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 10px;
+    background: linear-gradient(135deg, #D4A843, #F5D784);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub { font-size: 1.05em; margin-top: 6px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hero-detail { color: #64748b; font-size: 0.86em; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); }
+
+/* ---- KPI CARDS ---- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-bottom: 8px;
+}
+.kpi-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 20px 22px;
+    transition: all 0.25s ease;
+}
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.card-label { color: #94a3b8; font-size: 0.82em; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.3px; }
+.card-value { font-size: 1.85em; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: #fff; }
+.card-yoy { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+.yoy-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 0.78em; font-weight: 600;
+}
+.yoy-badge.good { color: #4ade80; background: rgba(74,222,128,0.1); }
+.yoy-badge.bad { color: #f87171; background: rgba(248,113,113,0.1); }
+.yoy-badge.neutral { color: #94a3b8; background: rgba(148,163,184,0.08); }
+.card-detail { color: #94a3b8; font-size: 0.82em; margin-top: 8px; }
+.card-definition { color: #64748b; font-size: 0.75em; margin-top: 10px; line-height: 1.5; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+/* ---- CHARTS ---- */
+.chart-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 18px; margin-bottom: 24px;
+}
+.chart-box {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 20px 22px;
+}
+.chart-box h3 { color: #D4A843; font-size: 1em; margin-bottom: 12px; font-weight: 700; }
+.chart-box .chart-sub { color: #64748b; font-size: 0.82em; margin-bottom: 12px; }
+
+.chart-full {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 20px 22px; margin-bottom: 24px;
+}
+.chart-full h3 { color: #D4A843; font-size: 1em; margin-bottom: 12px; font-weight: 700; }
+.chart-full .chart-sub { color: #64748b; font-size: 0.82em; margin-bottom: 14px; }
+
+/* ---- TABLE ---- */
+.table-toggle { display: flex; gap: 8px; margin-bottom: 12px; }
+.toggle-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: #94a3b8; padding: 7px 16px; border-radius: 8px;
+    font-size: 0.85em; cursor: pointer; transition: all 0.2s;
+}
+.toggle-btn.active { background: rgba(212,168,67,0.18); border-color: rgba(212,168,67,0.5); color: #D4A843; font-weight: 600; }
+.toggle-btn:hover { color: #fff; }
+
+.table-wrap {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 18px; overflow-x: auto;
+    margin-bottom: 24px;
+}
+.detail-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+.detail-table th {
+    text-align: right; padding: 10px 12px;
+    color: #94a3b8; font-weight: 600; font-size: 0.82em;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.detail-table th:first-child,
+.detail-table td.month-cell { text-align: left; }
+.detail-table td {
+    padding: 9px 12px; text-align: right;
+    color: #cbd5e1; font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.detail-table tr:hover td { background: rgba(212,168,67,0.04); }
+.detail-table td.month-cell { color: #94a3b8; font-weight: 600; }
+.detail-table td.total-cell,
+.detail-table th.total-cell { color: #D4A843; font-weight: 700; border-left: 1px solid rgba(212,168,67,0.15); }
+
+/* ---- GLOSSARY ---- */
+.glossary-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px; margin-bottom: 40px;
+}
+.glossary-item {
+    background: rgba(30,41,59,0.6); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px; padding: 16px 20px;
+}
+.glossary-label { font-weight: 700; font-size: 1em; margin-bottom: 6px; }
+.glossary-desc { color: #cbd5e1; font-size: 0.88em; line-height: 1.5; margin-bottom: 8px; }
+.glossary-formula { color: #64748b; font-size: 0.76em; }
+.glossary-formula code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #94a3b8; font-family: 'SF Mono', 'Consolas', monospace; }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .chart-row { grid-template-columns: 1fr; }
+    .glossary-grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.6em; }
+    .hero-value { font-size: 2.4em; }
+}
+
+.footer { text-align: center; color: #64748b; font-size: 0.78em; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+
+
+    <div class="top-nav">
+        <a href="../mtd.html" class="brand">← Teeccino Reports</a>
+        <a href="../mtd.html">MTD Dashboard</a>
+        <span style="color:#D4A843;font-weight:600;">Discount Deep-Dive</span>
+    </div>
+    <div class="month-nav">
+        <select id="monthSelect" onchange="navigateMonth(this.value)">
+            <option value="2026-04">Apr 2026</option>
+<option value="2026-03">Mar 2026</option>
+<option value="2026-02">Feb 2026</option>
+<option value="2026-01">Jan 2026</option>
+<option value="2025-12">Dec 2025</option>
+<option value="2025-11">Nov 2025</option>
+<option value="2025-10">Oct 2025</option>
+<option value="2025-09">Sep 2025</option>
+<option value="2025-08">Aug 2025</option>
+<option value="2025-07">Jul 2025</option>
+<option value="2025-06">Jun 2025</option>
+<option value="2025-05">May 2025</option>
+<option value="2025-04">Apr 2025</option>
+<option value="2025-03">Mar 2025</option>
+<option value="2025-02">Feb 2025</option>
+<option value="2025-01">Jan 2025</option>
+<option value="2024-12">Dec 2024</option>
+<option value="2024-11">Nov 2024</option>
+<option value="2024-10">Oct 2024</option>
+<option value="2024-09">Sep 2024</option>
+<option value="2024-08">Aug 2024</option>
+<option value="2024-07">Jul 2024</option>
+<option value="2024-06">Jun 2024</option>
+<option value="2024-05" selected>May 2024</option>
+<option value="2024-04">Apr 2024</option>
+<option value="2024-03">Mar 2024</option>
+<option value="2024-02">Feb 2024</option>
+<option value="2024-01">Jan 2024</option>
+
+        </select>
+    </div>
+    <script>
+    function navigateMonth(val) {
+        if (val === '2026-04') {
+            window.location.href = '../discounts.html';
+        } else {
+            window.location.href = './' + val + '.html';
+        }
+    }
+    </script>
+    
+
+<div class="container">
+
+<div class="header">
+    <h1>Discount Deep-Dive</h1>
+    <div class="sub">May 2024 — breakdown of every lever pulling against gross</div>
+</div>
+
+
+    <div class="hero-card">
+        <div class="hero-label">Total Discounts Given — May 2024</div>
+        <div class="hero-value">$24,285</div>
+        <div class="hero-sub">
+            <span style="font-size:1.25em;color:#D4A843;font-weight:700;">14.9%</span>
+            <span style="color:#94a3b8;">of gross</span>
+            <span class="yoy-badge bad" style="margin-left:8px;">+0.3 pp vs LY</span>
+        </div>
+        <div class="hero-sub">
+            <span style="color:#94a3b8;">vs LY:</span>
+            <span>$20,813</span>
+            <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 16.7% vs LY</span>
+        </div>
+        <div class="hero-detail">
+            Gross: $163,027 &nbsp;|&nbsp;
+            Orders: 3,352 &nbsp;|&nbsp;
+            Avg discount/order: $7
+        </div>
+    </div>
+
+<div class="section-header"><h2>Breakdown by Type</h2></div>
+<div class="kpi-grid">
+    
+    <div class="kpi-card" style="border-top: 3px solid #8B5CF6;">
+        <div class="card-label">Subscription Implied</div>
+        <div class="card-value">$8,252</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 49.5% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+1.2 pp</span></div>
+        <div class="card-detail">5.1% of gross
+            <span style="color:#64748b;">(LY: 3.9%)</span>
+        </div>
+        <div class="card-definition">MSRP − subscription price for recurring subscribers only (first-time subs excluded).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #EF4444;">
+        <div class="card-label">Automatic Discounts</div>
+        <div class="card-value">$0</div>
+        <div class="card-yoy"><span class="yoy-badge neutral">-- vs LY</span><span class="yoy-badge neutral" style="margin-left:6px;">0.0 pp</span></div>
+        <div class="card-detail">0.0% of gross
+            <span style="color:#64748b;">(LY: 0.0%)</span>
+        </div>
+        <div class="card-definition">Shopify automatic discounts (FOTM promos, site sales, app-sourced discount functions).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #3B82F6;">
+        <div class="card-label">Discount Codes</div>
+        <div class="card-value">$5,418</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 33.6% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+0.5 pp</span></div>
+        <div class="card-detail">3.3% of gross
+            <span style="color:#64748b;">(LY: 2.8%)</span>
+        </div>
+        <div class="card-definition">Customer-entered codes at checkout (email promos, influencer codes, win-back codes).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #F59E0B;">
+        <div class="card-label">Manual Discounts</div>
+        <div class="card-value">$152</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 49.2% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-0.1 pp</span></div>
+        <div class="card-detail">0.1% of gross
+            <span style="color:#64748b;">(LY: 0.2%)</span>
+        </div>
+        <div class="card-definition">Staff-applied one-off discounts (customer service concessions, special orders).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #10B981;">
+        <div class="card-label">Shipping Discounts</div>
+        <div class="card-value">$251</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 95.6% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-3.8 pp</span></div>
+        <div class="card-detail">0.2% of gross
+            <span style="color:#64748b;">(LY: 3.9%)</span>
+        </div>
+        <div class="card-definition">Free-shipping waives (free-ship threshold, promo codes, app-sourced free-ship functions).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #EC4899;">
+        <div class="card-label">Free Items (MSRP)</div>
+        <div class="card-value">$10,213</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 92.8% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+2.6 pp</span></div>
+        <div class="card-detail">6.3% of gross
+            <span style="color:#64748b;">(LY: 3.7%)</span>
+        </div>
+        <div class="card-definition">Retail value of items given away (BOGO promos, free gifts-with-purchase, samples).</div>
+        <div class="card-detail">2,734 items given</div>
+    </div>
+</div>
+
+<div class="section-header"><h2>This Month's Mix</h2></div>
+<div class="chart-row">
+    <div class="chart-box">
+        <h3>Share by Type</h3>
+        <div class="chart-sub">May 2024 — which levers did the work</div>
+        <canvas id="pieChart" height="280"></canvas>
+    </div>
+    <div class="chart-box">
+        <h3>Monthly Dollars by Type</h3>
+        <div class="chart-sub">Last 18 months — stacked $ of discounts given</div>
+        <canvas id="stackChart" height="280"></canvas>
+    </div>
+</div>
+
+<div class="section-header"><h2>% of Gross Trend</h2></div>
+<div class="chart-full">
+    <h3>Each Type as % of Gross Sales — Last 18 Months</h3>
+    <div class="chart-sub">
+        Gold dashed line = total discount %. Watch where individual types diverge from the baseline to spot which lever moved the total.
+    </div>
+    <canvas id="lineChart" height="100"></canvas>
+</div>
+
+<div class="section-header"><h2>Monthly Breakdown Table</h2></div>
+
+    <div class="table-toggle">
+        <button class="toggle-btn active" onclick="toggleTable('dollars')">Show Dollars</button>
+        <button class="toggle-btn" onclick="toggleTable('pct')">Show % of Gross</button>
+    </div>
+    <div class="table-wrap" id="table-dollars">
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Gross</th>
+                    <th style="color:#8B5CF6;">Subscription Implied</th><th style="color:#EF4444;">Automatic Discounts</th><th style="color:#3B82F6;">Discount Codes</th><th style="color:#F59E0B;">Manual Discounts</th><th style="color:#10B981;">Shipping Discounts</th><th style="color:#EC4899;">Free Items (MSRP)</th>
+                    <th class="total-cell">Total Disc</th>
+                    <th class="total-cell">Total %</th>
+                </tr>
+            </thead>
+            <tbody><tr>
+            <td class="month-cell">Dec 22</td>
+            <td>$0</td>
+            <td>$0</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td>
+            <td class="total-cell">$0</td>
+            <td class="total-cell">0.0%</td>
+        </tr><tr>
+            <td class="month-cell">Jan 23</td>
+            <td>$177,433</td>
+            <td>$4,828</td><td>$0</td><td>$8,904</td><td>$393</td><td>$476</td><td>$4,670</td>
+            <td class="total-cell">$19,271</td>
+            <td class="total-cell">10.9%</td>
+        </tr><tr>
+            <td class="month-cell">Feb 23</td>
+            <td>$161,667</td>
+            <td>$5,208</td><td>$0</td><td>$5,707</td><td>$114</td><td>$250</td><td>$5,620</td>
+            <td class="total-cell">$16,899</td>
+            <td class="total-cell">10.5%</td>
+        </tr><tr>
+            <td class="month-cell">Mar 23</td>
+            <td>$165,478</td>
+            <td>$5,681</td><td>$0</td><td>$6,934</td><td>$758</td><td>$3,864</td><td>$5,445</td>
+            <td class="total-cell">$22,681</td>
+            <td class="total-cell">13.7%</td>
+        </tr><tr>
+            <td class="month-cell">Apr 23</td>
+            <td>$192,256</td>
+            <td>$4,530</td><td>$0</td><td>$21,628</td><td>$2,789</td><td>$18,167</td><td>$9,318</td>
+            <td class="total-cell">$56,433</td>
+            <td class="total-cell">29.4%</td>
+        </tr><tr>
+            <td class="month-cell">May 23</td>
+            <td>$142,910</td>
+            <td>$5,518</td><td>$0</td><td>$4,055</td><td>$300</td><td>$5,644</td><td>$5,297</td>
+            <td class="total-cell">$20,813</td>
+            <td class="total-cell">14.6%</td>
+        </tr><tr>
+            <td class="month-cell">Jun 23</td>
+            <td>$116,359</td>
+            <td>$5,257</td><td>$0</td><td>$3,259</td><td>$195</td><td>$102</td><td>$4,894</td>
+            <td class="total-cell">$13,707</td>
+            <td class="total-cell">11.8%</td>
+        </tr><tr>
+            <td class="month-cell">Jul 23</td>
+            <td>$140,217</td>
+            <td>$5,701</td><td>$0</td><td>$3,923</td><td>$445</td><td>$298</td><td>$4,744</td>
+            <td class="total-cell">$15,110</td>
+            <td class="total-cell">10.8%</td>
+        </tr><tr>
+            <td class="month-cell">Aug 23</td>
+            <td>$137,521</td>
+            <td>$6,005</td><td>$0</td><td>$5,969</td><td>$333</td><td>$422</td><td>$5,025</td>
+            <td class="total-cell">$17,755</td>
+            <td class="total-cell">12.9%</td>
+        </tr><tr>
+            <td class="month-cell">Sep 23</td>
+            <td>$170,422</td>
+            <td>$6,142</td><td>$0</td><td>$8,168</td><td>$445</td><td>$289</td><td>$7,240</td>
+            <td class="total-cell">$22,284</td>
+            <td class="total-cell">13.1%</td>
+        </tr><tr>
+            <td class="month-cell">Oct 23</td>
+            <td>$167,230</td>
+            <td>$6,858</td><td>$0</td><td>$7,338</td><td>$363</td><td>$280</td><td>$7,170</td>
+            <td class="total-cell">$22,009</td>
+            <td class="total-cell">13.2%</td>
+        </tr><tr>
+            <td class="month-cell">Nov 23</td>
+            <td>$342,149</td>
+            <td>$8,166</td><td>$0</td><td>$14,521</td><td>$783</td><td>$502</td><td>$22,060</td>
+            <td class="total-cell">$46,032</td>
+            <td class="total-cell">13.5%</td>
+        </tr><tr>
+            <td class="month-cell">Dec 23</td>
+            <td>$185,377</td>
+            <td>$6,424</td><td>$0</td><td>$8,588</td><td>$378</td><td>$340</td><td>$8,108</td>
+            <td class="total-cell">$23,837</td>
+            <td class="total-cell">12.9%</td>
+        </tr><tr>
+            <td class="month-cell">Jan 24</td>
+            <td>$197,592</td>
+            <td>$8,921</td><td>$0</td><td>$10,626</td><td>$488</td><td>$361</td><td>$9,174</td>
+            <td class="total-cell">$29,571</td>
+            <td class="total-cell">15.0%</td>
+        </tr><tr>
+            <td class="month-cell">Feb 24</td>
+            <td>$171,755</td>
+            <td>$10,033</td><td>$0</td><td>$5,350</td><td>$461</td><td>$455</td><td>$7,793</td>
+            <td class="total-cell">$24,092</td>
+            <td class="total-cell">14.0%</td>
+        </tr><tr>
+            <td class="month-cell">Mar 24</td>
+            <td>$193,856</td>
+            <td>$7,460</td><td>$0</td><td>$9,611</td><td>$359</td><td>$387</td><td>$8,680</td>
+            <td class="total-cell">$26,497</td>
+            <td class="total-cell">13.7%</td>
+        </tr><tr>
+            <td class="month-cell">Apr 24</td>
+            <td>$271,618</td>
+            <td>$7,806</td><td>$0</td><td>$37,145</td><td>$796</td><td>$314</td><td>$13,822</td>
+            <td class="total-cell">$59,884</td>
+            <td class="total-cell">22.0%</td>
+        </tr><tr>
+            <td class="month-cell">May 24</td>
+            <td>$163,027</td>
+            <td>$8,252</td><td>$0</td><td>$5,418</td><td>$152</td><td>$251</td><td>$10,213</td>
+            <td class="total-cell">$24,285</td>
+            <td class="total-cell">14.9%</td>
+        </tr></tbody>
+        </table>
+    </div>
+    <div class="table-wrap" id="table-pct" style="display:none;">
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Gross</th>
+                    <th style="color:#8B5CF6;">Subscription Implied</th><th style="color:#EF4444;">Automatic Discounts</th><th style="color:#3B82F6;">Discount Codes</th><th style="color:#F59E0B;">Manual Discounts</th><th style="color:#10B981;">Shipping Discounts</th><th style="color:#EC4899;">Free Items (MSRP)</th>
+                    <th class="total-cell">Total %</th>
+                    <th class="total-cell">Total $</th>
+                </tr>
+            </thead>
+            <tbody><tr>
+            <td class="month-cell">Dec 22</td>
+            <td>$0</td>
+            <td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td><td>0.0%</td>
+            <td class="total-cell">0.0%</td>
+            <td class="total-cell">$0</td>
+        </tr><tr>
+            <td class="month-cell">Jan 23</td>
+            <td>$177,433</td>
+            <td>2.7%</td><td>0.0%</td><td>5.0%</td><td>0.2%</td><td>0.3%</td><td>2.6%</td>
+            <td class="total-cell">10.9%</td>
+            <td class="total-cell">$19,271</td>
+        </tr><tr>
+            <td class="month-cell">Feb 23</td>
+            <td>$161,667</td>
+            <td>3.2%</td><td>0.0%</td><td>3.5%</td><td>0.1%</td><td>0.2%</td><td>3.5%</td>
+            <td class="total-cell">10.5%</td>
+            <td class="total-cell">$16,899</td>
+        </tr><tr>
+            <td class="month-cell">Mar 23</td>
+            <td>$165,478</td>
+            <td>3.4%</td><td>0.0%</td><td>4.2%</td><td>0.5%</td><td>2.3%</td><td>3.3%</td>
+            <td class="total-cell">13.7%</td>
+            <td class="total-cell">$22,681</td>
+        </tr><tr>
+            <td class="month-cell">Apr 23</td>
+            <td>$192,256</td>
+            <td>2.4%</td><td>0.0%</td><td>11.2%</td><td>1.5%</td><td>9.4%</td><td>4.8%</td>
+            <td class="total-cell">29.4%</td>
+            <td class="total-cell">$56,433</td>
+        </tr><tr>
+            <td class="month-cell">May 23</td>
+            <td>$142,910</td>
+            <td>3.9%</td><td>0.0%</td><td>2.8%</td><td>0.2%</td><td>3.9%</td><td>3.7%</td>
+            <td class="total-cell">14.6%</td>
+            <td class="total-cell">$20,813</td>
+        </tr><tr>
+            <td class="month-cell">Jun 23</td>
+            <td>$116,359</td>
+            <td>4.5%</td><td>0.0%</td><td>2.8%</td><td>0.2%</td><td>0.1%</td><td>4.2%</td>
+            <td class="total-cell">11.8%</td>
+            <td class="total-cell">$13,707</td>
+        </tr><tr>
+            <td class="month-cell">Jul 23</td>
+            <td>$140,217</td>
+            <td>4.1%</td><td>0.0%</td><td>2.8%</td><td>0.3%</td><td>0.2%</td><td>3.4%</td>
+            <td class="total-cell">10.8%</td>
+            <td class="total-cell">$15,110</td>
+        </tr><tr>
+            <td class="month-cell">Aug 23</td>
+            <td>$137,521</td>
+            <td>4.4%</td><td>0.0%</td><td>4.3%</td><td>0.2%</td><td>0.3%</td><td>3.7%</td>
+            <td class="total-cell">12.9%</td>
+            <td class="total-cell">$17,755</td>
+        </tr><tr>
+            <td class="month-cell">Sep 23</td>
+            <td>$170,422</td>
+            <td>3.6%</td><td>0.0%</td><td>4.8%</td><td>0.3%</td><td>0.2%</td><td>4.2%</td>
+            <td class="total-cell">13.1%</td>
+            <td class="total-cell">$22,284</td>
+        </tr><tr>
+            <td class="month-cell">Oct 23</td>
+            <td>$167,230</td>
+            <td>4.1%</td><td>0.0%</td><td>4.4%</td><td>0.2%</td><td>0.2%</td><td>4.3%</td>
+            <td class="total-cell">13.2%</td>
+            <td class="total-cell">$22,009</td>
+        </tr><tr>
+            <td class="month-cell">Nov 23</td>
+            <td>$342,149</td>
+            <td>2.4%</td><td>0.0%</td><td>4.2%</td><td>0.2%</td><td>0.1%</td><td>6.4%</td>
+            <td class="total-cell">13.5%</td>
+            <td class="total-cell">$46,032</td>
+        </tr><tr>
+            <td class="month-cell">Dec 23</td>
+            <td>$185,377</td>
+            <td>3.5%</td><td>0.0%</td><td>4.6%</td><td>0.2%</td><td>0.2%</td><td>4.4%</td>
+            <td class="total-cell">12.9%</td>
+            <td class="total-cell">$23,837</td>
+        </tr><tr>
+            <td class="month-cell">Jan 24</td>
+            <td>$197,592</td>
+            <td>4.5%</td><td>0.0%</td><td>5.4%</td><td>0.2%</td><td>0.2%</td><td>4.6%</td>
+            <td class="total-cell">15.0%</td>
+            <td class="total-cell">$29,571</td>
+        </tr><tr>
+            <td class="month-cell">Feb 24</td>
+            <td>$171,755</td>
+            <td>5.8%</td><td>0.0%</td><td>3.1%</td><td>0.3%</td><td>0.3%</td><td>4.5%</td>
+            <td class="total-cell">14.0%</td>
+            <td class="total-cell">$24,092</td>
+        </tr><tr>
+            <td class="month-cell">Mar 24</td>
+            <td>$193,856</td>
+            <td>3.8%</td><td>0.0%</td><td>5.0%</td><td>0.2%</td><td>0.2%</td><td>4.5%</td>
+            <td class="total-cell">13.7%</td>
+            <td class="total-cell">$26,497</td>
+        </tr><tr>
+            <td class="month-cell">Apr 24</td>
+            <td>$271,618</td>
+            <td>2.9%</td><td>0.0%</td><td>13.7%</td><td>0.3%</td><td>0.1%</td><td>5.1%</td>
+            <td class="total-cell">22.0%</td>
+            <td class="total-cell">$59,884</td>
+        </tr><tr>
+            <td class="month-cell">May 24</td>
+            <td>$163,027</td>
+            <td>5.1%</td><td>0.0%</td><td>3.3%</td><td>0.1%</td><td>0.2%</td><td>6.3%</td>
+            <td class="total-cell">14.9%</td>
+            <td class="total-cell">$24,285</td>
+        </tr></tbody>
+        </table>
+    </div>
+
+<div class="section-header"><h2>What Each Discount Type Means</h2></div>
+<div class="glossary-grid">
+    
+        <div class="glossary-item">
+            <div class="glossary-label" style="color:#8B5CF6;">Subscription Implied</div>
+            <div class="glossary-desc">MSRP − subscription price for recurring subscribers only (first-time subs excluded).</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_subscription_discounts)</code> (from calc_daily_shopify)</div>
+        </div>
+        <div class="glossary-item">
+            <div class="glossary-label" style="color:#EF4444;">Automatic Discounts</div>
+            <div class="glossary-desc">Shopify automatic discounts (FOTM promos, site sales, app-sourced discount functions).</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_automatic_discounts)</code> (from calc_daily_shopify)</div>
+        </div>
+        <div class="glossary-item">
+            <div class="glossary-label" style="color:#3B82F6;">Discount Codes</div>
+            <div class="glossary-desc">Customer-entered codes at checkout (email promos, influencer codes, win-back codes).</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_code_discounts)</code> (from calc_daily_shopify)</div>
+        </div>
+        <div class="glossary-item">
+            <div class="glossary-label" style="color:#F59E0B;">Manual Discounts</div>
+            <div class="glossary-desc">Staff-applied one-off discounts (customer service concessions, special orders).</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_manual_discounts)</code> (from calc_daily_shopify)</div>
+        </div>
+        <div class="glossary-item">
+            <div class="glossary-label" style="color:#10B981;">Shipping Discounts</div>
+            <div class="glossary-desc">Free-shipping waives (free-ship threshold, promo codes, app-sourced free-ship functions).</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_shipping_discounts)</code> (from calc_daily_shopify)</div>
+        </div>
+        <div class="glossary-item">
+            <div class="glossary-label" style="color:#EC4899;">Free Items (MSRP)</div>
+            <div class="glossary-desc">Retail value of items given away (BOGO promos, free gifts-with-purchase, samples).</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_free_item_value)</code> (from calc_daily_shopify)</div>
+        </div>
+</div>
+
+<div class="footer">
+    Generated 2026-04-17 15:28 ·
+    Data thru 2024-05-31 ·
+    Source: calc_daily_shopify ·
+    <a href="../mtd.html" style="color:#D4A843;">← Back to MTD Dashboard</a>
+</div>
+
+</div>
+
+<script>
+
+    const stackLabels = ["Dec '22", "Jan '23", "Feb '23", "Mar '23", "Apr '23", "May '23", "Jun '23", "Jul '23", "Aug '23", "Sep '23", "Oct '23", "Nov '23", "Dec '23", "Jan '24", "Feb '24", "Mar '24", "Apr '24", "May '24"];
+    const stackDatasets = [{"label": "Subscription Implied", "data": [0, 4828.0, 5208.0, 5681.0, 4530.0, 5518.0, 5257.0, 5701.0, 6005.0, 6142.0, 6858.0, 8166.0, 6424.0, 8921.0, 10033.0, 7460.0, 7806.0, 8252.0], "backgroundColor": "#8B5CF6", "borderColor": "#8B5CF6", "borderWidth": 1}, {"label": "Automatic Discounts", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#EF4444", "borderColor": "#EF4444", "borderWidth": 1}, {"label": "Discount Codes", "data": [0, 8904.0, 5707.0, 6934.0, 21628.0, 4055.0, 3259.0, 3923.0, 5969.0, 8168.0, 7338.0, 14521.0, 8588.0, 10626.0, 5350.0, 9611.0, 37145.0, 5418.0], "backgroundColor": "#3B82F6", "borderColor": "#3B82F6", "borderWidth": 1}, {"label": "Manual Discounts", "data": [0, 393.0, 114.0, 758.0, 2789.0, 300.0, 195.0, 445.0, 333.0, 445.0, 363.0, 783.0, 378.0, 488.0, 461.0, 359.0, 796.0, 152.0], "backgroundColor": "#F59E0B", "borderColor": "#F59E0B", "borderWidth": 1}, {"label": "Shipping Discounts", "data": [0, 476.0, 250.0, 3864.0, 18167.0, 5644.0, 102.0, 298.0, 422.0, 289.0, 280.0, 502.0, 340.0, 361.0, 455.0, 387.0, 314.0, 251.0], "backgroundColor": "#10B981", "borderColor": "#10B981", "borderWidth": 1}, {"label": "Free Items (MSRP)", "data": [0, 4670.0, 5620.0, 5445.0, 9318.0, 5297.0, 4894.0, 4744.0, 5025.0, 7240.0, 7170.0, 22060.0, 8108.0, 9174.0, 7793.0, 8680.0, 13822.0, 10213.0], "backgroundColor": "#EC4899", "borderColor": "#EC4899", "borderWidth": 1}];
+    const pctDatasets  = [{"label": "Subscription Implied", "data": [0, 2.72, 3.22, 3.43, 2.36, 3.86, 4.52, 4.07, 4.37, 3.6, 4.1, 2.39, 3.47, 4.51, 5.84, 3.85, 2.87, 5.06], "backgroundColor": "#8B5CF6", "borderColor": "#8B5CF6", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Automatic Discounts", "data": [0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "backgroundColor": "#EF4444", "borderColor": "#EF4444", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Discount Codes", "data": [0, 5.02, 3.53, 4.19, 11.25, 2.84, 2.8, 2.8, 4.34, 4.79, 4.39, 4.24, 4.63, 5.38, 3.11, 4.96, 13.68, 3.32], "backgroundColor": "#3B82F6", "borderColor": "#3B82F6", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Manual Discounts", "data": [0, 0.22, 0.07, 0.46, 1.45, 0.21, 0.17, 0.32, 0.24, 0.26, 0.22, 0.23, 0.2, 0.25, 0.27, 0.19, 0.29, 0.09], "backgroundColor": "#F59E0B", "borderColor": "#F59E0B", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Shipping Discounts", "data": [0, 0.27, 0.15, 2.33, 9.45, 3.95, 0.09, 0.21, 0.31, 0.17, 0.17, 0.15, 0.18, 0.18, 0.26, 0.2, 0.12, 0.15], "backgroundColor": "#10B981", "borderColor": "#10B981", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Free Items (MSRP)", "data": [0, 2.63, 3.48, 3.29, 4.85, 3.71, 4.21, 3.38, 3.65, 4.25, 4.29, 6.45, 4.37, 4.64, 4.54, 4.48, 5.09, 6.26], "backgroundColor": "#EC4899", "borderColor": "#EC4899", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Total Discount %", "data": [0, 10.86, 10.45, 13.71, 29.35, 14.56, 11.78, 10.78, 12.91, 13.08, 13.16, 13.45, 12.86, 14.97, 14.03, 13.67, 22.05, 14.9], "backgroundColor": "#D4A843", "borderColor": "#D4A843", "fill": false, "tension": 0.3, "borderWidth": 4, "pointRadius": 4, "borderDash": [6, 3]}];
+    const pieLabels    = ["Subscription Implied", "Automatic Discounts", "Discount Codes", "Manual Discounts", "Shipping Discounts", "Free Items (MSRP)"];
+    const pieValues    = [8252.0, 0, 5418.0, 152.0, 251.0, 10213.0];
+    const pieColors    = ["#8B5CF6", "#EF4444", "#3B82F6", "#F59E0B", "#10B981", "#EC4899"];
+    
+
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.padding = 14;
+
+// ---- Pie: current month mix ----
+const pieTotal = pieValues.reduce((a,b)=>a+b, 0) || 1;
+new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: pieLabels,
+        datasets: [{
+            data: pieValues,
+            backgroundColor: pieColors,
+            borderColor: '#1e293b', borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { color: '#cbd5e1', boxWidth: 12, padding: 10, font: { size: 11 } } },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) {
+                        const v = ctx.parsed;
+                        const p = (v / pieTotal * 100).toFixed(1);
+                        return ctx.label + ': $' + v.toLocaleString() + ' (' + p + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// ---- Stacked bar: monthly $ by type ----
+new Chart(document.getElementById('stackChart'), {
+    type: 'bar',
+    data: { labels: stackLabels, datasets: stackDatasets },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+            x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
+            y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+        },
+        plugins: {
+            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } } },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) { return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(); }
+                }
+            }
+        }
+    }
+});
+
+// ---- Line: each type as % of gross ----
+new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: { labels: stackLabels, datasets: pctDatasets },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
+            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', callback: v => v + '%' } }
+        },
+        plugins: {
+            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } } },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'; }
+                }
+            }
+        }
+    }
+});
+
+// ---- Table toggle ----
+function toggleTable(mode) {
+    document.getElementById('table-dollars').style.display = (mode === 'dollars') ? 'block' : 'none';
+    document.getElementById('table-pct').style.display     = (mode === 'pct')     ? 'block' : 'none';
+    document.querySelectorAll('.toggle-btn').forEach((b, i) => {
+        if ((mode === 'dollars' && i === 0) || (mode === 'pct' && i === 1)) b.classList.add('active');
+        else b.classList.remove('active');
+    });
+}
+</script>
+</body>
+</html>
