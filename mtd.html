@@ -145,6 +145,28 @@ body {
     font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.85em;
     color: #94a3b8; border-left: 3px solid #D4A843;
 }
+.recon-block {
+    background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px 16px;
+    border-left: 3px solid #D4A843; font-family: 'SF Mono', 'Consolas', monospace;
+    font-size: 0.9em;
+}
+.recon-row {
+    display: grid; grid-template-columns: 18px 1fr auto; align-items: baseline;
+    gap: 10px; padding: 3px 0; color: #cbd5e1;
+}
+.recon-total-row {
+    border-top: 1px solid rgba(212, 168, 67, 0.3);
+    margin-top: 6px; padding-top: 8px; color: #D4A843; font-weight: 700;
+}
+.recon-sign { text-align: center; font-weight: 700; }
+.recon-sign.recon-neg { color: #ef4444; }
+.recon-sign.recon-pos { color: #10b981; }
+.recon-label { color: #cbd5e1; }
+.recon-amt { text-align: right; font-variant-numeric: tabular-nums; color: #e2e8f0; }
+.recon-amt.recon-neg { color: #fca5a5; }
+.recon-amt.recon-pos { color: #6ee7b7; }
+.recon-amt.recon-total { color: #D4A843; font-weight: 700; }
+.recon-total-row .recon-label { color: #D4A843; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ---- CHARTS ---- */
@@ -387,7 +409,7 @@ body {
 <div class="header">
     <h1>April 2026 &mdash; MTD Dashboard</h1>
     <div class="sub">Through 2026-04-16 &mdash; 16 of 30 days (53%) &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated April 17, 2026 at 11:29 AM</div>
+    <div class="updated">Last updated April 17, 2026 at 11:43 AM</div>
 </div>
 
 
@@ -465,6 +487,7 @@ body {
                 </div>
                 <div class="modal-value">$72,361</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Total value of all DTC orders at full retail price (True Gross). Calculated using price list MSRP, not Shopify line item prices. Free items (BOGO/gifts) are excluded.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of (units x price list retail price) for all non-free line items in DTC orders. Items with unit_price = $0 are excluded.</p></div>
             </div>
         </div>
@@ -482,7 +505,8 @@ body {
                     <button class="modal-close" onclick="closeModal('net')">&times;</button>
                 </div>
                 <div class="modal-value">$66,694</div>
-                <div class='modal-section'><div class='modal-label'>What is this?</div><p>The money we actually kept. Full reconciliation: DTC Gross - Line-Item Discounts = Subtotal; Subtotal + Shipping Revenue - Shipping Discounts - Refunds/Returns = Net Revenue. Subtotal-to-Net bridge has three pieces: shipping revenue collected, free-shipping promos applied, and post-order refunds/returns. This is the number that hits our bank account and the basis for the forecast comparison. See the Profit Waterfall tab of the Sales & Revenue Matrix for the full month-by-month breakdown.</p></div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>The money we actually kept — what hits our bank account and drives the forecast comparison. Net Revenue uses Shopify's currentTotalPrice (post-refund) on DTC orders. It differs from Subtotal because shipping revenue is added in, and free-shipping promos plus post-order refunds are subtracted.</p></div>
+                <div class='modal-section'><div class='modal-label'>This month's reconciliation</div><div class='recon-block'><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">DTC Gross (True Gross)</span><span class="recon-amt recon-neutral">$72,361</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Line-Item Discounts</span><span class="recon-amt recon-neg">$7,460</span></div><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">Subtotal (Net Sales)</span><span class="recon-amt recon-neutral">$64,901</span></div><div class="recon-row"><span class="recon-sign recon-pos">+</span><span class="recon-label">Shipping Revenue (gross)</span><span class="recon-amt recon-pos">$7,037</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Shipping Discounts (free ship)</span><span class="recon-amt recon-neg">$4,658</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Refunds & Returns</span><span class="recon-amt recon-neg">$587</span></div><div class="recon-row recon-total-row"><span class="recon-sign recon-total"></span><span class="recon-label">NET REVENUE</span><span class="recon-amt recon-total">$66,694</span></div></div></div>
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>SUM(dtc_revenue) = Shopify currentTotalPrice (post-refund) for all DTC orders. Equivalent to: Subtotal + DTC Shipping Revenue (gross) - Shipping Discounts - Refunds & Returns.</p></div>
             </div>
         </div>
@@ -524,6 +548,7 @@ body {
                 </div>
                 <div class="modal-value">1,509</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Count of completed DTC orders. Broken down into new customer orders, returning customer orders, and subscription orders.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Count of orders from calc_daily_shopify where is_wholesale = 0.</p></div>
             </div>
         </div>
@@ -542,6 +567,7 @@ body {
                 </div>
                 <div class="modal-value">$47.95</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Average True Gross per order. Indicates how much value each order represents at full retail.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>DTC Gross Sales / Total DTC Orders</p></div>
             </div>
         </div>
@@ -560,6 +586,7 @@ body {
                 </div>
                 <div class="modal-value">5,152</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Total product units shipped across all DTC orders.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of line item quantities from all DTC orders.</p></div>
             </div>
         </div>
@@ -587,6 +614,7 @@ body {
                 </div>
                 <div class="modal-value">$7,133</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Combined Meta (Facebook/Instagram) and Google Ads spend for the period.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of daily spend from raw_meta_ads + raw_google_ads.</p></div>
             </div>
         </div>
@@ -605,6 +633,7 @@ body {
                 </div>
                 <div class="modal-value">9.35x</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Marketing Efficiency Ratio. How many dollars of net revenue we generate per dollar of ad spend. Higher is better. Target varies by season.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Net Revenue / Total Ad Spend</p></div>
             </div>
         </div>
@@ -623,6 +652,7 @@ body {
                 </div>
                 <div class="modal-value">2.32x</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>New Customer MER. Revenue from first-time buyers divided by total ad spend. Our primary acquisition efficiency metric. Target is 2.25x.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>New Customer Net Revenue / Total Ad Spend</p></div>
             </div>
         </div>
@@ -641,6 +671,7 @@ body {
                 </div>
                 <div class="modal-value">$4.73</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Cost Per Acquisition. Average ad spend to acquire one order (any type). Lower is better.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Total Ad Spend / Total Orders</p></div>
             </div>
         </div>
@@ -659,6 +690,7 @@ body {
                 </div>
                 <div class="modal-value">$16.06</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>New Customer Cost Per Acquisition. How much we spend in ads to acquire each new customer. Key acquisition cost metric.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Total Ad Spend / New Customer Orders</p></div>
             </div>
         </div>
@@ -686,6 +718,7 @@ body {
                 </div>
                 <div class="modal-value">$7,460</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>All discounts applied to DTC orders: subscription discounts, automatic promos, discount codes, and manual adjustments. Does NOT include free item value.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_discounts from calc_daily_shopify (subscription + automatic + code + manual).</p></div>
             </div>
         </div>
@@ -704,6 +737,7 @@ body {
                 </div>
                 <div class="modal-value">$6,878</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Recurring subscription discount amount baked into line item pricing. Subscribers receive a fixed percentage off retail.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_subscription_discounts from calc_daily_shopify.</p></div>
             </div>
         </div>
@@ -722,6 +756,7 @@ body {
                 </div>
                 <div class="modal-value">$803</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Shopify automatic discounts (BOGO, buy-X-get-Y, automatic % off). Applied without a code at checkout.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_automatic_discounts from calc_daily_shopify.</p></div>
             </div>
         </div>
@@ -740,6 +775,7 @@ body {
                 </div>
                 <div class="modal-value">$976</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Manually entered coupon/promo codes at checkout. Includes influencer codes, email campaign codes, etc.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_code_discounts from calc_daily_shopify.</p></div>
             </div>
         </div>
@@ -758,6 +794,7 @@ body {
                 </div>
                 <div class="modal-value">$391</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Discounts manually applied by customer service (order edits, goodwill adjustments, price matches).</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_manual_discounts from calc_daily_shopify.</p></div>
             </div>
         </div>
@@ -776,6 +813,7 @@ body {
                 </div>
                 <div class="modal-value">1,073 items</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Products given away at $0 (BOGO deals, free gifts with purchase). Tracked separately from discounts because these represent full product cost.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Count and value of line items where unit_price = $0, excluding ignored SKUs.</p></div>
             </div>
         </div>
@@ -794,6 +832,7 @@ body {
                 </div>
                 <div class="modal-value">$0</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Monthly Shopify subscription, transaction fees, and app charges billed through Shopify.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of charges from Shopify billing CSV for the month.</p></div>
             </div>
         </div>
@@ -812,6 +851,7 @@ body {
                 </div>
                 <div class="modal-value">$4,152</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Credit card charges excluding Meta and Google ad payments. Covers tools, services, and miscellaneous business expenses.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of credit card transactions excluding FACEBOOK/META/GOOGLE merchants.</p></div>
             </div>
         </div>
@@ -830,6 +870,7 @@ body {
                 </div>
                 <div class="modal-value">$15,309</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Actual carrier costs paid through ShipStation. This is what we pay to ship orders (DHL, USPS, FedEx), separate from what customers paid for shipping.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of shipment_cost from raw_shipments (ShipStation API) for non-voided, non-return shipments.</p></div>
             </div>
         </div>
@@ -848,6 +889,7 @@ body {
                 </div>
                 <div class="modal-value">$7,073</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Revenue from shipping charges collected from customers. The difference between this and actual shipping cost is our shipping margin (positive = we collect more than we pay).</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of total_shipping from Shopify orders (calc_daily_shopify).</p></div>
             </div>
         </div>
@@ -866,6 +908,7 @@ body {
                 </div>
                 <div class="modal-value">$-8,236</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Difference between what customers paid for shipping and our actual carrier costs. Positive = we collect more than we pay. Negative = we subsidize shipping.</p></div>
+                
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Charged to Customers - Shipping Cost (Actual)</p></div>
             </div>
         </div>
