@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-16T19:30:52Z",
+  "lastUpdated": "2026-04-17T01:15:00Z",
   "project": "packaging-rollover",
   "summary": {
     "productsTotal": 120,
@@ -20,14 +20,22 @@
       "lastAuditAt": "2026-04-14T18:25:00Z"
     },
     "deposited": {
-      "skus": 37,
-      "files": 252,
-      "lastAt": "2026-04-16T17:45:00Z",
+      "skus": 38,
+      "files": 265,
+      "lastAt": "2026-04-17T00:35:00Z",
       "lastBatch": {
-        "id": "2026-04-16-batch-4-updates",
-        "filesCopied": 32,
-        "filesSuperseded": 21,
-        "skusAffected": 15,
+        "id": "2026-04-17-30011L-mocha-regression-fix",
+        "filesCopied": 6,
+        "filesSuperseded": 5,
+        "skusAffected": 1,
+        "previousBatchId": "2026-04-17-one-off-30008",
+        "previousFilesCopied": 7,
+        "previousFilesSuperseded": 0,
+        "previousSkusAffected": 1,
+        "previousBatchId": "2026-04-16-batch-4-updates",
+        "previousFilesCopied": 32,
+        "previousFilesSuperseded": 21,
+        "previousSkusAffected": 15,
         "newlyComplete": [
           "40060L",
           "40110L"
@@ -61,9 +69,9 @@
       }
     },
     "published": {
-      "skus": 31,
-      "files": 55,
-      "lastAt": "2026-04-16T18:10:00Z",
+      "skus": 32,
+      "files": 62,
+      "lastAt": "2026-04-17T01:15:00Z",
       "publishedSkus": [
         "42080L",
         "30007L",
@@ -95,7 +103,8 @@
         "85070L",
         "86010L",
         "40060L",
-        "40110L"
+        "40110L",
+        "30008L"
       ]
     }
   },
@@ -225,6 +234,21 @@
       "publishedAt": "2026-04-16T18:10:00Z",
       "publishedBy": "shopkeeper",
       "notes": "2 newly push-ready (40060L completes batch-3-partial; 40110L Hero-1 fixed — designer delivered with wrong '40010-FR' prefix in correct folder). 13 updates re-export BENEFITS/B&A/Hero. Regressions caught+fixed: 30005 Hero (stray 30012 FRONT was overwriting; restored from OLD), 40060L Review-6 stale duplicate archived, 42080L Instructions renamed 6→8 per 'next number' rule. Shopkeeper 2026-04-16 sync: 15/15 OK via sync_carousel_2026_04_16.py — 105 uploaded, 100 legacy/duplicate deleted. Instructions-8 skipped per Justin decision (c)."
+    },
+    {
+      "id": "2026-04-17-one-off-30008",
+      "skus": ["30008L"],
+      "newlyComplete": ["30008L"],
+      "updatedOnly": [],
+      "filesCopied": 7,
+      "filesSuperseded": 0,
+      "fileCount": 7,
+      "depositedAt": "2026-04-17T00:05:00Z",
+      "depositedBy": "assetsmith",
+      "publishStatus": "complete",
+      "publishedAt": "2026-04-17T01:15:00Z",
+      "publishedBy": "shopkeeper",
+      "notes": "One-off deposit after Justin renamed full-res designer files from 30011L → 30008 on 2026-04-16. AssetSmith renamed remaining 2 web files (FLAVOR, REVIEW) on 2026-04-17 per Justin override of 'no designer-source rename' rule. 5 web + 2 full-res PNG (Back-2, B&A-5 web variants not produced by designer). Standard deposit.py pipeline couldn't pick up 30008 because source folder is still misnamed '30011L-FR COFFEE-INSTANT'; used skills/deposit-new-package/scripts/_deposit_30008_oneoff.py with explicit src→dest map. Shopkeeper 2026-04-17 sync: 7/7 slots uploaded via sync_30008L_first_time.py, variant metafields set (variant_image_1..6 + new_packaging=true), variant display image pointed at new Hero, reordered to canonical Hero/B&A/Nut/Ben/Flav/Rev/Back, 1 legacy media deleted. All 7 slots verified as 30008L FR artwork. Back-2 and B&A-5 live as full-res PNGs (~3.3 MB combined) pending designer web variants."
     }
   ],
   "blockers": [
@@ -261,16 +285,55 @@
       "resolution": "Designer delivered full 7-file set 4/15 (mislabeled with '40010-FR' prefix in correct folder). Deposit.py uses CSV SKU so output correctly labeled 40110-FR-Tea-*. Now 7/7 push-ready."
     },
     {
+      "id": "30011L-mocha-live-regression",
+      "type": "production-regression",
+      "severity": "high",
+      "summary": "30011L Mocha live Shopify carousel is showing French Roast imagery on 5 slots",
+      "detail": "Root cause: 2026-04-14 deposit pulled files from designer folder '30011L-FR COFFEE-INSTANT' because folder name starts with 30011L, but that folder actually held 30008 FR content (designer/asset mislabel). Result: live Mocha PDP shows FR Hero, Nutrition, Benefits, Flavor, Review imagery. Correct B&A and (previously missing) Back slots OK. AssetSmith fixed NEW PACKAGE/ contents on 2026-04-17T00:35Z; Shopkeeper must re-publish 30011L to replace Shopify media.",
+      "affectsSkus": 1,
+      "affectedSku": "30011L",
+      "detectedAt": "2026-04-17T00:25:00Z",
+      "detectedBy": "justin (noticed Mocha NEW PACKAGE contents looked wrong)",
+      "fixedInNewPackage": true,
+      "fixedAt": "2026-04-17T00:35:00Z",
+      "pendingShopkeeperResync": false,
+      "status": "resolved",
+      "resolvedAt": "2026-04-17T00:52:00Z",
+      "resolvedBy": "shopkeeper",
+      "resolution": "Re-synced 30011L via sync_30011L_regression_fix.py: uploaded 7 canonical slots (Hero, Back, Nutrition, Benefits, B&A, Flavor, Review) with verified Mocha content, set variant_image_1..6 + new_packaging=true, updated variant display image to new Hero, reordered media, deleted 6 old wrong-content/legacy media. All 7 slots verified as Mocha artwork."
+    },
+    {
       "id": "no-files-on-disk",
       "type": "data-gap",
-      "summary": "3 SKUs marked DONE in tracker but have zero files on disk",
-      "detail": "30008 (Instant FR Coffee), 43110 (Dandelion Dark Roast Tea), 43220 (Dandelion Caramel Nut Tea) â€” tracker shows 6/7 slots DONE but no carousel images exist anywhere in E-Commerce Stills.",
-      "affectsSkus": 3,
+      "summary": "2 SKUs marked DONE in tracker but have zero files on disk",
+      "detail": "43110 (Dandelion Dark Roast Tea), 43220 (Dandelion Caramel Nut Tea) — tracker shows 6/7 slots DONE but no carousel images exist anywhere in E-Commerce Stills.",
+      "affectsSkus": 2,
       "since": "2026-04-14T18:40:00Z",
+      "resolvedFor": ["30008"],
+      "resolvedAt": "2026-04-17T00:05:00Z",
+      "resolution": "30008 files surfaced inside the mislabeled `30011L-FR COFFEE-INSTANT` designer folder; Justin renamed files (not folder) on 2026-04-16; AssetSmith deposited 7 files into 30008L-FR-Instant/NEW PACKAGE/ on 2026-04-17; Shopkeeper published all 7 slots 2026-04-17T01:15Z. Still open for 43110 and 43220.",
       "status": "open"
     }
   ],
   "recentActivity": [
+    {
+      "agent": "shopkeeper",
+      "action": "publish",
+      "summary": "First-time publish of 30008L (Instant FR Herbal Coffee) — 7 slots uploaded via sync_30008L_first_time.py, variant metafields set, variant display image pointed at new Hero, reordered to canonical order, 1 legacy media removed. All 7 slots verified as 30008L FR artwork. Total published SKUs now 32. Note: Back-2 and B&A-5 live as full-res PNGs (~3.3 MB combined) pending designer web variants.",
+      "at": "2026-04-17T01:15:00Z"
+    },
+    {
+      "agent": "assetsmith",
+      "action": "regression-fix",
+      "summary": "REGRESSION FIX: Re-deposited actual 30011L Mocha files into NEW PACKAGE/. Prior deposit (2026-04-14) had pulled 30008 FR content from mislabeled '30011L-FR COFFEE-INSTANT' folder. Live Shopify carousel was showing FR imagery on 5 slots (Hero, Nutrition, Benefits, Flavor, Review). 5 wrong files moved to OLD/ with -FR-mislabel suffix; 6 correct Mocha files copied. Shopkeeper must re-publish 30011L.",
+      "at": "2026-04-17T00:35:00Z"
+    },
+    {
+      "agent": "assetsmith",
+      "action": "deposit",
+      "summary": "Deposited 30008L (Instant FR Herbal Coffee) — 7 files into NEW PACKAGE/ after Justin's designer-rename fix. Source folder still mislabeled '30011L-FR COFFEE-INSTANT'; 5 web + 2 full-res PNG (Back, B&A — web variants not produced). Ready for Shopkeeper push.",
+      "at": "2026-04-17T00:05:00Z"
+    },
     {
       "agent": "shopkeeper",
       "action": "publish",
@@ -3394,42 +3457,14 @@
         "has_shopify_product": true,
         "product_gid": "gid://shopify/Product/9133045088504",
         "delivered": {
-          "hero": false,
-          "new_look": false,
-          "nutrition": false,
-          "benefits": false,
+          "hero": true,
+          "new_look": true,
+          "nutrition": true,
+          "benefits": true,
           "instructions": false,
           "lifestyle": false,
-          "reviews": false,
-          "flavor": false
-        },
-        "live": {
-          "hero": false,
-          "new_look": false,
-          "nutrition": false,
-          "benefits": false,
-          "instructions": false,
-          "lifestyle": false,
-          "reviews": false,
-          "flavor": false
-        },
-        "media_count": 1
-      },
-      {
-        "sku": "30011L",
-        "name": "Instant Organic Mocha Herbal Coffee",
-        "new_package": true,
-        "has_shopify_product": true,
-        "product_gid": "gid://shopify/Product/9173903540472",
-        "delivered": {
-          "hero": false,
-          "new_look": false,
-          "nutrition": false,
-          "benefits": false,
-          "instructions": false,
-          "lifestyle": false,
-          "reviews": false,
-          "flavor": false
+          "reviews": true,
+          "flavor": true
         },
         "live": {
           "hero": true,
@@ -3440,6 +3475,45 @@
           "lifestyle": false,
           "reviews": true,
           "flavor": true
+        },
+        "media_count": 7
+      },
+      {
+        "sku": "30011L",
+        "name": "Instant Organic Mocha Herbal Coffee",
+        "new_package": true,
+        "has_shopify_product": true,
+        "product_gid": "gid://shopify/Product/9173903540472",
+        "delivered": {
+          "hero": true,
+          "new_look": true,
+          "nutrition": true,
+          "benefits": true,
+          "instructions": false,
+          "lifestyle": false,
+          "reviews": true,
+          "flavor": true
+        },
+        "live": {
+          "hero": true,
+          "new_look": true,
+          "nutrition": true,
+          "benefits": true,
+          "instructions": false,
+          "lifestyle": false,
+          "reviews": true,
+          "flavor": true
+        },
+        "live_wrong_content": {
+          "hero": true,
+          "new_look": false,
+          "nutrition": true,
+          "benefits": true,
+          "instructions": false,
+          "lifestyle": false,
+          "reviews": true,
+          "flavor": true,
+          "note": "5 live slots show 30008 FR imagery due to 2026-04-14 mislabel regression. NEW PACKAGE/ fixed 2026-04-17T00:35Z; awaiting Shopkeeper republish."
         },
         "media_count": 6
       },
