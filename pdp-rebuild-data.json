@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T15:07:21.896023-07:00",
+  "generatedAt": "2026-04-17T16:35:00.291835-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-16T22:10:00Z",
+    "lastActivity": "2026-04-17T22:50:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -207,6 +207,14 @@
         "status": "done",
         "completed": "2026-04-16",
         "notes": "axe-core 4.9.1 WCAG 2.1 AA audit. Initial: 5 violations (pdp-testimonial__stars aria-prohibited-attr, pdp-testimonial__dots aria-required-children tablist, pdp-hero__caffeine-pill + __save-pill contrast 2.98:1 fail, pdp-hero__price-compare + pdp-cross-sell__price-compare contrast fails, 3 pastel cross-sell badges fail). Fixed all 5 across commits ff7d55b / 64f4aa4 / 7a482af: role=img on stars, role=group on dots (pagination not tabs), pills #3BAF4A → #2C7A38 (5.4:1), compare-at 0.5/0.55 → 0.68 opacity (4.7:1), badges #84ADA7/#B17BA8/#E39A5F → #2F7A72/#7D3F74/#B4601E, alt='' on variant tile imgs. Final: 0 in-theme violations, 35 passes. Remaining `shop-follow-button` + `#PBarNextFrame` violations are 3rd-party (Shop Pay web component + Shopify preview bar iframe) — not theme code."
+      },
+      {
+        "id": "t16b",
+        "milestone": "M8",
+        "description": "SHIP: Promote PDP rebuild code (15 files) + header.liquid dupe-JS fix from dev to main/live theme. Files land dormant on live — no product assigned to product.pdp-rebuild template yet, so zero customer impact on PDP. Header.liquid dedup has positive sitewide impact (clears 'Identifier X has already been declared' console errors).",
+        "status": "done",
+        "completedOn": "2026-04-17",
+        "notes": "Cherry-picked 16 files (4 new + 11 modified PDP + header.liquid) from dev into fresh branch ship/pdp-rebuild-2026-04-17 off main, single commit 911e264 with detailed message, fast-forwarded main, pushed. Shopify auto-deploy to live theme 160800145656 completed within ~45s. Verified live: all four previously-duplicated <script> tags (details-disclosure.js, details-modal.js, search-form.js, cart-drawer.js) now load exactly once on teeccino.com. PDP files dormant until M8 t17 template migration. Ship branch deleted. NOTE: ship/pdp-assets-2026-04-16 still lingers locally — git says 'not fully merged' even though its commit 7747889 is on main (fast-forward bookkeeping quirk); safe to force-delete with -D but left alone pending Justin's call."
       },
       {
         "id": "t17",
