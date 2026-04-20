@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-19T07:02:02.454483-07:00",
+  "lastUpdated": "2026-04-20T07:00:30.648562-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.0"
@@ -15,8 +15,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "PDP migration wave 4 complete — 18 products flipped, HTTP smoke + Playwright mobile hscroll both PASS. Bulk migration done (81 products across 4 waves). Handoff to ThemeSmith.",
-        "at": "2026-04-18T03:06:00Z"
+        "summary": "Deep-dive sales hunt for Mocha Tea 10 CT across 277k orders + 8 other sources — zero hits, confirmed never existed",
+        "at": "2026-04-20T03:05:00Z"
       },
       "recentActivity": [
         {
@@ -32,6 +32,42 @@
           "status": "success"
         },
         {
+          "summary": "Justin pushed back on earlier Mocha Tea 10 CT finding. Dug into full Shopify order history (277,719 orders, 2021-2026) plus 7 other data sources. Confirmed: SKU 40080L has ZERO recorded sales across entire product lifetime. The Mocha Roasted Herbal Tea product (handle mocha-herbal-tea, created 2021-04-08) has only ever had 40081 (25 CT) and 40086 (50 CT Tagless, added Nov 2025). The only 10 CT Mocha-adjacent product is Dandelion Mocha Mint (43310L).",
+          "at": "2026-04-20T03:05:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Answered Justin: Mocha Tea 10 CT (SKU 40080L) was never deleted — it never existed. Mocha Tea product is ACTIVE with only 40081 (25 CT) and 40086 (50 CT Tagless).",
+          "at": "2026-04-20T02:45:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Earth Day SUB correction: subscription discount stacks on top of 15% baseline, so metafield and discount should be 10% (not 30%). Deactivated+deleted 30% SUB, reset metafield to 10, created new 10% SUB on existing '= 10' collection. Effective first-sub rate = 25% (15% baseline + 10% Earth Day).",
+          "at": "2026-04-20T01:50:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Earth Day follow-ups done: FOTM OTP+SUB deactivated for promo window, free-ship threshold flipped $59 -> $45 across all 5 General Profile zones. shipping_threshold.py patched for API 2026-01 schema change (conditionsToUpdate moved from top-level DeliveryProfileInput to nested DeliveryMethodDefinitionInput).",
+          "at": "2026-04-20T01:30:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Earth Day 2026 promo LIVE — metafields flipped sitewide to 18/30; OTP 18% + SUB 30% automatic discounts created and active; both collections populated 137 products. FOTM left active (flagged for review).",
+          "at": "2026-04-20T01:00:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Created 5 shop-level promo callout metafield definitions (custom.promo_*) with storefront read enabled; populated Earth Day Sale values",
+          "at": "2026-04-19T00:01:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "PDP wave 4 (final 18 products) flipped to pdp-rebuild. HTTP smoke 5/5 OK (2 false-FAILs are correct behavior — solo-SKUs where format switcher intentionally hides). Playwright mobile hscroll check 5/5 PASS at 375×800. Bulk migration COMPLETE: 81 products flipped across 4 waves.",
           "at": "2026-04-18T03:06:00Z",
           "source": "dispatched",
@@ -40,42 +76,6 @@
         {
           "summary": "Wave 3 migrate complete: 19 products flipped Replo → pdp-rebuild; 18/19 rendering correctly; 1 stuck on origin page_cache (vanilla-nut-herbal-tea); 1 edge case (instant-miraculous-mushrooms-cacao-5) missing format_switcher as expected.",
           "at": "2026-04-18T00:48:30Z",
-          "source": "interactive",
-          "status": "partial"
-        },
-        {
-          "summary": "Wave 2 migrate complete: 22 products flipped Replo → pdp-rebuild; 21/22 rendering correctly on storefront; 1 stuck on origin page_cache (french-roast-herbal-tea).",
-          "at": "2026-04-18T00:48:00Z",
-          "source": "interactive",
-          "status": "partial"
-        },
-        {
-          "summary": "PDP bulk migration wave 1 of 4 complete — 22 products flipped from Replo legacy template to pdp-rebuild. All 4 HTTP smoke checks PASS (covering Herbal Coffee + Instant Latte type branches). Wave 2-4 PAUSED pending Justin/ThemeSmith green light.",
-          "at": "2026-04-18T00:38:38.396573Z",
-          "source": "themesmith-inbox",
-          "status": "success"
-        },
-        {
-          "summary": "Confirmed discontinued Chocolate Raspberry Chicory Herbal Coffee (6681914409129) already sells through correctly: 82120LXXX (11oz) and 52120 (Trial) blocked via DENY + zero/negative inventory; 62120 (5lb, 61 units) open to sell through and will auto-block at 0. Added 'discontinued' + 'sell-through' tags for reporting + future promo-exclusion. Promo metafields already null.",
-          "at": "2026-04-17T23:55:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Normalized variant.custom.size across 251 webproduct variants to canonical 16-value vocabulary. 133 writes applied, 0 errors. Schema (metafield definition choices) updated from 23 legacy values to 16 canonical + 2 operational. Shop All filter now renders clean buckets: Herbal Coffee {10 oz, 11 oz, 500g, 5 lb, Trial Size}, Herbal Tea {10 Tea Bags, 25 Tea Bags, 50 Tagless Tea Bags}, Instant Coffee {85g, 100g, 135g, 11 oz}, Instant Latte {7.9 oz, 252g}, Cereal {300g, 5 lb}. Scope A only — variant option values / PDP / cart untouched.",
-          "at": "2026-04-17T23:40:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "End-of-day handoff: Earth Day mechanic 1 (free-ship threshold) skill built + dry-run verified, pending Apr 20 launch. Mechanic 2 (free tote GWP): tote inventory set 400/400, Upcart blocked by cross-origin iframe but docs confirm clean factoring — Shopify BXGY handles pricing (scriptable), Upcart handles auto-add (UI-only). Hybrid plan drafted, awaiting approval to build gwp_discount.py next session.",
-          "at": "2026-04-17T23:35:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Set TOT05/TOT06 on-hand to 400 each at Oxnard for Earth Day free-tote hook. Got into Upcart dashboard via Shopify Admin but cannot read/interact with config — iframe is cross-origin (slide.upcart.app). Need alternative path (Upcart REST API probe, or manual runbook with Justin driving).",
-          "at": "2026-04-17T23:20:00Z",
           "source": "interactive",
           "status": "partial"
         }
@@ -93,10 +93,58 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Shop All mobile: collapsed 7 type tabs into a slide-out drawer",
-        "at": "2026-04-18T07:00:00Z"
+        "summary": "SHIPPED TO LIVE — PDP Subscribe radio first-shipment % now matches SAVE pill (both 30% on Hazelnut, vs compare_at_price). Earlier 23% (v.price-based) replaced. Verified via Admin API + server-side scrape of teeccino.com.",
+        "at": "2026-04-20T06:08:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "SHIPPED TO LIVE — PDP Subscribe radio first-shipment % now matches the SAVE pill next to the price (both 30% on Hazelnut). Earlier today's ship used v.price as base for the radio label (23%) but the pill used compare_at_price (30%) — Justin flagged the mismatch. Now both use compare_at_price.",
+          "at": "2026-04-20T06:08:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "SHIPPED TO LIVE — Earth Day PDP bundle (subscribe stacking fix + 23% total-pct first-shipment label + sitewide promo callout snippet/CSS). File-level cherry-pick onto ship/pdp-earth-day-bundle off main, merged --no-ff to main, pushed, auto-deployed to live theme 160800145656. Server-side HTML scrape of https://www.teeccino.com confirms real customer render.",
+          "at": "2026-04-20T05:55:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "PDP Subscribe radio label now expresses the TOTAL first-shipment discount vs v.price (e.g., 23% for Hazelnut), parallel to the '15% off recurring' sub-line. Replaces the earlier 'Extra 10% OFF' copy that understated real savings.",
+          "at": "2026-04-20T05:35:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Fixed PDP subscribe price to stack the automatic discount ON TOP of the 15%-off selling-plan allocation (Shopify's real behavior), not on v.price. Verified end-to-end against actual cart: PDP display matches Shopify cart charge to the cent on both OTP ($13.94) and Subscribe first shipment ($13.00) states.",
+          "at": "2026-04-20T05:20:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Shipped Admin-triggered sitewide promo callout snippet to PDP (dev theme). Shopkeeper flips shop.metafields.custom.promo_active to turn on/off, no theme deploy needed. First live: Earth Day Sale through 2026-04-22.",
+          "at": "2026-04-20T03:30:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Shipped dynamic PDP pricing from variant metafields (custom.discount + custom.first_subscription_discount) to dev ahead of 2026-04-21 sitewide promo — verified on 2 products, math matches Justin's spec (strike=compare_at, SAVE=total% off compare_at)",
+          "at": "2026-04-20T03:04:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Static wiring triple-check of live donation upsell on teeccino.com/products/hazelnut-herbal-coffee — server HTML + pdp-donation-upsell.js + pdp-hero.js all pass. Runtime click-through QA blocked by parallel ThemeSmith session holding the Playwright browser lock; deferred to Justin or a later session.",
+          "at": "2026-04-19T18:40:00-07:00",
+          "source": "interactive",
+          "status": "partial"
+        },
+        {
+          "summary": "Shipped PDP ATC donation upsell v2 (tier picker $1/$2/$10 + Teeccino match copy + mobile hardening) to live theme 160800145656 via cherry-pick of 5 files onto main. Verified live storefront renders section with all expected copy tokens and 3 tier radios.",
+          "at": "2026-04-19T18:20:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "PDP donation upsell: mobile edge-case hardening — dialog scrolls its own content on short viewports; match pill stays inside content box on narrow phones.",
           "at": "2026-04-19T03:30:00Z",
@@ -106,54 +154,6 @@
         {
           "summary": "PDP ATC donation upsell v2 — tier picker ($1 / $2 / $10) + Teeccino-matches-every-dollar copy + '*up to $5,000 total' fine print. Merged to dev, CSS+JS+liquid synced to dev theme 160979255544; template JSON auto-sync lagging — final sync expected within 1–3 min.",
           "at": "2026-04-19T02:55:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Shop All mobile: collapsed 7 type tabs into a slide-out drawer. Mobile gets a compact 'Browse types: <current>' trigger pill + off-canvas drawer (85vw) with stacked type list. Desktop unchanged — wrapped centered row inline.",
-          "at": "2026-04-18T07:00:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Shop All: retired 466px Families strip, shipped compact (~145px) Featured Spotlight for Miraculous Mushrooms, and fixed mobile type-tab chip row — all 7 tabs now wrap to 3 rows instead of horizontal-scrolling (3.2x viewport overflow) with 4 tabs hidden.",
-          "at": "2026-04-18T05:57:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "PDP M8 COMPLETE — all 81 ACTIVE products migrated from replo.10dc3372 to pdp-rebuild across 4 waves. Mid-flight mobile hscroll regression fixed class-wide and shipped to live. Wave-4 smoke upgraded with Playwright mobile check. 8/8 independent mobile QA samples PASS on final wave. Canaries (4 Hazelnut) + migrated (81) = 85 products now on pdp-rebuild template. 14 products remain on secondary Replo templates (samplers/gifts/seasonal) — M9 scope.",
-          "at": "2026-04-18T03:10:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "PDP mobile hscroll fix shipped to main/live theme via cherry-pick. Verified on teeccino.com in fresh session: documentElement.scrollWidth 3008 -> 360 at vw=375.",
-          "at": "2026-04-18T02:21:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "PDP mobile page-wide horizontal scroll fixed on dev — .pdp-cross-sell__swiper overflow:visible -> hidden. Verified on shared dev theme preview at 375px; main (live) still unpatched.",
-          "at": "2026-04-18T02:18:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Shop All: added Families strip section above product grid, pre-populated with Miraculous Mushrooms + 4 other Teeccino lines. Section is block-based so Justin can reorder/add/remove in theme editor.",
-          "at": "2026-04-18T00:20:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "M8 canary expansion complete: flipped all 3 remaining Hazelnut products (Tea / Instant Coffee / Instant Latte) to product.pdp-rebuild template, giving full coverage of all 4 product.type branches. Format switcher, type-tab hiding, and sibling cross-linking verified on all 4 PDPs via live HTML inspection.",
-          "at": "2026-04-18T00:15:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Shop All: added Flavor filter (7-chip taxonomy) and made Size + Flavor filters collapsible pill toggles with count badges, collapsed by default.",
-          "at": "2026-04-17T23:58:00Z",
           "source": "interactive",
           "status": "success"
         }
@@ -167,12 +167,16 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Daily analytics pipeline run",
+        "source": "interactive",
+        "startedAt": "2026-04-20T14:00:20Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Daily pipeline for 2026-04-19 — partial (Google Ads OAuth expired, Sales matrix locked)",
-        "at": "2026-04-19T14:10:00Z"
+        "summary": "Daily analytics pipeline completed successfully for 2026-04-14",
+        "at": "2026-04-15T14:02:49.668025+00:00"
       },
       "recentActivity": [
         {
@@ -245,18 +249,38 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Driving PDP ATC Donation Upsell to preview — dispatching ThemeSmith for end-to-end build + dev push",
-        "source": "interactive",
-        "startedAt": "2026-04-19T00:00:00Z"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Registered new project pdp-atc-donation-upsell and dispatched ThemeSmith (PID 31604, $25 budget) to build an ATC-triggered NGO donation upsell modal on pdp-rebuild — ADA compliant, minimally invasive, session-suppressed, coexists with OCU / cart-drawer / Stay.ai. ThemeSmith will build on feature/pdp-atc-donation-upsell off dev, merge to dev, STOP before main so Justin can QA and ship to live himself tonight.",
-        "at": "2026-04-18T14:58:00-07:00"
+        "summary": "Scaffolded BrewSmith + rebuilt CoffeeAlternatives.com (14 articles + 3 reviews live pending Justin's 2 manual deploy steps)",
+        "at": "2026-04-20T23:55:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Scaffolded 8th agent BrewSmith and rebuilt CoffeeAlternatives.com as autonomous Jekyll editorial site",
+          "at": "2026-04-20T23:45:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
+        {
+          "summary": "Registered TeeccinoAgentSmith-DailyRecover scheduled task (5:00 AM daily) + wired it into Mission Control infrastructure panel. Smoke-tested via scheduler — LastTaskResult=0.",
+          "at": "2026-04-20T11:15:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Shipped auto-heal to gateway.py --recover. Stale 'working' > 24h with newer outbox artifacts now clears silently instead of firing a humanActions alert. 15/15 tests pass.",
+          "at": "2026-04-20T11:00:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Recovered from stale 'working' status. PDP ATC donation upsell (dispatched 2026-04-18) shipped to live by ThemeSmith on 2026-04-20; project marked complete 7/7. Cleared status.json to idle.",
+          "at": "2026-04-20T00:00:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Registered new project pdp-atc-donation-upsell and dispatched ThemeSmith (PID 31604, $25 budget) to build an ATC-triggered NGO donation upsell modal on pdp-rebuild — ADA compliant, minimally invasive, session-suppressed, coexists with OCU / cart-drawer / Stay.ai. ThemeSmith will build on feature/pdp-atc-donation-upsell off dev, merge to dev, STOP before main so Justin can QA and ship to live himself tonight.",
           "at": "2026-04-18T14:58:00-07:00",
@@ -292,34 +316,10 @@
           "at": "2026-04-15T20:30:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Cross-agent audit of 2026-04-15 activity — 2 real bugs, 4 improvement opportunities, bidirectional dispatches mostly working",
-          "at": "2026-04-15T18:10:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Built campaign-planning skill for AdSmith + registered campaign-versatility project with dashboard",
-          "at": "2026-04-15T17:50:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Critical: diagnosed and partially fixed MCP tool inheritance across agent guild — removed tools: filter from cc-AgentSmith.md (test subject)",
-          "at": "2026-04-15T10:45:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Updated 6 PS profile launchers (dataops/shopkeeper/themesmith/agentsmith/assetsmith/adsmith) to Push-Location into agent workspace before invoking claude — fixes Playwright EPERM on C:/WINDOWS/system32",
-          "at": "2026-04-15T10:36:34.168095-07:00",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "assetsmith",
@@ -492,7 +492,31 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 1,
+      "pendingTasks": 2,
+      "health": "healthy"
+    },
+    {
+      "id": "brewsmith",
+      "name": "BrewSmith",
+      "emoji": "newspaper",
+      "role": "CoffeeAlternatives.com Webmaster",
+      "workspace": "clawd-brewsmith",
+      "status": "idle",
+      "currentTask": null,
+      "activeBranches": [],
+      "lastActivity": {
+        "summary": "Published: The best morning drink instead of coffee",
+        "at": "2026-04-20T04:20:00-07:00"
+      },
+      "recentActivity": [
+        {
+          "summary": "Published: The best morning drink instead of coffee (getting-started, sam-reyes)",
+          "at": "2026-04-20T04:20:00-07:00",
+          "source": "scheduled",
+          "status": "success"
+        }
+      ],
+      "pendingTasks": 0,
       "health": "healthy"
     }
   ],
@@ -600,6 +624,26 @@
       "tasksPending": 1
     },
     {
+      "id": "coffeealternatives-launch",
+      "name": "CoffeeAlternatives.com Launch & Autonomous Operation",
+      "status": "active",
+      "priority": "high",
+      "owner": "brewsmith",
+      "contributors": [
+        "agentsmith",
+        "Justin"
+      ],
+      "category": "Marketing / SEO",
+      "started": "2026-04-20",
+      "lastActivity": "2026-04-20",
+      "description": "Launch and operate CoffeeAlternatives.com — a quietly Teeccino-owned editorial site that SEO-targets AI-answer queries in the coffee-alternatives space. Full rebuild from legacy static HTML to Jekyll + GitHub Actions. BrewSmith (8th guild agent) operates autonomously: daily content generation, community nurture, SEO audits, traffic monitoring. Ownership transparent on /disclosure/; body copy editorial and balanced.",
+      "dashboardUrl": null,
+      "milestoneDone": 3,
+      "milestoneTotal": 6,
+      "tasksDone": 0,
+      "tasksPending": 4
+    },
+    {
       "id": "cost-tracking",
       "name": "Cost Tracking & Profit Waterfall",
       "status": "complete",
@@ -701,7 +745,7 @@
     {
       "id": "pdp-atc-donation-upsell",
       "name": "PDP ATC Donation Upsell Popup",
-      "status": "ready-for-qa",
+      "status": "complete",
       "priority": "high",
       "owner": "themesmith",
       "contributors": [
@@ -710,7 +754,7 @@
       ],
       "category": "Storefront",
       "started": "2026-04-18",
-      "lastActivity": "2026-04-19T02:45:00-07:00",
+      "lastActivity": "2026-04-19T18:20:00-07:00",
       "description": "Build a minimally-invasive, ADA-compliant upsell modal that triggers on Add-to-Cart on the new pdp-rebuild template (now live on 85 products). First upsell offer is NOT a Teeccino product — it's an NGO donation using the existing Shopify donation product that already powers the checkout donation upsell flow. Goal: add the donation variant to cart with one click, dismiss with one click, no interference with OCU / cart drawer / Stay.ai / Loox. Session-scoped suppression so repeat ATCs on the same session don't re-nag. WCAG 2.1 AA required. Justin is offline for the build — expects near-complete with a preview URL to QA and flip to live tonight.",
       "dashboardUrl": null,
       "milestoneDone": 7,
@@ -912,7 +956,13 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-04-19T07:00:01.728004-07:00",
+        "lastRun": "2026-04-20T07:00:01.077179-07:00",
+        "status": "healthy"
+      },
+      {
+        "name": "AgentSmith Daily Recover",
+        "schedule": "5:00 AM daily",
+        "lastRun": "2026-04-20T05:00:00.488912-07:00",
         "status": "healthy"
       }
     ]
