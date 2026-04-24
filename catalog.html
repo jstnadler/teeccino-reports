@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Catalog Browser — Teeccino</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --bg-2: #16213e;
+    --card: rgba(255,255,255,0.05);
+    --card-2: rgba(255,255,255,0.08);
+    --border: rgba(255,255,255,0.1);
+    --border-strong: rgba(255,255,255,0.18);
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-faint: #64748b;
+    --accent: #D4A843;
+    --accent-dim: #8B6914;
+    --catalog: #00B8D4;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--bg-2) 100%);
+    color: var(--text); padding: 24px; padding-top: 70px;
+    line-height: 1.5; min-height: 100vh;
+  }
+
+  /* -- NAV -- */
+  .top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+    z-index: 200; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .top-nav a { color: var(--accent-dim); text-decoration: none; font-size: 0.9em; }
+  .top-nav a:hover { color: var(--accent); }
+  .top-nav a.active { color: var(--accent); font-weight: 600; }
+  .top-nav .brand { font-weight: 700; font-size: 1.1em; color: var(--accent); }
+
+  /* -- HEADER -- */
+  header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 4px; }
+  h1 {
+    font-size: 1.6rem;
+    background: linear-gradient(135deg, var(--catalog), #4fd1e0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
+  .subtitle .catalog-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 10px;
+    background: rgba(0,184,212,0.14); color: var(--catalog);
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-right: 8px;
+  }
+
+  /* -- STATS STRIP -- */
+  .stats-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; text-align: left;
+  }
+  .stat .num { font-size: 1.6rem; font-weight: 700; color: var(--catalog); line-height: 1; }
+  .stat .label {
+    font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-top: 6px;
+  }
+  .stat.sub .num { color: var(--text); font-size: 1.2rem; }
+
+  /* -- FILTERS -- */
+  .filter-bar {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 20px;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .filter-bar input[type="text"],
+  .filter-bar select {
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; font-family: inherit;
+  }
+  .filter-bar input[type="text"] { flex: 1 1 280px; min-width: 200px; }
+  .filter-bar input:focus, .filter-bar select:focus {
+    outline: none; border-color: var(--catalog);
+  }
+  .pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 12px; border-radius: 20px; font-size: 0.78rem;
+    cursor: pointer; user-select: none; transition: all 0.15s;
+  }
+  .pill:hover { border-color: var(--border-strong); color: var(--text); }
+  .pill.active { background: rgba(0,184,212,0.15); border-color: var(--catalog); color: var(--catalog); }
+  .pill.quality.active { background: rgba(248,113,113,0.15); border-color: var(--red); color: var(--red); }
+  .result-count { margin-left: auto; font-size: 0.82rem; color: var(--text-dim); }
+
+  /* -- GRID -- */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; cursor: pointer; transition: transform 0.15s, border-color 0.15s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { transform: translateY(-2px); border-color: var(--catalog); }
+  .card .thumb {
+    width: 100%; aspect-ratio: 1 / 1; background: rgba(255,255,255,0.03);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .card .thumb img {
+    max-width: 100%; max-height: 100%; object-fit: contain;
+    transition: transform 0.2s;
+  }
+  .card:hover .thumb img { transform: scale(1.03); }
+  .card .thumb .noimg {
+    color: var(--text-faint); font-size: 0.8rem; text-align: center; padding: 10px;
+  }
+  .card .body { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .card .title {
+    font-size: 0.88rem; font-weight: 600; color: var(--text);
+    line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card .meta-row {
+    display: flex; flex-wrap: wrap; gap: 5px; font-size: 0.68rem;
+  }
+  .chip {
+    padding: 2px 7px; border-radius: 10px; font-size: 0.68rem;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .chip.style { background: rgba(212,168,67,0.12); color: var(--accent); }
+  .chip.family { background: rgba(96,165,250,0.12); color: var(--blue); }
+  .chip.sku { background: rgba(255,255,255,0.06); color: var(--text-dim); font-family: 'Consolas', 'Menlo', monospace; }
+  .chip.webproduct { background: rgba(74,222,128,0.14); color: var(--green); }
+  .chip.hidden { background: rgba(139,148,158,0.14); color: var(--text-faint); }
+  .chip.seasonal { background: rgba(167,139,250,0.14); color: var(--purple); }
+  .chip.accessory { background: rgba(251,146,60,0.14); color: var(--orange); }
+  .gap-badges { display: flex; gap: 4px; margin-top: auto; padding-top: 4px; }
+  .gap-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(248,113,113,0.5); title: ''; display: inline-block;
+  }
+  .completeness-bar {
+    height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px;
+  }
+  .completeness-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--yellow), var(--green)); }
+
+  /* -- DETAIL DRAWER -- */
+  .drawer-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(780px, 100%);
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+    border-left: 1px solid var(--border-strong);
+    z-index: 950; overflow-y: auto;
+    transform: translateX(100%); transition: transform 0.22s ease-out;
+    box-shadow: -12px 0 40px rgba(0,0,0,0.5);
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-header {
+    position: sticky; top: 0; background: rgba(15,23,42,0.95); backdrop-filter: blur(8px);
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; z-index: 1;
+  }
+  .drawer-header h2 { font-size: 1.12rem; font-weight: 600; color: var(--text); }
+  .drawer-close {
+    background: var(--card); border: 1px solid var(--border); color: var(--text);
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .drawer-close:hover { border-color: var(--catalog); color: var(--catalog); }
+  .drawer-body { padding: 24px; }
+  .drawer-body section { margin-bottom: 28px; }
+  .drawer-body h3 {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text-dim); margin-bottom: 10px; font-weight: 600;
+    border-bottom: 1px solid var(--border); padding-bottom: 6px;
+  }
+
+  /* Hero */
+  .drawer-hero {
+    display: grid; grid-template-columns: 220px 1fr; gap: 20px;
+    margin-bottom: 20px;
+  }
+  .drawer-hero .hero-img {
+    aspect-ratio: 1 / 1; background: rgba(255,255,255,0.03);
+    border-radius: 10px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; cursor: zoom-in;
+  }
+  .drawer-hero .hero-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .drawer-hero .hero-info { display: flex; flex-direction: column; gap: 8px; }
+  .drawer-hero .hero-info .title-lg { font-size: 1.35rem; font-weight: 600; color: var(--text); }
+  .drawer-hero .hero-info .subtitle-row { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.8rem; }
+  .drawer-hero .hero-info .links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .drawer-hero .hero-info a.link-btn {
+    background: var(--card); border: 1px solid var(--border); padding: 6px 12px;
+    border-radius: 6px; color: var(--catalog); text-decoration: none; font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+  .drawer-hero .hero-info a.link-btn:hover { border-color: var(--catalog); background: rgba(0,184,212,0.08); }
+
+  @media (max-width: 640px) {
+    .drawer-hero { grid-template-columns: 1fr; }
+  }
+
+  /* Image strip */
+  .img-strip {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px;
+    scrollbar-color: var(--accent-dim) transparent;
+  }
+  .img-strip img {
+    height: 96px; width: 96px; object-fit: contain;
+    background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border);
+    cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+  }
+  .img-strip img:hover { border-color: var(--catalog); }
+  .img-strip img.current { border-color: var(--catalog); }
+
+  /* Data rows */
+  .kv { display: grid; grid-template-columns: 150px 1fr; gap: 6px 18px; font-size: 0.88rem; }
+  .kv dt { color: var(--text-dim); font-size: 0.8rem; }
+  .kv dd { color: var(--text); word-break: break-word; }
+  .kv dd.missing { color: var(--text-faint); font-style: italic; }
+  .kv dd code { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.82rem; }
+
+  .tag-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    padding: 3px 9px; border-radius: 10px; font-size: 0.72rem; color: var(--text-dim);
+  }
+  .tag.promo { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.3); color: var(--yellow); }
+
+  .body-html {
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; font-size: 0.92rem; line-height: 1.6; color: var(--text);
+    white-space: normal;
+  }
+  .body-html p { margin-bottom: 10px; }
+  .body-html a { color: var(--catalog); }
+  .body-html ul, .body-html ol { margin-left: 22px; margin-bottom: 10px; }
+
+  .ingredient-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ingredient-pill {
+    background: rgba(0,184,212,0.1); border: 1px solid rgba(0,184,212,0.25);
+    color: #4fd1e0; padding: 4px 10px; border-radius: 14px; font-size: 0.82rem;
+  }
+
+  .nutrition-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .nutrition-table td {
+    padding: 6px 10px; border-bottom: 1px solid var(--border);
+  }
+  .nutrition-table tr:last-child td { border-bottom: none; }
+  .nutrition-table td:first-child { color: var(--text-dim); width: 45%; }
+  .nutrition-table td.qty { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); }
+  .nutrition-table td.pct { width: 80px; color: var(--text-dim); text-align: right; }
+
+  .icon-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  .icon-box {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; text-align: left;
+  }
+  .icon-box .icon-name {
+    font-size: 0.82rem; color: var(--text); font-weight: 500;
+  }
+  .icon-box .icon-conf {
+    font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  .icon-box.high { border-color: rgba(74,222,128,0.4); }
+  .icon-box.medium { border-color: rgba(251,191,36,0.4); }
+  .icon-box.low { border-color: rgba(248,113,113,0.3); }
+
+  .variant-list { display: flex; flex-direction: column; gap: 8px; }
+  .variant-row {
+    display: grid; grid-template-columns: 1fr 100px 80px;
+    gap: 10px; padding: 8px 12px; background: var(--card); border-radius: 8px;
+    border: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .variant-row .canon { color: var(--green); }
+  .variant-row code { font-size: 0.7rem; color: var(--text-faint); }
+
+  .missing-msg { color: var(--text-faint); font-size: 0.85rem; font-style: italic; padding: 10px 0; }
+
+  .footer-note { color: var(--text-dim); font-size: 0.78rem; margin-top: 40px; text-align: center; padding: 20px; }
+  .footer-note a { color: var(--catalog); }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000;
+    display: none; align-items: center; justify-content: center; cursor: zoom-out;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; }
+
+  /* Loading */
+  #loading, #error { text-align: center; padding: 40px; color: var(--text-dim); }
+  #error { color: var(--red); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    body { padding: 16px; padding-top: 62px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+    .drawer-body { padding: 16px; }
+    .kv { grid-template-columns: 1fr; gap: 2px 0; }
+    .kv dt { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <span class="brand">☕ Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="catalog.html" class="active">Catalog</a>
+  <a href="mission-control.html">Mission Control</a>
+  <a href="status.html">Status</a>
+</nav>
+
+<header>
+  <div>
+    <h1>📚 Product Catalog Browser</h1>
+    <div class="subtitle">
+      <span class="catalog-pill">CatalogSmith</span>
+      <span id="meta-line">Loading…</span>
+    </div>
+  </div>
+</header>
+
+<div id="loading">Loading catalog…</div>
+<div id="error" style="display:none;"></div>
+
+<div id="app" style="display:none;">
+
+  <div class="stats-strip" id="stats-strip"></div>
+
+  <div class="filter-bar">
+    <input type="text" id="search" placeholder="Search title, SKU, or handle…" autocomplete="off">
+    <select id="filter-style"><option value="">All Styles</option></select>
+    <select id="filter-family"><option value="">All Families</option></select>
+    <div class="pill-group">
+      <span class="pill active" data-filter="webproduct" data-value="true">Webproducts only</span>
+      <span class="pill" data-filter="webproduct" data-value="all">All products</span>
+    </div>
+    <div class="pill-group">
+      <span class="pill quality" data-filter="gap" data-value="seo-title">Missing SEO title</span>
+      <span class="pill quality" data-filter="gap" data-value="seo-desc">Missing SEO desc</span>
+      <span class="pill quality" data-filter="gap" data-value="ingredients">No ingredients</span>
+      <span class="pill quality" data-filter="gap" data-value="nutrition">No nutrition</span>
+      <span class="pill quality" data-filter="gap" data-value="body">No description</span>
+    </div>
+    <span class="result-count" id="result-count"></span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer-note">
+    Data source: CatalogSmith master workbook (<code>product-catalog.xlsx</code> + <code>accessories-catalog.xlsx</code>) joined with live Shopify metafield pull.<br>
+    Regenerate with <code>Automations/build_catalog_browser.py</code>. Deployed to <code>jstnadler.github.io/teeccino-reports/catalog.html</code>.
+  </div>
+
+</div>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-labelledby="drawer-title" aria-hidden="true">
+  <div class="drawer-header">
+    <h2 id="drawer-title">Product</h2>
+    <button class="drawer-close" id="drawer-close" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<div class="lightbox" id="lightbox"><img id="lightbox-img" alt=""></div>
+
+<script>
+/* ----------------------------------------------------------------------- */
+/* Icon labels — matches schema/taxonomy/package-icons.yaml vocabulary      */
+/* ----------------------------------------------------------------------- */
+const ICON_LABELS = {
+  acid_free: 'Acid-Free',
+  beauty: 'Beauty',
+  detox: 'Detox',
+  gluten_free: 'Gluten-Free',
+  gut_health: 'Gut Health',
+  heart_healthy_potassium: 'Heart Healthy (K)',
+  immunity: 'Immunity',
+  immunity_support: 'Immunity Support',
+  mental_clarity: 'Mental Clarity',
+  natural_energy: 'Natural Energy',
+  no_caffeine: 'Caffeine-Free',
+  prebiotic: 'Prebiotic',
+  frothed_cup: 'Frothed',
+  herb_mug: 'Tea Mug',
+  hot_cup: 'Hot',
+  iced_cup: 'Iced',
+  instant: 'Instant',
+  free_shipping: 'Free Shipping',
+  gift_box: 'Gift Box',
+};
+
+/* Tag classifier — matches CatalogSmith/Shopkeeper boundary convention */
+const PROMO_TAG_PATTERNS = [
+  /^fotm-/i, /^promo-/i, /^sale-/i,
+  /^hidden$/i, /^target$/i, /^wholesale-?/i, /^gwp-?/i, /^free-/i,
+  /^subscribe-?/i, /^earthday-?/i, /^bf-?/i, /^cyber-?/i, /^holiday-?/i,
+];
+function isPromoTag(t) { return PROMO_TAG_PATTERNS.some(re => re.test(t)); }
+
+/* Nutrition panel ordering — matches extract_nutrition_facts.py */
+const NUTRIENT_ORDER = [
+  'serving_size','calories','total_fat','saturated_fat','trans_fat','cholesterol',
+  'sodium','total_carbohydrate','dietary_fiber','total_sugars','added_sugars',
+  'protein','vitamin_d','calcium','iron','potassium','caffeine','inulin',
+];
+const NUTRIENT_LABELS = {
+  serving_size: 'Serving size', calories: 'Calories',
+  total_fat: 'Total fat (g)', saturated_fat: 'Saturated fat (g)',
+  trans_fat: 'Trans fat (g)', cholesterol: 'Cholesterol (mg)',
+  sodium: 'Sodium (mg)', total_carbohydrate: 'Total carbohydrate (g)',
+  dietary_fiber: 'Dietary fiber (g)', total_sugars: 'Total sugars (g)',
+  added_sugars: 'Added sugars (g)', protein: 'Protein (g)',
+  vitamin_d: 'Vitamin D (mcg)', calcium: 'Calcium (mg)',
+  iron: 'Iron (mg)', potassium: 'Potassium (mg)',
+  caffeine: 'Caffeine', inulin: 'Inulin (g)',
+};
+
+/* ----------------------------------------------------------------------- */
+/* State                                                                     */
+/* ----------------------------------------------------------------------- */
+let DATA = null;
+let FILTERED = [];
+let FILTERS = {
+  search: '',
+  style: '',
+  family: '',
+  webproduct: 'true',
+  gap: null,
+};
+
+/* ----------------------------------------------------------------------- */
+/* Data load                                                                 */
+/* ----------------------------------------------------------------------- */
+async function loadData() {
+  try {
+    const resp = await fetch('catalog-data.json?ts=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    DATA = await resp.json();
+    init();
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    const e = document.getElementById('error');
+    e.textContent = 'Error loading catalog-data.json: ' + err.message;
+    e.style.display = 'block';
+    console.error(err);
+  }
+}
+
+function init() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  const generated = new Date(DATA.generated_at);
+  document.getElementById('meta-line').textContent =
+    `${DATA.products.length} products • generated ${generated.toLocaleString()}`;
+
+  renderStats();
+  populateFilters();
+  wireEvents();
+  applyFilters();
+}
+
+/* ----------------------------------------------------------------------- */
+/* Stats strip                                                               */
+/* ----------------------------------------------------------------------- */
+function renderStats() {
+  const s = DATA.stats;
+  const items = [
+    { num: s.total, label: 'Total products' },
+    { num: s.webproducts, label: 'Webproducts' },
+    { num: s.with_images, label: 'With images' },
+    { num: s.missing_seo_title, label: 'Missing SEO title', alert: true },
+    { num: s.missing_seo_description, label: 'Missing SEO desc', alert: true },
+    { num: s.missing_ingredients, label: 'No ingredients', alert: true },
+    { num: s.missing_nutrition, label: 'No nutrition', alert: true },
+  ];
+  const html = items.map(i =>
+    `<div class="stat${i.alert ? ' sub' : ''}">
+       <div class="num">${i.num}</div>
+       <div class="label">${i.label}</div>
+     </div>`).join('');
+  document.getElementById('stats-strip').innerHTML = html;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Filter population                                                         */
+/* ----------------------------------------------------------------------- */
+function populateFilters() {
+  const styles = Object.keys(DATA.stats.by_style).sort();
+  const families = Object.keys(DATA.stats.by_family).sort();
+  const styleSel = document.getElementById('filter-style');
+  styles.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = `${s} (${DATA.stats.by_style[s]})`;
+    styleSel.appendChild(o);
+  });
+  const famSel = document.getElementById('filter-family');
+  families.forEach(f => {
+    const o = document.createElement('option');
+    o.value = f; o.textContent = `${f} (${DATA.stats.by_family[f]})`;
+    famSel.appendChild(o);
+  });
+  // Add accessory as pseudo-family selectable via style? Actually accessories don't have a family.
+  // They show up under source='accessory' — give them a dedicated toggle:
+  const accCount = DATA.stats.accessories;
+  if (accCount) {
+    const o = document.createElement('option');
+    o.value = '__accessories__';
+    o.textContent = `Accessories (${accCount})`;
+    styleSel.appendChild(o);
+  }
+}
+
+function wireEvents() {
+  document.getElementById('search').addEventListener('input', e => {
+    FILTERS.search = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+  document.getElementById('filter-style').addEventListener('change', e => {
+    FILTERS.style = e.target.value;
+    applyFilters();
+  });
+  document.getElementById('filter-family').addEventListener('change', e => {
+    FILTERS.family = e.target.value;
+    applyFilters();
+  });
+
+  document.querySelectorAll('.pill[data-filter]').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const f = pill.dataset.filter;
+      const v = pill.dataset.value;
+      if (f === 'webproduct') {
+        document.querySelectorAll('.pill[data-filter="webproduct"]').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        FILTERS.webproduct = v;
+      } else if (f === 'gap') {
+        if (FILTERS.gap === v) { FILTERS.gap = null; pill.classList.remove('active'); }
+        else {
+          document.querySelectorAll('.pill[data-filter="gap"]').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active'); FILTERS.gap = v;
+        }
+      }
+      applyFilters();
+    });
+  });
+
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('lightbox').classList.contains('open')) closeLightbox();
+      else closeDrawer();
+    }
+  });
+  document.getElementById('lightbox').addEventListener('click', closeLightbox);
+}
+
+/* ----------------------------------------------------------------------- */
+/* Filtering + rendering                                                     */
+/* ----------------------------------------------------------------------- */
+function applyFilters() {
+  const q = FILTERS.search;
+  FILTERED = DATA.products.filter(p => {
+    if (FILTERS.webproduct === 'true' && !p.webproduct) return false;
+
+    if (FILTERS.style === '__accessories__') {
+      if (p.source !== 'accessory') return false;
+    } else if (FILTERS.style && p.style !== FILTERS.style) {
+      return false;
+    }
+    if (FILTERS.family && p.family !== FILTERS.family) return false;
+
+    if (q) {
+      const hay = `${p.title||''} ${p.sku||''} ${p.handle||''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (FILTERS.gap) {
+      if (FILTERS.gap === 'seo-title' && p.seo_title) return false;
+      if (FILTERS.gap === 'seo-desc' && p.seo_description) return false;
+      if (FILTERS.gap === 'ingredients' && (p.ingredient_headers?.length || p.ingredients_raw)) return false;
+      if (FILTERS.gap === 'nutrition' && p.nutrition_facts) return false;
+      if (FILTERS.gap === 'body' && p.body_html) return false;
+    }
+    return true;
+  });
+
+  renderGrid();
+  document.getElementById('result-count').textContent = `${FILTERED.length} shown`;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  if (!FILTERED.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--text-dim);">
+      No products match your filters.</div>`;
+    return;
+  }
+  const html = FILTERED.map((p, idx) => cardHTML(p, idx)).join('');
+  grid.innerHTML = html;
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => openDrawer(parseInt(card.dataset.idx)));
+  });
+}
+
+function cardHTML(p, idx) {
+  const img = p.featured_image_url
+    ? `<img loading="lazy" src="${escapeHtml(p.featured_image_url)}" alt="${escapeHtml(p.featured_image_alt || p.title || '')}">`
+    : `<div class="noimg">No image</div>`;
+
+  const chips = [];
+  if (p.source === 'accessory') chips.push(`<span class="chip accessory">Accessory</span>`);
+  else if (p.style) chips.push(`<span class="chip style">${escapeHtml(p.style)}</span>`);
+  if (p.family) chips.push(`<span class="chip family">${escapeHtml(p.family)}</span>`);
+  if (p.seasonal) chips.push(`<span class="chip seasonal">Seasonal</span>`);
+  if (!p.webproduct) chips.push(`<span class="chip hidden">Not on site</span>`);
+
+  const sku = p.sku ? `<span class="chip sku">${escapeHtml(p.sku)}</span>` : '';
+
+  return `
+    <div class="card" data-idx="${idx}">
+      <div class="thumb">${img}</div>
+      <div class="body">
+        <div class="title">${escapeHtml(p.title || '(untitled)')}</div>
+        <div class="meta-row">${sku}</div>
+        <div class="meta-row">${chips.join('')}</div>
+        <div class="completeness-bar" title="${p.completeness_pct}% complete">
+          <div class="completeness-fill" style="width:${p.completeness_pct}%"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Drawer                                                                    */
+/* ----------------------------------------------------------------------- */
+function openDrawer(idx) {
+  const p = FILTERED[idx];
+  if (!p) return;
+  document.getElementById('drawer-title').textContent = p.title || p.sku || '(untitled)';
+  document.getElementById('drawer-body').innerHTML = drawerHTML(p);
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer').setAttribute('aria-hidden', 'false');
+  document.getElementById('drawer-backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('drawer').scrollTop = 0;
+
+  // Wire image strip swap
+  document.querySelectorAll('.img-strip img').forEach(im => {
+    im.addEventListener('click', (e) => {
+      const hero = document.querySelector('.drawer-hero .hero-img img');
+      if (hero) hero.src = im.src;
+      document.querySelectorAll('.img-strip img').forEach(s => s.classList.remove('current'));
+      im.classList.add('current');
+    });
+  });
+  // Wire hero image lightbox
+  const heroImg = document.querySelector('.drawer-hero .hero-img img');
+  if (heroImg) {
+    document.querySelector('.drawer-hero .hero-img').addEventListener('click', () => openLightbox(heroImg.src));
+  }
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer').setAttribute('aria-hidden', 'true');
+  document.getElementById('drawer-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  lb.classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+/* ----------------------------------------------------------------------- */
+/* Drawer content                                                            */
+/* ----------------------------------------------------------------------- */
+function drawerHTML(p) {
+  const parts = [];
+
+  // HERO
+  const heroImg = p.featured_image_url
+    ? `<img src="${escapeHtml(p.featured_image_url)}" alt="${escapeHtml(p.featured_image_alt || p.title || '')}">`
+    : `<div class="noimg">No featured image</div>`;
+
+  const heroChips = [];
+  if (p.source === 'accessory') heroChips.push(`<span class="chip accessory">Accessory</span>`);
+  else if (p.style) heroChips.push(`<span class="chip style">${escapeHtml(p.style)}</span>`);
+  if (p.family) heroChips.push(`<span class="chip family">${escapeHtml(p.family)}</span>`);
+  if (p.seasonal) heroChips.push(`<span class="chip seasonal">Seasonal</span>`);
+  if (p.webproduct) heroChips.push(`<span class="chip webproduct">On site</span>`);
+  else heroChips.push(`<span class="chip hidden">Not on site</span>`);
+  if (p.sku) heroChips.push(`<span class="chip sku">${escapeHtml(p.sku)}</span>`);
+
+  const pdpUrl = p.handle ? `https://www.teeccino.com/products/${p.handle}` : null;
+  const adminUrl = p.product_id
+    ? `https://admin.shopify.com/store/teeccino-store/products/${String(p.product_id).replace(/^gid:\/\/shopify\/Product\//,'')}`
+    : null;
+
+  const links = [];
+  if (pdpUrl && p.webproduct) links.push(`<a class="link-btn" target="_blank" href="${pdpUrl}">View on site ↗</a>`);
+  if (adminUrl) links.push(`<a class="link-btn" target="_blank" href="${adminUrl}">Shopify Admin ↗</a>`);
+
+  parts.push(`
+    <div class="drawer-hero">
+      <div class="hero-img">${heroImg}</div>
+      <div class="hero-info">
+        <div class="title-lg">${escapeHtml(p.title || '(untitled)')}</div>
+        <div class="subtitle-row">${heroChips.join('')}</div>
+        ${p.handle ? `<div style="color:var(--text-dim);font-size:0.82rem;font-family:monospace;">/${escapeHtml(p.handle)}</div>` : ''}
+        <div class="links">${links.join('')}</div>
+        <div style="margin-top:8px;">
+          <span style="font-size:0.75rem;color:var(--text-dim);">Completeness: </span>
+          <span style="font-weight:600;color:${completenessColor(p.completeness_pct)}">${p.completeness_pct}%</span>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // IMAGES
+  if (p.image_urls && p.image_urls.length > 1) {
+    parts.push(`
+      <section>
+        <h3>Media (${p.image_urls.length} images)</h3>
+        <div class="img-strip">
+          ${p.image_urls.map((u, i) => `<img loading="lazy" src="${escapeHtml(u)}" class="${i===0?'current':''}" alt="Image ${i+1}">`).join('')}
+        </div>
+        ${p.alts_total ? `<div style="margin-top:8px;font-size:0.78rem;color:var(--text-dim);">Alt text: ${p.alts_filled || 0}/${p.alts_total} filled${p.alts_filled === p.alts_total ? ' ✓' : ''}</div>` : ''}
+      </section>
+    `);
+  } else if (p.image_urls && p.image_urls.length === 1) {
+    parts.push(`<section><h3>Media</h3><div style="font-size:0.85rem;color:var(--text-dim);">Only featured image — no secondary photos.</div></section>`);
+  } else {
+    parts.push(`<section><h3>Media</h3><div class="missing-msg">No images</div></section>`);
+  }
+
+  // DESCRIPTION
+  parts.push(`<section><h3>Description (body_html)</h3>`);
+  if (p.body_html) parts.push(`<div class="body-html">${p.body_html}</div>`);
+  else parts.push(`<div class="missing-msg">No body_html set.</div>`);
+  parts.push(`</section>`);
+
+  // FLAVOR + BENEFITS
+  if (p.flavor_notes || p.benefits) {
+    parts.push(`<section><h3>Flavor Notes & Benefits</h3><dl class="kv">`);
+    if (p.flavor_notes) parts.push(`<dt>Flavor notes</dt><dd>${escapeHtml(p.flavor_notes)}</dd>`);
+    if (p.benefits) parts.push(`<dt>Benefits</dt><dd>${escapeHtml(p.benefits)}</dd>`);
+    parts.push(`</dl></section>`);
+  }
+
+  // INGREDIENTS
+  parts.push(`<section><h3>Ingredients</h3>`);
+  if (p.ingredient_headers && p.ingredient_headers.length) {
+    parts.push(`<div class="ingredient-list">`);
+    p.ingredient_headers.forEach(ing => {
+      parts.push(`<span class="ingredient-pill">${escapeHtml(ing)}</span>`);
+    });
+    parts.push(`</div>`);
+    if (p.ingredient_image_refs && p.ingredient_image_refs.length) {
+      parts.push(`<div style="margin-top:10px;font-size:0.78rem;color:var(--text-dim);">${p.ingredient_image_refs.length} ingredient-image references linked (file gids).</div>`);
+    }
+  } else if (p.ingredients_raw) {
+    parts.push(`<div style="background:rgba(0,0,0,0.2);padding:10px 14px;border-radius:8px;font-size:0.9rem;color:var(--text);">${escapeHtml(p.ingredients_raw)}</div>`);
+    parts.push(`<div style="margin-top:8px;font-size:0.72rem;color:var(--text-faint);">Source: legacy <code>tab_content.ingredients</code> — migrate to per-ingredient headers</div>`);
+  } else {
+    parts.push(`<div class="missing-msg">No ingredient data found in Shopify metafields.</div>`);
+  }
+  parts.push(`</section>`);
+
+  // SIZES / VARIANTS
+  parts.push(`<section><h3>Sizes & Variants</h3>`);
+  if (p.variants && p.variants.length) {
+    parts.push(`<div class="variant-list">`);
+    p.variants.forEach(v => {
+      parts.push(`
+        <div class="variant-row">
+          <div>${escapeHtml(v.variant_title || v.option_value || '(default)')}</div>
+          <div class="${v.is_canonical ? 'canon' : ''}">${escapeHtml(v.size_canonical || '—')}</div>
+          <div><code>${v.variant_id ? String(v.variant_id).replace(/^gid:\/\/shopify\/ProductVariant\//,'') : '—'}</code></div>
+        </div>
+      `);
+    });
+    parts.push(`</div>`);
+    if (p.sizes_canonical) parts.push(`<div style="margin-top:10px;font-size:0.85rem;color:var(--text-dim);">Summary: <strong style="color:var(--text);">${escapeHtml(p.sizes_canonical)}</strong></div>`);
+  } else if (p.sizes_canonical || p.sizes) {
+    parts.push(`<div>${escapeHtml(p.sizes_canonical || p.sizes)}</div>`);
+  } else {
+    parts.push(`<div class="missing-msg">No variants recorded.</div>`);
+  }
+  parts.push(`</section>`);
+
+  // BREW METHOD / CAFFEINE
+  if (p.brew_method || p.caffeine) {
+    parts.push(`<section><h3>Brew Method & Caffeine</h3><dl class="kv">`);
+    if (p.brew_method) parts.push(`<dt>Brew method</dt><dd>${escapeHtml(p.brew_method)}</dd>`);
+    if (p.caffeine) parts.push(`<dt>Caffeine</dt><dd>${escapeHtml(p.caffeine)}</dd>`);
+    parts.push(`</dl></section>`);
+  }
+
+  // NUTRITION
+  parts.push(`<section><h3>Nutrition Facts</h3>`);
+  if (p.nutrition_facts && p.nutrition_facts.panel) {
+    parts.push(renderNutrition(p.nutrition_facts.panel));
+  } else if (p.nutrition_facts) {
+    parts.push(renderNutrition(p.nutrition_facts));
+  } else {
+    parts.push(`<div class="missing-msg">No nutrition data.</div>`);
+  }
+  parts.push(`</section>`);
+
+  // PACKAGE ICONS
+  parts.push(`<section><h3>Package Icons</h3>`);
+  const iconsObj = p.package_icons || {};
+  const iconEntries = Object.entries(iconsObj);
+  if (iconEntries.length) {
+    parts.push(`<div class="icon-grid">`);
+    iconEntries.forEach(([k, conf]) => {
+      parts.push(`<div class="icon-box ${conf.toLowerCase()}">
+        <div class="icon-name">${ICON_LABELS[k] || k}</div>
+        <div class="icon-conf">${conf}</div>
+      </div>`);
+    });
+    parts.push(`</div>`);
+    if (p.package_icons_verification) {
+      parts.push(`<div style="margin-top:8px;font-size:0.72rem;color:var(--text-faint);">Verification: ${p.package_icons_verification}${p.package_icons_total ? ' • ' + p.package_icons_total + ' icons total' : ''}</div>`);
+    }
+  } else {
+    parts.push(`<div class="missing-msg">No package icons mapped.</div>`);
+  }
+  parts.push(`</section>`);
+
+  // TAGS
+  parts.push(`<section><h3>Tags (${p.tags ? p.tags.length : 0})</h3>`);
+  if (p.tags && p.tags.length) {
+    const attr = p.tags.filter(t => !isPromoTag(t));
+    const promo = p.tags.filter(isPromoTag);
+    if (attr.length) {
+      parts.push(`<div style="font-size:0.72rem;color:var(--text-dim);margin-bottom:6px;">Attribute tags</div><div class="tag-chips">`);
+      attr.forEach(t => parts.push(`<span class="tag">${escapeHtml(t)}</span>`));
+      parts.push(`</div>`);
+    }
+    if (promo.length) {
+      parts.push(`<div style="font-size:0.72rem;color:var(--text-dim);margin-top:10px;margin-bottom:6px;">Promo / operational tags <span style="color:var(--text-faint);">(Shopkeeper's lane)</span></div><div class="tag-chips">`);
+      promo.forEach(t => parts.push(`<span class="tag promo">${escapeHtml(t)}</span>`));
+      parts.push(`</div>`);
+    }
+  } else {
+    parts.push(`<div class="missing-msg">No tags.</div>`);
+  }
+  parts.push(`</section>`);
+
+  // SEO
+  parts.push(`<section><h3>SEO</h3><dl class="kv">`);
+  parts.push(`<dt>SEO title</dt><dd ${p.seo_title?'':'class="missing"'}>${p.seo_title ? escapeHtml(p.seo_title) + ` <span style="color:var(--text-faint);font-size:0.75rem;">(${p.seo_title.length} chars)</span>` : 'Not set'}</dd>`);
+  parts.push(`<dt>SEO description</dt><dd ${p.seo_description?'':'class="missing"'}>${p.seo_description ? escapeHtml(p.seo_description) + ` <span style="color:var(--text-faint);font-size:0.75rem;">(${p.seo_description.length} chars)</span>` : 'Not set'}</dd>`);
+  parts.push(`</dl></section>`);
+
+  // META
+  parts.push(`<section><h3>Record Meta</h3><dl class="kv">`);
+  parts.push(`<dt>SKU</dt><dd><code>${escapeHtml(p.sku || '—')}</code></dd>`);
+  parts.push(`<dt>Handle</dt><dd><code>${escapeHtml(p.handle || '—')}</code></dd>`);
+  parts.push(`<dt>Product ID</dt><dd><code>${escapeHtml(String(p.product_id || '—'))}</code></dd>`);
+  parts.push(`<dt>Product Type</dt><dd>${escapeHtml(p.product_type || '—')}</dd>`);
+  parts.push(`<dt>Status</dt><dd>${escapeHtml(p.status || '—')}</dd>`);
+  parts.push(`<dt>Vendor</dt><dd>${escapeHtml(p.vendor || '—')}</dd>`);
+  parts.push(`<dt>Updated</dt><dd>${escapeHtml(p.updated_at || '—')}</dd>`);
+  if (p.family_confidence) parts.push(`<dt>Family conf.</dt><dd>${escapeHtml(p.family_confidence)}</dd>`);
+  if (p.style_confidence) parts.push(`<dt>Style conf.</dt><dd>${escapeHtml(p.style_confidence)}</dd>`);
+  parts.push(`</dl></section>`);
+
+  // TAB CONTENT RAW (power-user detail)
+  if (p.tab_content && Object.keys(p.tab_content).length) {
+    parts.push(`<section><h3>Additional tab_content (legacy)</h3><dl class="kv">`);
+    for (const [k, v] of Object.entries(p.tab_content)) {
+      if (['ingredients','instructions','health_benefits'].includes(k)) continue; // already rendered
+      const short = String(v).length > 220 ? String(v).slice(0, 220) + '…' : v;
+      parts.push(`<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(short)}</dd>`);
+    }
+    parts.push(`</dl></section>`);
+  }
+
+  return parts.join('');
+}
+
+function renderNutrition(panel) {
+  const rows = [];
+  for (const k of NUTRIENT_ORDER) {
+    if (!panel[k]) continue;
+    const slots = panel[k];
+    const qty = slots.qty || slots.raw || '';
+    const pct = slots.pct ? `${String(slots.pct).replace('%','')}% DV` : '';
+    rows.push(`<tr>
+      <td>${NUTRIENT_LABELS[k] || k}</td>
+      <td class="qty">${escapeHtml(String(qty))}</td>
+      <td class="pct">${escapeHtml(pct)}</td>
+    </tr>`);
+  }
+  // Extra keys we don't have an order for
+  for (const k of Object.keys(panel)) {
+    if (NUTRIENT_ORDER.includes(k)) continue;
+    const slots = panel[k];
+    const qty = slots.qty || slots.raw || '';
+    rows.push(`<tr>
+      <td>${escapeHtml(k)}</td>
+      <td class="qty">${escapeHtml(String(qty))}</td>
+      <td class="pct"></td>
+    </tr>`);
+  }
+  if (!rows.length) return `<div class="missing-msg">Nutrition object present but empty.</div>`;
+  return `<table class="nutrition-table"><tbody>${rows.join('')}</tbody></table>`;
+}
+
+function completenessColor(pct) {
+  if (pct >= 80) return 'var(--green)';
+  if (pct >= 50) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+/* ----------------------------------------------------------------------- */
+/* Helpers                                                                   */
+/* ----------------------------------------------------------------------- */
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+loadData();
+</script>
+
+</body>
+</html>
