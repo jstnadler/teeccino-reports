@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Spend YoY — Teeccino Reports</title>
+<link rel="stylesheet" href="provenance-banner.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); min-height:100vh;
+         color:#e6e6e6; padding:20px; padding-top:70px; }
+  .top-nav { position:fixed; top:0; left:0; right:0; background:rgba(26,26,46,0.95);
+              backdrop-filter:blur(10px); z-index:100; padding:12px 24px;
+              display:flex; align-items:center; gap:20px;
+              border-bottom:1px solid rgba(255,255,255,0.1); }
+  .top-nav a { color:#8B6914; text-decoration:none; font-size:0.9em; }
+  .top-nav a:hover { color:#D4A843; }
+  .top-nav .brand { font-weight:700; font-size:1.1em; color:#D4A843; }
+  .container { max-width:1200px; margin:0 auto; }
+  h1 { font-size:1.9em; background:linear-gradient(135deg,#D4A843,#8B6914);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+  .sub { color:#888; margin-bottom:24px; }
+  .section { margin:32px 0; }
+  .section-title { font-size:1.2em; color:#D4A843; margin-bottom:12px; font-weight:600;
+                    border-bottom:1px solid rgba(212,168,67,0.3); padding-bottom:6px; }
+  .hero-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:14px; }
+  .hero-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+                border-radius:10px; padding:18px; }
+  .hero-label { font-size:0.78em; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:8px; }
+  .hero-value { font-size:1.8em; font-weight:700; color:#fff; }
+  .hero-prior { font-size:0.85em; color:#777; margin-top:2px; }
+  .hero-delta { font-size:1em; font-weight:600; margin-top:6px; }
+  .pos { color:#3fb950; }
+  .neg { color:#f85149; }
+  .chart-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                 border-radius:10px; padding:18px; height:360px; margin-bottom:18px; }
+  table { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+  th, td { padding:8px 10px; text-align:left; font-size:0.88em; border-bottom:1px solid rgba(255,255,255,0.06); }
+  th { background:rgba(212,168,67,0.12); color:#D4A843; font-weight:600; font-size:0.78em;
+        text-transform:uppercase; letter-spacing:0.5px; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.muted { color:#888; }
+  td.strong { font-weight:600; color:#fff; }
+  tr:hover td { background:rgba(255,255,255,0.03); }
+  .grouped th.group { border-left:1px solid rgba(255,255,255,0.08); }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <span class="brand">☕ Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="ad-spend-yoy.html" style="color:#D4A843;font-weight:600;">Ad Spend YoY</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="creatives.html">Creatives</a>
+</nav>
+
+<div class="container">
+  <h1>📈 Ad Spend YoY</h1>
+  <p class="sub">Daily Meta + Google ad spend, 2026 vs 2025. Generated 2026-04-27 15:27.</p>
+
+  <div id="provenance-mount"></div>
+  <script>
+  window.PROVENANCE_CONFIG = {
+    pageTitle: "Ad Spend YoY",
+    owner: "DataOps",
+    master: {
+      label: "Analytics DB",
+      path: "C:\\temp\\analytics\\teeccino_analytics.db",
+      rowGrain: "daily ad spend"
+    },
+    sources: [
+      { name: "raw_meta_ads",   flow: "Meta Ads API → ingest_meta.py → SQLite" },
+      { name: "raw_google_ads", flow: "Google Ads API → ingest_google.py → SQLite" }
+    ],
+    pipeline: [
+      "ingest_meta.py / ingest_google.py → daily spend by date",
+      "build_ad_spend_yoy.py → ad-spend-yoy.html"
+    ],
+    feedsInto: [
+      { target: "Stakeholder review", role: "weekly spend pacing vs prior year" }
+    ]
+  };
+  </script>
+  <script src="provenance-banner.js"></script>
+
+  <div class="section">
+    <div class="section-title">MTD — April 1 → Apr 27</div>
+    <div class="hero-grid">
+            <div class="hero-card">
+              <div class="hero-label">Meta MTD</div>
+              <div class="hero-value">$4,325</div>
+              <div class="hero-prior">vs $34,473 LY</div>
+              <div class="hero-delta neg">-87.5%</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-label">Google MTD</div>
+              <div class="hero-value">$7,928</div>
+              <div class="hero-prior">vs $5,181 LY</div>
+              <div class="hero-delta pos">+53.0%</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-label">Combined MTD</div>
+              <div class="hero-value">$12,253</div>
+              <div class="hero-prior">vs $39,655 LY</div>
+              <div class="hero-delta neg">-69.1%</div>
+            </div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">YTD — Jan 1 → Apr 27</div>
+    <div class="hero-grid">
+            <div class="hero-card">
+              <div class="hero-label">Meta YTD</div>
+              <div class="hero-value">$81,562</div>
+              <div class="hero-prior">vs $90,492 LY</div>
+              <div class="hero-delta neg">-9.9%</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-label">Google YTD</div>
+              <div class="hero-value">$37,081</div>
+              <div class="hero-prior">vs $38,079 LY</div>
+              <div class="hero-delta neg">-2.6%</div>
+            </div>
+
+            <div class="hero-card">
+              <div class="hero-label">Combined YTD</div>
+              <div class="hero-value">$118,643</div>
+              <div class="hero-prior">vs $128,571 LY</div>
+              <div class="hero-delta neg">-7.7%</div>
+            </div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Daily Combined Spend (2026 vs 2025)</div>
+    <div class="chart-wrap"><canvas id="combinedChart"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Daily Meta Spend (2026 vs 2025)</div>
+    <div class="chart-wrap"><canvas id="metaChart"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Daily Google Spend (2026 vs 2025)</div>
+    <div class="chart-wrap"><canvas id="googleChart"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Monthly YoY (2026 vs 2025)</div>
+    <table class="grouped">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th class="num group">Meta 2026</th>
+          <th class="num">Meta 2025</th>
+          <th class="num">Δ</th>
+          <th class="num group">Google 2026</th>
+          <th class="num">Google 2025</th>
+          <th class="num">Δ</th>
+          <th class="num group">Total 2026</th>
+          <th class="num">Total 2025</th>
+          <th class="num">Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+              <tr>
+                <td>Jan 2026</td>
+                <td class="num">$29,780</td>
+                <td class="num muted">$15,650</td>
+                <td class="num pos">+90.3%</td>
+                <td class="num">$10,507</td>
+                <td class="num muted">$9,275</td>
+                <td class="num pos">+13.3%</td>
+                <td class="num strong">$40,287</td>
+                <td class="num muted">$24,925</td>
+                <td class="num strong pos">+61.6%</td>
+              </tr>
+
+              <tr>
+                <td>Feb 2026</td>
+                <td class="num">$29,645</td>
+                <td class="num muted">$12,738</td>
+                <td class="num pos">+132.7%</td>
+                <td class="num">$8,485</td>
+                <td class="num muted">$10,026</td>
+                <td class="num neg">-15.4%</td>
+                <td class="num strong">$38,130</td>
+                <td class="num muted">$22,764</td>
+                <td class="num strong pos">+67.5%</td>
+              </tr>
+
+              <tr>
+                <td>Mar 2026</td>
+                <td class="num">$17,812</td>
+                <td class="num muted">$27,630</td>
+                <td class="num neg">-35.5%</td>
+                <td class="num">$10,162</td>
+                <td class="num muted">$13,597</td>
+                <td class="num neg">-25.3%</td>
+                <td class="num strong">$27,974</td>
+                <td class="num muted">$41,227</td>
+                <td class="num strong neg">-32.1%</td>
+              </tr>
+
+              <tr>
+                <td>Apr 2026</td>
+                <td class="num">$4,325</td>
+                <td class="num muted">$34,473</td>
+                <td class="num neg">-87.5%</td>
+                <td class="num">$7,928</td>
+                <td class="num muted">$5,181</td>
+                <td class="num pos">+53.0%</td>
+                <td class="num strong">$12,253</td>
+                <td class="num muted">$39,655</td>
+                <td class="num strong neg">-69.1%</td>
+              </tr></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">April 2026 Daily Detail</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="num">Meta 2026</th>
+          <th class="num">Meta 2025</th>
+          <th class="num">Google 2026</th>
+          <th class="num">Google 2025</th>
+          <th class="num">Total 2026</th>
+          <th class="num">Total 2025</th>
+          <th class="num">Δ Total</th>
+        </tr>
+      </thead>
+      <tbody>
+              <tr>
+                <td>Wed Apr 01</td>
+                <td class="num">$329</td>
+                <td class="num muted">$885</td>
+                <td class="num">$313</td>
+                <td class="num muted">$188</td>
+                <td class="num strong">$642</td>
+                <td class="num muted">$1,072</td>
+                <td class="num strong neg">-40.1%</td>
+              </tr>
+
+              <tr>
+                <td>Thu Apr 02</td>
+                <td class="num">$357</td>
+                <td class="num muted">$885</td>
+                <td class="num">$311</td>
+                <td class="num muted">$203</td>
+                <td class="num strong">$668</td>
+                <td class="num muted">$1,088</td>
+                <td class="num strong neg">-38.6%</td>
+              </tr>
+
+              <tr>
+                <td>Fri Apr 03</td>
+                <td class="num">$64</td>
+                <td class="num muted">$802</td>
+                <td class="num">$295</td>
+                <td class="num muted">$262</td>
+                <td class="num strong">$359</td>
+                <td class="num muted">$1,064</td>
+                <td class="num strong neg">-66.3%</td>
+              </tr>
+
+              <tr>
+                <td>Sat Apr 04</td>
+                <td class="num">$83</td>
+                <td class="num muted">$838</td>
+                <td class="num">$293</td>
+                <td class="num muted">$152</td>
+                <td class="num strong">$375</td>
+                <td class="num muted">$990</td>
+                <td class="num strong neg">-62.1%</td>
+              </tr>
+
+              <tr>
+                <td>Sun Apr 05</td>
+                <td class="num">$600</td>
+                <td class="num muted">$1,072</td>
+                <td class="num">$288</td>
+                <td class="num muted">$219</td>
+                <td class="num strong">$888</td>
+                <td class="num muted">$1,291</td>
+                <td class="num strong neg">-31.2%</td>
+              </tr>
+
+              <tr>
+                <td>Mon Apr 06</td>
+                <td class="num">$239</td>
+                <td class="num muted">$1,276</td>
+                <td class="num">$438</td>
+                <td class="num muted">$231</td>
+                <td class="num strong">$676</td>
+                <td class="num muted">$1,507</td>
+                <td class="num strong neg">-55.1%</td>
+              </tr>
+
+              <tr>
+                <td>Tue Apr 07</td>
+                <td class="num">$212</td>
+                <td class="num muted">$1,295</td>
+                <td class="num">$292</td>
+                <td class="num muted">$191</td>
+                <td class="num strong">$503</td>
+                <td class="num muted">$1,486</td>
+                <td class="num strong neg">-66.1%</td>
+              </tr>
+
+              <tr>
+                <td>Wed Apr 08</td>
+                <td class="num">$101</td>
+                <td class="num muted">$1,136</td>
+                <td class="num">$295</td>
+                <td class="num muted">$214</td>
+                <td class="num strong">$396</td>
+                <td class="num muted">$1,350</td>
+                <td class="num strong neg">-70.6%</td>
+              </tr>
+
+              <tr>
+                <td>Thu Apr 09</td>
+                <td class="num">$89</td>
+                <td class="num muted">$1,074</td>
+                <td class="num">$324</td>
+                <td class="num muted">$211</td>
+                <td class="num strong">$412</td>
+                <td class="num muted">$1,285</td>
+                <td class="num strong neg">-67.9%</td>
+              </tr>
+
+              <tr>
+                <td>Fri Apr 10</td>
+                <td class="num">$73</td>
+                <td class="num muted">$1,242</td>
+                <td class="num">$268</td>
+                <td class="num muted">$178</td>
+                <td class="num strong">$341</td>
+                <td class="num muted">$1,421</td>
+                <td class="num strong neg">-76.0%</td>
+              </tr>
+
+              <tr>
+                <td>Sat Apr 11</td>
+                <td class="num">$73</td>
+                <td class="num muted">$1,226</td>
+                <td class="num">$302</td>
+                <td class="num muted">$130</td>
+                <td class="num strong">$375</td>
+                <td class="num muted">$1,357</td>
+                <td class="num strong neg">-72.3%</td>
+              </tr>
+
+              <tr>
+                <td>Sun Apr 12</td>
+                <td class="num">$99</td>
+                <td class="num muted">$1,255</td>
+                <td class="num">$294</td>
+                <td class="num muted">$197</td>
+                <td class="num strong">$392</td>
+                <td class="num muted">$1,451</td>
+                <td class="num strong neg">-73.0%</td>
+              </tr>
+
+              <tr>
+                <td>Mon Apr 13</td>
+                <td class="num">$90</td>
+                <td class="num muted">$1,487</td>
+                <td class="num">$258</td>
+                <td class="num muted">$215</td>
+                <td class="num strong">$349</td>
+                <td class="num muted">$1,702</td>
+                <td class="num strong neg">-79.5%</td>
+              </tr>
+
+              <tr>
+                <td>Tue Apr 14</td>
+                <td class="num">$88</td>
+                <td class="num muted">$1,229</td>
+                <td class="num">$192</td>
+                <td class="num muted">$172</td>
+                <td class="num strong">$279</td>
+                <td class="num muted">$1,401</td>
+                <td class="num strong neg">-80.1%</td>
+              </tr>
+
+              <tr>
+                <td>Wed Apr 15</td>
+                <td class="num">$95</td>
+                <td class="num muted">$1,147</td>
+                <td class="num">$199</td>
+                <td class="num muted">$212</td>
+                <td class="num strong">$294</td>
+                <td class="num muted">$1,359</td>
+                <td class="num strong neg">-78.4%</td>
+              </tr>
+
+              <tr>
+                <td>Thu Apr 16</td>
+                <td class="num">$181</td>
+                <td class="num muted">$1,079</td>
+                <td class="num">$272</td>
+                <td class="num muted">$191</td>
+                <td class="num strong">$453</td>
+                <td class="num muted">$1,270</td>
+                <td class="num strong neg">-64.4%</td>
+              </tr>
+
+              <tr>
+                <td>Fri Apr 17</td>
+                <td class="num">$98</td>
+                <td class="num muted">$1,065</td>
+                <td class="num">$307</td>
+                <td class="num muted">$144</td>
+                <td class="num strong">$404</td>
+                <td class="num muted">$1,209</td>
+                <td class="num strong neg">-66.5%</td>
+              </tr>
+
+              <tr>
+                <td>Sat Apr 18</td>
+                <td class="num">$81</td>
+                <td class="num muted">$1,132</td>
+                <td class="num">$337</td>
+                <td class="num muted">$141</td>
+                <td class="num strong">$418</td>
+                <td class="num muted">$1,273</td>
+                <td class="num strong neg">-67.2%</td>
+              </tr>
+
+              <tr>
+                <td>Sun Apr 19</td>
+                <td class="num">$94</td>
+                <td class="num muted">$1,116</td>
+                <td class="num">$304</td>
+                <td class="num muted">$178</td>
+                <td class="num strong">$398</td>
+                <td class="num muted">$1,293</td>
+                <td class="num strong neg">-69.2%</td>
+              </tr>
+
+              <tr>
+                <td>Mon Apr 20</td>
+                <td class="num">$96</td>
+                <td class="num muted">$1,285</td>
+                <td class="num">$284</td>
+                <td class="num muted">$148</td>
+                <td class="num strong">$381</td>
+                <td class="num muted">$1,433</td>
+                <td class="num strong neg">-73.4%</td>
+              </tr>
+
+              <tr>
+                <td>Tue Apr 21</td>
+                <td class="num">$107</td>
+                <td class="num muted">$1,543</td>
+                <td class="num">$264</td>
+                <td class="num muted">$234</td>
+                <td class="num strong">$370</td>
+                <td class="num muted">$1,777</td>
+                <td class="num strong neg">-79.2%</td>
+              </tr>
+
+              <tr>
+                <td>Wed Apr 22</td>
+                <td class="num">$122</td>
+                <td class="num muted">$3,176</td>
+                <td class="num">$300</td>
+                <td class="num muted">$143</td>
+                <td class="num strong">$422</td>
+                <td class="num muted">$3,319</td>
+                <td class="num strong neg">-87.3%</td>
+              </tr>
+
+              <tr>
+                <td>Thu Apr 23</td>
+                <td class="num">$118</td>
+                <td class="num muted">$3,155</td>
+                <td class="num">$369</td>
+                <td class="num muted">$192</td>
+                <td class="num strong">$487</td>
+                <td class="num muted">$3,347</td>
+                <td class="num strong neg">-85.4%</td>
+              </tr>
+
+              <tr>
+                <td>Fri Apr 24</td>
+                <td class="num">$108</td>
+                <td class="num muted">$1,136</td>
+                <td class="num">$287</td>
+                <td class="num muted">$132</td>
+                <td class="num strong">$395</td>
+                <td class="num muted">$1,269</td>
+                <td class="num strong neg">-68.9%</td>
+              </tr>
+
+              <tr>
+                <td>Sat Apr 25</td>
+                <td class="num">$141</td>
+                <td class="num muted">$973</td>
+                <td class="num">$401</td>
+                <td class="num muted">$242</td>
+                <td class="num strong">$542</td>
+                <td class="num muted">$1,215</td>
+                <td class="num strong neg">-55.4%</td>
+              </tr>
+
+              <tr>
+                <td>Sun Apr 26</td>
+                <td class="num">$296</td>
+                <td class="num muted">$887</td>
+                <td class="num">$440</td>
+                <td class="num muted">$245</td>
+                <td class="num strong">$736</td>
+                <td class="num muted">$1,133</td>
+                <td class="num strong neg">-35.0%</td>
+              </tr>
+
+              <tr>
+                <td>Mon Apr 27</td>
+                <td class="num">$294</td>
+                <td class="num muted">$1,078</td>
+                <td class="num">$0</td>
+                <td class="num muted">$217</td>
+                <td class="num strong">$294</td>
+                <td class="num muted">$1,295</td>
+                <td class="num strong neg">-77.3%</td>
+              </tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const DATA = {"labels": ["Jan 01", "Jan 02", "Jan 03", "Jan 04", "Jan 05", "Jan 06", "Jan 07", "Jan 08", "Jan 09", "Jan 10", "Jan 11", "Jan 12", "Jan 13", "Jan 14", "Jan 15", "Jan 16", "Jan 17", "Jan 18", "Jan 19", "Jan 20", "Jan 21", "Jan 22", "Jan 23", "Jan 24", "Jan 25", "Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26", "Apr 27"], "cy_meta": [1224.74, 1263.67, 1262.49, 1381.03, 529.56, 506.5, 480.56, 501.05, 437.64, 460.2, 569.05, 793.14, 1818.15, 1653.24, 1324.92, 1238.47, 1160.46, 1475.75, 1324.36, 1055.14, 1040.04, 958.91, 1339.82, 877.78, 1071.12, 1038.45, 986.71, 562.88, 535.09, 474.58, 434.37, 558.45, 863.9, 1038.64, 946.77, 848.93, 923.38, 740.39, 1094.1, 935.84, 1210.59, 1044.93, 1023.13, 1230.68, 1108.88, 1484.88, 1673.57, 1558.31, 1582.08, 1254.73, 1170.4, 1107.97, 1425.83, 1322.31, 691.86, 658.08, 756.38, 773.64, 616.41, 699.48, 598.96, 577.22, 537.14, 522.9, 0.0, 548.13, 765.42, 525.44, 526.13, 498.34, 512.09, 514.57, 489.45, 596.97, 553.72, 518.02, 634.05, 642.6, 657.14, 801.25, 922.04, 819.57, 807.86, 783.08, 0.0, 543.99, 536.65, 839.64, 0.0, 840.23, 328.57, 356.81, 63.76, 82.7, 600.01, 238.53, 211.55, 100.91, 88.73, 73.23, 73.09, 98.91, 90.18, 87.84, 95.47, 180.58, 97.76, 80.57, 94.35, 96.41, 106.86, 121.91, 117.78, 108.01, 140.71, 295.73, 294.16], "py_meta": [523.79, 512.56, 588.67, 535.4, 620.84, 561.48, 505.7, 414.85, 373.89, 379.86, 388.94, 427.49, 479.96, 473.46, 499.97, 488.83, 485.71, 472.99, 514.02, 508.61, 557.44, 635.22, 441.92, 427.12, 519.32, 604.29, 569.75, 546.51, 532.46, 553.76, 505.32, 456.72, 528.42, 469.35, 399.92, 377.0, 362.54, 353.81, 338.05, 395.45, 406.28, 471.59, 574.1, 544.42, 558.16, 551.53, 580.63, 619.16, 621.59, 588.73, 577.81, 315.02, 0.0, 0.0, 489.81, 482.73, 480.77, 568.94, 625.67, 601.04, 615.8, 553.25, 614.2, 691.43, 714.83, 653.73, 707.76, 760.77, 740.75, 738.0, 971.07, 643.08, 671.1, 752.38, 1067.23, 844.21, 774.89, 877.05, 1404.59, 1163.32, 1055.74, 1098.33, 1158.29, 1167.68, 1066.58, 1036.82, 1035.95, 1078.66, 1119.34, 1252.18, 884.61, 885.02, 801.96, 838.17, 1072.35, 1275.56, 1294.78, 1135.61, 1074.25, 1242.47, 1226.37, 1254.7, 1487.35, 1229.4, 1147.23, 1078.67, 1064.62, 1131.68, 1115.69, 1284.72, 1542.73, 3175.6, 3154.98, 1136.42, 973.06, 887.44, 1078.01], "cy_google": [260.76, 280.31, 280.42, 275.59, 228.79, 246.49, 227.22, 297.07, 202.9, 238.06, 153.87, 221.53, 241.22, 245.42, 346.24, 479.92, 481.21, 481.74, 344.96, 526.85, 343.73, 400.46, 419.18, 574.05, 603.34, 471.99, 551.58, 300.51, 234.77, 267.55, 279.18, 310.82, 360.87, 317.03, 290.57, 331.01, 323.46, 382.0, 372.67, 393.15, 278.17, 446.17, 293.89, 367.66, 334.12, 524.25, 577.46, 497.67, 483.05, 0.0, 0.0, 0.0, 0.0, 0.0, 313.61, 335.54, 309.86, 254.3, 387.34, 376.85, 359.71, 0.0, 314.36, 322.15, 348.21, 407.51, 363.47, 376.82, 290.09, 318.11, 376.66, 329.15, 374.18, 347.66, 416.79, 302.38, 322.52, 328.53, 316.71, 339.94, 411.74, 352.13, 338.26, 464.38, 334.41, 321.24, 352.99, 362.04, 0.0, 292.72, 313.45, 311.19, 295.31, 292.73, 288.28, 437.79, 291.68, 295.39, 323.57, 267.89, 302.41, 293.55, 258.46, 191.61, 198.68, 271.96, 306.66, 337.01, 304.14, 284.35, 263.58, 300.05, 369.48, 286.79, 401.4, 440.14, 0.0], "py_google": [743.3, 647.48, 449.77, 458.72, 414.4, 209.53, 168.13, 144.67, 144.79, 180.12, 154.22, 161.04, 161.17, 159.6, 130.41, 179.72, 235.61, 278.07, 240.56, 217.7, 331.54, 470.59, 325.64, 342.62, 393.3, 390.78, 372.73, 285.81, 312.86, 261.59, 308.67, 357.93, 402.31, 339.56, 443.17, 351.04, 334.33, 369.26, 340.77, 367.32, 435.18, 407.61, 287.84, 331.94, 372.36, 308.9, 375.72, 308.79, 323.66, 365.92, 283.8, 223.21, 460.21, 279.53, 379.81, 415.14, 347.73, 317.84, 494.84, 449.83, 402.67, 400.45, 590.87, 603.62, 448.36, 404.33, 554.64, 609.84, 562.64, 548.24, 581.17, 451.76, 580.58, 558.31, 643.39, 401.04, 327.69, 401.98, 381.95, 370.38, 359.55, 399.4, 320.19, 308.19, 389.13, 361.32, 338.94, 276.5, 338.69, 231.41, 187.82, 202.98, 262.5, 151.68, 218.97, 230.97, 190.88, 214.16, 210.78, 178.14, 130.17, 196.56, 214.93, 171.64, 211.84, 191.29, 144.16, 140.87, 177.75, 147.88, 234.05, 143.16, 191.9, 132.2, 241.68, 245.24, 217.13], "cy_total": [1485.5, 1543.98, 1542.91, 1656.62, 758.35, 752.99, 707.78, 798.12, 640.54, 698.26, 722.92, 1014.67, 2059.37, 1898.66, 1671.16, 1718.39, 1641.67, 1957.49, 1669.32, 1581.99, 1383.77, 1359.37, 1759.0, 1451.83, 1674.46, 1510.44, 1538.29, 863.39, 769.86, 742.13, 713.55, 869.27, 1224.77, 1355.67, 1237.34, 1179.94, 1246.84, 1122.39, 1466.77, 1328.99, 1488.76, 1491.1, 1317.02, 1598.34, 1443.0, 2009.13, 2251.03, 2055.98, 2065.13, 1254.73, 1170.4, 1107.97, 1425.83, 1322.31, 1005.47, 993.62, 1066.24, 1027.94, 1003.75, 1076.33, 958.67, 577.22, 851.5, 845.05, 348.21, 955.64, 1128.89, 902.26, 816.22, 816.45, 888.75, 843.72, 863.63, 944.63, 970.51, 820.4, 956.57, 971.13, 973.85, 1141.19, 1333.78, 1171.7, 1146.12, 1247.46, 334.41, 865.23, 889.64, 1201.68, 0.0, 1132.95, 642.02, 668.0, 359.07, 375.43, 888.29, 676.32, 503.23, 396.3, 412.3, 341.12, 375.5, 392.46, 348.64, 279.45, 294.15, 452.54, 404.42, 417.58, 398.49, 380.76, 370.44, 421.96, 487.26, 394.8, 542.11, 735.87, 294.16], "py_total": [1267.09, 1160.04, 1038.44, 994.12, 1035.24, 771.01, 673.83, 559.52, 518.68, 559.98, 543.16, 588.53, 641.13, 633.06, 630.38, 668.55, 721.32, 751.06, 754.58, 726.31, 888.98, 1105.81, 767.56, 769.74, 912.62, 995.07, 942.48, 832.32, 845.32, 815.35, 813.99, 814.65, 930.73, 808.91, 843.09, 728.04, 696.87, 723.07, 678.82, 762.77, 841.46, 879.2, 861.94, 876.36, 930.52, 860.43, 956.35, 927.95, 945.25, 954.65, 861.61, 538.23, 460.21, 279.53, 869.62, 897.87, 828.5, 886.78, 1120.51, 1050.87, 1018.47, 953.7, 1205.07, 1295.05, 1163.19, 1058.06, 1262.4, 1370.61, 1303.39, 1286.24, 1552.24, 1094.84, 1251.68, 1310.69, 1710.62, 1245.25, 1102.58, 1279.03, 1786.54, 1533.7, 1415.29, 1497.73, 1478.48, 1475.87, 1455.71, 1398.14, 1374.89, 1355.16, 1458.03, 1483.59, 1072.43, 1088.0, 1064.46, 989.85, 1291.32, 1506.53, 1485.66, 1349.77, 1285.03, 1420.61, 1356.54, 1451.26, 1702.28, 1401.04, 1359.07, 1269.96, 1208.78, 1272.55, 1293.44, 1432.6, 1776.78, 3318.76, 3346.88, 1268.62, 1214.74, 1132.68, 1295.14], "cur_year": 2026, "prior_year": 2025};
+const palette = {
+  cy: '#D4A843',
+  py: '#5b8def',
+};
+function lineChart(canvasId, cySeries, pySeries, cyLabel, pyLabel) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: DATA.labels,
+      datasets: [
+        { label: cyLabel, data: cySeries, borderColor: palette.cy, backgroundColor: 'rgba(212,168,67,0.15)',
+           tension: 0.2, borderWidth: 2, pointRadius: 0, fill: false },
+        { label: pyLabel, data: pySeries, borderColor: palette.py, backgroundColor: 'rgba(91,141,239,0.15)',
+           tension: 0.2, borderWidth: 2, pointRadius: 0, borderDash: [4,4], fill: false },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#ccc' } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: $${c.parsed.y.toLocaleString(undefined,{maximumFractionDigits:0})}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', maxRotation:0, autoSkip:true, maxTicksLimit: 14 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#888', callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+}
+lineChart('combinedChart', DATA.cy_total, DATA.py_total, `Combined ${DATA.cur_year}`, `Combined ${DATA.prior_year}`);
+lineChart('metaChart',     DATA.cy_meta,  DATA.py_meta,  `Meta ${DATA.cur_year}`,     `Meta ${DATA.prior_year}`);
+lineChart('googleChart',   DATA.cy_google,DATA.py_google,`Google ${DATA.cur_year}`,   `Google ${DATA.prior_year}`);
+</script>
+</body>
+</html>
