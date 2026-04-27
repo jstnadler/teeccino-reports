@@ -318,6 +318,50 @@
   #loading, #error { text-align: center; padding: 40px; color: var(--text-dim); }
   #error { color: var(--red); }
 
+  /* Spec Sheet section (Phase 2 / Sales-PDF data) */
+  .spec-status {
+    display: inline-block; padding: 3px 10px; border-radius: 10px;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .spec-status.matched  { background: rgba(74,222,128,0.14); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+  .spec-status.no_pdf   { background: rgba(248,113,113,0.14); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
+  .spec-status.unknown  { background: rgba(148,163,184,0.14); color: var(--text-dim); border: 1px solid var(--border); }
+  .spec-pdf-ref {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(212,168,67,0.10); border: 1px solid rgba(212,168,67,0.3); color: var(--accent);
+    padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-family: monospace;
+    margin-left: 8px; word-break: break-all;
+  }
+  .spec-pdf-ref::before { content: "📄"; }
+  .spec-table {
+    width: 100%; border-collapse: collapse; font-size: 0.85rem;
+    margin-top: 6px;
+  }
+  .spec-table thead th {
+    text-align: left; color: var(--text-dim); font-weight: 600;
+    padding: 6px 8px; border-bottom: 1px solid var(--border-strong);
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .spec-table tbody td {
+    padding: 6px 8px; border-bottom: 1px solid var(--border);
+    color: var(--text); vertical-align: top;
+  }
+  .spec-table tbody tr:last-child td { border-bottom: none; }
+  .spec-sub {
+    font-size: 0.72rem; color: var(--text-faint); margin-top: 6px;
+  }
+  .sibling-list { display: grid; gap: 6px; margin-top: 6px; }
+  .sibling-row {
+    display: grid; grid-template-columns: 90px 1fr 110px 120px;
+    gap: 10px; padding: 6px 10px; background: rgba(0,0,0,0.2);
+    border-radius: 6px; font-size: 0.83rem; align-items: center;
+  }
+  .sibling-row code { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.8rem; }
+  @media (max-width: 640px) {
+    .sibling-row { grid-template-columns: 1fr; gap: 2px; }
+  }
+
   /* Mobile tweaks */
   @media (max-width: 640px) {
     body { padding: 16px; padding-top: 62px; }
@@ -375,6 +419,7 @@
       <span class="pill quality" data-filter="gap" data-value="ingredients">No ingredients</span>
       <span class="pill quality" data-filter="gap" data-value="nutrition">No nutrition</span>
       <span class="pill quality" data-filter="gap" data-value="body">No description</span>
+      <span class="pill quality" data-filter="gap" data-value="spec-sheet">No spec sheet</span>
     </div>
     <span class="result-count" id="result-count"></span>
   </div>
@@ -554,6 +599,8 @@ function renderStats() {
     { num: s.missing_seo_description, label: 'Missing SEO desc', alert: true },
     { num: s.missing_ingredients, label: 'No ingredients', alert: true },
     { num: s.missing_nutrition, label: 'No nutrition', alert: true },
+    { num: s.spec_sheet_matched || 0, label: 'With spec sheet' },
+    { num: (s.spec_sheet_no_pdf || 0), label: 'No spec sheet', alert: true },
   ];
   const html = items.map(i =>
     `<div class="stat${i.alert ? ' sub' : ''}">
@@ -660,6 +707,13 @@ function applyFilters() {
       if (FILTERS.gap === 'seo-desc' && p.seo_description) return false;
       if (FILTERS.gap === 'ingredients' && (p.ingredient_headers?.length || p.ingredients_raw)) return false;
       if (FILTERS.gap === 'nutrition' && p.nutrition_facts) return false;
+      if (FILTERS.gap === 'spec-sheet') {
+        // Show only in-scope products with no matched spec sheet.
+        // Out-of-scope products (bundles/samplers/accessories) have spec_sheet=null;
+        // hide them from this gap filter.
+        if (!p.spec_sheet) return false;
+        if (p.spec_sheet.status === 'matched') return false;
+      }
       if (FILTERS.gap === 'body' && p.body_html) return false;
     }
     return true;
@@ -880,6 +934,10 @@ function drawerHTML(p) {
     parts.push(`</dl></section>`);
   }
 
+  // PRODUCT SPECIFICATION (Phase 2 — sourced from Sales spec sheet PDFs,
+  // canonicalized in master + _spec_sheet_labs sheets)
+  parts.push(renderSpecSheet(p));
+
   // NUTRITION
   parts.push(`<section><h3 data-source="Source: Shopify metafield custom.nutrition_facts (JSON)&#10;Owner: CatalogSmith&#10;Coverage: 48/288 products (gap)">Nutrition Facts</h3>`);
   if (p.nutrition_facts && p.nutrition_facts.panel) {
@@ -963,6 +1021,138 @@ function drawerHTML(p) {
   }
 
   return parts.join('');
+}
+
+function renderSpecSheet(p) {
+  const ss = p.spec_sheet;
+  const dataSource =
+    'Source: master sheet + _spec_sheet_labs sheet (product-catalog.xlsx)&#10;' +
+    '• Backfilled from Sales Product Specification PDFs&#10;' +
+    '• PDFs regenerated to OneDrive\\Marketing and eCommerce\\Products\\Spec Sheets WEB&#10;' +
+    'Owner: CatalogSmith';
+  const heading = `<section><h3 data-source="${dataSource}">Product Specification`;
+
+  if (!ss) {
+    return heading +
+      ` <span class="spec-status unknown">no spec data</span></h3>` +
+      `<div class="missing-msg">This product is not in spec-sheet scope (bundles, samplers, accessories, or non-blend SKUs).</div></section>`;
+  }
+
+  const status = (ss.status || 'unknown').replace(/-/g, '_');
+  const statusLabel = status.replace(/_/g, ' ');
+  const headerSrc = ss.spec_sheet_pdf
+    ? `<span class="spec-pdf-ref" title="Located at OneDrive\\TC Teams - Documents\\Marketing and eCommerce\\Products\\Spec Sheets WEB">${escapeHtml(ss.spec_sheet_pdf)}</span>`
+    : '';
+  const out = [heading + ` <span class="spec-status ${status}">${escapeHtml(statusLabel)}</span>${headerSrc}</h3>`];
+
+  if (status === 'no_pdf') {
+    out.push(`<div class="missing-msg">No source PDF available for this flavor (<code>${escapeHtml(ss.flavor_display || ss.flavor_key || '')}</code>) — Sales has not produced one yet.</div>`);
+    if (ss.sibling_skus && ss.sibling_skus.length) {
+      out.push(`<div class="spec-sub">Same-flavor siblings (different products):</div>`);
+      out.push(renderSiblingList(ss.sibling_skus));
+    }
+    out.push(`</section>`);
+    return out.join('');
+  }
+  if (status !== 'matched') {
+    out.push(`<div class="missing-msg">Status: ${escapeHtml(statusLabel)}.</div></section>`);
+    return out.join('');
+  }
+
+  // Production / Origin / Certifications block
+  out.push(`<dl class="kv">`);
+  if (ss.flavor_display) out.push(`<dt>Flavor</dt><dd>${escapeHtml(ss.flavor_display)}</dd>`);
+  if (ss.origin)         out.push(`<dt>Origin</dt><dd>${escapeHtml(ss.origin)}</dd>`);
+  if (ss.certifications) out.push(`<dt>Certifications</dt><dd>${escapeHtml(ss.certifications)}</dd>`);
+  if (ss.shelf_life)     out.push(`<dt>Shelf life</dt><dd>${escapeHtml(ss.shelf_life)}</dd>`);
+  if (ss.storage_conditions) out.push(`<dt>Storage</dt><dd>${escapeHtml(ss.storage_conditions)}</dd>`);
+  if (ss.allergens)      out.push(`<dt>Allergens</dt><dd>${escapeHtml(ss.allergens)}</dd>`);
+  out.push(`</dl>`);
+
+  // Organoleptic
+  const organoFields = [
+    ['Appearance', ss.appearance],
+    ['Aroma',      ss.aroma],
+    ['Flavor',     ss.flavor_descriptor],
+    ['Additives',  ss.additives],
+  ].filter(([_, v]) => v);
+  if (organoFields.length) {
+    out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Organoleptic</div><dl class="kv" style="margin-top:6px;">`);
+    organoFields.forEach(([k, v]) => out.push(`<dt>${k}</dt><dd>${escapeHtml(v)}</dd>`));
+    out.push(`</dl>`);
+  }
+
+  // Claims
+  if (ss.claims) {
+    out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Product claims</div>`);
+    out.push(`<div style="margin-top:4px;font-size:0.9rem;">${escapeHtml(ss.claims)}</div>`);
+  }
+
+  // Ingredients (spec-sheet variant — shown if it differs from the metafield-derived one)
+  if (ss.ingredients_specsheet) {
+    out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Ingredients (per spec sheet)</div>`);
+    out.push(`<div style="margin-top:4px;background:rgba(0,0,0,0.2);padding:8px 12px;border-radius:6px;font-size:0.85rem;">${escapeHtml(ss.ingredients_specsheet)}</div>`);
+  }
+
+  // Lab tables
+  out.push(renderLabTable('Microbiological attributes', ss.labs?.microbiological || [], 'Specification'));
+  out.push(renderLabTable('Chemical attributes',         ss.labs?.chemical         || [], 'Specification'));
+  out.push(renderLabTable('Physical attributes',         ss.labs?.physical         || [], 'Result'));
+
+  // Per-variant PDF mapping (when multiple variants in this product map to different source PDFs)
+  if (ss.per_variant && ss.per_variant.length > 1) {
+    const distinctPdfs = new Set(ss.per_variant.map(v => v.spec_sheet_pdf).filter(Boolean));
+    if (distinctPdfs.size > 1) {
+      out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Per-variant source PDF</div>`);
+      out.push(`<table class="spec-table"><thead><tr><th>SKU</th><th>Size</th><th>Source PDF</th></tr></thead><tbody>`);
+      ss.per_variant.forEach(v => {
+        out.push(`<tr><td><code>${escapeHtml(v.sku || '')}</code></td><td>${escapeHtml(v.size_canonical || '—')}</td><td>${escapeHtml(v.spec_sheet_pdf || '—')}</td></tr>`);
+      });
+      out.push(`</tbody></table>`);
+    }
+  }
+
+  // Cross-product siblings (same flavor, different product_id — e.g., Hazelnut Coffee shows Hazelnut Tea)
+  if (ss.sibling_skus && ss.sibling_skus.length) {
+    out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Same-flavor sibling products</div>`);
+    out.push(renderSiblingList(ss.sibling_skus));
+  }
+
+  out.push(`</section>`);
+  return out.join('');
+}
+
+function renderLabTable(title, rows, col2Label) {
+  if (!rows || !rows.length) return '';
+  const out = [];
+  out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">${title}</div>`);
+  out.push(`<table class="spec-table"><thead><tr><th>Analysis</th><th>${escapeHtml(col2Label)}</th><th>Method</th></tr></thead><tbody>`);
+  rows.forEach(r => {
+    out.push(`<tr>
+      <td>${escapeHtml(r.analysis || '')}</td>
+      <td>${escapeHtml(r.specification || '')}</td>
+      <td>${escapeHtml(r.method || '')}</td>
+    </tr>`);
+  });
+  out.push(`</tbody></table>`);
+  return out.join('');
+}
+
+function renderSiblingList(siblings) {
+  const out = [`<div class="sibling-list">`];
+  siblings.forEach(s => {
+    const link = s.handle
+      ? `<a href="https://www.teeccino.com/products/${escapeHtml(s.handle)}" target="_blank" style="color:var(--catalog);text-decoration:none;">${escapeHtml(s.title || s.sku || '(untitled)')} ↗</a>`
+      : escapeHtml(s.title || s.sku || '(untitled)');
+    out.push(`<div class="sibling-row">
+      <code>${escapeHtml(s.sku || '')}</code>
+      <div>${link}</div>
+      <div style="color:var(--text-dim);font-size:0.78rem;">${escapeHtml(s.style || '')}</div>
+      <div style="color:var(--text-dim);font-size:0.78rem;">${escapeHtml(s.size_canonical || '')}</div>
+    </div>`);
+  });
+  out.push(`</div>`);
+  return out.join('');
 }
 
 function renderNutrition(panel) {
