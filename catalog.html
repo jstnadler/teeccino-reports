@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Product Catalog Browser — Teeccino</title>
+<link rel="stylesheet" href="provenance-banner.css">
 <style>
   :root {
     --bg: #1a1a2e;
@@ -350,6 +351,8 @@
   </div>
 </header>
 
+<div id="provenance-mount"></div>
+
 <div id="loading">Loading catalog…</div>
 <div id="error" style="display:none;"></div>
 
@@ -395,6 +398,41 @@
 </aside>
 
 <div class="lightbox" id="lightbox"><img id="lightbox-img" alt=""></div>
+
+<!-- Provenance banner (data lineage) -->
+<script>
+window.PROVENANCE_CONFIG = {
+  pageTitle: "Product Catalog Browser",
+  owner: "CatalogSmith",
+  master: {
+    label: "Master catalog",
+    path: "C:\\Users\\JustinAdler\\clawd-catalogsmith\\data\\product-catalog.xlsx",
+    lastUpdated: null,                            // updated post-fetch from catalog-data.json
+    rowCount: null,                               // updated post-fetch
+    rowGrain: "SKU"
+  },
+  sources: [
+    { name: "Shopify Admin API",        flow: "products + variants + metafields (live pull)" },
+    { name: "Product Short Names CSV",  flow: "family classification hints (\\OneDrive\\Marketing\\Products\\Product Short Names.csv)" },
+    { name: "AssetSmith icons.json",    flow: "package icon vocabulary" },
+    { name: "shopify-enrichment.json",  flow: "supplemental metafield overlay (ingredients, brew, caffeine, benefits)" }
+  ],
+  pipeline: [
+    "Shopify → Automations/extract_catalog.py",
+    "extract_catalog.py → data/product-catalog.xlsx (master)",
+    "rebuild_skugrain_master.py → SKU-grain webproducts-only master",
+    "build_catalog_browser.py → catalog-data.json",
+    "catalog-data.json → this page"
+  ],
+  feedsInto: [
+    { target: "Catalog Browser (this page)", role: "rendered output" },
+    { target: "Amazon syndication export",   role: "downstream (planned)" },
+    { target: "Wholesale spec deck",         role: "downstream (planned)" },
+    { target: "AdSmith product claims",      role: "ad copy source-of-truth" }
+  ]
+};
+</script>
+<script src="provenance-banner.js"></script>
 
 <script>
 /* ----------------------------------------------------------------------- */
@@ -486,6 +524,15 @@ function init() {
   const generated = new Date(DATA.generated_at);
   document.getElementById('meta-line').textContent =
     `${DATA.products.length} products • generated ${generated.toLocaleString()}`;
+
+  // Refresh provenance banner with live freshness + row count from the loaded JSON
+  if (window.ProvenanceBanner && typeof window.ProvenanceBanner.update === 'function') {
+    window.ProvenanceBanner.update({
+      lastUpdated: DATA.generated_at,
+      rowCount: DATA.products.length,
+      rowGrain: 'product'
+    });
+  }
 
   renderStats();
   populateFilters();
@@ -756,7 +803,7 @@ function drawerHTML(p) {
   if (p.image_urls && p.image_urls.length > 1) {
     parts.push(`
       <section>
-        <h3>Media (${p.image_urls.length} images)</h3>
+        <h3 data-source="Source: Shopify product.images (REST API)&#10;Alt text: variant_image_alt_N metafields&#10;Owner: AssetSmith deposits → Shopkeeper uploads">Media (${p.image_urls.length} images)</h3>
         <div class="img-strip">
           ${p.image_urls.map((u, i) => `<img loading="lazy" src="${escapeHtml(u)}" class="${i===0?'current':''}" alt="Image ${i+1}">`).join('')}
         </div>
@@ -764,27 +811,27 @@ function drawerHTML(p) {
       </section>
     `);
   } else if (p.image_urls && p.image_urls.length === 1) {
-    parts.push(`<section><h3>Media</h3><div style="font-size:0.85rem;color:var(--text-dim);">Only featured image — no secondary photos.</div></section>`);
+    parts.push(`<section><h3 data-source="Source: Shopify product.images">Media</h3><div style="font-size:0.85rem;color:var(--text-dim);">Only featured image — no secondary photos.</div></section>`);
   } else {
-    parts.push(`<section><h3>Media</h3><div class="missing-msg">No images</div></section>`);
+    parts.push(`<section><h3 data-source="Source: Shopify product.images">Media</h3><div class="missing-msg">No images</div></section>`);
   }
 
   // DESCRIPTION
-  parts.push(`<section><h3>Description (body_html)</h3>`);
+  parts.push(`<section><h3 data-source="Source: Shopify product.body_html&#10;Owner: CatalogSmith">Description (body_html)</h3>`);
   if (p.body_html) parts.push(`<div class="body-html">${p.body_html}</div>`);
   else parts.push(`<div class="missing-msg">No body_html set.</div>`);
   parts.push(`</section>`);
 
   // FLAVOR + BENEFITS
   if (p.flavor_notes || p.benefits) {
-    parts.push(`<section><h3>Flavor Notes & Benefits</h3><dl class="kv">`);
+    parts.push(`<section><h3 data-source="Source: Shopify metafields&#10;• custom.flavornotes2&#10;• custom.benefits&#10;Owner: CatalogSmith">Flavor Notes & Benefits</h3><dl class="kv">`);
     if (p.flavor_notes) parts.push(`<dt>Flavor notes</dt><dd>${escapeHtml(p.flavor_notes)}</dd>`);
     if (p.benefits) parts.push(`<dt>Benefits</dt><dd>${escapeHtml(p.benefits)}</dd>`);
     parts.push(`</dl></section>`);
   }
 
   // INGREDIENTS
-  parts.push(`<section><h3>Ingredients</h3>`);
+  parts.push(`<section><h3 data-source="Source: Shopify metafields&#10;• custom.ingredient_header_1..8 (primary)&#10;• tab_content.ingredients (legacy fallback)&#10;Owner: CatalogSmith">Ingredients</h3>`);
   if (p.ingredient_headers && p.ingredient_headers.length) {
     parts.push(`<div class="ingredient-list">`);
     p.ingredient_headers.forEach(ing => {
@@ -803,7 +850,7 @@ function drawerHTML(p) {
   parts.push(`</section>`);
 
   // SIZES / VARIANTS
-  parts.push(`<section><h3>Sizes & Variants</h3>`);
+  parts.push(`<section><h3 data-source="Source: Shopify variants[*] + product-catalog.xlsx&#10;• sku, variant_id, option_value from Shopify&#10;• size_canonical from variants sheet (curated by Shopkeeper)&#10;Owner: CatalogSmith (canonical names) + Shopkeeper (creation)">Sizes & Variants</h3>`);
   if (p.variants && p.variants.length) {
     parts.push(`<div class="variant-list">`);
     p.variants.forEach(v => {
@@ -826,14 +873,14 @@ function drawerHTML(p) {
 
   // BREW METHOD / CAFFEINE
   if (p.brew_method || p.caffeine) {
-    parts.push(`<section><h3>Brew Method & Caffeine</h3><dl class="kv">`);
+    parts.push(`<section><h3 data-source="Source: Shopify metafields&#10;• tab_content.instructions (brew)&#10;• custom.caffeine&#10;Owner: CatalogSmith">Brew Method & Caffeine</h3><dl class="kv">`);
     if (p.brew_method) parts.push(`<dt>Brew method</dt><dd>${escapeHtml(p.brew_method)}</dd>`);
     if (p.caffeine) parts.push(`<dt>Caffeine</dt><dd>${escapeHtml(p.caffeine)}</dd>`);
     parts.push(`</dl></section>`);
   }
 
   // NUTRITION
-  parts.push(`<section><h3>Nutrition Facts</h3>`);
+  parts.push(`<section><h3 data-source="Source: Shopify metafield custom.nutrition_facts (JSON)&#10;Owner: CatalogSmith&#10;Coverage: 48/288 products (gap)">Nutrition Facts</h3>`);
   if (p.nutrition_facts && p.nutrition_facts.panel) {
     parts.push(renderNutrition(p.nutrition_facts.panel));
   } else if (p.nutrition_facts) {
@@ -844,7 +891,7 @@ function drawerHTML(p) {
   parts.push(`</section>`);
 
   // PACKAGE ICONS
-  parts.push(`<section><h3>Package Icons</h3>`);
+  parts.push(`<section><h3 data-source="Source: package_icons sheet (product-catalog.xlsx)&#10;• Vocabulary owned by AssetSmith (icons.json)&#10;• SKU→icon join owned by CatalogSmith&#10;• Hybrid match: SKU-direct + title-union, max confidence wins">Package Icons</h3>`);
   const iconsObj = p.package_icons || {};
   const iconEntries = Object.entries(iconsObj);
   if (iconEntries.length) {
@@ -865,7 +912,7 @@ function drawerHTML(p) {
   parts.push(`</section>`);
 
   // TAGS
-  parts.push(`<section><h3>Tags (${p.tags ? p.tags.length : 0})</h3>`);
+  parts.push(`<section><h3 data-source="Source: Shopify product.tags&#10;• Attribute tags (family, style, format) — CatalogSmith owns&#10;• Promo tags (fotm-*, sale-*, hidden, etc.) — Shopkeeper owns&#10;Read-only here for Shopkeeper-owned tags">Tags (${p.tags ? p.tags.length : 0})</h3>`);
   if (p.tags && p.tags.length) {
     const attr = p.tags.filter(t => !isPromoTag(t));
     const promo = p.tags.filter(isPromoTag);
@@ -885,13 +932,13 @@ function drawerHTML(p) {
   parts.push(`</section>`);
 
   // SEO
-  parts.push(`<section><h3>SEO</h3><dl class="kv">`);
+  parts.push(`<section><h3 data-source="Source: Shopify SEO fields&#10;• product.seo.title&#10;• product.seo.description&#10;Owner: CatalogSmith">SEO</h3><dl class="kv">`);
   parts.push(`<dt>SEO title</dt><dd ${p.seo_title?'':'class="missing"'}>${p.seo_title ? escapeHtml(p.seo_title) + ` <span style="color:var(--text-faint);font-size:0.75rem;">(${p.seo_title.length} chars)</span>` : 'Not set'}</dd>`);
   parts.push(`<dt>SEO description</dt><dd ${p.seo_description?'':'class="missing"'}>${p.seo_description ? escapeHtml(p.seo_description) + ` <span style="color:var(--text-faint);font-size:0.75rem;">(${p.seo_description.length} chars)</span>` : 'Not set'}</dd>`);
   parts.push(`</dl></section>`);
 
   // META
-  parts.push(`<section><h3>Record Meta</h3><dl class="kv">`);
+  parts.push(`<section><h3 data-source="Source: Shopify product fields + master sheet derivations&#10;• family, style — derived (metafield + tags + Short Names CSV)&#10;• confidence flags from extract_catalog.py heuristics">Record Meta</h3><dl class="kv">`);
   parts.push(`<dt>SKU</dt><dd><code>${escapeHtml(p.sku || '—')}</code></dd>`);
   parts.push(`<dt>Handle</dt><dd><code>${escapeHtml(p.handle || '—')}</code></dd>`);
   parts.push(`<dt>Product ID</dt><dd><code>${escapeHtml(String(p.product_id || '—'))}</code></dd>`);

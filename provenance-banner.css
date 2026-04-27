@@ -1,0 +1,208 @@
+/* ====================================================================
+   provenance-banner.css
+   Shared data-lineage banner used across teeccino-reports pages.
+   Owner: CatalogSmith. Pages: catalog.html, rollover.html, pdp-rebuild.html,
+   campaign-versatility.html, promo-management.html, mission-control.html.
+
+   USAGE
+     <link rel="stylesheet" href="provenance-banner.css">
+     <script>
+       window.PROVENANCE_CONFIG = {
+         pageTitle: "Product Catalog Browser",
+         master: {
+           label: "Master catalog",
+           path: "C:\\Users\\JustinAdler\\clawd-catalogsmith\\data\\product-catalog.xlsx",
+           lastUpdated: "2026-04-27T17:30:00Z",       // ISO; banner derives "fresh" badge
+           rowCount: 159,
+           rowGrain: "SKU"
+         },
+         sources: [
+           { name: "Shopify Admin API", flow: "fetch products + metafields + variants" },
+           { name: "Product Short Names CSV", flow: "family classification hints" },
+           { name: "AssetSmith icons.json", flow: "package icon vocabulary" }
+         ],
+         pipeline: [
+           "Shopify -> extract_catalog.py",
+           "extract_catalog.py -> product-catalog.xlsx (master)",
+           "build_catalog_browser.py -> catalog-data.json",
+           "catalog-data.json -> this page"
+         ],
+         feedsInto: [
+           { target: "Catalog Browser (this page)", role: "rendered output" },
+           { target: "Amazon syndication export", role: "downstream" },
+           { target: "Wholesale spec deck",        role: "downstream" }
+         ]
+       };
+     </script>
+     <script src="provenance-banner.js"></script>
+   ==================================================================== */
+
+.prov-banner {
+  background: linear-gradient(90deg, rgba(0,184,212,0.08) 0%, rgba(212,168,67,0.06) 100%);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  line-height: 1.4;
+}
+.prov-banner .prov-icon  { font-size: 1rem; line-height: 1; }
+.prov-banner .prov-label {
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  margin-right: 4px;
+}
+.prov-banner code {
+  background: rgba(0,0,0,0.28);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Menlo', monospace;
+  font-size: 0.72rem;
+  color: #e2e8f0;
+  word-break: break-all;
+}
+.prov-banner .prov-fresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.prov-banner .prov-fresh::before {
+  content: "●";
+  font-size: 0.85rem;
+}
+.prov-banner .prov-fresh.fresh   { background: rgba(74,222,128,0.12); color: #4ade80; }
+.prov-banner .prov-fresh.aging   { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.prov-banner .prov-fresh.stale   { background: rgba(248,113,113,0.12); color: #f87171; }
+.prov-banner .prov-fresh.unknown { background: rgba(148,163,184,0.12); color: #94a3b8; }
+
+.prov-banner .prov-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prov-banner details {
+  margin-left: auto;
+  font-size: 0.74rem;
+}
+.prov-banner details summary {
+  cursor: pointer;
+  color: #94a3b8;
+  user-select: none;
+  list-style: none;
+  padding: 2px 8px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.prov-banner details summary::-webkit-details-marker { display: none; }
+.prov-banner details summary::after  { content: " ▼"; font-size: 0.7em; color: #64748b; }
+.prov-banner details[open] summary::after { content: " ▲"; }
+.prov-banner details summary:hover {
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+}
+
+.prov-banner .prov-flow {
+  flex-basis: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  font-size: 0.74rem;
+}
+.prov-flow h4 {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.prov-flow ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.prov-flow li {
+  color: #cbd5e1;
+  padding-left: 14px;
+  position: relative;
+}
+.prov-flow li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #64748b;
+  font-size: 0.85em;
+}
+.prov-flow li .prov-flow-detail { color: #94a3b8; font-size: 0.92em; }
+.prov-flow li code {
+  background: rgba(0,0,0,0.32);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.72rem;
+}
+
+/* ----- Per-field tooltip pattern (any element with [data-source]) ----- */
+[data-source] {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted rgba(148,163,184,0.4);
+}
+[data-source]::after {
+  content: attr(data-source);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: pre-line;
+  min-width: 200px;
+  max-width: 320px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+[data-source]::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.18);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1000;
+}
+[data-source]:hover::after,
+[data-source]:hover::before { opacity: 1; }

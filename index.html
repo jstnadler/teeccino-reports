@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teeccino Reports</title>
+    <link rel="stylesheet" href="provenance-banner.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -77,6 +78,34 @@
         <h1>📊 Teeccino Reports</h1>
         <p class="sub">Dashboards and reporting tools</p>
     </div>
+
+    <div id="provenance-mount"></div>
+
+    <script>
+    window.PROVENANCE_CONFIG = {
+      pageTitle: "Teeccino Reports — Hub",
+      owner: "Multi-agent (gateway: AgentSmith)",
+      master: {
+        label: "Hub master",
+        path: "C:\\Users\\JustinAdler\\clawd\\data\\mission-control.json",
+        rowGrain: "agent"
+      },
+      sources: [
+        { name: "Each agent's outbox/", flow: "activity feed → mission-control.json" },
+        { name: "Per-page master files", flow: "linked from each report card below" }
+      ],
+      pipeline: [
+        "8 agents → outbox/*.json",
+        "build_mission_control.py → mission-control.json",
+        "Each report page declares its own master + sources via Provenance banner"
+      ],
+      feedsInto: [
+        { target: "Mission Control dashboard", role: "agent coordination" },
+        { target: "Per-agent dashboards",      role: "linked below" }
+      ]
+    };
+    </script>
+    <script src="provenance-banner.js"></script>
 
     <div class="report-grid">
         <a class="report-card" href="mtd.html">
