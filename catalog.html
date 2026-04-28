@@ -1089,10 +1089,29 @@ function renderSpecSheet(p) {
     out.push(`<div style="margin-top:4px;font-size:0.9rem;">${escapeHtml(ss.claims)}</div>`);
   }
 
-  // Ingredients (spec-sheet variant — shown if it differs from the metafield-derived one)
-  if (ss.ingredients_specsheet) {
-    out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Ingredients (per spec sheet)</div>`);
-    out.push(`<div style="margin-top:4px;background:rgba(0,0,0,0.2);padding:8px 12px;border-radius:6px;font-size:0.85rem;">${escapeHtml(ss.ingredients_specsheet)}</div>`);
+  // Ingredients — prefer the authoritative (Shopify metafield) source per
+  // SKU, fall back to the spec-sheet PDF when Shopify is empty. Always
+  // label the source so the reader knows whether they're looking at
+  // per-SKU truth or a flavor-grain B2B copy.
+  const authIngr = ss.ingredients_authoritative || ss.ingredients_specsheet;
+  if (authIngr) {
+    const srcLabel = ({
+      'shopify_tab':     'Shopify metafield · custom.tab_content.ingredients (per SKU)',
+      'shopify_headers': 'Shopify metafield · custom.ingredient_header_1..N (per SKU)',
+      'specsheet_pdf':   'Sales spec-sheet PDF (flavor-grain — may not match SKU recipe)',
+    })[ss.ingredients_authoritative_source] || 'Sales spec-sheet PDF';
+    out.push(`<div style="margin-top:14px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;">Ingredients</div>`);
+    out.push(`<div style="margin-top:4px;background:rgba(0,0,0,0.2);padding:8px 12px;border-radius:6px;font-size:0.85rem;">${escapeHtml(authIngr)}</div>`);
+    out.push(`<div class="spec-sub">Source: ${escapeHtml(srcLabel)}</div>`);
+    if (ss.ingredients_specsheet
+        && ss.ingredients_authoritative
+        && ss.ingredients_specsheet !== ss.ingredients_authoritative
+        && ss.ingredients_authoritative_source !== 'specsheet_pdf') {
+      out.push(`<details style="margin-top:8px;font-size:0.8rem;color:var(--text-dim);">`);
+      out.push(`<summary style="cursor:pointer;">Spec-sheet PDF version (for comparison)</summary>`);
+      out.push(`<div style="margin-top:4px;padding:8px 12px;background:rgba(0,0,0,0.15);border-radius:6px;color:var(--text-faint);">${escapeHtml(ss.ingredients_specsheet)}</div>`);
+      out.push(`</details>`);
+    }
   }
 
   // Lab tables
