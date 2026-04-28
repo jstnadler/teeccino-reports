@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T16:57:55.325548-07:00",
+  "generatedAt": "2026-04-28T15:14:17.794131-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-18T00:15:00Z",
+    "lastActivity": "2026-04-18T03:10:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -44,7 +44,7 @@
       },
       {
         "label": "M8: Migration — assign native template to 3-5 test products, validate end-to-end (ATC, subscribe, OCU, Loox), then bulk reassign remaining 99",
-        "done": false
+        "done": true
       },
       {
         "label": "M9: Secondary templates — rebuild 0e592c64 (samplers, 9 products), e8db7446 (gift boxes, 4 products), 2b04f633 (seasonal, 2 products)",
@@ -237,9 +237,11 @@
         "id": "t18",
         "milestone": "M8",
         "description": "Bulk reassign remaining 99 products from replo.10dc3372 template to new native template",
-        "status": "pending",
+        "status": "done",
         "owner": "shopkeeper",
-        "handoffPlan": "ThemeSmith produces task brief at inbox/<id>-shopkeeper-bulk-pdp-migration.json. Target filter: templateSuffix == 'replo.10dc3372-99a2-4f75-9141-c7b4923521b2' AND productType IN {'Herbal Coffee','Herbal Tea','Instant Coffee','Instant Latte'} AND status == 'ACTIVE'. Exclusion: the 4 Hazelnut SKUs already on pdp-rebuild (gids: 6681931972777 + Tea/Instant Coffee/Instant Latte equivalents). Wave plan: ~24 products per wave, 4 waves. After each wave: Shopkeeper runs storefront HTTP smoke test on 3 random flipped PDPs (200 OK, no Liquid error string, format switcher renders at least 1 sibling tab, cross-sell has at least 4 sibling cards), pauses for ThemeSmith/Justin green light before next wave. Per-wave rollback manifest stored alongside the task so any wave can be reverted in bulk. Secondary templates (samplers 0e592c64, gift boxes e8db7446, seasonal 2b04f633) MUST be excluded — they are M9 scope."
+        "completed": "2026-04-18",
+        "progress": "COMPLETE — all 4 waves shipped. Wave 1: 22 flipped (2026-04-18T00:38Z). Wave 2: 22 flipped (2026-04-18T00:40Z). Wave 3: 19 flipped (2026-04-18T00:41Z). Wave 4: 18 flipped (2026-04-18T03:03Z). Total 81/81 products migrated. Mid-flight, mobile PDP horizontal scroll regression surfaced on live (10-slide cross-sell swiper had overflow:visible defeating Swiper's clip mechanism, pushing document width to 3008px at 375vw). ThemeSmith fixed class-wide in assets/component-pdp-sections.css (overflow:hidden), shipped to dev (commit 222dc9d, branch c08ea9b) then main via cherry-pick (commit 151e55b) — single-file surgical fix, no per-product action needed. Fix verified on live at 375vw: docScrollWidth 3008→360. Stragglers from waves 2 & 3 (french-roast-herbal-tea, vanilla-nut-herbal-tea) held legacy Replo HTML in origin page_cache despite API-confirmed templateSuffix=pdp-rebuild — naturally cleared ~2.5hr later per cache TTL, no manual intervention needed. Wave 4 smoke UPGRADED: added Playwright mobile hscroll check (375x800, scrollWidth<=377, computed overflow=hidden) alongside HTTP smoke — 5/5 Shopkeeper samples + 3/3 independent ThemeSmith samples all PASS (8/8 total on wave 4). Plan: memory/pdp-migration-plan-2026-04-18T00-37-24Z.json. Outboxes: wave 1 (Shopkeeper 2026-04-18T00-44-00Z), wave 2 (2026-04-18T00-48-00Z), wave 3 (2026-04-18T00-48-30Z), wave 4 (2026-04-18T03-06-00Z). Hscroll fix outboxes (ThemeSmith): 2026-04-18T02-02-00Z (dev), 2026-04-18T02-21-00Z (main).",
+        "rollback": "Per-wave rollback manifest available in plan['executions'] — `py312 Automations/pdp_template_migration.py rollback --plan <plan> --wave N --yes` flips any wave back to Replo template. Instant effect per product, no redeploy needed."
       },
       {
         "id": "t19",
