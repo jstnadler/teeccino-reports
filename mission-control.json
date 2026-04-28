@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-28T10:54:46.156577-07:00",
+  "lastUpdated": "2026-04-28T11:20:36.383916-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.0"
@@ -191,11 +191,15 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Orchestrating CatalogSmith catalog-sync (ingredients + nutrition) to Shopify",
+        "source": "interactive",
+        "startedAt": "2026-04-28T11:19:42.812673-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Built gw-inbox + gw-sweep; fattened gateway PS help blocks",
+        "summary": "Built gw-inbox (read-only listing) and gw-sweep (drain inboxes by invoking each agent) to fill the gap where 'tell every agent to check its inbox' had no one-shot command. Also fattened comment-based help on every gateway PS function so semantics are self-documenting.",
         "at": "2026-04-28T11:00:00-07:00"
       },
       "recentActivity": [
@@ -304,14 +308,24 @@
       "emoji": "books",
       "role": "Product Information Management",
       "workspace": "clawd-catalogsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Catalog sync to Shopify: ingredients (spec-sheet) + nutrition Metafields",
+        "source": "gateway",
+        "startedAt": "2026-04-28T11:19:42.812673-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Phase 3 shipped — Catalog Browser now renders Product Specification per product (origin, certs, organoleptic, claims, lab tables, cross-product siblings) sourced from new master columns + _spec_sheet_labs sheet. Live at jstnadler.github.io/teeccino-reports/catalog.html — 66 matched / 1 no-pdf / new gap filter wired up.",
-        "at": "2026-04-27T23:50:00Z"
+        "summary": "Caught corrupted Sales source PDF while answering 'do we have catalog info for SKU 31008L French Roast Latte family'. PDF 'Instant Miraculous Mushroom Adapt & Protect Latte Specification 1.pdf' has its internal Product Name edited to say 'Instant French Roast Latte' but its body still contains Mushroom A&P ingredients. Pipeline was routing this corrupted content to 31008L. Resolver hardened with filename-token tie-breaker and Instant-Coffee fallback rule. Re-ran extract+backfill+regen+catalog-deploy. 31008L now sources from the legitimate 'Teeccino Instant French Roast Latte Specification 1.pdf'.",
+        "at": "2026-04-28T18:15:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Caught corrupted Sales source PDF while answering 'do we have catalog info for SKU 31008L French Roast Latte family'. PDF 'Instant Miraculous Mushroom Adapt & Protect Latte Specification 1.pdf' has its internal Product Name edited to say 'Instant French Roast Latte' but its body still contains Mushroom A&P ingredients. Pipeline was routing this corrupted content to 31008L. Resolver hardened with filename-token tie-breaker and Instant-Coffee fallback rule. Re-ran extract+backfill+regen+catalog-deploy. 31008L now sources from the legitimate 'Teeccino Instant French Roast Latte Specification 1.pdf'.",
+          "at": "2026-04-28T18:15:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Catalog Browser Phase 3: wired the new master + _spec_sheet_labs spec-sheet data into the hosted catalog at jstnadler.github.io/teeccino-reports/catalog.html. Each product drawer now has a Product Specification section. Master xlsx is now the single source of truth for both PDFs and the catalog browser.",
           "at": "2026-04-27T23:50:00Z",
@@ -349,7 +363,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 4,
+      "pendingTasks": 5,
       "health": "healthy"
     },
     {
@@ -691,6 +705,15 @@
     }
   ],
   "recentDispatches": [
+    {
+      "id": "6d1c27cd-8b1d-49ee-af08-70498c323bd6",
+      "from": "agentsmith",
+      "to": "catalogsmith",
+      "summary": "Catalog sync to Shopify: ingredients (spec-sheet) + nutrition Metafields. Extract → diff → auto-write → verify",
+      "status": "pending",
+      "dispatched": "2026-04-28T11:19:42.812673-07:00",
+      "completed": null
+    },
     {
       "id": "9018c3b8-e1e6-47f5-8a65-396c492279ab",
       "from": "agentsmith",
