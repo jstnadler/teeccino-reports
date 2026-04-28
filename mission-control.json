@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-28T11:27:13.870128-07:00",
+  "lastUpdated": "2026-04-28T11:29:03.821150-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.0"
@@ -26,7 +26,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 3,
+      "pendingTasks": 4,
       "health": "healthy"
     },
     {
@@ -321,18 +321,20 @@
       "emoji": "books",
       "role": "Product Information Management",
       "workspace": "clawd-catalogsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Catalog sync to Shopify: ingredients (spec-sheet) + nutrition Metafields",
-        "source": "gateway",
-        "startedAt": "2026-04-28T11:19:42.812673-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Caught corrupted Sales source PDF while answering 'do we have catalog info for SKU 31008L French Roast Latte family'. PDF 'Instant Miraculous Mushroom Adapt & Protect Latte Specification 1.pdf' has its internal Product Name edited to say 'Instant French Roast Latte' but its body still contains Mushroom A&P ingredients. Pipeline was routing this corrupted content to 31008L. Resolver hardened with filename-token tie-breaker and Instant-Coffee fallback rule. Re-ran extract+backfill+regen+catalog-deploy. 31008L now sources from the legitimate 'Teeccino Instant French Roast Latte Specification 1.pdf'.",
-        "at": "2026-04-28T18:15:00Z"
+        "summary": "Catalog sync ingredients + nutrition — Phase 1 nutrition extracted, diff built, 7 master rows backfilled, Shopify ingredient writes BLOCKED on PDP-key scope question for Justin",
+        "at": "2026-04-28T18:30:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Nutrition extracted to master (41/159 webproducts populated; 118 OCR gaps). Ingredients diff complete, 7 master rows backfilled from live. Shopify ingredient writes BLOCKED — no canonical custom.ingredients Metafield exists; Justin must pick PDP target key.",
+          "at": "2026-04-28T18:30:00Z",
+          "source": "gateway",
+          "status": "partial"
+        },
         {
           "summary": "Caught corrupted Sales source PDF while answering 'do we have catalog info for SKU 31008L French Roast Latte family'. PDF 'Instant Miraculous Mushroom Adapt & Protect Latte Specification 1.pdf' has its internal Product Name edited to say 'Instant French Roast Latte' but its body still contains Mushroom A&P ingredients. Pipeline was routing this corrupted content to 31008L. Resolver hardened with filename-token tie-breaker and Instant-Coffee fallback rule. Re-ran extract+backfill+regen+catalog-deploy. 31008L now sources from the legitimate 'Teeccino Instant French Roast Latte Specification 1.pdf'.",
           "at": "2026-04-28T18:15:00Z",
@@ -492,13 +494,13 @@
       ],
       "category": "Operations",
       "started": "2026-04-16",
-      "lastActivity": "2026-04-17",
+      "lastActivity": "2026-04-28",
       "description": "Deploy CatalogSmith as the 7th guild agent — the Product Information Management (PIM) steward. Owns metafield/metaobject schemas, taxonomy (families, styles, tags), and product copy (titles, descriptions, SEO, flavor notes, nutrition, brew methods, ingredients). Writes catalog fields to Shopify directly; Shopkeeper retains operational writes (promos, pricing, inventory, publish). Phased rollout: 0) Bootstrap → 1) Extract live Shopify catalog into master xlsx → 2) First completeness audit → 3) Fill gaps → 4) Copy pass w/ brand voice → 5) Syndication-ready exports (Amazon, wholesale).",
       "dashboardUrl": null,
       "milestoneDone": 3,
       "milestoneTotal": 6,
       "tasksDone": 3,
-      "tasksPending": 1
+      "tasksPending": 4
     },
     {
       "id": "coffeealternatives-launch",
