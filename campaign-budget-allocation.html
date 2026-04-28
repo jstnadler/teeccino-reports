@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign Budget Allocation — Teeccino Reports</title>
+<link rel="stylesheet" href="provenance-banner.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); min-height:100vh;
+         color:#e6e6e6; padding:20px; padding-top:70px; }
+  .top-nav { position:fixed; top:0; left:0; right:0; background:rgba(26,26,46,0.95);
+              backdrop-filter:blur(10px); z-index:100; padding:12px 24px;
+              display:flex; align-items:center; gap:20px;
+              border-bottom:1px solid rgba(255,255,255,0.1); }
+  .top-nav a { color:#8B6914; text-decoration:none; font-size:0.9em; }
+  .top-nav a:hover { color:#D4A843; }
+  .top-nav .brand { font-weight:700; font-size:1.1em; color:#D4A843; }
+  .container { max-width:1400px; margin:0 auto; }
+  h1 { font-size:1.9em; background:linear-gradient(135deg,#D4A843,#8B6914);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+  .sub { color:#888; margin-bottom:24px; }
+  .glossary { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+               border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:0.86em; color:#aaa; }
+  .glossary code { color:#D4A843; }
+  .callout { background:rgba(91,141,239,0.1); border-left:3px solid #5b8def;
+              border-radius:4px; padding:12px 16px; margin:12px 0; font-size:0.86em; color:#bcd; }
+  .section { margin:32px 0; }
+  .section-title { font-size:1.2em; color:#D4A843; margin-bottom:12px; font-weight:600;
+                    border-bottom:1px solid rgba(212,168,67,0.3); padding-bottom:6px; }
+  .platform-tag { font-size:0.7em; padding:2px 8px; border-radius:4px;
+                    margin-left:8px; vertical-align:middle; }
+  .tag-google { background:rgba(66,133,244,0.25); color:#9ec0ff; }
+  .tag-meta { background:rgba(24,119,242,0.25); color:#7ab7ff; }
+  .hero-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:14px; }
+  .hero-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+                border-radius:10px; padding:18px; }
+  .hero-label { font-size:0.78em; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:8px; }
+  .hero-value { font-size:1.7em; font-weight:700; color:#fff; }
+  .hero-prior { font-size:0.85em; color:#777; margin-top:2px; }
+  .hero-delta { font-size:1em; font-weight:600; margin-top:6px; }
+  .pos { color:#3fb950; }
+  .neg { color:#f85149; }
+  .warn { color:#e3b341; }
+  .badge { display:inline-block; background:rgba(212,168,67,0.2); color:#D4A843;
+            font-size:0.7em; padding:1px 6px; border-radius:8px; vertical-align:middle; }
+  .status-active { color:#3fb950; font-size:0.78em; font-weight:600; }
+  .status-paused { color:#888; font-size:0.78em; }
+  .chart-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                 border-radius:10px; padding:18px; height:380px; margin-bottom:18px; }
+  .picker { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15);
+              color:#fff; padding:8px 12px; border-radius:6px; font-size:0.9em;
+              margin-bottom:12px; min-width:300px; max-width:600px; }
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+  th, td { padding:8px 10px; text-align:left; font-size:0.85em; border-bottom:1px solid rgba(255,255,255,0.06); white-space:nowrap; }
+  th { background:rgba(212,168,67,0.12); color:#D4A843; font-weight:600; font-size:0.74em;
+        text-transform:uppercase; letter-spacing:0.5px; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.muted { color:#888; }
+  td.strong { font-weight:600; color:#fff; }
+  tr:hover td { background:rgba(255,255,255,0.03); }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <span class="brand">☕ Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="creatives.html">Creatives</a>
+  <a href="ad-spend-yoy.html">Ad Spend YoY</a>
+  <a href="campaign-budget-allocation.html" style="color:#D4A843;font-weight:600;">Budget Allocation</a>
+  <a href="status.html">Status</a>
+  <a href="database.html">Database</a>
+</nav>
+
+<div class="container">
+  <h1>💸 Campaign Budget Allocation</h1>
+  <p class="sub">Per-campaign daily budget vs spend. Google: full daily budget history. Meta: spend only (budget capture pending). Latest data: Google 2026-04-26 · Meta 2026-04-27. Generated 2026-04-27 17:08.</p>
+
+  <div class="glossary">
+    <strong>Definitions:</strong>
+    <code>Daily Budget</code> = the cap you set per day &nbsp;·&nbsp;
+    <code>Util%</code> = yesterday's spend ÷ yesterday's daily budget &nbsp;·&nbsp;
+    <code>Avg Daily 30d</code> = 30-day spend ÷ 30. Color: <span class="pos">green</span> = healthy 80–110% util · <span class="warn">gold</span> = under-pacing &lt;80% · <span class="neg">red</span> = over-delivery &gt;110% (Google can deliver up to 2× daily budget; monthly cap = 30.4 × daily).
+  </div>
+
+  <div id="provenance-mount"></div>
+  <script>
+  window.PROVENANCE_CONFIG = {
+    pageTitle: "Campaign Budget Allocation",
+    owner: "AdSmith",
+    master: {
+      label: "Analytics DB",
+      path: "C:\\temp\\analytics\\teeccino_analytics.db",
+      rowGrain: "daily campaign × platform"
+    },
+    sources: [
+      { name: "raw_google_ads_campaigns", flow: "Google Ads API → DataOps ingest → SQLite (daily_budget_micros + spend_micros)" },
+      { name: "raw_meta_ads_campaigns",   flow: "Meta Marketing API → DataOps ingest → SQLite (spend only — daily_budget capture pending)" }
+    ],
+    pipeline: [
+      "DataOps daily ingest (6 AM PT) → raw_google_ads_campaigns + raw_meta_ads_campaigns",
+      "build_campaign_budget_allocation.py (AdSmith) → campaign-budget-allocation.html"
+    ],
+    feedsInto: [
+      { target: "AdSmith ECH cross-checks", role: "Verify agency-reported budget changes vs platform truth" },
+      { target: "Versatility planning",     role: "Baseline current allocation pre-launch" }
+    ]
+  };
+  </script>
+  <script src="provenance-banner.js"></script>
+
+  <div class="section">
+    <div class="section-title">Today's Allocation Snapshot</div>
+    <div class="hero-grid">
+      <div class="hero-card">
+        <div class="hero-label">Google — Active Daily Budget <span class="platform-tag tag-google">17 campaigns</span></div>
+        <div class="hero-value">$856</div>
+        <div class="hero-prior">Sum of latest daily-budget caps on enabled campaigns</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Google — Spend Yesterday</div>
+        <div class="hero-value">$401</div>
+        <div class="hero-prior">Util: 47%</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Google — 7d Spend</div>
+        <div class="hero-value">$2,346</div>
+        <div class="hero-prior">30d: $9,304</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Meta — 7d Spend <span class="platform-tag tag-meta">4 active</span></div>
+        <div class="hero-value">$1,186</div>
+        <div class="hero-prior">30d: $10,977 · Yesterday: $296</div>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>Meta budget capture:</strong> DataOps' daily Meta ingest currently captures campaign-level <em>spend</em> but not <em>daily_budget</em> / <em>lifetime_budget</em>. On Meta, budgets often live at the ad-set level (ABO) or campaign level (CBO). To populate Meta budgets here, DataOps would need to add a budget snapshot to <code>raw_meta_ads_campaigns</code> (and the queued <code>raw_meta_ads_adsets</code> table). Tracked in DataOps' P1 backlog.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Campaign Daily Timeline (90 days) <span class="platform-tag tag-google">Google</span></div>
+    <select id="campaignPicker" class="picker"><option value="16476888433" selected>Sales | PFM | CPA (PERFORMANCE_MAX)</option>
+<option value="21764470745">Organic Products (PERFORMANCE_MAX)</option>
+<option value="22291050233">eH | US | Shopping Ads (SHOPPING)</option>
+<option value="16388118198">S | NB | Mushroom | Chaga (SEARCH)</option>
+<option value="9955541703">eH | US | Search Ads - Branded Keywords (SEARCH)</option>
+<option value="21637283405">Kits (PERFORMANCE_MAX)</option>
+<option value="23681454654">eH | PMax | Mushroom (Collection page LP) (PERFORMANCE_MAX)</option>
+<option value="22294759435">eH | US | P Max | Herbal Tea (PERFORMANCE_MAX)</option>
+<option value="23728322111">eH | PMax | Dandelion collection (PERFORMANCE_MAX)</option>
+<option value="23760539709">eH | Search | Mushroom (Collection LP) (SEARCH)</option>
+<option value="21717172234">US | P Max | Herbal Coffee (PERFORMANCE_MAX)</option>
+<option value="23772227973">eH | PMax | Earth Day (20th-27th) (PERFORMANCE_MAX)</option>
+<option value="22291072733">eH | US | TOF | Shopping Ads (SHOPPING)</option>
+<option value="23601583911">eH | PMax | Dark chocolate herbal coffee (PERFORMANCE_MAX)</option>
+<option value="23601409332">eH | PMax | Dark chocolate herbal tea (PERFORMANCE_MAX)</option>
+<option value="22284299943">eH | US | P Max | TOF | Herbal Tea (PERFORMANCE_MAX)</option>
+<option value="19859823295">eH | US | P Max | TOF | Coffee (PERFORMANCE_MAX)</option>
+<option value="23728435397">eH | Demand Gen | YT (Engagements) (DEMAND_GEN)</option>
+<option value="22152910524">eH | US | Search Ads - Competitors Keywords (SEARCH)</option>
+<option value="22295003197">eH | US | Search Ads - Non Branded Keywords (SEARCH)</option>
+<option value="22778424216">eH | US | TOF P Max | Bundles (PERFORMANCE_MAX)</option>
+<option value="23492031995">eH | US | P Max | Subscription Savings Week (Until 2nd Feb) (PERFORMANCE_MAX)</option>
+<option value="23553141279">eH | US | PMax | Presidents Day Sale (February 13 - 18) (PERFORMANCE_MAX)</option>
+<option value="23596621806">eH | PMax | SALE 30% OFF Brand (26th Feb-28th feb) (PERFORMANCE_MAX)</option>
+<option value="23606859106">eH | PMax | SALE 30% OFF TOF NB (26th Feb-28th feb) (PERFORMANCE_MAX)</option>
+<option value="23625009722">eH | Pmax | Womens day sale (5th-8th) (PERFORMANCE_MAX)</option>
+<option value="23658459102">eH | PMAX | Sale Campaign (18th-25th March) (PERFORMANCE_MAX)</option></select>
+    <div class="chart-wrap"><canvas id="timelineChart"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Google Campaigns — Daily Budget vs Spend (last 30 days)</div>
+    <div class="table-scroll"><table>
+      <thead>
+        <tr>
+          <th>Campaign</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th class="num">Current Daily Budget</th>
+          <th class="num">Spend Yesterday</th>
+          <th class="num">Util Yesterday</th>
+          <th class="num">7d Spend</th>
+          <th class="num">30d Spend</th>
+          <th class="num">Avg Daily 30d</th>
+        </tr>
+      </thead>
+      <tbody>
+              <tr data-campaign-id="16476888433">
+                <td><strong>Sales | PFM | CPA</strong> <span class="badge">1×</span></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$100</td>
+                <td class="num">$54.90</td>
+                <td class="num warn">55%</td>
+                <td class="num">$413.36</td>
+                <td class="num strong">$1,843.76</td>
+                <td class="num muted">$61.46</td>
+              </tr>
+
+              <tr data-campaign-id="21764470745">
+                <td><strong>Organic Products</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$25</td>
+                <td class="num">$50.00</td>
+                <td class="num neg">200%</td>
+                <td class="num">$175.88</td>
+                <td class="num strong">$755.00</td>
+                <td class="num muted">$25.17</td>
+              </tr>
+
+              <tr data-campaign-id="22291050233">
+                <td><strong>eH | US | Shopping Ads</strong></td>
+                <td class="muted">SHOPPING</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">$21.72</td>
+                <td class="num pos">109%</td>
+                <td class="num">$143.84</td>
+                <td class="num strong">$617.52</td>
+                <td class="num muted">$20.58</td>
+              </tr>
+
+              <tr data-campaign-id="16388118198">
+                <td><strong>S | NB | Mushroom | Chaga</strong></td>
+                <td class="muted">SEARCH</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">$16.07</td>
+                <td class="num pos">80%</td>
+                <td class="num">$123.56</td>
+                <td class="num strong">$609.96</td>
+                <td class="num muted">$20.33</td>
+              </tr>
+
+              <tr data-campaign-id="9955541703">
+                <td><strong>eH | US | Search Ads - Branded Keywords</strong></td>
+                <td class="muted">SEARCH</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">$20.75</td>
+                <td class="num pos">104%</td>
+                <td class="num">$141.47</td>
+                <td class="num strong">$609.53</td>
+                <td class="num muted">$20.32</td>
+              </tr>
+
+              <tr data-campaign-id="21637283405">
+                <td><strong>Kits</strong> <span class="badge">1×</span></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$30</td>
+                <td class="num">$0.01</td>
+                <td class="num warn">0%</td>
+                <td class="num">$138.26</td>
+                <td class="num strong">$608.49</td>
+                <td class="num muted">$20.28</td>
+              </tr>
+
+              <tr data-campaign-id="23681454654">
+                <td><strong>eH | PMax | Mushroom (Collection page LP)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$27</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$1.23</td>
+                <td class="num strong">$603.29</td>
+                <td class="num muted">$20.11</td>
+              </tr>
+
+              <tr data-campaign-id="22294759435">
+                <td><strong>eH | US | P Max | Herbal Tea</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">$27.20</td>
+                <td class="num neg">136%</td>
+                <td class="num">$124.45</td>
+                <td class="num strong">$594.85</td>
+                <td class="num muted">$19.83</td>
+              </tr>
+
+              <tr data-campaign-id="23728322111">
+                <td><strong>eH | PMax | Dandelion collection</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$25</td>
+                <td class="num">$35.49</td>
+                <td class="num neg">142%</td>
+                <td class="num">$171.75</td>
+                <td class="num strong">$525.82</td>
+                <td class="num muted">$17.53</td>
+              </tr>
+
+              <tr data-campaign-id="23760539709">
+                <td><strong>eH | Search | Mushroom (Collection LP)</strong></td>
+                <td class="muted">SEARCH</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$50</td>
+                <td class="num">$61.03</td>
+                <td class="num neg">122%</td>
+                <td class="num">$336.58</td>
+                <td class="num strong">$495.24</td>
+                <td class="num muted">$16.51</td>
+              </tr>
+
+              <tr data-campaign-id="21717172234">
+                <td><strong>US | P Max | Herbal Coffee</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$16</td>
+                <td class="num">$0.80</td>
+                <td class="num warn">5%</td>
+                <td class="num">$64.90</td>
+                <td class="num strong">$477.71</td>
+                <td class="num muted">$15.92</td>
+              </tr>
+
+              <tr data-campaign-id="23772227973">
+                <td><strong>eH | PMax | Earth Day (20th-27th)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$100</td>
+                <td class="num">$98.38</td>
+                <td class="num pos">98%</td>
+                <td class="num">$427.45</td>
+                <td class="num strong">$427.45</td>
+                <td class="num muted">$14.25</td>
+              </tr>
+
+              <tr data-campaign-id="22291072733">
+                <td><strong>eH | US | TOF | Shopping Ads</strong></td>
+                <td class="muted">SHOPPING</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">$15.04</td>
+                <td class="num warn">75%</td>
+                <td class="num">$83.07</td>
+                <td class="num strong">$288.40</td>
+                <td class="num muted">$9.61</td>
+              </tr>
+
+              <tr data-campaign-id="23601583911">
+                <td><strong>eH | PMax | Dark chocolate herbal coffee</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$15</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$287.67</td>
+                <td class="num muted">$9.59</td>
+              </tr>
+
+              <tr data-campaign-id="23601409332">
+                <td><strong>eH | PMax | Dark chocolate herbal tea</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$15</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$169.70</td>
+                <td class="num muted">$5.66</td>
+              </tr>
+
+              <tr data-campaign-id="22284299943">
+                <td><strong>eH | US | P Max | TOF | Herbal Tea</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$15</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$152.56</td>
+                <td class="num muted">$5.09</td>
+              </tr>
+
+              <tr data-campaign-id="19859823295">
+                <td><strong>eH | US | P Max | TOF | Coffee</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$15</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$144.59</td>
+                <td class="num muted">$4.82</td>
+              </tr>
+
+              <tr data-campaign-id="23728435397">
+                <td><strong>eH | Demand Gen | YT (Engagements)</strong></td>
+                <td class="muted">DEMAND_GEN</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$92.61</td>
+                <td class="num muted">$3.09</td>
+              </tr>
+
+              <tr data-campaign-id="22152910524">
+                <td><strong>eH | US | Search Ads - Competitors Keywords</strong></td>
+                <td class="muted">SEARCH</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$10</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="22295003197">
+                <td><strong>eH | US | Search Ads - Non Branded Keywords</strong></td>
+                <td class="muted">SEARCH</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="22778424216">
+                <td><strong>eH | US | TOF P Max | Bundles</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$50</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="23492031995">
+                <td><strong>eH | US | P Max | Subscription Savings Week (Until 2nd Feb)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$20</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="23553141279">
+                <td><strong>eH | US | PMax | Presidents Day Sale (February 13 - 18)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$200</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="23596621806">
+                <td><strong>eH | PMax | SALE 30% OFF Brand (26th Feb-28th feb)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$30</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="23606859106">
+                <td><strong>eH | PMax | SALE 30% OFF TOF NB (26th Feb-28th feb)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$30</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="23625009722">
+                <td><strong>eH | Pmax | Womens day sale (5th-8th)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num strong">$100</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr>
+
+              <tr data-campaign-id="23658459102">
+                <td><strong>eH | PMAX | Sale Campaign (18th-25th March)</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td><span class="status-active">ENABLED</span></td>
+                <td class="num strong">$130</td>
+                <td class="num">—</td>
+                <td class="num ">—</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="num muted">$0.00</td>
+              </tr></tbody>
+    </table></div>
+    <p class="sub" style="margin-top:8px;font-size:0.78em;">Badge <span class="badge">N×</span> = number of distinct daily-budget changes detected on this campaign in the last 30 days.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Meta Campaigns — Spend (last 30 days) <span class="platform-tag tag-meta">budget capture pending</span></div>
+    <div class="table-scroll"><table>
+      <thead>
+        <tr>
+          <th>Campaign</th>
+          <th>Objective</th>
+          <th>Status</th>
+          <th class="num">Spend Yesterday</th>
+          <th class="num">7d Spend</th>
+          <th class="num">30d Spend</th>
+          <th>Daily Budget</th>
+        </tr>
+      </thead>
+      <tbody>
+              <tr>
+                <td><strong>eH | CBO | COLD | TOF Herbal Tea</strong></td>
+                <td class="muted">OUTCOME_SALES</td>
+                <td><span class="status-active">ACTIVE</span></td>
+                <td class="num">$107.56</td>
+                <td class="num">$362.37</td>
+                <td class="num strong">$4,931.05</td>
+                <td class="muted">—</td>
+              </tr>
+
+              <tr>
+                <td><strong>eH | CBO | COLD | Main Campaign</strong></td>
+                <td class="muted">OUTCOME_SALES</td>
+                <td><span class="status-active">ACTIVE</span></td>
+                <td class="num">$42.27</td>
+                <td class="num">$283.76</td>
+                <td class="num strong">$3,312.13</td>
+                <td class="muted">—</td>
+              </tr>
+
+              <tr>
+                <td><strong>eH | CBO | Retargeting Campaign</strong></td>
+                <td class="muted">OUTCOME_SALES</td>
+                <td><span class="status-active">ACTIVE</span></td>
+                <td class="num">$55.32</td>
+                <td class="num">$218.53</td>
+                <td class="num strong">$2,384.77</td>
+                <td class="muted">—</td>
+              </tr>
+
+              <tr>
+                <td><strong>eH | CBO | Earth Day Sale (April 20 - 27)</strong></td>
+                <td class="muted">OUTCOME_SALES</td>
+                <td><span class="status-active">ACTIVE</span></td>
+                <td class="num">$90.58</td>
+                <td class="num">$321.26</td>
+                <td class="num strong">$348.78</td>
+                <td class="muted">—</td>
+              </tr>
+
+              <tr>
+                <td><strong>eH | CBO | Equinox And Rewilding Sale (18th-25th March)</strong></td>
+                <td class="muted">OUTCOME_SALES</td>
+                <td><span class="status-paused">PAUSED</span></td>
+                <td class="num">$0.00</td>
+                <td class="num">$0.00</td>
+                <td class="num strong">$0.00</td>
+                <td class="muted">—</td>
+              </tr></tbody>
+    </table></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recent Budget-Change Events (last 90 days) <span class="platform-tag tag-google">Google</span></div>
+    <div class="table-scroll"><table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Campaign</th>
+          <th>Type</th>
+          <th class="num">Old Budget</th>
+          <th class="num">New Budget</th>
+          <th class="num">Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+              <tr>
+                <td>2026-04-16</td>
+                <td><strong>Sales | PFM | CPA</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td class="num">$60</td>
+                <td class="num strong">$100</td>
+                <td class="num pos">+67% (+$40)</td>
+              </tr>
+
+              <tr>
+                <td>2026-04-16</td>
+                <td><strong>Kits</strong></td>
+                <td class="muted">PERFORMANCE_MAX</td>
+                <td class="num">$15</td>
+                <td class="num strong">$30</td>
+                <td class="num pos">+100% (+$15)</td>
+              </tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+<script>
+const CHART_DATA = {"16476888433": {"name": "Sales | PFM | CPA", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0], "spends": [4.87, 12.99, 64.32, 33.91, 25.96, 61.57, 59.61, 44.81, 47.68, 34.76, 36.67, 36.0, 19.9, 30.85, 33.84, 34.84, 66.2, 52.52, 9.76, 2.48, 9.56, 3.37, 9.33, 4.69, 109.81, 104.52, 129.62, 83.98, 92.7, 111.87, 88.02, 30.68, 33.14, 49.88, 111.39, 102.01, 65.89, 72.27, 37.31, 17.56, 8.23, 17.36, 109.89, 76.38, 60.34, 80.07, 69.39, 68.52, 88.94, 46.73, 63.13, 36.56, 48.47, 38.25, 24.19, 32.93, 17.75, 21.25, 42.87, 58.21, 58.26, 59.13, 78.0, 40.46, 75.05, 48.55, 75.26, 60.45, 48.06, 73.6, 68.5, 50.11, 70.1, 47.19, 85.48, 63.41, 61.82, 62.66, 64.04, 29.74, 64.04, 90.14, 60.76, 53.85, 63.23, 60.67, 48.22, 60.19, 46.48, 54.9, 79.67]}, "21764470745": {"name": "Organic Products", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0], "spends": [98.97, 94.84, 51.13, 51.68, 42.82, 40.77, 55.14, 38.54, 74.99, 31.42, 87.54, 40.57, 74.31, 28.25, 78.64, 30.08, 74.37, 31.86, 60.12, 72.66, 60.57, 53.65, 53.45, 59.44, 54.32, 38.45, 64.4, 32.83, 75.77, 25.6, 55.12, 38.74, 39.45, 40.9, 37.21, 38.3, 47.69, 24.11, 25.59, 21.56, 22.25, 35.66, 4.6, 41.99, 23.43, 33.02, 18.08, 34.43, 13.34, 41.58, 2.65, 44.7, 20.03, 19.61, 22.31, 31.03, 20.76, 17.43, 36.32, 23.12, 28.2, 23.8, 10.75, 37.6, 9.24, 28.53, 25.58, 21.29, 22.76, 34.91, 16.83, 18.61, 37.28, 35.67, 8.65, 39.75, 28.0, 24.85, 0.82, 0.25, 35.25, 49.99, 43.65, 25.05, 18.47, 0.16, 0.0, 48.42, 18.47, 50.0, 40.36]}, "22291050233": {"name": "eH | US | Shopping Ads", "type": "SHOPPING", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, null, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0], "spends": [22.69, 26.13, 18.44, 18.25, 16.28, 17.47, 22.55, 23.53, 26.39, 21.59, 27.84, 18.57, 21.78, 28.96, 23.63, 23.72, 25.11, 19.97, 19.51, 23.12, 21.22, 27.43, 17.24, 20.97, 21.04, 17.7, 19.88, 22.59, 22.92, 19.27, 22.37, 17.26, 15.75, 16.05, 19.87, 23.21, 20.43, 21.62, 19.4, 22.68, 18.77, 21.61, 21.63, 19.67, 27.16, 16.66, 19.43, 19.5, 20.02, 24.47, 18.85, 20.26, 20.11, 18.9, 18.62, 21.28, 19.42, 19.19, 19.27, 16.57, 14.49, 17.15, 16.12, 44.18, 0.0, 36.58, 22.02, 19.78, 23.58, 16.57, 22.34, 20.09, 18.86, 20.5, 16.81, 18.28, 18.74, 24.86, 19.87, 19.9, 19.85, 17.23, 18.78, 21.59, 22.7, 21.16, 21.02, 18.87, 18.05, 21.72, 20.32]}, "16388118198": {"name": "S | NB | Mushroom | Chaga", "type": "SEARCH", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0], "spends": [1.38, 9.07, 19.25, 16.84, 10.81, 22.35, 20.8, 10.46, 18.26, 11.33, 10.02, 16.37, 42.87, 38.56, 56.58, 9.52, 21.56, 27.17, 1.88, 0.0, 4.59, 6.6, 13.16, 5.26, 26.82, 12.84, 14.69, 46.12, 17.12, 18.79, 39.1, 22.03, 3.56, 8.13, 23.64, 32.41, 27.75, 27.39, 14.82, 17.03, 7.11, 6.51, 10.39, 12.77, 4.22, 9.02, 5.77, 2.54, 7.73, 40.32, 39.99, 5.85, 15.6, 1.73, 5.08, 18.77, 11.31, 2.64, 19.1, 18.66, 11.14, 6.55, 11.86, 11.88, 37.94, 14.81, 20.4, 30.43, 28.64, 24.13, 20.9, 27.33, 22.37, 27.21, 15.17, 24.55, 23.64, 28.5, 13.3, 18.56, 22.88, 14.83, 16.46, 24.06, 23.43, 23.62, 22.51, 7.97, 12.42, 16.07, 17.54]}, "9955541703": {"name": "eH | US | Search Ads - Branded Keywords", "type": "SEARCH", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0], "spends": [24.9, 19.25, 20.62, 18.62, 15.64, 16.69, 24.51, 23.95, 24.16, 22.79, 23.17, 20.91, 24.74, 24.17, 20.12, 20.16, 20.5, 20.11, 19.6, 21.59, 21.27, 24.54, 28.86, 20.77, 22.93, 22.3, 20.81, 17.35, 14.99, 21.95, 23.85, 20.76, 18.26, 19.03, 20.5, 19.16, 20.62, 22.53, 18.94, 21.53, 19.88, 19.75, 19.81, 20.72, 20.27, 21.62, 19.73, 20.45, 20.17, 23.09, 19.12, 21.42, 18.01, 19.8, 13.26, 18.81, 14.76, 20.92, 15.13, 27.49, 21.21, 17.27, 18.34, 17.8, 16.16, 25.96, 22.02, 22.78, 16.62, 23.45, 22.69, 18.81, 20.83, 21.46, 21.95, 20.28, 18.42, 19.24, 21.31, 20.27, 18.97, 21.35, 20.92, 21.14, 20.67, 20.59, 21.73, 17.82, 21.02, 20.75, 18.88]}, "21637283405": {"name": "Kits", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0], "spends": [102.24, 93.97, 60.25, 34.97, 88.78, 45.13, 65.75, 137.67, 87.4, 111.69, 95.6, 127.2, 94.26, 105.96, 89.12, 77.28, 143.65, 80.62, 88.62, 87.01, 150.23, 102.22, 100.97, 100.66, 106.22, 92.98, 96.43, 67.44, 123.51, 49.59, 58.12, 77.24, 36.27, 78.86, 44.55, 64.84, 68.5, 45.18, 74.44, 54.82, 66.59, 58.94, 71.34, 27.82, 90.82, 63.75, 22.71, 93.62, 35.26, 81.91, 47.5, 69.92, 67.23, 47.98, 51.6, 60.21, 45.95, 22.05, 31.67, 20.76, 48.53, 22.5, 28.83, 35.73, 24.2, 34.2, 30.56, 31.44, 30.21, 25.13, 15.0, 12.21, 12.71, 21.87, 10.63, 23.38, 5.77, 22.8, 8.49, 19.66, 20.15, 0.03, 29.97, 4.76, 25.3, 7.07, 20.93, 0.0, 24.95, 0.01, 60.0]}, "23681454654": {"name": "eH | PMax | Mushroom (Collection page LP)", "type": "PERFORMANCE_MAX", "dates": ["Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, 27.0, null, null, null, null, null, null], "spends": [32.65, 88.19, 57.98, 35.64, 68.56, 85.87, 20.69, 28.32, 13.93, 19.14, 15.14, 13.34, 19.42, 90.16, 30.28, 31.38, 26.74, 28.34, 26.34, 33.24, 15.44, 5.7, 3.07, 6.75, 7.61, 2.91, 9.7, 1.23, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "22294759435": {"name": "eH | US | P Max | Herbal Tea", "type": "PERFORMANCE_MAX", "dates": ["Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, null, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0], "spends": [6.43, 24.2, 19.43, 1.56, 0.79, 8.58, 3.64, 4.16, 0.46, 1.49, 1.21, 0.32, 0.02, 10.64, 27.69, 10.75, 29.66, 17.87, 12.03, 1.37, 10.56, 15.32, 10.71, 5.45, 0.01, 33.66, 16.08, 19.67, 31.29, 0.0, 0.38, 34.6, 18.3, 15.1, 23.73, 30.65, 20.4, 25.28, 21.14, 13.46, 10.59, 14.38, 39.99, 17.74, 39.35, 0.84, 33.54, 1.84, 40.0, 13.59, 23.98, 11.44, 31.37, 11.65, 22.62, 25.44, 0.0, 30.06, 6.9, 40.0, 23.31, 3.39, 34.23, 23.51, 12.35, 29.97, 9.33, 5.29, 18.21, 39.01, 32.69, 15.28, 20.37, 16.4, 16.52, 14.33, 27.42, 22.58, 27.2, 0.01]}, "23728322111": {"name": "eH | PMax | Dandelion collection", "type": "PERFORMANCE_MAX", "dates": ["Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0], "spends": [23.24, 23.41, 12.72, 40.87, 20.28, 27.18, 29.59, 27.5, 12.67, 38.87, 19.66, 25.59, 24.31, 28.18, 26.71, 13.7, 15.74, 30.74, 26.71, 35.49, 22.65]}, "23760539709": {"name": "eH | Search | Mushroom (Collection LP)", "type": "SEARCH", "dates": ["Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0], "spends": [0.0, 90.13, 68.53, 52.53, 49.37, 53.67, 46.85, 39.16, 61.03, 33.97]}, "21717172234": {"name": "US | P Max | Herbal Coffee", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0], "spends": [111.12, 87.37, 18.83, 9.9, 4.04, 27.48, 13.35, 27.72, 7.15, 18.99, 22.45, 11.09, 6.55, 40.0, 32.29, 27.43, 40.0, 7.06, 21.41, 7.17, 39.99, 12.26, 33.17, 38.08, 10.55, 20.68, 24.77, 16.27, 31.74, 6.04, 1.95, 22.22, 8.62, 30.62, 17.25, 11.11, 0.02, 19.28, 8.36, 0.15, 6.32, 15.34, 32.0, 13.46, 32.0, 20.8, 23.63, 12.93, 15.57, 1.5, 24.86, 20.33, 12.81, 1.32, 31.72, 18.13, 5.5, 0.0, 13.22, 3.77, 24.46, 32.24, 22.93, 30.33, 13.13, 13.81, 1.37, 31.57, 2.56, 11.08, 23.17, 15.75, 21.26, 27.81, 9.63, 20.46, 16.64, 14.52, 24.72, 6.46, 12.67, 32.04, 8.28, 20.38, 4.32, 24.07, 1.09, 2.31, 4.09, 0.8, 28.23]}, "23772227973": {"name": "eH | PMax | Earth Day (20th-27th)", "type": "PERFORMANCE_MAX", "dates": ["Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [100.0, 100.0, 100.0, 100.0, 100.0, 100.0], "spends": [21.54, 55.18, 100.89, 47.14, 98.38, 104.32]}, "22291072733": {"name": "eH | US | TOF | Shopping Ads", "type": "SHOPPING", "dates": ["Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0], "spends": [1.41, 9.32, 8.09, 3.19, 7.84, 6.56, 5.88, 0.0, 3.66, 8.28, 4.03, 4.76, 0.87, 3.45, 5.05, 4.41, 4.5, 1.22, 6.07, 7.77, 19.2, 12.47, 0.61, 5.13, 2.02, 1.03, 4.55, 11.73, 20.73, 0.73, 0.79, 1.39, 5.76, 2.57, 3.13, 4.21, 3.38, 4.7, 3.3, 7.85, 3.78, 7.7, 0.21, 0.0, 2.37, 4.76, 1.45, 5.37, 0.68, 3.91, 3.19, 5.24, 5.74, 2.96, 1.09, 3.91, 12.61, 12.16, 7.62, 9.44, 10.91, 11.7, 4.84, 7.16, 6.44, 15.87, 5.38, 15.41, 23.7, 12.73, 15.16, 5.55, 6.52, 9.36, 5.11, 25.63, 8.02, 5.72, 15.04, 14.19]}, "23601583911": {"name": "eH | PMax | Dark chocolate herbal coffee", "type": "PERFORMANCE_MAX", "dates": ["Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [4.69, 16.71, 24.03, 20.46, 14.02, 15.78, 7.06, 2.34, 16.57, 8.03, 12.97, 4.7, 11.62, 41.83, 36.91, 42.17, 33.31, 48.6, 3.02, 4.19, 1.35, 19.35, 19.86, 15.84, 19.22, 22.13, 20.75, 15.59, 13.93, 26.95, 28.39, 22.27, 14.43, 24.41, 15.29, 15.45, 11.17, 19.24, 11.52, 16.05, 11.37, 14.95, 20.28, 19.94, 12.58, 3.38, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23601409332": {"name": "eH | PMax | Dark chocolate herbal tea", "type": "PERFORMANCE_MAX", "dates": ["Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [1.3, 22.71, 30.15, 10.77, 19.92, 17.79, 18.74, 15.92, 10.78, 31.99, 10.98, 22.36, 8.95, 40.43, 48.88, 28.4, 49.84, 46.4, 38.23, 35.47, 47.26, 24.7, 19.02, 13.94, 18.28, 22.7, 19.35, 19.36, 25.12, 26.01, 13.31, 24.89, 16.2, 22.57, 14.82, 10.54, 24.0, 5.14, 12.23, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "22284299943": {"name": "eH | US | P Max | TOF | Herbal Tea", "type": "PERFORMANCE_MAX", "dates": ["Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [10.92, 18.74, 16.92, 19.55, 14.42, 12.17, 17.99, 14.23, 5.23, 24.67, 11.4, 17.52, 13.61, 18.19, 16.13, 12.89, 9.11, 21.03, 14.84, 14.48, 8.84, 11.57, 20.87, 16.53, 17.67, 10.19, 8.19, 12.25, 11.95, 15.63, 13.69, 28.51, 11.79, 16.51, 11.75, 6.21, 14.25, 20.67, 15.34, 7.0, 9.44, 13.95, 3.85, 7.12, 19.69, 10.63, 11.11, 5.95, 15.63, 11.11, 9.29, 18.09, 30.35, 29.33, 13.55, 15.91, 18.18, 15.37, 1.39, 1.12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "19859823295": {"name": "eH | US | P Max | TOF | Coffee", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, 15.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [45.76, 117.48, 4.75, 33.54, 19.6, 14.83, 23.32, 19.67, 15.01, 29.34, 16.98, 22.73, 33.96, 20.04, 25.29, 18.03, 22.13, 17.72, 26.29, 9.54, 35.17, 23.59, 18.88, 22.27, 10.79, 27.7, 24.1, 24.35, 19.56, 21.83, 23.38, 9.85, 5.51, 39.46, 21.21, 18.48, 18.86, 19.6, 3.56, 24.31, 15.07, 19.2, 18.71, 14.43, 6.29, 10.83, 23.59, 13.7, 12.49, 22.4, 16.72, 4.32, 10.89, 24.17, 12.88, 11.98, 18.6, 12.22, 17.94, 16.59, 11.63, 16.37, 12.89, 15.05, 14.11, 12.85, 19.46, 5.65, 14.19, 19.71, 14.31, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23728435397": {"name": "eH | Demand Gen | YT (Engagements)", "type": "DEMAND_GEN", "dates": ["Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [46.26, 24.8, 21.32, 0.22, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "22152910524": {"name": "eH | US | Search Ads - Competitors Keywords", "type": "SEARCH", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [0.37, 3.02, 19.91, 13.65, 9.63, 16.79, 17.0, 13.06, 15.98, 8.66, 10.73, 11.26, 11.36, 11.45, 9.33, 12.01, 5.34, 10.39, 11.94, 3.2, 19.88, 14.39, 10.61, 11.68, 7.39, 4.13, 14.01, 14.34, 5.29, 5.73, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "22295003197": {"name": "eH | US | Search Ads - Non Branded Keywords", "type": "SEARCH", "dates": ["Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, null, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [0.0, 0.82, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.57, 0.0, 0.0, 0.97, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "22778424216": {"name": "eH | US | TOF P Max | Bundles", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [50.0, 50.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [0.17, 0.12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23492031995": {"name": "eH | US | P Max | Subscription Savings Week (Until 2nd Feb)", "type": "PERFORMANCE_MAX", "dates": ["Jan 26", "Jan 27", "Jan 28", "Jan 29", "Jan 30", "Jan 31", "Feb 01", "Feb 02", "Feb 03", "Feb 04", "Feb 05", "Feb 06", "Feb 07", "Feb 08", "Feb 09", "Feb 10", "Feb 11", "Feb 12", "Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, 20.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [59.52, 87.33, 22.2, 3.41, 34.0, 16.08, 8.8, 21.48, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23553141279": {"name": "eH | US | PMax | Presidents Day Sale (February 13 - 18)", "type": "PERFORMANCE_MAX", "dates": ["Feb 13", "Feb 14", "Feb 15", "Feb 16", "Feb 17", "Feb 18", "Feb 19", "Feb 20", "Feb 21", "Feb 22", "Feb 23", "Feb 24", "Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [200.0, 200.0, 200.0, 200.0, 200.0, 200.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [90.16, 98.0, 127.33, 292.75, 194.22, 184.72, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23596621806": {"name": "eH | PMax | SALE 30% OFF Brand (26th Feb-28th feb)", "type": "PERFORMANCE_MAX", "dates": ["Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [30.0, 30.0, 30.0, 30.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [0.0, 28.78, 48.76, 31.14, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23606859106": {"name": "eH | PMax | SALE 30% OFF TOF NB (26th Feb-28th feb)", "type": "PERFORMANCE_MAX", "dates": ["Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [30.0, 30.0, 30.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [3.71, 1.39, 1.66, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23625009722": {"name": "eH | Pmax | Womens day sale (5th-8th)", "type": "PERFORMANCE_MAX", "dates": ["Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [100.0, 100.0, 100.0, 100.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [50.28, 86.34, 199.58, 114.23, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, "23658459102": {"name": "eH | PMAX | Sale Campaign (18th-25th March)", "type": "PERFORMANCE_MAX", "dates": ["Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26", "Mar 27", "Mar 28", "Mar 29", "Mar 30", "Mar 31", "Apr 01", "Apr 02", "Apr 03", "Apr 04", "Apr 05", "Apr 06", "Apr 07", "Apr 08", "Apr 09", "Apr 10", "Apr 11", "Apr 12", "Apr 13", "Apr 14", "Apr 15", "Apr 16", "Apr 17", "Apr 18", "Apr 19", "Apr 20", "Apr 21", "Apr 22", "Apr 23", "Apr 24", "Apr 25", "Apr 26"], "budgets": [130.0, 130.0, 130.0, 130.0, 130.0, 130.0, 130.0, 130.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "spends": [35.7, 30.74, 56.84, 96.53, 107.42, 144.35, 98.98, 127.39, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}};
+const palette = { budget: '#D4A843', spend: '#5b8def' };
+let chart = null;
+
+function renderTimeline(cid) {
+  const d = CHART_DATA[cid];
+  if (!d) return;
+  const ctx = document.getElementById('timelineChart').getContext('2d');
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    data: {
+      labels: d.dates,
+      datasets: [
+        { type: 'line', label: 'Daily Budget', data: d.budgets,
+           borderColor: palette.budget, backgroundColor: 'rgba(212,168,67,0.1)',
+           tension: 0, borderWidth: 2.5, pointRadius: 0, fill: false, spanGaps: true,
+           yAxisID: 'y', stepped: true, order: 0 },
+        { type: 'bar', label: 'Daily Spend', data: d.spends,
+           backgroundColor: 'rgba(91,141,239,0.55)',
+           borderColor: 'rgba(91,141,239,0.8)', borderWidth: 1,
+           yAxisID: 'y', order: 1 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#ccc' } },
+        title: { display: true, text: d.name + ' (' + d.type + ')', color: '#D4A843', font: { size: 13 } },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': $' + (c.parsed.y == null ? '—' : c.parsed.y.toFixed(2)) } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', maxRotation:0, autoSkip:true, maxTicksLimit: 16 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#888', callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+document.getElementById('campaignPicker').addEventListener('change', e => renderTimeline(e.target.value));
+renderTimeline("16476888433");
+</script>
+</body>
+</html>
