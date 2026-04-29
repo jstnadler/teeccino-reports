@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T15:57:03.678478-07:00",
+  "generatedAt": "2026-04-29T14:27:42.696321-07:00",
   "project": {
     "id": "pdp-rebuild",
     "name": "PDP Rebuild (Replo → Native Liquid)",
@@ -11,7 +11,7 @@
     ],
     "category": "Storefront",
     "started": "2026-04-14",
-    "lastActivity": "2026-04-18T03:10:00Z",
+    "lastActivity": "2026-04-29T21:30:00Z",
     "description": "Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSmith can directly maintain, update, and optimize PDPs. Scope is bound to live-page functionality only (see pdp-live-spec.md) — Replo-chunk features not present on the live page are dropped. Secondary: rebuild 3 other Replo templates (15 products total) after main template is complete.",
     "milestones": [
       {
@@ -326,6 +326,14 @@
         "status": "done",
         "completed": "2026-04-16",
         "notes": "Files: assets/pdp-hero.js (new initDescriptionLink()), assets/component-pdp-hero.css. JS appends <button data-pdp-description-link> to last <p> of [data-pdp-description]; click delegates to [data-pdp-nutrition-open] for modal reuse. Styling: 1.35rem --color-link underlined. Commits 9093f86 + 249ea6b on dev. Verified: click opens <dialog>, body locks, full nutrition label renders."
+      },
+      {
+        "id": "t30",
+        "milestone": "M8",
+        "description": "Wire product.custom.carousel_order metafield into PDP hero gallery + thumbs (per Shopkeeper inbox task 2026-04-16T202000Z). Per-product carousel slot ordering without mass-editing variant metafields.",
+        "status": "done",
+        "completed": "2026-04-29",
+        "notes": "sections/main-pdp-hero.liquid only. Resolved carousel_order = product.metafields.custom.carousel_order.value with default fallback ['hero','nutrition','benefits','b_a','flavor','review'] (matching seeded value across ~250 webproducts). Both gallery and thumbs render loops iterate the ordered slot tokens; case-resolves to existing m1..m6 metafield values. Replaced numeric first_idx tracking with first_rendered boolean flag (eager-load + 'New Look' ribbon now attach to the first non-blank slot in the ordered list). Added data-pdp-slot=\"{{ slot }}\" attribute to slides + thumbs for debug + future variant-switching JS hooks. QA via curl-grep on data-pdp-slot order: default order, flipped order, and sparse-variant cases all verified. Browser was offline so no Playwright screenshots — functional curl-based verification was actually stronger for ordering work. Branches: feature/pdp-carousel-order off dev (24865e1) → merged to dev (a342535) → ship/pdp-carousel-order off main with cherry-pick (1ec1faa) → merged to main (e98ecf6) → both shipped to live theme 160800145656. Live verified on teeccino.com (NOT teeccino-store.myshopify.com — that 301-redirects to primary). Outbox 2026-04-29T21-25-00Z-pdp-carousel-order-wired-and-shipped.json."
       }
     ],
     "docs": [
