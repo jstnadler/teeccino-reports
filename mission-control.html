@@ -115,6 +115,53 @@
   .alert-detail { font-size: 0.8rem; color: var(--text-dim); }
   .alert-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; }
 
+  /* ── INCIDENTS ── */
+  .incidents-section { margin-bottom: 32px; }
+  .incident-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 10px;
+  }
+  .incident-card.critical { border-left: 3px solid var(--red); }
+  .incident-card.high { border-left: 3px solid var(--orange); }
+  .incident-card.medium { border-left: 3px solid var(--yellow); }
+  .incident-card.low { border-left: 3px solid var(--blue); }
+  .incident-card.resolved { opacity: 0.65; }
+  .incident-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .incident-title { font-size: 0.95rem; font-weight: 600; flex: 1; min-width: 200px; }
+  .incident-status-badge {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .incident-status-open { background: rgba(248,113,113,0.15); color: var(--red); }
+  .incident-status-mitigated { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .incident-status-resolved { background: rgba(74,222,128,0.15); color: var(--green); }
+  .incident-severity-badge {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .incident-severity-critical { background: rgba(248,113,113,0.2); color: var(--red); }
+  .incident-severity-high { background: rgba(251,146,60,0.18); color: var(--orange); }
+  .incident-severity-medium { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .incident-severity-low { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .incident-summary { font-size: 0.85rem; color: var(--text-dim); margin: 6px 0; line-height: 1.5; }
+  .incident-meta { font-size: 0.75rem; color: var(--text-dim); margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .incident-actions { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .incident-actions-title { font-size: 0.75rem; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .corrective-action { font-size: 0.78rem; padding: 3px 0; display: flex; gap: 8px; align-items: center; }
+  .ca-status-badge {
+    font-size: 0.6rem; padding: 1px 6px; border-radius: 8px; font-weight: 600;
+    text-transform: uppercase;
+  }
+  .ca-status-pending { background: rgba(139,148,158,0.2); color: var(--text-dim); }
+  .ca-status-in-progress { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .ca-status-complete { background: rgba(74,222,128,0.15); color: var(--green); }
+  .ca-owner { color: var(--accent); font-size: 0.7rem; min-width: 80px; }
+  .incident-toggle-resolved {
+    font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; cursor: pointer;
+    text-decoration: underline;
+  }
+  .incident-toggle-resolved:hover { color: var(--accent); }
+
   /* ── TWO COLUMN ── */
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
   @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
@@ -206,6 +253,13 @@
 <div class="alerts-section" id="alertsSection" style="display:none">
   <h2 class="section-title">Action Required</h2>
   <div id="alertsList"></div>
+</div>
+
+<!-- Incidents -->
+<div class="incidents-section" id="incidentsSection" style="display:none">
+  <h2 class="section-title">Incidents</h2>
+  <div class="incident-toggle-resolved" id="incidentToggleResolved" onclick="toggleResolvedIncidents()">Show resolved</div>
+  <div id="incidentsList"></div>
 </div>
 
 <!-- Agents -->
@@ -465,6 +519,97 @@ function renderInfra(infra) {
 
 function setFilter(f) { activeFilter = f; refresh(); }
 
+// ── Incidents ──
+let showResolvedIncidents = false;
+let lastIncidentsData = [];
+
+function toggleResolvedIncidents() {
+  showResolvedIncidents = !showResolvedIncidents;
+  document.getElementById('incidentToggleResolved').textContent =
+    showResolvedIncidents ? 'Hide resolved' : 'Show resolved';
+  renderIncidentsList(lastIncidentsData);
+}
+
+function renderIncidents(data) {
+  var incidents = data.incidents || [];
+  lastIncidentsData = incidents;
+  var section = document.getElementById('incidentsSection');
+  if (incidents.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  renderIncidentsList(incidents);
+}
+
+function renderIncidentsList(incidents) {
+  var list = document.getElementById('incidentsList');
+  var visible = incidents.filter(function(i) {
+    return showResolvedIncidents || i.status !== 'resolved';
+  });
+  if (visible.length === 0) {
+    list.innerHTML = '<div class="empty-state">No open incidents</div>';
+    return;
+  }
+  list.innerHTML = visible.map(function(i) {
+    var sev = i.severity || 'medium';
+    var status = i.status || 'open';
+    var cardCls = 'incident-card ' + sev + (status === 'resolved' ? ' resolved' : '');
+
+    var actionsHtml = '';
+    if (i.correctiveActions && i.correctiveActions.length > 0) {
+      var caItems = i.correctiveActions.map(function(ca) {
+        var caStatus = (ca.status || 'pending').replace('_', '-');
+        return '<div class="corrective-action">' +
+          '<span class="ca-status-badge ca-status-' + caStatus + '">' + esc(ca.status || 'pending') + '</span>' +
+          '<span class="ca-owner">' + esc(ca.owner || '?') + '</span>' +
+          '<span style="flex:1">' + esc(ca.description || '') + '</span>' +
+          '</div>';
+      }).join('');
+      actionsHtml = '<div class="incident-actions">' +
+        '<div class="incident-actions-title">Corrective Actions</div>' +
+        caItems +
+        '</div>';
+    }
+
+    var blastHtml = '';
+    if (i.blastRadius && Object.keys(i.blastRadius).length > 0) {
+      var br = i.blastRadius;
+      var brParts = [];
+      if (br.productsAffected) brParts.push(br.productsAffected + ' products');
+      if (br.variantsRenamed) brParts.push(br.variantsRenamed + ' variants');
+      if (br.timeToRecoveryMin) brParts.push('recovered in ' + br.timeToRecoveryMin + 'm');
+      if (brParts.length > 0) {
+        blastHtml = '<span>' + brParts.join(' &middot; ') + '</span>';
+      }
+    }
+
+    var filedHtml = '';
+    if (i.filedBy) {
+      filedHtml = '<span>filed by <span style="color:var(--accent)">' + esc(i.filedBy) + '</span>';
+      if (i.filedAgainst) {
+        filedHtml += ' against <span style="color:var(--accent)">' + esc(i.filedAgainst) + '</span>';
+      }
+      filedHtml += '</span>';
+    }
+
+    return '<div class="' + cardCls + '">' +
+      '<div class="incident-header">' +
+        '<div class="incident-title">' + esc(i.title) + '</div>' +
+        '<span class="incident-severity-badge incident-severity-' + sev + '">' + esc(sev) + '</span>' +
+        '<span class="incident-status-badge incident-status-' + status + '">' + esc(status) + '</span>' +
+      '</div>' +
+      '<div class="incident-summary">' + esc(i.summary) + '</div>' +
+      '<div class="incident-meta">' +
+        filedHtml +
+        '<span>' + timeAgo(i.createdAt) + '</span>' +
+        blastHtml +
+      '</div>' +
+      actionsHtml +
+    '</div>';
+  }).join('');
+}
+
 // ── Main Render ──
 function render(data) {
   var updated = new Date(data.lastUpdated);
@@ -476,6 +621,7 @@ function render(data) {
 
   renderStats(data);
   renderAlerts(data);
+  renderIncidents(data);
   renderAgents(data.agents || []);
   renderDispatches(data.recentDispatches);
   renderProjects(data.projects);

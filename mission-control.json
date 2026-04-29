@@ -1,8 +1,8 @@
 {
-  "lastUpdated": "2026-04-29T11:28:11.629048-07:00",
+  "lastUpdated": "2026-04-29T11:32:26.043996-07:00",
   "system": {
     "gateway": "agentsmith",
-    "version": "1.0"
+    "version": "1.1"
   },
   "agents": [
     {
@@ -919,6 +919,96 @@
       "flaggedBy": "agentsmith",
       "created": "2026-04-28T05:00:01.314535-07:00",
       "status": "pending"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "2026-04-28-phantom-cleanup-misfire",
+      "severity": "high",
+      "title": "Phantom-cleanup batch renamed SKUs on 19+ active free-item / GWP / donation / gift-box products",
+      "status": "mitigated",
+      "filedBy": "shopkeeper",
+      "filedAgainst": "agentsmith",
+      "createdAt": "2026-04-28T22:55:51Z",
+      "mitigatedAt": "2026-04-29T00:30:00Z",
+      "resolvedAt": null,
+      "summary": "Bulk SKU rename batch of 79 SKUs across 35 \"phantom\" products treated status=archived/draft/unlisted as phantom-eligible. Live BXGY discounts, FOTM Free Packet flow, Stay.ai bundles, donation upsell, and ~19 active free-item / GWP / Mystery Gift / gift-box products broke. Justin caught it on the live site ~90 min after the run; Shopkeeper reverted all 79 SKUs in 30 min, 0 failures.",
+      "rootCause": "AgentSmith dispatched the cleanup with insufficient safety thinking. CatalogSmith's phantom signal (duplicate-SKU + non-active-status) inverts reality at Teeccino, where status=archived/draft/unlisted is the canonical hidden-but-active state for cart-addable products. Single safety guard (skip status=active) caught 48/83 entries; the remaining 35 included ~19 active products. Free Java Packet 7976160755960 — explicitly named in Shopkeeper CLAUDE.md as the FOTM Free Packet — got renamed despite being a hard-rule ID, because the hard-rule was in markdown text, not in a machine-readable refuse-list.",
+      "blastRadius": {
+        "productsAffected": 35,
+        "variantsRenamed": 79,
+        "liveSiteVisible": true,
+        "timeToDetectionMin": 90,
+        "timeToRecoveryMin": 30,
+        "criticalActiveProductsHit": [
+          "Free Java Packet (FOTM Free Packet, hard-coded)",
+          "Free Hazelnut Packet (active BXGY)",
+          "Free Teeccino Teal Tote (Earth Day GWP)",
+          "Mystery Gift 2/3/5/6 (GWP rotation)",
+          "Donate to Vitamin Angels (DONATE×9 variants)",
+          "Multiple gift boxes (Father's Day, Mother's Day, Bold Brew, Fall, Pour Over)",
+          "GIFT CARD",
+          "~10 other Free * / GWP / donation products"
+        ]
+      },
+      "correctiveActions": [
+        {
+          "id": "tier1-protected-ids",
+          "owner": "agentsmith",
+          "status": "in-progress",
+          "description": "Build clawd/data/protected-ids.json — explicit ID-level refuse-list for hard-rule items (Free Packet, Live Theme, FOTM discounts). Mutation scripts MUST consult before write.",
+          "due": "2026-04-29"
+        },
+        {
+          "id": "tier1-incidents-surface",
+          "owner": "agentsmith",
+          "status": "in-progress",
+          "description": "Add `incidents` field + dedicated incidents/ directory to Mission Control. Render in dashboard so postmortems are visible to Justin without reading inboxes.",
+          "due": "2026-04-29"
+        },
+        {
+          "id": "tier2-sku-safety-lib",
+          "owner": "shopkeeper",
+          "status": "pending",
+          "description": "Build shared sku_safety lib (variant_is_referenced_by_active_rule, etc.). Any bulk-mutation script MUST call this before write.",
+          "due": "2026-05-06"
+        },
+        {
+          "id": "tier2-task-contract",
+          "owner": "agentsmith",
+          "status": "pending",
+          "description": "Inbox task contract requires `classification_method` + `sample_validation` fields for bulk-mutation tasks. Executor refuses without these.",
+          "due": "2026-05-06"
+        },
+        {
+          "id": "tier2-human-gate",
+          "owner": "agentsmith",
+          "status": "pending",
+          "description": "Bulk-mutation tasks (>5 rows) require human ack via Mission Control humanActions surface before execute.",
+          "due": "2026-05-06"
+        },
+        {
+          "id": "tier3-cross-agent-dryrun-review",
+          "owner": "agentsmith",
+          "status": "pending",
+          "description": "Bulk-mutation dry-runs above blast-radius threshold reviewed by a different agent (or Justin) before execute. Self-review by executor is theater.",
+          "due": "2026-05-13"
+        },
+        {
+          "id": "phantom-classifier-fix",
+          "owner": "catalogsmith",
+          "status": "pending",
+          "description": "Rebuild phantom-detection logic with proper exclusion rules (tag / status / title prefix / metafield / active-reference). Filed by Shopkeeper as inbox task on 2026-04-29.",
+          "filedAt": "2026-04-29T00:45:00Z"
+        }
+      ],
+      "tags": [
+        "safety",
+        "bulk-mutation",
+        "shopify",
+        "agent-coordination",
+        "postmortem"
+      ]
     }
   ],
   "infrastructure": {
