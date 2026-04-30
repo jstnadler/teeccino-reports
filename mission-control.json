@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-30T15:44:22.993777-07:00",
+  "lastUpdated": "2026-04-30T15:50:26.116848-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -93,8 +93,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "PDP upsell v4: bigger type sizes throughout + restructured discount price block (huge accent-color sale price as visual hero) + FOTM eyebrow copy ('LIMITED TIME · FLAVOR OF THE MONTH'). Merged to dev (d966305).",
-        "at": "2026-04-30T22:50:00Z"
+        "summary": "Fixed PDP upsell modal discount rounding to match Shopify cart math (floor discount cents, then subtract). Java 5lb modal $71.99 vs cart $72.00 was the symptom; one-multiply pattern was flooring at the wrong step. Merged to dev (4e290af).",
+        "at": "2026-04-30T22:55:00Z"
       },
       "recentActivity": [
         {
@@ -114,6 +114,12 @@
           "at": "2026-04-27T17:58:00Z",
           "source": "unknown",
           "status": "unknown"
+        },
+        {
+          "summary": "Fixed PDP upsell modal discount rounding so modal price matches cart price exactly. Was using one-multiply pattern (effective = price * (100 - pct) / 100) which floored at the wrong step. Now mirrors Shopify cart math: discount_cents = floor(price * pct / 100); effective = price - discount_cents.",
+          "at": "2026-04-30T22:55:00Z",
+          "source": "interactive",
+          "status": "success"
         },
         {
           "summary": "PDP upsell v4: bigger type sizes throughout + restructured discount price block to make the sale price the visual hero (2.4rem mobile / 2.8rem desktop, accent color) + FOTM eyebrow copy 'LIMITED TIME · FLAVOR OF THE MONTH'. Merged to dev (d966305).",
@@ -148,12 +154,6 @@
         {
           "summary": "Shipped shop-all 'Available As' pill swap-back fix to live theme 160800145656 via cherry-pick (7c10b55 -> 6f3d80d -> main d328117). Asset deploy verified at 13:34:52 PT. Justin QA'd on dev preview before approving.",
           "at": "2026-04-30T20:37:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Fixed Product Tabs V2 'Available As' pill swap-back bug. Hover-preview was mutating DOM before click commit, so snapshotState(card) at click time captured the IN-FLIGHT hover state and stored it under the OUTGOING format key, poisoning the cache. Swap-back applied the wrong snapshot, leaving card visually unchanged while pill flipped. Fix: prefer card.__origCaptured (pre-hover snapshot) over snapshotState(card) when stashing the outgoing format. Merged to dev (223c94e), deployed to dev theme 160979255544.",
-          "at": "2026-04-30T18:10:00Z",
           "source": "interactive",
           "status": "success"
         }
