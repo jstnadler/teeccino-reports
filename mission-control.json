@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-30T11:08:05.257606-07:00",
+  "lastUpdated": "2026-04-30T11:09:19.459634-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -83,25 +83,12 @@
       "emoji": "palette",
       "role": "Shopify Theme Development",
       "workspace": "clawd-themesmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Fix Product Tabs V2 'Available As' pill swap-back bug — hover-preview mutates DOM before commit, corrupts outgoing-format snapshot",
-        "source": "interactive",
-        "startedAt": "2026-04-30T18:00:00Z",
-        "branch": "feature/shop-all-pill-swap-back-fix"
-      },
-      "activeBranches": [
-        {
-          "branch": "feature/shop-all-pill-swap-back-fix",
-          "task": "Fix Product Tabs V2 'Available As' pill swap-back bug — hover-preview mutates DOM before commit, corrupts outgoing-format snapshot",
-          "startedAt": "2026-04-30T18:00:00Z",
-          "source": "interactive",
-          "previewUrl": null
-        }
-      ],
+      "status": "idle",
+      "currentTask": null,
+      "activeBranches": [],
       "lastActivity": {
-        "summary": "Filed Shopkeeper FYI notify — closing the loop on the 13-day-old carousel_order inbox task (now wired + live), plus heads-up on the CatalogSmith display-name update so they're not surprised in the Admin UI.",
-        "at": "2026-04-29T21:50:00Z"
+        "summary": "Fixed Product Tabs V2 'Available As' pill swap-back bug — hover-preview was poisoning the outgoing format snapshot. Merged to dev (223c94e); awaiting Justin QA before ship to live.",
+        "at": "2026-04-30T18:10:00Z"
       },
       "recentActivity": [
         {
@@ -121,6 +108,12 @@
           "at": "2026-04-27T17:58:00Z",
           "source": "unknown",
           "status": "unknown"
+        },
+        {
+          "summary": "Fixed Product Tabs V2 'Available As' pill swap-back bug. Hover-preview was mutating DOM before click commit, so snapshotState(card) at click time captured the IN-FLIGHT hover state and stored it under the OUTGOING format key, poisoning the cache. Swap-back applied the wrong snapshot, leaving card visually unchanged while pill flipped. Fix: prefer card.__origCaptured (pre-hover snapshot) over snapshotState(card) when stashing the outgoing format. Merged to dev (223c94e), deployed to dev theme 160979255544.",
+          "at": "2026-04-30T18:10:00Z",
+          "source": "interactive",
+          "status": "success"
         },
         {
           "summary": "Shipped 2 dev features to live theme 160800145656 via cherry-pick onto main: Product Tabs V2 per-block default_active (Mushroom default on homepage) + PDP carousel graceful-fallback. Asset deploy verified via Admin API; PDP renders live on teeccino.com. Homepage cache still showing pre-deploy render — typical 10-15 min storefront cache TTL.",
@@ -155,12 +148,6 @@
         {
           "summary": "Curated Daily Ritual Bundle (BU001) hero gallery — set variant_image_1 to branded transparent-bg hero; slots 2-6 left unset by design.",
           "at": "2026-04-28T23:49:24Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Bundle PDP shipped to LIVE theme 160800145656 — Mother's Day Gift Box now rendering the new bundle template at teeccino.com/products/mothers-day-gift-box-instant",
-          "at": "2026-04-28T22:20:00Z",
           "source": "interactive",
           "status": "success"
         }
@@ -1087,11 +1074,22 @@
         {
           "id": "tier2-sku-safety-lib",
           "owner": "shopkeeper",
-          "status": "in-progress",
+          "status": "complete",
           "description": "Build shared sku_safety lib (variant_is_referenced_by_active_rule, etc.). Any bulk-mutation script MUST call this before write.",
           "due": "2026-05-06",
           "dispatchedAt": "2026-04-30T11:05:00-07:00",
-          "dispatchedTaskId": "b330893b-0dd8-4451-bd7b-2bec79cf830b"
+          "dispatchedTaskId": "b330893b-0dd8-4451-bd7b-2bec79cf830b",
+          "completedAt": "2026-04-30T18:07:00Z",
+          "deliverables": [
+            "clawd/Automations/_lib/sku_safety.py + __init__.py + test_sku_safety.py",
+            "5-function API: variant_is_referenced_by_active_rule, product_is_referenced_by_active_rule, sku_is_used_by_multiple_products, refuse_if_protected, preflight_bulk_mutation",
+            "15/15 test cases pass (smoking-gun BXGY case caught)",
+            "Bonus finding: protected-ids.json had wrong Free Hazelnut Packet variant; corrected by AgentSmith on 2026-04-30 to add the paid Trial Size variant (44300700549368 on product 6681931972777) that the BXGY actually targets"
+          ],
+          "known_gaps": [
+            "Stay.ai bundle variant-ref query: stub returns [] (no API endpoint discovered; needs follow-up Tier 3 task)",
+            "Checkout extension variant-ref query: stub returns [] (Shopify Functions config requires per-extension parsing; needs follow-up Tier 3 task)"
+          ]
         },
         {
           "id": "tier2-task-contract",
