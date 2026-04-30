@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-30T15:23:29.479548-07:00",
+  "lastUpdated": "2026-04-30T15:37:04.136043-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -93,8 +93,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "PDP upsell FOTM mode — auto-uses flavor-of-the-month collection's first product as upsell, pulls discount % from FOTM product's custom.discount metafield. Eliminates per-PDP metafield bulk-write + new Automatic Discount setup. Merged to dev (d0cc121). Cancellation notes filed for Shopkeeper + CatalogSmith.",
-        "at": "2026-04-30T22:20:00Z"
+        "summary": "Fixed FOTM discount-percent read — was looking at product-level metafield, but Shopkeeper's FOTM playbook writes custom.discount at VARIANT level (matching existing PDP price-block convention). Modal now auto-pulls the 20% from Java variants. Merged to dev (8cad12b).",
+        "at": "2026-04-30T22:36:00Z"
       },
       "recentActivity": [
         {
@@ -114,6 +114,12 @@
           "at": "2026-04-27T17:58:00Z",
           "source": "unknown",
           "status": "unknown"
+        },
+        {
+          "summary": "Fix: FOTM discount-percent read was at product level, but Shopkeeper writes custom.discount at variant level. Now reads from upsell_product.selected_or_first_available_variant.metafields.custom.discount. Modal auto-resolves the live FOTM 20% Java discount end-to-end. Merged to dev (8cad12b).",
+          "at": "2026-04-30T22:36:00Z",
+          "source": "interactive",
+          "status": "success"
         },
         {
           "summary": "PDP upsell FOTM mode shipped to dev (d0cc121). Auto-uses the 'flavor-of-the-month' collection's first product as the upsell, with discount percent auto-pulled from that product's custom.discount metafield. Plugs directly into Shopkeeper's existing monthly FOTM cycle. Eliminates the need for separate per-PDP metafield population and a new Automatic Discount setup.",
@@ -148,12 +154,6 @@
         {
           "summary": "Shipped 2 dev features to live theme 160800145656 via cherry-pick onto main: Product Tabs V2 per-block default_active (Mushroom default on homepage) + PDP carousel graceful-fallback. Asset deploy verified via Admin API; PDP renders live on teeccino.com. Homepage cache still showing pre-deploy render — typical 10-15 min storefront cache TTL.",
           "at": "2026-04-30T17:50:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Hardened PDP carousel graceful-fallback. Replaced slide_count (counts variant_image_1..6 directly) with effective_slide_count (counts carousel_order tokens that resolve to non-blank media). When zero, the existing fallback featured_media renders one slide instead of an empty <div class=\"swiper\"> container. Merged to dev. NOT yet on live — ask Justin.",
-          "at": "2026-04-29T22:45:00Z",
           "source": "interactive",
           "status": "success"
         }
