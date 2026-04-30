@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-30T11:01:21.983011-07:00",
+  "lastUpdated": "2026-04-30T11:02:54.936301-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -72,7 +72,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 8,
+      "pendingTasks": 7,
       "health": "healthy"
     },
     {
@@ -237,18 +237,20 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Tier 2 dispatch (Shopkeeper sku_safety + AgentSmith gateway task-contract) + Chocolate Mint→Peppermint canonical rename broadcast",
-        "source": "interactive",
-        "startedAt": "2026-04-30T11:00:00-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Tier 1 safety infrastructure deployed in response to phantom-cleanup-misfire incident: protected-ids.json refuse-list + Mission Control incidents surface. Notified Shopkeeper, CatalogSmith, ThemeSmith. AGENT_STANDARDS.md v1.4.",
-        "at": "2026-04-29T18:30:00Z"
+        "summary": "Tier 2 gateway contract + human-gate shipped + smoke-tested. Chocolate Mint→Peppermint dispatched to CatalogSmith + 6 stakeholder notifies filed.",
+        "at": "2026-04-30T11:50:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Tier 2 gateway work shipped (bulk-mutation contract + human-gate + ack command, smoke-tested). Chocolate Mint→Peppermint rename: CatalogSmith dispatched, all 6 stakeholders notified.",
+          "at": "2026-04-30T18:50:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Tier 1 safety infrastructure deployed in response to phantom-cleanup-misfire incident: protected-ids.json refuse-list + Mission Control incidents surface. Notified Shopkeeper, CatalogSmith, ThemeSmith. AGENT_STANDARDS.md v1.4.",
           "at": "2026-04-29T18:30:00Z",
@@ -300,12 +302,6 @@
         {
           "summary": "Fixed all-agents PS function — detection regex was matching powershell.exe wrappers and WindowsTerminal.exe in addition to claude.exe, causing false-positive 'already running' skips after agent /exit",
           "at": "2026-04-27T20:50:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Migrated Creative Library ownership Crowley/DataOps -> AdSmith via two inbox dispatches. AdSmith moved script + declared ownership; DataOps repointed cron + cleaned migration wording. agent-team.json task 13 closed.",
-          "at": "2026-04-27T17:20:00-07:00",
           "source": "interactive",
           "status": "success"
         }
@@ -837,15 +833,6 @@
   ],
   "recentDispatches": [
     {
-      "id": "smoketest-34d48fce",
-      "from": "agentsmith",
-      "to": "shopkeeper",
-      "summary": "SMOKE TEST: human-gate path (DELETE ME if you see me)",
-      "status": "pending",
-      "dispatched": "2026-04-30T11:01:21.749585-07:00",
-      "completed": null
-    },
-    {
       "id": "notify-rename-9b39e734",
       "from": "agentsmith",
       "to": "shopkeeper",
@@ -1015,6 +1002,15 @@
       "status": "partial",
       "dispatched": "2026-04-28T11:19:42.812673-07:00",
       "completed": null
+    },
+    {
+      "id": "9018c3b8-e1e6-47f5-8a65-396c492279ab",
+      "from": "agentsmith",
+      "to": "dataops",
+      "summary": "Update nightly cron path for Creative Library (now AdSmith-owned)",
+      "status": "complete",
+      "dispatched": "2026-04-27T16:15:34.068373-07:00",
+      "completed": "2026-04-27T16:19:18.444124-07:00"
     }
   ],
   "humanActions": [
@@ -1076,23 +1072,37 @@
         {
           "id": "tier2-sku-safety-lib",
           "owner": "shopkeeper",
-          "status": "pending",
+          "status": "in-progress",
           "description": "Build shared sku_safety lib (variant_is_referenced_by_active_rule, etc.). Any bulk-mutation script MUST call this before write.",
-          "due": "2026-05-06"
+          "due": "2026-05-06",
+          "dispatchedAt": "2026-04-30T11:05:00-07:00",
+          "dispatchedTaskId": "b330893b-0dd8-4451-bd7b-2bec79cf830b"
         },
         {
           "id": "tier2-task-contract",
           "owner": "agentsmith",
-          "status": "pending",
+          "status": "complete",
           "description": "Inbox task contract requires `classification_method` + `sample_validation` fields for bulk-mutation tasks. Executor refuses without these.",
-          "due": "2026-05-06"
+          "due": "2026-05-06",
+          "completedAt": "2026-04-30T11:50:00-07:00",
+          "deliverables": [
+            "gateway.py: _validate_bulk_mutation_contract function + write_inbox_task bulk_mutation arg",
+            "AGENT_STANDARDS.md §11 Bulk-Mutation Contract subsection + v1.5 changelog",
+            "Smoke-tested: 6/6 contract validation cases pass (None, missing fields, too few samples, valid 10-target, valid small batch, sample missing field)"
+          ]
         },
         {
           "id": "tier2-human-gate",
           "owner": "agentsmith",
-          "status": "pending",
+          "status": "complete",
           "description": "Bulk-mutation tasks (>5 rows) require human ack via Mission Control humanActions surface before execute.",
-          "due": "2026-05-06"
+          "due": "2026-05-06",
+          "completedAt": "2026-04-30T11:50:00-07:00",
+          "deliverables": [
+            "gateway.py: dispatch() honors HUMAN_GATE_THRESHOLD=5; writes status=awaiting-approval, files humanActions entry, returns without subprocess-invoke",
+            "gateway.py: ack_bulk_mutation function + --ack CLI command (with --no-invoke variant)",
+            "Smoke-tested end-to-end: write → awaiting-approval → humanActions filed → ack → pending → humanActions cleaned up"
+          ]
         },
         {
           "id": "tier3-cross-agent-dryrun-review",
