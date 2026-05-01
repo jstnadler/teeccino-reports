@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDP Upsell Performance — Teeccino</title>
+<style>
+  :root {
+    --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
+    --text: #e2e8f0; --text-dim: #888; --accent: #D4A843;
+    --green: #4ade80; --yellow: #fbbf24; --red: #f87171;
+    --orange: #fb923c; --purple: #a78bfa; --blue: #60a5fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: var(--text); padding: 24px; padding-top: 70px; line-height: 1.5; min-height: 100vh;
+  }
+  .top-nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+    z-index: 200; padding: 12px 24px;
+    display: flex; align-items: center; gap: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
+  .top-nav a:hover { color: #D4A843; }
+  .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
+  h1 { font-size: 1.7rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 1.1rem; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-top: 32px; color: var(--text); }
+  h3 { font-size: 0.95rem; color: var(--accent); font-weight: 600; }
+  .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 24px; }
+
+  .badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; display: inline-block; }
+  .badge-stub  { background: rgba(251,191,36,0.18); color: var(--yellow); }
+  .badge-live  { background: rgba(74,222,128,0.18); color: var(--green); }
+
+  .stats-bar { display: flex; gap: 32px; margin: 24px 0 28px; flex-wrap: wrap; }
+  .stat .num { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat .num.pending { font-size: 1rem; color: var(--text-dim); font-weight: 500; }
+  .stat .label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 14px;
+  }
+  .card-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .card .kv { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.88rem; }
+  .card .kv .k { color: var(--text-dim); }
+  .card .kv .v { color: var(--text); font-weight: 500; }
+  .card .narrative { font-size: 0.82rem; color: var(--text-dim); font-style: italic; line-height: 1.55; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+
+  .empty {
+    padding: 24px; text-align: center; color: var(--text-dim); font-style: italic;
+    background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 8px; font-size: 0.88rem;
+  }
+
+  .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .data-table th, .data-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .data-table th { background: rgba(212,168,67,0.08); color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.4px; }
+  .data-table td:nth-child(n+2) { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table th:nth-child(n+2) { text-align: right; }
+
+  .arch-block {
+    padding: 14px 18px; background: rgba(96,165,250,0.05); border-left: 2px solid var(--blue);
+    border-radius: 0 6px 6px 0; font-size: 0.86rem; line-height: 1.6; margin-bottom: 10px;
+  }
+  .arch-block code { font-family: 'SF Mono', Consolas, monospace; font-size: 0.82rem; background: rgba(212,168,67,0.08); color: var(--accent); padding: 2px 6px; border-radius: 4px; }
+  .arch-block .label { color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+
+  .good { color: var(--green); font-weight: 600; }
+  .bad { color: var(--red); font-weight: 600; }
+
+  .updated-stamp { color: var(--text-dim); font-size: 0.75rem; }
+
+  .pipe-row { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
+  .pipe-step { flex: 1; min-width: 220px; padding: 12px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; }
+  .pipe-step .step-name { font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+  .pipe-step .step-state { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; padding: 2px 8px; border-radius: 8px; display: inline-block; margin-top: 6px; }
+  .step-state.live { background: rgba(74,222,128,0.18); color: var(--green); }
+  .step-state.pending { background: rgba(251,191,36,0.18); color: var(--yellow); }
+  .step-state.todo { background: rgba(139,148,158,0.12); color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <span class="brand">&#9749; Teeccino</span>
+  <a href="index.html">Home</a>
+  <a href="mtd.html">MTD</a>
+  <a href="ytd.html">YTD</a>
+  <a href="analytics.html">Analytics</a>
+  <a href="mission-control.html">Mission Control</a>
+</nav>
+
+<header>
+  <h1>PDP Upsell Performance</h1>
+  <div class="subtitle">
+    <span class="badge badge-stub">V1 STUB · AWAITING FIRST EVENT</span>
+    &middot; Tracking live since 2026-04-30 17:14 PT
+    &middot; <span class="updated-stamp">Updated 2026-05-01 13:47:18</span>
+  </div>
+</header>
+
+<div class="subtitle">
+  Joins two data streams: (1) Shopify line-item <code>_upsell_*</code> properties for revenue attribution
+  (live now via <code>ingest_shopify.py</code>), (2) GA4 events for funnel metrics
+  (impressions, accept rate, dismiss reasons — pending GA4 ingest setup).
+  
+</div>
+
+<!-- Pipeline status row -->
+<h2>Pipeline Status</h2>
+<div class="pipe-row">
+  <div class="pipe-step">
+    <div class="step-name">Theme dataLayer events</div>
+    Fired by <code>pdp-product-upsell.js</code> + <code>pdp-donation-upsell.js</code> on theme 160800145656.
+    <div class="step-state live">Live since 2026-04-30 17:14 PT</div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-name">GTM tag config</div>
+    4 GA4 Event tags forwarding the dataLayer events. Owner: AdSmith (inbox task d3f2445a).
+    <div class="step-state pending">Pending AdSmith</div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-name">Shopify line-item ingest</div>
+    <code>ingest_shopify.py</code> extracts 7 <code>_upsell_*</code> customAttributes from each line item into <code>raw_upsell_attributions</code>.
+    <div class="step-state live">Live (extended 2026-05-01)</div>
+  </div>
+  <div class="pipe-step">
+    <div class="step-name">GA4 Data API ingest</div>
+    <code>ingest_ga4.py</code> + service-account creds at <code>OneDrive/Apps/GoogleAnalyticsAPI/.env</code>.
+    <div class="step-state todo">TODO — DataOps</div>
+  </div>
+</div>
+
+<!-- Revenue hero -->
+<h2>Revenue Attribution (Stream 2 — Shopify line-item properties)</h2>
+<div class="stats-bar">
+          <div class="stat"><div class="num">$0.00</div><div class="label">Attributed Revenue</div></div>
+          <div class="stat"><div class="num">0</div><div class="label">Orders w/ Upsell</div></div>
+          <div class="stat"><div class="num">0</div><div class="label">Upsell Line Items</div></div>
+          <div class="stat"><div class="num pending">Awaiting first event</div><div class="label">Tracking live since 2026-04-30 17:14 PT</div></div>
+        </div>
+
+<!-- AOV Lift -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-hdr"><h3>AOV Lift</h3></div>
+    
+          <div class="empty">Awaiting first upsell-accepted order. AOV lift will compute here once at least 1 upsell-tagged order completes checkout.</div>
+        
+  </div>
+  <div class="card">
+    <div class="card-hdr"><h3>Discount Cost &amp; Net Contribution</h3></div>
+    <div class="kv"><span class="k">Total upsell revenue</span><span class="v">$0.00</span></div>
+    <div class="kv"><span class="k">Discount cost (sum of pct × line_subtotal)</span><span class="v">$0.00</span></div>
+    <div class="kv"><span class="k">Donation pass-through</span><span class="v">$0.00</span></div>
+    <div class="kv"><span class="k">Net contribution</span><span class="v">$0.00</span></div>
+    <div class="narrative">Net = upsell revenue − discount giveaways − donation pass-through. Donations net to zero (or could be CSR-flagged depending on accounting treatment).</div>
+  </div>
+</div>
+
+<h2>By Campaign</h2>
+<div class="card" style="padding: 0; overflow: hidden;"><div class="empty">No upsell-attributed orders yet. First customer accept will appear here.</div></div>
+
+<h2>By Modal Type</h2>
+<div class="card" style="padding: 0; overflow: hidden;"><div class="empty">No upsell-attributed orders yet.</div></div>
+
+<!-- Funnel section (GA4) -->
+<h2>Funnel Metrics (Stream 1 — GA4 events) <span class="badge badge-stub">PENDING</span></h2>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-hdr"><h3>Modal Funnel</h3></div>
+    <div class="empty">
+      Awaiting GA4 ingest. Once AdSmith publishes the GTM tags + DataOps stands up <code>ingest_ga4.py</code>,
+      this card will show:
+      <ul style="text-align:left; margin: 12px auto; max-width: 360px; line-height: 1.8;">
+        <li>Impressions (modal_view count)</li>
+        <li>Accept rate (accept_success / view)</li>
+        <li>Dismiss-by-reason (no / x / cancel / backdrop)</li>
+        <li>Drop-off: accept-clicked but no success</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><h3>Health Alerts</h3></div>
+    <div class="empty">
+      Awaiting GA4 ingest. Will surface:
+      <ul style="text-align:left; margin: 12px auto; max-width: 360px; line-height: 1.8;">
+        <li>view→accept_success ratio drop below floor</li>
+        <li>modal_view firing on FOTM PDP itself (self-ref guard)</li>
+        <li>accept-no-success ratio &gt; 5% (/cart/add failures)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Schema doc -->
+<h2>Schema Reference</h2>
+<div class="arch-block">
+  <span class="label">Table: raw_upsell_attributions</span>
+  One row per accepted upsell line item. Source: Shopify GraphQL Orders API,
+  <code>line_items[].customAttributes</code> with keys prefixed <code>_upsell_*</code>.
+  Underscore-prefix is Shopify convention for hidden line-item properties — invisible
+  to customer-facing emails/checkout but exportable via the API.
+</div>
+<div class="arch-block">
+  <span class="label">Source attribute keys (set by ThemeSmith's modal controllers)</span>
+  <code>_upsell_modal_v</code> · <code>_upsell_source_product_id</code> ·
+  <code>_upsell_source_variant_id</code> · <code>_upsell_campaign</code> ·
+  <code>_upsell_source_mode</code> · <code>_upsell_discount_pct</code> ·
+  <code>_upsell_accepted_at</code>
+</div>
+
+<div style="margin-top: 40px; text-align: center;">
+  <span class="updated-stamp">Built by build_pdp_upsell_dashboard.py · 2026-05-01 13:47:18</span>
+</div>
+
+</body>
+</html>
