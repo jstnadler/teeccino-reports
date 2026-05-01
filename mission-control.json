@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-01T14:58:06.027607-07:00",
+  "lastUpdated": "2026-05-01T15:05:44.472358-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -98,6 +98,12 @@
       },
       "recentActivity": [
         {
+          "summary": "Closed AdSmith's GTM-tag-verify thread. AdSmith had already published GTM Version 37 with all 4 PDP upsell tags + 4 triggers + 15 DLVs at 13:48 PT (before ThemeSmith's verify dispatch landed). Real blocker is PieEye admin: 'Approve All' banner button misconfigured to leave Performance category at 0 (analytics_storage stays denied). ThemeSmith audited theme-side integration and confirmed our code is a faithful pass-through of cookie values to Consent Mode v2 — bug is on PieEye banner UI side, not in our snippet. Justin advised to fix in PieEye admin or contact PieEye support. Filed reply to AdSmith confirming diagnosis. No further action from theme side until PieEye is unstuck.",
+          "at": "2026-05-01T22:30:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Filed AdSmith inbox task to verify the 4 PDP upsell custom-event GTM tags are configured to forward to GA4. Justin reported he flipped the PieEye toggle and isn't seeing upsell events in his analytics view. ThemeSmith verified events ARE landing in window.dataLayer correctly on live (theme 160800145656) — so the gap is downstream forwarding. AdSmith owns the GTM tag config; their task: verify or create the 4 GA4 event tags (upsell_modal_view / accept / accept_success / dismiss) with the documented payload schema.",
           "at": "2026-05-01T22:00:00Z",
           "source": "interactive",
@@ -148,12 +154,6 @@
         {
           "summary": "Shipped GTM dataLayer tracking + line-item properties on both PDP upsell modals to live theme 160800145656 (commit b95d2b1 on main). Verified end-to-end on dev preview: all 4 events fire (view, accept, accept_success, dismiss) with full payload, line-item properties land on /cart/add with discount applied. Verified on live (public domain, no preview): upsell_modal_view fires with correct payload. Filed DataOps dispatch for performance dashboard build, filed Shopkeeper FYI on the new line-item properties.",
           "at": "2026-05-01T00:17:30Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "PDP FOTM product upsell modal shipped to live theme 160800145656 (commit ce411ae). Cherry-picked file-by-file from dev: 3 new files + surgical edit to templates/product.pdp-rebuild.json. Donation upsell flipped enable=false, FOTM product upsell enable=true. Verified live on Dandelion Dark Roast PDP — modal renders Java FOTM with 20% discount across 3 variants (11oz $13.60, 5lb $72.00, Trial $2.80), discount math matches Shopify cart, mobile + desktop both clean.",
-          "at": "2026-04-30T23:50:00Z",
           "source": "interactive",
           "status": "success"
         }
