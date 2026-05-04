@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-04T10:55:04.089970-07:00",
+  "lastUpdated": "2026-05-04T11:05:53.953202-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -128,12 +128,6 @@
           "status": "success"
         },
         {
-          "summary": "Filed inbox task `benefit-tag-backfill-2026-04-27` to CatalogSmith — audit + backfill missing diet/feature tags (USDA Organic, Gluten Free, Kosher, Keto, Paleo, Nut Free) on Mediterranean line and macadamia-nut Prebiotic SKU; recommend tag→metafield migration.",
-          "at": "2026-04-27T17:58:00Z",
-          "source": "unknown",
-          "status": "unknown"
-        },
-        {
           "summary": "Done. PDP ATC upsell verified clean on live theme `160800145656` (main HEAD `8580cc2`).\n\n**Result:** ✅ No theme-side regressions. PieEye work (88216e8 + revert 93ceb7e) didn't touch upsell paths.\n\n**W",
           "at": "2026-05-04T09:11:51.005219-07:00",
           "source": "gateway",
@@ -154,6 +148,12 @@
         {
           "summary": "Shipped GTM consent-gating fix to live theme 160800145656 (commit f6428d4). Wraps the GTM bootstrap script with type='text/plain' + class='pieeye-category-performance' when settings.enable_pieeye is on. Same pattern that was already working for Amazon Pixel + Hotjar (verified loading post-consent in same diagnostic session). Fixes the gtm_loaded:false issue that was preventing GA4 events from firing despite all consent categories being granted. Liquid source verified correct on live; rendered HTML via preview_theme_id confirmed.",
           "at": "2026-05-01T23:30:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Reverse-merged PieEye cookie consent from PieEye theme 161454817528 into git → live theme 160800145656 (commit 90a262d). 5 files: 2 new snippets (pieeye-default-consent, pieeye-shopify-privacy-api) + surgical edits to layout/theme.liquid (consent <head> block + Amazon Pixel/Hotjar consent-blocking wrapper) + sections/footer.liquid (3 consent links) + new 'Privacy & Consent' group in settings_schema with enable_pieeye checkbox (default OFF — kill switch). PieEye theme can be deleted. Justin to flip toggle in theme editor on live when ready for go-live.",
+          "at": "2026-05-01T21:35:00Z",
           "source": "interactive",
           "status": "success"
         }
@@ -245,12 +245,16 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "HubSmith rollout — sibling agent updates (8 files), notification dispatch (8 inboxes), category spec for M1 kickoff",
+        "source": "interactive",
+        "startedAt": "2026-05-04T09:55:00-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Created HubSmith (9th agent) — internal teeccino-reports site webmaster. Files in place, MC rebuilt, gateway accepts --to hubsmith. Awaiting Justin OK for sibling-agent rollout + M1 audit kickoff.",
-        "at": "2026-05-04T16:50:00-07:00"
+        "summary": "Created HubSmith — 9th guild agent. Owns teeccino-reports site as a webmaster (hub IA, pages.json manifest, shared chrome, orphan + dead-link hygiene, archival). Parallel to BrewSmith (coffeealternatives.com) and ThemeSmith (teeccino.com). Solves the orphan-by-default problem caught when pdp-upsell-performance.html was unreachable from the hub.",
+        "at": "2026-05-04T16:50:00Z"
       },
       "recentActivity": [
         {
@@ -315,7 +319,7 @@
         }
       ],
       "pendingTasks": 7,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "assetsmith",
