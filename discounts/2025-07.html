@@ -193,11 +193,16 @@ body {
 <body>
 
 
-    <div class="top-nav">
-        <a href="../mtd.html" class="brand">← Teeccino Reports</a>
-        <a href="../mtd.html">MTD Dashboard</a>
-        <span style="color:#D4A843;font-weight:600;">Discount Deep-Dive</span>
-    </div>
+    <!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+    });
+</script>
     <div class="month-nav">
         <select id="monthSelect" onchange="navigateMonth(this.value)">
             <option value="2026-04">Apr 2026</option>
