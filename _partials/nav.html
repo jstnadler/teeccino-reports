@@ -1,0 +1,109 @@
+<!--
+  Shared top-nav partial for teeccino-reports dashboards.
+  Owner: HubSmith. Modify only via clawd-hubsmith.
+
+  How to include in a dashboard (no build step required):
+      <div id="hub-nav"></div>
+      <script>
+        fetch('/teeccino-reports/_partials/nav.html')
+          .then(r => r.text())
+          .then(html => { document.getElementById('hub-nav').innerHTML = html;
+                          document.body.classList.add('has-hub-nav'); });
+      </script>
+
+  Aesthetics: gold #D4A843 on dark #1a1a2e, matches index.html. Uses inline <style scoped> equivalent
+  (a <style> block is allowed inside fragment HTML when innerHTML'd into a div).
+-->
+<style>
+  /* Scoped via #hub-nav-bar to avoid clashing with host page styles */
+  #hub-nav-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  #hub-nav-bar .brand {
+    font-weight: 700; font-size: 1.05em; color: #D4A843;
+    text-decoration: none; letter-spacing: -0.02em;
+  }
+  #hub-nav-bar .brand:hover { color: #F5D784; }
+  #hub-nav-bar .group {
+    display: flex; align-items: center; gap: 14px;
+    margin-left: 16px;
+  }
+  #hub-nav-bar .group-label {
+    color: #64748b; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  #hub-nav-bar a.nav-link {
+    color: #94a3b8; text-decoration: none; font-size: 0.88em;
+    padding: 4px 10px; border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  #hub-nav-bar a.nav-link:hover {
+    color: #D4A843; background: rgba(212, 168, 67, 0.08);
+  }
+  #hub-nav-bar a.nav-link.active {
+    color: #D4A843; background: rgba(212, 168, 67, 0.12);
+    font-weight: 600;
+  }
+  #hub-nav-bar .spacer { flex: 1; }
+  #hub-nav-bar .home-link {
+    color: #D4A843; font-size: 0.85em; text-decoration: none;
+    border: 1px solid rgba(212, 168, 67, 0.3); padding: 4px 12px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  #hub-nav-bar .home-link:hover { background: rgba(212, 168, 67, 0.1); }
+  body.has-hub-nav { padding-top: 60px !important; }
+  @media (max-width: 880px) {
+    #hub-nav-bar { gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+    #hub-nav-bar .group { margin-left: 0; gap: 8px; }
+    #hub-nav-bar .group-label { display: none; }
+    #hub-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
+  }
+</style>
+<nav id="hub-nav-bar" aria-label="Reports hub navigation">
+  <a class="brand" href="/teeccino-reports/index.html">☕ Teeccino Reports</a>
+  <div class="group" data-cat="operations">
+    <span class="group-label">Ops</span>
+    <a class="nav-link" href="/teeccino-reports/mission-control.html">Mission Control</a>
+    <a class="nav-link" href="/teeccino-reports/status.html">Status</a>
+  </div>
+  <div class="group" data-cat="kpi-period">
+    <span class="group-label">KPI</span>
+    <a class="nav-link" href="/teeccino-reports/mtd.html">MTD</a>
+    <a class="nav-link" href="/teeccino-reports/ytd.html">YTD</a>
+  </div>
+  <div class="group" data-cat="marketing-ads">
+    <span class="group-label">Marketing</span>
+    <a class="nav-link" href="/teeccino-reports/analytics.html">Analytics</a>
+    <a class="nav-link" href="/teeccino-reports/creatives.html">Creatives</a>
+    <a class="nav-link" href="/teeccino-reports/ad-spend-yoy.html">Ad Spend</a>
+    <a class="nav-link" href="/teeccino-reports/ltv.html">LTV</a>
+  </div>
+  <div class="group" data-cat="catalog-data">
+    <span class="group-label">Data</span>
+    <a class="nav-link" href="/teeccino-reports/catalog.html">Catalog</a>
+    <a class="nav-link" href="/teeccino-reports/database.html">Schema</a>
+    <a class="nav-link" href="/teeccino-reports/discounts.html">Discounts</a>
+  </div>
+  <span class="spacer"></span>
+  <a class="home-link" href="/teeccino-reports/index.html">All Reports →</a>
+</nav>
+<script>
+  // Highlight the active link based on the current pathname.
+  (function () {
+    var here = window.location.pathname.replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
+    if (!here) here = 'index.html';
+    document.querySelectorAll('#hub-nav-bar a.nav-link').forEach(function (a) {
+      var href = a.getAttribute('href').replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
+      if (href === here || (here.startsWith(href.replace('.html', '')) && href !== 'index.html')) {
+        a.classList.add('active');
+      }
+    });
+  })();
+</script>

@@ -15,157 +15,328 @@
             padding: 20px;
             padding-top: 70px;
         }
+        /* Top nav (hub-specific; sub-dashboards use _partials/nav.html) */
         .top-nav {
-            position: fixed; top: 0; left: 0; right: 0;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
-            z-index: 100; padding: 12px 24px;
-            display: flex; align-items: center; gap: 20px;
+            padding: 12px 24px;
+            display: flex; align-items: center; gap: 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.9em;
         }
-        .top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; }
-        .top-nav a:hover { color: #D4A843; }
         .top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 40px; }
+        .top-nav a { color: #94a3b8; text-decoration: none; }
+        .top-nav a:hover { color: #D4A843; }
+        .top-nav .meta { margin-left: auto; color: #64748b; font-size: 0.78em; }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 32px; }
         .header h1 {
-            font-size: 2.2em;
-            background: linear-gradient(135deg, #D4A843, #8B6914);
+            font-size: 2.4em;
+            background: linear-gradient(135deg, #D4A843, #F5D784);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
-        .header .sub { color: #888; margin-top: 8px; font-size: 1em; }
-        .report-grid {
+        .header .sub { color: #94a3b8; font-size: 1em; }
+        .header .stats {
+            margin-top: 12px; color: #64748b; font-size: 0.85em;
+        }
+
+        details.collapsible[open] > summary,
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker { display: none; }
+
+        .category-header {
+            display: flex; align-items: baseline; gap: 12px;
+            padding: 16px 0 12px 0; margin-top: 24px;
+            border-bottom: 2px solid rgba(212,168,67,0.2);
+            cursor: pointer;
+            user-select: none;
+        }
+        .category-header:hover .cat-title { color: #F5D784; }
+        .cat-icon { font-size: 1.4em; }
+        .cat-title {
+            font-size: 1.3em; font-weight: 700; color: #D4A843;
+            letter-spacing: -0.01em;
+        }
+        .cat-count {
+            color: #64748b; font-size: 0.85em; font-weight: 500;
+        }
+        .cat-desc {
+            color: #64748b; font-size: 0.85em; font-weight: 400;
+            margin-left: 8px;
+        }
+        details > .report-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 16px;
+            gap: 14px;
+            margin: 12px 0 16px 0;
         }
+
         .report-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 12px;
-            padding: 24px;
+            padding: 18px 20px;
             text-decoration: none;
             color: #fff;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.15s, border-color 0.15s, background 0.15s;
             display: block;
         }
         .report-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             border-color: rgba(212,168,67,0.4);
+            background: rgba(212,168,67,0.06);
         }
-        .report-card .icon { font-size: 1.8em; margin-bottom: 10px; }
-        .report-card .title {
-            font-size: 1.1em; font-weight: 600; margin-bottom: 6px; color: #D4A843;
+        .card-icon { font-size: 1.6em; margin-bottom: 8px; }
+        .card-title {
+            font-size: 1.02em; font-weight: 600; color: #D4A843;
+            margin-bottom: 4px;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
         }
-        .report-card .desc { font-size: 0.85em; color: #999; line-height: 1.5; }
+        .card-desc { font-size: 0.85em; color: #94a3b8; line-height: 1.5; }
+
+        .project-card .card-icon { color: #a78bfa; }
+        .status-badge {
+            font-size: 0.7em; font-weight: 600;
+            padding: 2px 8px; border-radius: 10px;
+            text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .status-active { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .status-planning { background: rgba(96,165,250,0.15); color: #60a5fa; }
+        .status-complete { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+        details.collapsible { margin-top: 32px; }
+        details.collapsible > summary {
+            opacity: 0.7;
+        }
+        details.collapsible[open] > summary { opacity: 1; }
+
+        footer {
+            text-align: center; margin-top: 48px; padding: 24px 0;
+            color: #64748b; font-size: 0.78em;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
     </style>
 </head>
 <body>
 
 <nav class="top-nav">
-    <span class="brand">☕ Teeccino</span>
-    <a href="index.html" style="color:#D4A843;font-weight:600;">Home</a>
-    <a href="mtd.html">MTD</a>
-    <a href="ytd.html">YTD</a>
-    <a href="analytics.html">Analytics</a>
-    <a href="creatives.html">Creatives</a>
-    <a href="ad-spend-yoy.html">Ad Spend YoY</a>
-    <a href="ltv.html">LTV</a>
-    <a href="catalog.html">Catalog</a>
-    <a href="status.html">Status</a>
-    <a href="database.html">Database</a>
+    <span class="brand">☕ Teeccino Reports</span>
+    <a href="#cat-operations">Ops</a>
+    <a href="#cat-kpi-period">KPI</a>
+    <a href="#cat-marketing-ads">Marketing</a>
+    <a href="#cat-catalog-data">Data</a>
+    <a href="#cat-active-projects">Projects</a>
+    <a href="#cat-archive">Archive</a>
+    <span class="meta">21 live · 92 total</span>
 </nav>
 
 <div class="container">
     <div class="header">
         <h1>📊 Teeccino Reports</h1>
-        <p class="sub">Dashboards and reporting tools</p>
+        <p class="sub">Internal hub — every dashboard, manifest-driven, ≤2 clicks from home.</p>
+        <p class="stats">Manifest: 21 live pages across 6 categories · Last build 2026-05-04T12:09:20-07:00</p>
     </div>
 
     <div id="provenance-mount"></div>
-
     <script>
     window.PROVENANCE_CONFIG = {
       pageTitle: "Teeccino Reports — Hub",
-      owner: "Multi-agent (gateway: AgentSmith)",
+      owner: "HubSmith",
       master: {
-        label: "Hub master",
-        path: "C:\\Users\\JustinAdler\\clawd\\data\\mission-control.json",
-        rowGrain: "agent"
+        label: "Manifest (pages.json)",
+        path: "C:\\Users\\JustinAdler\\dev\\repos\\teeccino-reports\\pages.json",
+        rowGrain: "page"
       },
       sources: [
-        { name: "Each agent's outbox/", flow: "activity feed → mission-control.json" },
-        { name: "Per-page master files", flow: "linked from each report card below" }
+        { name: "pages.json", flow: "manifest → build_hub.py → index.html" },
+        { name: "clawd/data/projects/*.json", flow: "active-projects auto-discovery" }
       ],
       pipeline: [
-        "8 agents → outbox/*.json",
-        "build_mission_control.py → mission-control.json",
-        "Each report page declares its own master + sources via Provenance banner"
+        "Publishers register pages via hub_register.register_page()",
+        "build_hub.py reads pages.json + projects/*.json",
+        "Renders categorized cards, runs orphan-scan, validates manifest"
       ],
       feedsInto: [
-        { target: "Mission Control dashboard", role: "agent coordination" },
-        { target: "Per-agent dashboards",      role: "linked below" }
+        { target: "Each linked dashboard", role: "primary nav" }
       ]
     };
     </script>
     <script src="provenance-banner.js"></script>
 
-    <div class="report-grid">
-        <a class="report-card" href="mtd.html">
-            <div class="icon">📊</div>
-            <div class="title">MTD KPI Dashboard</div>
-            <div class="desc">Month-to-date KPI tracking with YoY comparisons, daily trends, and top Meta ads.</div>
-        </a>
-        <a class="report-card" href="ytd.html">
-            <div class="icon">📅</div>
-            <div class="title">YTD KPI Dashboard</div>
-            <div class="desc">Year-to-date KPI tracking with monthly breakdowns and cumulative pacing.</div>
-        </a>
-        <a class="report-card" href="analytics.html">
-            <div class="icon">📈</div>
-            <div class="title">Analytics Dashboard</div>
-            <div class="desc">Attribution, customer cohorts, SKU performance, and retention analysis.</div>
-        </a>
-        <a class="report-card" href="creatives.html">
-            <div class="icon">🎨</div>
-            <div class="title">Creative Library</div>
-            <div class="desc">Meta ad creatives with performance data, spend tracking, and ROAS metrics.</div>
-        </a>
-        <a class="report-card" href="ad-spend-yoy.html">
-            <div class="icon">📈</div>
-            <div class="title">Ad Spend YoY</div>
-            <div class="desc">Daily Meta + Google ad spend, this year vs last year. MTD/YTD totals, monthly breakdown, and per-day detail.</div>
-        </a>
-        <a class="report-card" href="ltv.html">
-            <div class="icon">👥</div>
-            <div class="title">2-Year LTV</div>
-            <div class="desc">Cohort LTV analysis — net revenue per customer over 24 months. Subscription split, channel split, per-cohort detail.</div>
-        </a>
-        <a class="report-card" href="campaign-budget-allocation.html">
-            <div class="icon">💸</div>
-            <div class="title">Campaign Budget Allocation</div>
-            <div class="desc">Per-campaign daily budget vs spend. Google: full daily budget history, utilization, change events. Meta: spend (budget capture pending).</div>
+    <details id="cat-operations" open>
+      <summary class="category-header">
+        <span class="cat-icon">🎯</span>
+        <span class="cat-title">Operations</span>
+        <span class="cat-count">(3)</span>
+        <span class="cat-desc">Daily coordination, system status, agent activity. The &#x27;what&#x27;s happening right now&#x27; pages.</span>
+      </summary>
+      <div class="report-grid">
+        <a class="report-card" href="mission-control.html">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Mission Control</div>
+            <div class="card-desc">Agent coordination, project tracking, and task management across Crowley HQ.</div>
         </a>
         <a class="report-card" href="status.html">
-            <div class="icon">🔧</div>
-            <div class="title">Automations Dashboard</div>
-            <div class="desc">System status, script inventory, data pipeline architecture, and cron schedules.</div>
+            <div class="card-icon">🔧</div>
+            <div class="card-title">Automations Dashboard</div>
+            <div class="card-desc">System status, script inventory, data pipeline architecture, and cron schedules.</div>
+        </a>
+        <a class="report-card" href="ops.html">
+            <div class="card-icon">🛠️</div>
+            <div class="card-title">Ops Dashboard</div>
+            <div class="card-desc">Technical pipeline ops view — data freshness, date coverage, database tables, matrix workbooks, recent commits.</div>
+        </a>
+      </div>
+    </details>
+    <details id="cat-kpi-period" open>
+      <summary class="category-header">
+        <span class="cat-icon">📊</span>
+        <span class="cat-title">KPI &amp; Period Reporting</span>
+        <span class="cat-count">(2, +30 nested)</span>
+        <span class="cat-desc">Period-anchored business performance — month-to-date, year-to-date, monthly summaries.</span>
+      </summary>
+      <div class="report-grid">
+        <a class="report-card" href="mtd.html">
+            <div class="card-icon">📊</div>
+            <div class="card-title">MTD KPI Dashboard</div>
+            <div class="card-desc">Month-to-date KPI tracking with YoY comparisons, daily trends, and top Meta ads. Rollup parent for mtd/{YYYY-MM}.html drilldowns.</div>
+        </a>
+        <a class="report-card" href="ytd.html">
+            <div class="card-icon">📅</div>
+            <div class="card-title">YTD KPI Dashboard</div>
+            <div class="card-desc">Year-to-date KPI tracking with monthly breakdowns and cumulative pacing. Rollup parent for ytd/{YYYY}.html drilldowns.</div>
+        </a>
+      </div>
+    </details>
+    <details id="cat-marketing-ads" open>
+      <summary class="category-header">
+        <span class="cat-icon">📣</span>
+        <span class="cat-title">Marketing &amp; Ads</span>
+        <span class="cat-count">(6)</span>
+        <span class="cat-desc">Ad performance, creatives, attribution, customer LTV, campaign analytics.</span>
+      </summary>
+      <div class="report-grid">
+        <a class="report-card" href="analytics.html">
+            <div class="card-icon">📈</div>
+            <div class="card-title">Analytics Dashboard</div>
+            <div class="card-desc">Attribution, customer cohorts, SKU performance, and retention analysis.</div>
+        </a>
+        <a class="report-card" href="creatives.html">
+            <div class="card-icon">🎨</div>
+            <div class="card-title">Creative Library</div>
+            <div class="card-desc">Meta ad creatives with performance data, spend tracking, and ROAS metrics.</div>
+        </a>
+        <a class="report-card" href="ad-spend-yoy.html">
+            <div class="card-icon">💰</div>
+            <div class="card-title">Ad Spend YoY</div>
+            <div class="card-desc">Daily Meta + Google ad spend, this year vs last year. MTD/YTD totals, monthly breakdown, per-day detail.</div>
+        </a>
+        <a class="report-card" href="ltv.html">
+            <div class="card-icon">👥</div>
+            <div class="card-title">2-Year LTV</div>
+            <div class="card-desc">Cohort LTV analysis — net revenue per customer over 24 months. Subscription split, channel split, per-cohort detail.</div>
+        </a>
+        <a class="report-card" href="campaign-budget-allocation.html">
+            <div class="card-icon">💸</div>
+            <div class="card-title">Campaign Budget Allocation</div>
+            <div class="card-desc">Per-campaign daily budget vs spend. Google: full daily budget history, utilization, change events. Meta: spend.</div>
+        </a>
+        <a class="report-card" href="video-ads.html">
+            <div class="card-icon">🎬</div>
+            <div class="card-title">Video Ads</div>
+            <div class="card-desc">Video ad performance — to be confirmed by adopting agent.</div>
+        </a>
+      </div>
+    </details>
+    <details id="cat-catalog-data" open>
+      <summary class="category-header">
+        <span class="cat-icon">📚</span>
+        <span class="cat-title">Catalog &amp; Data</span>
+        <span class="cat-count">(3, +27 nested)</span>
+        <span class="cat-desc">Product catalog browsing, database/schema reference, data archive.</span>
+      </summary>
+      <div class="report-grid">
+        <a class="report-card" href="catalog.html">
+            <div class="card-icon">📚</div>
+            <div class="card-title">Product Catalog Browser</div>
+            <div class="card-desc">CatalogSmith — browse every product with description, ingredients, sizes, media, nutrition, icons, tags, SEO.</div>
         </a>
         <a class="report-card" href="database.html">
-            <div class="icon">📦</div>
-            <div class="title">Database Schema Reference</div>
-            <div class="desc">Complete schema docs for the analytics database — tables, columns, and relationships.</div>
+            <div class="card-icon">🗄️</div>
+            <div class="card-title">Database Schema Reference</div>
+            <div class="card-desc">Complete schema docs for the analytics database — tables, columns, and relationships.</div>
         </a>
-        <a class="report-card" href="mission-control.html">
-            <div class="icon">🎯</div>
-            <div class="title">Mission Control</div>
-            <div class="desc">Agent coordination, project tracking, and task management across Crowley HQ.</div>
+        <a class="report-card" href="discounts.html">
+            <div class="card-icon">🏷️</div>
+            <div class="card-title">Discounts</div>
+            <div class="card-desc">Discount tracking rollup. Parent for discounts/{YYYY-MM}.html monthly drilldowns.</div>
         </a>
-        <a class="report-card" href="catalog.html">
-            <div class="icon">📚</div>
-            <div class="title">Product Catalog Browser</div>
-            <div class="desc">CatalogSmith — browse every product with description, ingredients, sizes, media, nutrition, icons, tags, SEO.</div>
+      </div>
+    </details>
+    <details id="cat-active-projects" open>
+      <summary class="category-header">
+        <span class="cat-icon">🚀</span>
+        <span class="cat-title">Active Projects</span>
+        <span class="cat-count">(4)</span>
+        <span class="cat-desc">Project-specific dashboards. Auto-generated at hub build from clawd/data/projects/*.json where dashboardUrl is set AND status is not complete.</span>
+      </summary>
+      <div class="report-grid">
+        <a class="report-card project-card" href="campaign-versatility.html">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Versatility Campaign (One Flavor, Four Ways) <span class="status-badge status-active">active</span></div>
+            <div class="card-desc">Paid media push telling Teeccino&#x27;s versatility story — 4 hero flavors (French Roast, Adapt &amp; Protect, Dandelion Dark Roast, Mocha) × 4 formats (Full-Grind Coffee / Tee-Bags / Maya Instant Coffee / May…</div>
         </a>
-    </div>
+        <a class="report-card project-card" href="rollover.html">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">New Packaging Rollover <span class="status-badge status-active">active</span></div>
+            <div class="card-desc">Full rollover of all Teeccino products to new packaging. Consolidates carousel-image-sync and website-photo-update. AssetSmith owns the master Assets library and routes designer deliverables into Shop…</div>
+        </a>
+        <a class="report-card project-card" href="pdp-rebuild.html">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">PDP Rebuild (Replo → Native Liquid) <span class="status-badge status-active">active</span></div>
+            <div class="card-desc">Rebuild the main Replo product detail page (template 10dc3372) as a native Liquid section in the teeccino-dawn-refresh theme. 99 products use this template. Goal: eliminate Replo dependency so ThemeSm…</div>
+        </a>
+        <a class="report-card project-card" href="promo-management.html">
+            <div class="card-icon">🚀</div>
+            <div class="card-title">Promo Management System <span class="status-badge status-active">active</span></div>
+            <div class="card-desc">End-to-end promo lifecycle: inventory analysis, metafield updates, discount creation/deactivation, collection management, and performance tracking.</div>
+        </a>
+      </div>
+    </details>
+    <details id="cat-archive" class="collapsible">
+      <summary class="category-header">
+        <span class="cat-icon">📦</span>
+        <span class="cat-title">Archive</span>
+        <span class="cat-count">(3, +14 nested)</span>
+        <span class="cat-desc">Stale or completed content moved out of the active hub.</span>
+      </summary>
+      <div class="report-grid">
+        <a class="report-card" href="pdp-upsell-performance.html">
+            <div class="card-icon">🛒</div>
+            <div class="card-title">PDP Upsell Performance</div>
+            <div class="card-desc">Funnel and revenue attribution for the PDP ATC upsell modal. Project completed; preserved as reference.</div>
+        </a>
+        <a class="report-card" href="home.html">
+            <div class="card-icon">🏠</div>
+            <div class="card-title">Home (legacy)</div>
+            <div class="card-desc">Legacy hub landing page. Superseded by index.html. Contains broken nav links to weekly.html and projects.html (do not exist).</div>
+        </a>
+        <a class="report-card" href="kpi.html">
+            <div class="card-icon">📅</div>
+            <div class="card-title">Monthly KPIs (legacy index)</div>
+            <div class="card-desc">Legacy &#x27;Monthly KPIs&#x27; rollup. Parent for root-level YYYY-MM.html. Superseded by mtd.html + mtd/{YYYY-MM}.html in newer styling.</div>
+        </a>
+      </div>
+    </details>
+
+    <footer>
+        Built by HubSmith · build_hub.py · 2026-05-04T12:09:20-07:00<br>
+        Manifest: <a href="pages.json" style="color:#D4A843;">pages.json</a> · Source: <a href="https://github.com/jstnadler/teeccino-reports" style="color:#D4A843;">teeccino-reports</a>
+    </footer>
 </div>
 
 </body>
