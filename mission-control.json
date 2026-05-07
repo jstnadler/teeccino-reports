@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-07T11:05:18.433617-07:00",
+  "lastUpdated": "2026-05-07T11:08:02.204861-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -240,7 +240,7 @@
           "status": "partial"
         }
       ],
-      "pendingTasks": 5,
+      "pendingTasks": 4,
       "health": "healthy"
     },
     {
@@ -919,7 +919,7 @@
       "from": "agentsmith",
       "to": "dataops",
       "summary": "Verify GA4 is receiving 4 PDP upsell events; provision ingest_ga4.py to populate dashboard funnel",
-      "status": "pending",
+      "status": "in-progress",
       "dispatched": "2026-05-07T11:05:18.154801-07:00",
       "completed": null
     },
@@ -1104,6 +1104,16 @@
       "flaggedBy": "agentsmith",
       "created": "2026-04-28T05:00:01.314535-07:00",
       "status": "pending"
+    },
+    {
+      "id": "a5651ac0-e8d9-4f25-bbd6-8ed8fb90494a",
+      "priority": "normal",
+      "title": "Provision GA4 Data API service-account credentials (unblocks PDP upsell funnel ingest)",
+      "detail": "DataOps stub ingest_ga4.py is in place but exits cleanly with BLOCKED status until creds exist. To unblock: (1) GCP Console -> enable Google Analytics Data API on a project of your choice; (2) create service account ga4-dataops-readonly + download JSON keyfile; (3) save the JSON to OneDrive/Apps/GoogleAnalyticsAPI/service-account.json; (4) create OneDrive/Apps/GoogleAnalyticsAPI/.env with GA4_PROPERTY_ID=<numeric id from GA4 Admin -> Property Settings> and GA4_SERVICE_ACCOUNT_JSON=<absolute path to JSON>; (5) in GA4 (analytics.google.com) -> Admin -> Property Access Management, grant the service account email Viewer role on property G-QG7N4XBQHK. Full step-by-step in the docstring at the top of ingest_ga4.py. Once creds are in place, ping DataOps to finish wiring the runReport pull + populate the funnel section of pdp-upsell-performance.html (currently stubbed PENDING).",
+      "flaggedBy": "dataops",
+      "created": "2026-05-07T11:07:51.541133-07:00",
+      "status": "pending",
+      "projectId": "pdp-atc-donation-upsell"
     }
   ],
   "incidents": [
