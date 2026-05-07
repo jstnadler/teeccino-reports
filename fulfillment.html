@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fulfillment Time — Teeccino Reports</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); min-height:100vh;
+         color:#e6e6e6; padding:20px; padding-top:70px; }
+  .container { max-width:1400px; margin:0 auto; }
+  h1 { font-size:1.9em; background:linear-gradient(135deg,#D4A843,#8B6914);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+  .sub { color:#888; margin-bottom:18px; }
+  .banner { padding:14px 18px; border-radius:8px; margin-bottom:24px; font-size:0.95em; font-weight:500; }
+  .banner-ok { background:rgba(46,160,67,0.12); border:1px solid rgba(46,160,67,0.4); color:#7ee787; }
+  .banner-warn { background:rgba(212,168,67,0.12); border:1px solid rgba(212,168,67,0.4); color:#e3b341; }
+  .banner-bad { background:rgba(248,81,73,0.12); border:1px solid rgba(248,81,73,0.4); color:#ff7b72; }
+  .definitions { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                  border-radius:8px; padding:14px 16px; margin-bottom:24px; font-size:0.86em; color:#aaa; line-height:1.6; }
+  .definitions code { color:#D4A843; }
+  .section { margin:32px 0; }
+  .section-title { font-size:1.2em; color:#D4A843; margin-bottom:12px; font-weight:600;
+                    border-bottom:1px solid rgba(212,168,67,0.3); padding-bottom:6px; }
+  .section-sub { color:#888; font-size:0.85em; margin-bottom:14px; }
+  .hero-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-bottom:14px; }
+  .hero-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+                border-radius:10px; padding:18px; }
+  .hero-label { font-size:0.75em; text-transform:uppercase; letter-spacing:1px; color:#888; margin-bottom:8px; }
+  .hero-value { font-size:1.9em; font-weight:700; color:#fff; }
+  .hero-sub { font-size:0.78em; color:#777; margin-top:4px; }
+  .chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; }
+  @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
+  .chart-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                 border-radius:10px; padding:18px; height:380px; }
+  .table-scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+  th, td { padding:9px 12px; text-align:left; font-size:0.85em; border-bottom:1px solid rgba(255,255,255,0.06); white-space:nowrap; }
+  th { background:rgba(212,168,67,0.12); color:#D4A843; font-weight:600; font-size:0.74em;
+        text-transform:uppercase; letter-spacing:0.5px; }
+  th.num, td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr:hover td { background:rgba(255,255,255,0.04); }
+  code { background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:3px;
+          font-size:0.85em; color:#e3b341; }
+  .empty-state { background:rgba(46,160,67,0.08); border:1px solid rgba(46,160,67,0.3);
+                  border-radius:8px; padding:18px; color:#7ee787; text-align:center; font-size:0.95em; }
+</style>
+</head>
+<body>
+
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+    });
+</script>
+
+<div class="container">
+  <h1>🚚 Fulfillment Time</h1>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-05-07 15:42 · 104,999 matched orders.</p>
+
+  <div class="banner banner-ok">Healthy — 68% of orders ship within 1 day (last 30 days).</div>
+
+  <div class="definitions">
+    <strong>Definitions:</strong><br>
+    <code>Days to ship</code> = <code>first ship_date − order date</code> (Pacific local).
+    Multi-shipment orders use the earliest ship_date.<br>
+    <code>Same-Day</code> = order placed and first shipment created on the same calendar day.
+    <code>Within N Days</code> = cumulative (≤ N days).<br>
+    <code>DTC only</code> — wholesale (Walmart / Target / Faire) excluded.
+    Pre-orders and rare negative deltas (data artifacts) excluded.
+    Coverage starts 2024-01 when ShipStation ingestion began.
+  </div>
+
+  <!-- Hero KPIs -->
+  <div class="section">
+    <div class="section-title">Last 30 Days at a Glance</div>
+    <div class="hero-grid">
+        <div class="hero-card">
+            <div class="hero-label">Avg Days to Ship</div>
+            <div class="hero-value">1.15</div>
+            <div class="hero-sub">last 30 days · median 1.00</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Same-Day Ship</div>
+            <div class="hero-value">29%</div>
+            <div class="hero-sub">order placed and shipped same calendar day</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Within 1 Day</div>
+            <div class="hero-value">68%</div>
+            <div class="hero-sub">cumulative — same day or next day</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Within 2 Days</div>
+            <div class="hero-value">91%</div>
+            <div class="hero-sub">cumulative — within 48 hours</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">P90 Days</div>
+            <div class="hero-value">2.00</div>
+            <div class="hero-sub">90% of orders ship within this many days</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Slow Orders</div>
+            <div class="hero-value">1.8%</div>
+            <div class="hero-sub">took more than 3 days to ship</div>
+        </div></div>
+  </div>
+
+  <!-- SLA comparison -->
+  <div class="section">
+    <div class="section-title">SLA Performance — 30 / 90 / 365 Day Windows</div>
+    <div class="section-sub">Cumulative percentages: a higher number is better.</div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Window</th>
+                    <th class="num">Orders</th>
+                    <th class="num">Avg</th>
+                    <th class="num">Median</th>
+                    <th class="num">P90</th>
+                    <th class="num">Same-Day</th>
+                    <th class="num">≤ 1 Day</th>
+                    <th class="num">≤ 2 Days</th>
+                    <th class="num">≤ 3 Days</th>
+                    <th class="num">≤ 5 Days</th>
+                    <th class="num">≤ 7 Days</th>
+                    <th class="num">≤ 10 Days</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr>
+            <td><strong>Last 30 days</strong></td>
+            <td class="num">3,803</td>
+            <td class="num">1.15</td>
+            <td class="num">1.00</td>
+            <td class="num">2.00</td>
+            <td class="num">29.0%</td>
+            <td class="num">68.1%</td>
+            <td class="num">91.1%</td>
+            <td class="num">98.2%</td>
+            <td class="num">99.8%</td>
+            <td class="num">99.9%</td>
+            <td class="num">100.0%</td>
+        </tr>
+                
+        <tr>
+            <td><strong>Last 90 days</strong></td>
+            <td class="num">12,423</td>
+            <td class="num">2.65</td>
+            <td class="num">2.00</td>
+            <td class="num">5.00</td>
+            <td class="num">15.4%</td>
+            <td class="num">35.7%</td>
+            <td class="num">54.0%</td>
+            <td class="num">67.6%</td>
+            <td class="num">90.8%</td>
+            <td class="num">99.1%</td>
+            <td class="num">99.8%</td>
+        </tr>
+                
+        <tr>
+            <td><strong>Last 365 days</strong></td>
+            <td class="num">44,770</td>
+            <td class="num">3.29</td>
+            <td class="num">3.00</td>
+            <td class="num">7.00</td>
+            <td class="num">6.1%</td>
+            <td class="num">25.9%</td>
+            <td class="num">47.6%</td>
+            <td class="num">66.1%</td>
+            <td class="num">86.8%</td>
+            <td class="num">91.4%</td>
+            <td class="num">95.7%</td>
+        </tr>
+            </tbody>
+        </table></div>
+  </div>
+
+  <!-- Trend + distribution -->
+  <div class="section">
+    <div class="section-title">Trends & Distribution</div>
+    <div class="chart-grid">
+      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      <div class="chart-wrap"><canvas id="distChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Carrier breakdown -->
+  <div class="section">
+    <div class="section-title">By Carrier (Last 90 Days)</div>
+    <div class="section-sub">Carrier on the first shipment of each order.</div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Carrier</th>
+                    <th class="num">Orders (90d)</th>
+                    <th class="num">Avg Days</th>
+                    <th class="num">Same-Day</th>
+                    <th class="num">≤ 1 Day</th>
+                    <th class="num">≤ 2 Days</th>
+                </tr>
+            </thead>
+            <tbody>
+        <tr>
+            <td>DHL SmartMail</td>
+            <td class="num">8,942</td>
+            <td class="num">2.66</td>
+            <td class="num">16.6%</td>
+            <td class="num">35.6%</td>
+            <td class="num">54.2%</td>
+        </tr>
+        <tr>
+            <td>USPS (via Stamps.com)</td>
+            <td class="num">3,463</td>
+            <td class="num">2.60</td>
+            <td class="num">12.3%</td>
+            <td class="num">36.0%</td>
+            <td class="num">53.7%</td>
+        </tr>
+        <tr>
+            <td>FedEx</td>
+            <td class="num">18</td>
+            <td class="num">3.00</td>
+            <td class="num">22.2%</td>
+            <td class="num">38.9%</td>
+            <td class="num">44.4%</td>
+        </tr></tbody>
+        </table></div>
+  </div>
+
+  <!-- Service breakdown -->
+  <div class="section">
+    <div class="section-title">By Shipping Service (Last 90 Days)</div>
+    <div class="section-sub">Top 10 services by volume.</div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th class="num">Orders (90d)</th>
+                    <th class="num">Avg Days</th>
+                    <th class="num">≤ 1 Day</th>
+                    <th class="num">≤ 2 Days</th>
+                </tr>
+            </thead>
+            <tbody>
+        <tr>
+            <td>DHL SmartMail Expedited</td>
+            <td class="num">6,248</td>
+            <td class="num">2.67</td>
+            <td class="num">36.4%</td>
+            <td class="num">54.3%</td>
+        </tr>
+        <tr>
+            <td>USPS Ground Advantage</td>
+            <td class="num">2,627</td>
+            <td class="num">2.52</td>
+            <td class="num">38.6%</td>
+            <td class="num">56.2%</td>
+        </tr>
+        <tr>
+            <td>DHL SmartMail Ground</td>
+            <td class="num">1,770</td>
+            <td class="num">2.57</td>
+            <td class="num">37.8%</td>
+            <td class="num">56.6%</td>
+        </tr>
+        <tr>
+            <td>DHL SM Parcel Exp Max</td>
+            <td class="num">924</td>
+            <td class="num">2.79</td>
+            <td class="num">26.0%</td>
+            <td class="num">48.4%</td>
+        </tr>
+        <tr>
+            <td>USPS First Class</td>
+            <td class="num">614</td>
+            <td class="num">3.10</td>
+            <td class="num">18.9%</td>
+            <td class="num">37.8%</td>
+        </tr>
+        <tr>
+            <td>USPS Priority Mail</td>
+            <td class="num">222</td>
+            <td class="num">2.14</td>
+            <td class="num">52.7%</td>
+            <td class="num">68.0%</td>
+        </tr>
+        <tr>
+            <td>FedEx Home Delivery</td>
+            <td class="num">18</td>
+            <td class="num">3.00</td>
+            <td class="num">38.9%</td>
+            <td class="num">44.4%</td>
+        </tr></tbody>
+        </table></div>
+  </div>
+
+  <!-- Slow orders -->
+  <div class="section">
+    <div class="section-title">Slowest Recent Orders</div>
+    <div class="section-sub">Orders placed in the last 14 days that took more than 3 days to ship.</div>
+    
+        <table>
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Order Date</th>
+                    <th>Ship Date</th>
+                    <th class="num">Days</th>
+                    <th>Carrier</th>
+                    <th>Service</th>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><code>TC210907</code></td>
+                <td>2026-04-26</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>9</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211303</code></td>
+                <td>2026-04-27</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>8</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Ground</td>
+            </tr>
+            <tr>
+                <td><code>TC211462</code></td>
+                <td>2026-04-28</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>7</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211477</code></td>
+                <td>2026-04-28</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>7</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211488</code></td>
+                <td>2026-04-28</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>7</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Ground</td>
+            </tr>
+            <tr>
+                <td><code>TC211582</code></td>
+                <td>2026-04-28</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>7</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211612</code></td>
+                <td>2026-04-29</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>6</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211830</code></td>
+                <td>2026-05-01</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>4</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Ground</td>
+            </tr>
+            <tr>
+                <td><code>TC211836</code></td>
+                <td>2026-05-01</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>4</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211853</code></td>
+                <td>2026-05-01</td>
+                <td>2026-05-05</td>
+                <td class="num"><strong>4</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Ground</td>
+            </tr>
+            <tr>
+                <td><code>TC211787</code></td>
+                <td>2026-04-30</td>
+                <td>2026-05-04</td>
+                <td class="num"><strong>4</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC211788</code></td>
+                <td>2026-04-30</td>
+                <td>2026-05-04</td>
+                <td class="num"><strong>4</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC211790</code></td>
+                <td>2026-04-30</td>
+                <td>2026-05-04</td>
+                <td class="num"><strong>4</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211791</code></td>
+                <td>2026-04-30</td>
+                <td>2026-05-04</td>
+                <td class="num"><strong>4</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211793</code></td>
+                <td>2026-04-30</td>
+                <td>2026-05-04</td>
+                <td class="num"><strong>4</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr></tbody>
+        </table>
+  </div>
+
+  <p class="sub" style="margin-top:32px;text-align:center;font-size:0.8em">
+    Full month-by-month grids in
+    <code>OneDrive · Marketing and eCommerce · Reporting · Matrices · Shipping &amp; Fulfillment Matrix.xlsx</code> →
+    Fulfillment Time sheet.
+  </p>
+</div>
+
+<script>
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: ["2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05"],
+    datasets: [
+      {
+        label: 'Avg Days to Ship',
+        data: [1.83, 1.39, 1.31, 1.63, 1.19, 1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.14, 1.1],
+        borderColor: '#D4A843',
+        backgroundColor: 'rgba(212,168,67,0.15)',
+        yAxisID: 'yDays',
+        tension: 0.3,
+        borderWidth: 2,
+      },
+      {
+        label: 'Within 1 Day %',
+        data: [48.5, 53.5, 66.8, 47.8, 58.7, 69.4, 43.9, 30.1, 60.3, 58.4, 74.4, 48.0, 39.6, 53.7, 42.7, 8.0, 11.9, 28.7, 1.7, 15.6, 26.4, 5.5, 29.2, 68.9, 67.2],
+        borderColor: '#7ee787',
+        yAxisID: 'yPct',
+        tension: 0.3,
+        borderWidth: 2,
+      },
+      {
+        label: 'Within 2 Days %',
+        data: [65.1, 91.9, 83.9, 74.6, 93.6, 92.1, 73.7, 57.4, 80.2, 86.7, 94.0, 69.7, 74.8, 82.6, 56.2, 31.2, 36.5, 56.6, 17.6, 29.2, 51.1, 24.0, 47.9, 91.5, 88.2],
+        borderColor: '#58a6ff',
+        yAxisID: 'yPct',
+        tension: 0.3,
+        borderWidth: 2,
+        borderDash: [5, 5],
+      },
+      {
+        label: 'Within 3 Days %',
+        data: [89.5, 99.9, 97.4, 97.8, 100.0, 99.3, 82.8, 71.3, 97.4, 97.4, 99.9, 95.3, 92.5, 97.9, 83.7, 71.8, 73.9, 72.8, 26.4, 37.8, 73.5, 38.7, 69.8, 98.3, 99.2],
+        borderColor: '#a371f7',
+        yAxisID: 'yPct',
+        tension: 0.3,
+        borderWidth: 2,
+        borderDash: [2, 4],
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: '24-Month Trend', color: '#D4A843', font: { size: 14 } },
+      legend: { labels: { color: '#bbb', font: { size: 11 } } },
+    },
+    scales: {
+      x: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      yDays: {
+        type: 'linear', position: 'left',
+        title: { display: true, text: 'Avg Days', color: '#D4A843' },
+        ticks: { color: '#D4A843' },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+      },
+      yPct: {
+        type: 'linear', position: 'right',
+        min: 0, max: 100,
+        title: { display: true, text: '% Within Window', color: '#7ee787' },
+        ticks: { color: '#7ee787', callback: v => v + '%' },
+        grid: { display: false },
+      },
+    },
+  }
+});
+
+const distCtx = document.getElementById('distChart').getContext('2d');
+new Chart(distCtx, {
+  type: 'bar',
+  data: {
+    labels: ["Same Day", "1 Day", "2 Days", "3 Days", "4\u20135 Days", "6\u20137 Days", "8\u201310 Days", "11+ Days"],
+    datasets: [{
+      label: 'Orders',
+      data: [1918, 2520, 2273, 1686, 2877, 1037, 91, 21],
+      backgroundColor: ['#7ee787','#58a6ff','#a371f7','#D4A843','#f0883e','#ff7b72','#cf222e','#8b0000'],
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: { display: true, text: 'Day Distribution (Last 90 Days)', color: '#D4A843', font: { size: 14 } },
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const pct = [15.4, 20.3, 18.3, 13.6, 23.2, 8.3, 0.7, 0.2][ctx.dataIndex];
+            return ctx.parsed.y.toLocaleString() + ' orders (' + pct.toFixed(1) + '%)';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { ticks: { color: '#888', font: { size: 10 } }, grid: { display: false } },
+      y: {
+        ticks: { color: '#888' },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+      }
+    },
+  }
+});
+</script>
+
+</body>
+</html>
