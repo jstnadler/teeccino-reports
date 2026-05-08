@@ -956,7 +956,7 @@
             <div class="table-meta">
                 <span class="badge badge-calc">Calculated</span>
                 <span>139,528 rows</span>
-                <span>Jan 2023 &rarr; Apr 2026</span>
+                <span>Jan 2023 &rarr; May 2026</span>
                 <span class="expand-icon">&#9654;</span>
             </div>
         </div>
@@ -975,10 +975,14 @@
                     <tr><td class="col-name">gross_sales</td><td class="col-type">REAL</td><td class="col-desc">Gross sales = units &times; price list price</td></tr>
                     <tr><td class="col-name">net_sales</td><td class="col-type">REAL</td><td class="col-desc">Net sales after discounts</td></tr>
                     <tr><td class="col-name">discounts</td><td class="col-type">REAL</td><td class="col-desc">Total discounts applied to this SKU</td></tr>
-                    <tr><td class="col-name">dtc_units</td><td class="col-type">INTEGER</td><td class="col-desc">DTC units sold</td></tr>
-                    <tr><td class="col-name">dtc_gross</td><td class="col-type">REAL</td><td class="col-desc">DTC gross sales</td></tr>
+                    <tr><td class="col-name">dtc_units</td><td class="col-type">INTEGER</td><td class="col-desc">DTC units sold (paid + free combined; use for SKU-level transparency)</td></tr>
+                    <tr><td class="col-name">dtc_gross</td><td class="col-type">REAL</td><td class="col-desc">DTC gross sales (paid + free at MSRP combined)</td></tr>
                     <tr><td class="col-name">dtc_net</td><td class="col-type">REAL</td><td class="col-desc">DTC net sales</td></tr>
                     <tr><td class="col-name">dtc_discounts</td><td class="col-type">REAL</td><td class="col-desc">DTC discounts</td></tr>
+                    <tr><td class="col-name">dtc_paid_units</td><td class="col-type">INTEGER</td><td class="col-desc"><strong>(2026-05-08)</strong> DTC paid units only — items where <code>original_unit_price &gt; 0</code>. Use for blend / product-type rollups, demand signal.</td></tr>
+                    <tr><td class="col-name">dtc_paid_gross</td><td class="col-type">REAL</td><td class="col-desc"><strong>(2026-05-08)</strong> True Gross paid-only. Sums to <code>calc_daily_shopify.dtc_gross</code>.</td></tr>
+                    <tr><td class="col-name">dtc_free_units</td><td class="col-type">INTEGER</td><td class="col-desc"><strong>(2026-05-08)</strong> Free / promo units (BOGO, FOTM samples). <code>dtc_units = dtc_paid_units + dtc_free_units</code>.</td></tr>
+                    <tr><td class="col-name">dtc_free_gross_at_msrp</td><td class="col-type">REAL</td><td class="col-desc"><strong>(2026-05-08)</strong> Free units valued at MSRP — implicit promotional cost.</td></tr>
                     <tr><td class="col-name">ws_units</td><td class="col-type">INTEGER</td><td class="col-desc">Wholesale units sold</td></tr>
                     <tr><td class="col-name">ws_gross</td><td class="col-type">REAL</td><td class="col-desc">Wholesale gross sales</td></tr>
                     <tr><td class="col-name">sub_units</td><td class="col-type">INTEGER</td><td class="col-desc">Subscription units</td></tr>
