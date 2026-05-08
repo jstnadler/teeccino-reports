@@ -178,6 +178,60 @@ body {
 }
 
 .footer { text-align: center; color: #64748b; font-size: 0.78em; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+/* ---- FREE ITEMS TOGGLE (Excluded / MSRP / COGS) ---- */
+.free-items-toggle {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: rgba(236,72,153,0.08); border: 1px solid rgba(236,72,153,0.25);
+    border-radius: 12px; padding: 12px 18px; margin-bottom: 16px;
+}
+.free-toggle-label {
+    color: #f0abfc; font-size: 0.85em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px; margin-right: 4px;
+}
+.free-toggle-btn {
+    background: rgba(15,23,42,0.6); border: 1px solid rgba(236,72,153,0.3);
+    color: #94a3b8; padding: 6px 14px; border-radius: 8px;
+    font-size: 0.85em; cursor: pointer; transition: all 0.2s;
+    font-family: inherit;
+}
+.free-toggle-btn:hover { color: #fff; border-color: rgba(236,72,153,0.55); }
+.free-toggle-btn.active {
+    background: rgba(236,72,153,0.22); border-color: #ec4899;
+    color: #f9a8d4; font-weight: 600;
+}
+
+/* ---- HERO MODE TAG (small chip showing active free-items mode in hero label) ---- */
+.hero-mode-tag {
+    display: inline-block; margin-left: 10px;
+    background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.35);
+    border-radius: 6px; padding: 2px 8px; font-size: 0.7em;
+    color: #f0abfc; text-transform: none; letter-spacing: 0;
+    font-weight: 500; vertical-align: middle;
+}
+
+/* ---- FREE ITEMS CARD (dual MSRP + COGS values) ---- */
+.discount-card.free-items-card .free-dual-values {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
+}
+.discount-card.free-items-card .free-val-block {
+    background: rgba(236,72,153,0.06); border: 1px solid rgba(236,72,153,0.2);
+    border-radius: 8px; padding: 10px 12px;
+}
+.discount-card.free-items-card .free-val-tag {
+    color: #f0abfc; font-size: 0.7em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+}
+.discount-card.free-items-card .free-val {
+    color: #fff; font-size: 1.4em; font-weight: 700; line-height: 1;
+}
+.discount-card.free-items-card .free-val-sub {
+    color: #94a3b8; font-size: 0.78em; margin-top: 4px;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.discount-card.free-items-card .card-count {
+    color: #94a3b8; font-size: 0.8em; margin-top: 6px; font-style: italic;
+}
 </style>
 </head>
 <body>
@@ -246,23 +300,75 @@ body {
 </div>
 
 
+    <div class="free-items-toggle">
+        <span class="free-toggle-label">Free items in totals:</span>
+        <button class="free-toggle-btn active" data-mode="excluded" onclick="setFreeItemsMode('excluded')">Excluded</button>
+        <button class="free-toggle-btn" data-mode="msrp" onclick="setFreeItemsMode('msrp')">At MSRP</button>
+        <button class="free-toggle-btn" data-mode="cogs" onclick="setFreeItemsMode('cogs')">At COGS</button>
+    </div>
+
+
     <div class="hero-card">
-        <div class="hero-label">Total Discounts Given — December 2025</div>
-        <div class="hero-value">$44,021</div>
-        <div class="hero-sub">
-            <span style="font-size:1.25em;color:#D4A843;font-weight:700;">23.2%</span>
-            <span style="color:#94a3b8;">of gross</span>
-            <span class="yoy-badge bad" style="margin-left:8px;">+0.5 pp vs LY</span>
+        <div class="hero-label">
+            Total Discounts Given — December 2025
+            <span class="hero-mode-tag"><span class="hero-mode-label" data-mode="excluded" style="display:inline;">Free items excluded</span><span class="hero-mode-label" data-mode="msrp" style="display:none;">Free items at MSRP</span><span class="hero-mode-label" data-mode="cogs" style="display:none;">Free items at COGS</span></span>
         </div>
-        <div class="hero-sub">
-            <span style="color:#94a3b8;">vs LY:</span>
-            <span>$52,450</span>
-            <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 16.1% vs LY</span>
+        
+        <div class="hero-mode-block" data-mode="excluded" style="display:block">
+            <div class="hero-value">$34,019</div>
+            <div class="hero-sub">
+                <span style="font-size:1.25em;color:#D4A843;font-weight:700;">17.9%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:8px;">+2.9 pp vs LY</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$34,631</span>
+                <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 1.8% vs LY</span>
+            </div>
+            <div class="hero-detail">
+                Gross: $190,053 &nbsp;|&nbsp;
+                Orders: 3,522 &nbsp;|&nbsp;
+                Avg discount/order: $10
+            </div>
         </div>
-        <div class="hero-detail">
-            Gross: $190,053 &nbsp;|&nbsp;
-            Orders: 3,522 &nbsp;|&nbsp;
-            Avg discount/order: $12
+        
+        <div class="hero-mode-block" data-mode="msrp" style="display:none">
+            <div class="hero-value">$44,021</div>
+            <div class="hero-sub">
+                <span style="font-size:1.25em;color:#D4A843;font-weight:700;">23.2%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:8px;">+0.5 pp vs LY</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$52,450</span>
+                <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 16.1% vs LY</span>
+            </div>
+            <div class="hero-detail">
+                Gross: $190,053 &nbsp;|&nbsp;
+                Orders: 3,522 &nbsp;|&nbsp;
+                Avg discount/order: $12
+            </div>
+        </div>
+        
+        <div class="hero-mode-block" data-mode="cogs" style="display:none">
+            <div class="hero-value">$36,000</div>
+            <div class="hero-sub">
+                <span style="font-size:1.25em;color:#D4A843;font-weight:700;">18.9%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:8px;">+2.4 pp vs LY</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$38,162</span>
+                <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 5.7% vs LY</span>
+            </div>
+            <div class="hero-detail">
+                Gross: $190,053 &nbsp;|&nbsp;
+                Orders: 3,522 &nbsp;|&nbsp;
+                Avg discount/order: $10
+            </div>
         </div>
     </div>
 
@@ -329,15 +435,29 @@ body {
         <div class="card-definition">Free-shipping waives (free-ship threshold, promo codes, app-sourced free-ship functions).</div>
         
     </div>
-    <div class="kpi-card" style="border-top: 3px solid #EC4899;">
-        <div class="card-label">Free Items (MSRP)</div>
-        <div class="card-value">$10,002</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 43.9% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-2.4 pp</span></div>
-        <div class="card-detail">5.3% of gross
-            <span style="color:#64748b;">(LY: 7.7%)</span>
+    <div class="discount-card free-items-card" style="border-color: #EC4899;">
+        <div class="card-header">
+            <span class="card-color-dot" style="background: #EC4899;"></span>
+            <span class="card-label">Free Items</span>
         </div>
-        <div class="card-definition">Retail value of items given away (BOGO promos, free gifts-with-purchase, samples).</div>
-        <div class="card-detail">2,403 items given</div>
+        <div class="free-dual-values">
+            <div class="free-val-block">
+                <div class="free-val-tag">MSRP</div>
+                <div class="free-val">$10,002</div>
+                <div class="free-val-sub">5.3% of gross
+                    <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 43.9% vs LY</span>
+                </div>
+            </div>
+            <div class="free-val-block">
+                <div class="free-val-tag">COGS</div>
+                <div class="free-val">$1,982</div>
+                <div class="free-val-sub">1.0% of gross
+                    <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 43.9% vs LY</span>
+                </div>
+            </div>
+        </div>
+        <div class="card-definition">Items given away rather than sold (BOGO, FOTM samples, GWP). Shown at MSRP (retail value of what was given) AND at COGS (actual cost to us). Use the toggle above to include in totals.</div>
+        <div class="card-count">2,403 items given</div>
     </div>
 </div>
 
@@ -376,7 +496,9 @@ body {
                 <tr>
                     <th>Month</th>
                     <th>Gross</th>
-                    <th style="color:#8B5CF6;">Subscription Implied</th><th style="color:#EAB308;">Price Reduction Discounts</th><th style="color:#EF4444;">Automatic Discounts</th><th style="color:#3B82F6;">Discount Codes</th><th style="color:#F59E0B;">Manual Discounts</th><th style="color:#10B981;">Shipping Discounts</th><th style="color:#EC4899;">Free Items (MSRP)</th>
+                    <th style="color:#8B5CF6;">Subscription Implied</th><th style="color:#EAB308;">Price Reduction Discounts</th><th style="color:#EF4444;">Automatic Discounts</th><th style="color:#3B82F6;">Discount Codes</th><th style="color:#F59E0B;">Manual Discounts</th><th style="color:#10B981;">Shipping Discounts</th>
+                    <th style="color:#EC4899;">Free (MSRP)</th>
+                    <th style="color:#EC4899;">Free (COGS)</th>
                     <th class="total-cell">Total Disc</th>
                     <th class="total-cell">Total %</th>
                 </tr>
@@ -384,111 +506,147 @@ body {
             <tbody><tr>
             <td class="month-cell">Jul 24</td>
             <td>$158,773</td>
-            <td>$7,278</td><td>$1,746</td><td>$0</td><td>$3,821</td><td>$422</td><td>$0</td><td>$8,317</td>
-            <td class="total-cell">$21,583</td>
-            <td class="total-cell">13.6%</td>
+            <td>$7,278</td><td>$1,746</td><td>$0</td><td>$3,821</td><td>$422</td><td>$0</td>
+            <td>$8,317</td>
+            <td>$1,836</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$13,266</span><span data-mode="msrp" style="display:none;">$21,583</span><span data-mode="cogs" style="display:none;">$15,102</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">8.4%</span><span data-mode="msrp" style="display:none;">13.6%</span><span data-mode="cogs" style="display:none;">9.5%</span></td>
         </tr><tr>
             <td class="month-cell">Aug 24</td>
             <td>$174,732</td>
-            <td>$6,650</td><td>$2,364</td><td>$0</td><td>$11,956</td><td>$138</td><td>$0</td><td>$11,424</td>
-            <td class="total-cell">$32,532</td>
-            <td class="total-cell">18.6%</td>
+            <td>$6,650</td><td>$2,364</td><td>$0</td><td>$11,956</td><td>$138</td><td>$0</td>
+            <td>$11,424</td>
+            <td>$2,945</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,107</span><span data-mode="msrp" style="display:none;">$32,532</span><span data-mode="cogs" style="display:none;">$24,052</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">12.1%</span><span data-mode="msrp" style="display:none;">18.6%</span><span data-mode="cogs" style="display:none;">13.8%</span></td>
         </tr><tr>
             <td class="month-cell">Sep 24</td>
             <td>$179,561</td>
-            <td>$7,748</td><td>$5,737</td><td>$0</td><td>$4,309</td><td>$614</td><td>$0</td><td>$12,849</td>
-            <td class="total-cell">$31,256</td>
-            <td class="total-cell">17.4%</td>
+            <td>$7,748</td><td>$5,737</td><td>$0</td><td>$4,309</td><td>$614</td><td>$0</td>
+            <td>$12,849</td>
+            <td>$3,151</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$18,408</span><span data-mode="msrp" style="display:none;">$31,256</span><span data-mode="cogs" style="display:none;">$21,559</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">10.3%</span><span data-mode="msrp" style="display:none;">17.4%</span><span data-mode="cogs" style="display:none;">12.0%</span></td>
         </tr><tr>
             <td class="month-cell">Oct 24</td>
             <td>$200,191</td>
-            <td>$8,208</td><td>$7,372</td><td>$0</td><td>$5,481</td><td>$418</td><td>$0</td><td>$8,320</td>
-            <td class="total-cell">$29,798</td>
-            <td class="total-cell">14.9%</td>
+            <td>$8,208</td><td>$7,372</td><td>$0</td><td>$5,481</td><td>$418</td><td>$0</td>
+            <td>$8,320</td>
+            <td>$2,060</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,478</span><span data-mode="msrp" style="display:none;">$29,798</span><span data-mode="cogs" style="display:none;">$23,538</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">10.7%</span><span data-mode="msrp" style="display:none;">14.9%</span><span data-mode="cogs" style="display:none;">11.8%</span></td>
         </tr><tr>
             <td class="month-cell">Nov 24</td>
             <td>$349,174</td>
-            <td>$8,367</td><td>$44,634</td><td>$0</td><td>$9,162</td><td>$2,002</td><td>$72</td><td>$25,583</td>
-            <td class="total-cell">$89,820</td>
-            <td class="total-cell">25.7%</td>
+            <td>$8,367</td><td>$44,634</td><td>$0</td><td>$9,162</td><td>$2,002</td><td>$72</td>
+            <td>$25,583</td>
+            <td>$4,869</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$64,237</span><span data-mode="msrp" style="display:none;">$89,820</span><span data-mode="cogs" style="display:none;">$69,106</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">18.4%</span><span data-mode="msrp" style="display:none;">25.7%</span><span data-mode="cogs" style="display:none;">19.8%</span></td>
         </tr><tr>
             <td class="month-cell">Dec 24</td>
             <td>$231,211</td>
-            <td>$8,969</td><td>$15,296</td><td>$0</td><td>$9,280</td><td>$975</td><td>$110</td><td>$17,819</td>
-            <td class="total-cell">$52,450</td>
-            <td class="total-cell">22.7%</td>
+            <td>$8,969</td><td>$15,296</td><td>$0</td><td>$9,280</td><td>$975</td><td>$110</td>
+            <td>$17,819</td>
+            <td>$3,531</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$34,631</span><span data-mode="msrp" style="display:none;">$52,450</span><span data-mode="cogs" style="display:none;">$38,162</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">15.0%</span><span data-mode="msrp" style="display:none;">22.7%</span><span data-mode="cogs" style="display:none;">16.5%</span></td>
         </tr><tr>
             <td class="month-cell">Jan 25</td>
             <td>$179,844</td>
-            <td>$9,491</td><td>$3,989</td><td>$0</td><td>$6,292</td><td>$441</td><td>$236</td><td>$11,098</td>
-            <td class="total-cell">$31,548</td>
-            <td class="total-cell">17.5%</td>
+            <td>$9,491</td><td>$3,989</td><td>$0</td><td>$6,292</td><td>$441</td><td>$236</td>
+            <td>$11,098</td>
+            <td>$2,448</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$20,450</span><span data-mode="msrp" style="display:none;">$31,548</span><span data-mode="cogs" style="display:none;">$22,898</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">11.4%</span><span data-mode="msrp" style="display:none;">17.5%</span><span data-mode="cogs" style="display:none;">12.7%</span></td>
         </tr><tr>
             <td class="month-cell">Feb 25</td>
             <td>$173,917</td>
-            <td>$10,133</td><td>$6,251</td><td>$0</td><td>$5,054</td><td>$132</td><td>$202</td><td>$11,815</td>
-            <td class="total-cell">$33,587</td>
-            <td class="total-cell">19.3%</td>
+            <td>$10,133</td><td>$6,251</td><td>$0</td><td>$5,054</td><td>$132</td><td>$202</td>
+            <td>$11,815</td>
+            <td>$2,700</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,772</span><span data-mode="msrp" style="display:none;">$33,587</span><span data-mode="cogs" style="display:none;">$24,472</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">12.5%</span><span data-mode="msrp" style="display:none;">19.3%</span><span data-mode="cogs" style="display:none;">14.1%</span></td>
         </tr><tr>
             <td class="month-cell">Mar 25</td>
             <td>$205,868</td>
-            <td>$11,613</td><td>$14,011</td><td>$0</td><td>$4,742</td><td>$1,072</td><td>$992</td><td>$22,390</td>
-            <td class="total-cell">$54,820</td>
-            <td class="total-cell">26.6%</td>
+            <td>$11,613</td><td>$14,011</td><td>$0</td><td>$4,742</td><td>$1,072</td><td>$992</td>
+            <td>$22,390</td>
+            <td>$4,875</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$32,430</span><span data-mode="msrp" style="display:none;">$54,820</span><span data-mode="cogs" style="display:none;">$37,305</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">15.8%</span><span data-mode="msrp" style="display:none;">26.6%</span><span data-mode="cogs" style="display:none;">18.1%</span></td>
         </tr><tr>
             <td class="month-cell">Apr 25</td>
             <td>$289,571</td>
-            <td>$12,589</td><td>$29,140</td><td>$0</td><td>$5,935</td><td>$975</td><td>$1,429</td><td>$27,600</td>
-            <td class="total-cell">$77,668</td>
-            <td class="total-cell">26.8%</td>
+            <td>$12,589</td><td>$29,140</td><td>$0</td><td>$5,935</td><td>$975</td><td>$1,429</td>
+            <td>$27,600</td>
+            <td>$6,818</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$50,068</span><span data-mode="msrp" style="display:none;">$77,668</span><span data-mode="cogs" style="display:none;">$56,885</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.3%</span><span data-mode="msrp" style="display:none;">26.8%</span><span data-mode="cogs" style="display:none;">19.6%</span></td>
         </tr><tr>
             <td class="month-cell">May 25</td>
             <td>$171,048</td>
-            <td>$9,890</td><td>$1,680</td><td>$0</td><td>$3,848</td><td>$328</td><td>$577</td><td>$16,701</td>
-            <td class="total-cell">$33,025</td>
-            <td class="total-cell">19.3%</td>
+            <td>$9,890</td><td>$1,680</td><td>$0</td><td>$3,848</td><td>$328</td><td>$577</td>
+            <td>$16,701</td>
+            <td>$4,186</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$16,324</span><span data-mode="msrp" style="display:none;">$33,025</span><span data-mode="cogs" style="display:none;">$20,510</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">9.5%</span><span data-mode="msrp" style="display:none;">19.3%</span><span data-mode="cogs" style="display:none;">12.0%</span></td>
         </tr><tr>
             <td class="month-cell">Jun 25</td>
             <td>$136,400</td>
-            <td>$9,903</td><td>$1,896</td><td>$0</td><td>$3,035</td><td>$1,623</td><td>$4,723</td><td>$8,285</td>
-            <td class="total-cell">$29,465</td>
-            <td class="total-cell">21.6%</td>
+            <td>$9,903</td><td>$1,896</td><td>$0</td><td>$3,035</td><td>$1,623</td><td>$4,723</td>
+            <td>$8,285</td>
+            <td>$2,193</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,180</span><span data-mode="msrp" style="display:none;">$29,465</span><span data-mode="cogs" style="display:none;">$23,374</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">15.5%</span><span data-mode="msrp" style="display:none;">21.6%</span><span data-mode="cogs" style="display:none;">17.1%</span></td>
         </tr><tr>
             <td class="month-cell">Jul 25</td>
             <td>$164,910</td>
-            <td>$9,876</td><td>$3,576</td><td>$775</td><td>$10,865</td><td>$899</td><td>$4,235</td><td>$12,721</td>
-            <td class="total-cell">$42,946</td>
-            <td class="total-cell">26.0%</td>
+            <td>$9,876</td><td>$3,576</td><td>$775</td><td>$10,865</td><td>$899</td><td>$4,235</td>
+            <td>$12,721</td>
+            <td>$3,352</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$30,225</span><span data-mode="msrp" style="display:none;">$42,946</span><span data-mode="cogs" style="display:none;">$33,577</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">18.3%</span><span data-mode="msrp" style="display:none;">26.0%</span><span data-mode="cogs" style="display:none;">20.4%</span></td>
         </tr><tr>
             <td class="month-cell">Aug 25</td>
             <td>$180,865</td>
-            <td>$9,234</td><td>$1,190</td><td>$8,405</td><td>$2,985</td><td>$6,218</td><td>$3,931</td><td>$8,145</td>
-            <td class="total-cell">$40,108</td>
-            <td class="total-cell">22.2%</td>
+            <td>$9,234</td><td>$1,190</td><td>$8,405</td><td>$2,985</td><td>$6,218</td><td>$3,931</td>
+            <td>$8,145</td>
+            <td>$2,357</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$31,963</span><span data-mode="msrp" style="display:none;">$40,108</span><span data-mode="cogs" style="display:none;">$34,320</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.7%</span><span data-mode="msrp" style="display:none;">22.2%</span><span data-mode="cogs" style="display:none;">19.0%</span></td>
         </tr><tr>
             <td class="month-cell">Sep 25</td>
             <td>$194,486</td>
-            <td>$10,260</td><td>$1,508</td><td>$8,849</td><td>$3,659</td><td>$5,048</td><td>$3,974</td><td>$12,017</td>
-            <td class="total-cell">$45,315</td>
-            <td class="total-cell">23.3%</td>
+            <td>$10,260</td><td>$1,508</td><td>$8,849</td><td>$3,659</td><td>$5,048</td><td>$3,974</td>
+            <td>$12,017</td>
+            <td>$3,534</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$33,299</span><span data-mode="msrp" style="display:none;">$45,315</span><span data-mode="cogs" style="display:none;">$36,832</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.1%</span><span data-mode="msrp" style="display:none;">23.3%</span><span data-mode="cogs" style="display:none;">18.9%</span></td>
         </tr><tr>
             <td class="month-cell">Oct 25</td>
             <td>$231,530</td>
-            <td>$12,951</td><td>$7,149</td><td>$16,462</td><td>$2,830</td><td>$2,830</td><td>$5,565</td><td>$13,669</td>
-            <td class="total-cell">$61,455</td>
-            <td class="total-cell">26.5%</td>
+            <td>$12,951</td><td>$7,149</td><td>$16,462</td><td>$2,830</td><td>$2,830</td><td>$5,565</td>
+            <td>$13,669</td>
+            <td>$3,384</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$47,786</span><span data-mode="msrp" style="display:none;">$61,455</span><span data-mode="cogs" style="display:none;">$51,171</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">20.6%</span><span data-mode="msrp" style="display:none;">26.5%</span><span data-mode="cogs" style="display:none;">22.1%</span></td>
         </tr><tr>
             <td class="month-cell">Nov 25</td>
             <td>$415,125</td>
-            <td>$13,982</td><td>$1,397</td><td>$58,951</td><td>$2,383</td><td>$813</td><td>$9,917</td><td>$66,076</td>
-            <td class="total-cell">$153,518</td>
-            <td class="total-cell">37.0%</td>
+            <td>$13,982</td><td>$1,397</td><td>$58,951</td><td>$2,383</td><td>$813</td><td>$9,917</td>
+            <td>$66,076</td>
+            <td>$13,724</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$87,442</span><span data-mode="msrp" style="display:none;">$153,518</span><span data-mode="cogs" style="display:none;">$101,166</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">21.1%</span><span data-mode="msrp" style="display:none;">37.0%</span><span data-mode="cogs" style="display:none;">24.4%</span></td>
         </tr><tr>
             <td class="month-cell">Dec 25</td>
             <td>$190,053</td>
-            <td>$11,047</td><td>$593</td><td>$12,568</td><td>$2,697</td><td>$700</td><td>$6,415</td><td>$10,002</td>
-            <td class="total-cell">$44,021</td>
-            <td class="total-cell">23.2%</td>
+            <td>$11,047</td><td>$593</td><td>$12,568</td><td>$2,697</td><td>$700</td><td>$6,415</td>
+            <td>$10,002</td>
+            <td>$1,982</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$34,019</span><span data-mode="msrp" style="display:none;">$44,021</span><span data-mode="cogs" style="display:none;">$36,000</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.9%</span><span data-mode="msrp" style="display:none;">23.2%</span><span data-mode="cogs" style="display:none;">18.9%</span></td>
         </tr></tbody>
         </table>
     </div>
@@ -498,7 +656,9 @@ body {
                 <tr>
                     <th>Month</th>
                     <th>Gross</th>
-                    <th style="color:#8B5CF6;">Subscription Implied</th><th style="color:#EAB308;">Price Reduction Discounts</th><th style="color:#EF4444;">Automatic Discounts</th><th style="color:#3B82F6;">Discount Codes</th><th style="color:#F59E0B;">Manual Discounts</th><th style="color:#10B981;">Shipping Discounts</th><th style="color:#EC4899;">Free Items (MSRP)</th>
+                    <th style="color:#8B5CF6;">Subscription Implied</th><th style="color:#EAB308;">Price Reduction Discounts</th><th style="color:#EF4444;">Automatic Discounts</th><th style="color:#3B82F6;">Discount Codes</th><th style="color:#F59E0B;">Manual Discounts</th><th style="color:#10B981;">Shipping Discounts</th>
+                    <th style="color:#EC4899;">Free (MSRP)</th>
+                    <th style="color:#EC4899;">Free (COGS)</th>
                     <th class="total-cell">Total %</th>
                     <th class="total-cell">Total $</th>
                 </tr>
@@ -506,111 +666,147 @@ body {
             <tbody><tr>
             <td class="month-cell">Jul 24</td>
             <td>$158,773</td>
-            <td>4.6%</td><td>1.1%</td><td>0.0%</td><td>2.4%</td><td>0.3%</td><td>0.0%</td><td>5.2%</td>
-            <td class="total-cell">13.6%</td>
-            <td class="total-cell">$21,583</td>
+            <td>4.6%</td><td>1.1%</td><td>0.0%</td><td>2.4%</td><td>0.3%</td><td>0.0%</td>
+            <td>5.2%</td>
+            <td>1.2%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">8.4%</span><span data-mode="msrp" style="display:none;">13.6%</span><span data-mode="cogs" style="display:none;">9.5%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$13,266</span><span data-mode="msrp" style="display:none;">$21,583</span><span data-mode="cogs" style="display:none;">$15,102</span></td>
         </tr><tr>
             <td class="month-cell">Aug 24</td>
             <td>$174,732</td>
-            <td>3.8%</td><td>1.4%</td><td>0.0%</td><td>6.8%</td><td>0.1%</td><td>0.0%</td><td>6.5%</td>
-            <td class="total-cell">18.6%</td>
-            <td class="total-cell">$32,532</td>
+            <td>3.8%</td><td>1.4%</td><td>0.0%</td><td>6.8%</td><td>0.1%</td><td>0.0%</td>
+            <td>6.5%</td>
+            <td>1.7%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">12.1%</span><span data-mode="msrp" style="display:none;">18.6%</span><span data-mode="cogs" style="display:none;">13.8%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,107</span><span data-mode="msrp" style="display:none;">$32,532</span><span data-mode="cogs" style="display:none;">$24,052</span></td>
         </tr><tr>
             <td class="month-cell">Sep 24</td>
             <td>$179,561</td>
-            <td>4.3%</td><td>3.2%</td><td>0.0%</td><td>2.4%</td><td>0.3%</td><td>0.0%</td><td>7.2%</td>
-            <td class="total-cell">17.4%</td>
-            <td class="total-cell">$31,256</td>
+            <td>4.3%</td><td>3.2%</td><td>0.0%</td><td>2.4%</td><td>0.3%</td><td>0.0%</td>
+            <td>7.2%</td>
+            <td>1.8%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">10.3%</span><span data-mode="msrp" style="display:none;">17.4%</span><span data-mode="cogs" style="display:none;">12.0%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$18,408</span><span data-mode="msrp" style="display:none;">$31,256</span><span data-mode="cogs" style="display:none;">$21,559</span></td>
         </tr><tr>
             <td class="month-cell">Oct 24</td>
             <td>$200,191</td>
-            <td>4.1%</td><td>3.7%</td><td>0.0%</td><td>2.7%</td><td>0.2%</td><td>0.0%</td><td>4.2%</td>
-            <td class="total-cell">14.9%</td>
-            <td class="total-cell">$29,798</td>
+            <td>4.1%</td><td>3.7%</td><td>0.0%</td><td>2.7%</td><td>0.2%</td><td>0.0%</td>
+            <td>4.2%</td>
+            <td>1.0%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">10.7%</span><span data-mode="msrp" style="display:none;">14.9%</span><span data-mode="cogs" style="display:none;">11.8%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,478</span><span data-mode="msrp" style="display:none;">$29,798</span><span data-mode="cogs" style="display:none;">$23,538</span></td>
         </tr><tr>
             <td class="month-cell">Nov 24</td>
             <td>$349,174</td>
-            <td>2.4%</td><td>12.8%</td><td>0.0%</td><td>2.6%</td><td>0.6%</td><td>0.0%</td><td>7.3%</td>
-            <td class="total-cell">25.7%</td>
-            <td class="total-cell">$89,820</td>
+            <td>2.4%</td><td>12.8%</td><td>0.0%</td><td>2.6%</td><td>0.6%</td><td>0.0%</td>
+            <td>7.3%</td>
+            <td>1.4%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">18.4%</span><span data-mode="msrp" style="display:none;">25.7%</span><span data-mode="cogs" style="display:none;">19.8%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$64,237</span><span data-mode="msrp" style="display:none;">$89,820</span><span data-mode="cogs" style="display:none;">$69,106</span></td>
         </tr><tr>
             <td class="month-cell">Dec 24</td>
             <td>$231,211</td>
-            <td>3.9%</td><td>6.6%</td><td>0.0%</td><td>4.0%</td><td>0.4%</td><td>0.0%</td><td>7.7%</td>
-            <td class="total-cell">22.7%</td>
-            <td class="total-cell">$52,450</td>
+            <td>3.9%</td><td>6.6%</td><td>0.0%</td><td>4.0%</td><td>0.4%</td><td>0.0%</td>
+            <td>7.7%</td>
+            <td>1.5%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">15.0%</span><span data-mode="msrp" style="display:none;">22.7%</span><span data-mode="cogs" style="display:none;">16.5%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$34,631</span><span data-mode="msrp" style="display:none;">$52,450</span><span data-mode="cogs" style="display:none;">$38,162</span></td>
         </tr><tr>
             <td class="month-cell">Jan 25</td>
             <td>$179,844</td>
-            <td>5.3%</td><td>2.2%</td><td>0.0%</td><td>3.5%</td><td>0.2%</td><td>0.1%</td><td>6.2%</td>
-            <td class="total-cell">17.5%</td>
-            <td class="total-cell">$31,548</td>
+            <td>5.3%</td><td>2.2%</td><td>0.0%</td><td>3.5%</td><td>0.2%</td><td>0.1%</td>
+            <td>6.2%</td>
+            <td>1.4%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">11.4%</span><span data-mode="msrp" style="display:none;">17.5%</span><span data-mode="cogs" style="display:none;">12.7%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$20,450</span><span data-mode="msrp" style="display:none;">$31,548</span><span data-mode="cogs" style="display:none;">$22,898</span></td>
         </tr><tr>
             <td class="month-cell">Feb 25</td>
             <td>$173,917</td>
-            <td>5.8%</td><td>3.6%</td><td>0.0%</td><td>2.9%</td><td>0.1%</td><td>0.1%</td><td>6.8%</td>
-            <td class="total-cell">19.3%</td>
-            <td class="total-cell">$33,587</td>
+            <td>5.8%</td><td>3.6%</td><td>0.0%</td><td>2.9%</td><td>0.1%</td><td>0.1%</td>
+            <td>6.8%</td>
+            <td>1.6%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">12.5%</span><span data-mode="msrp" style="display:none;">19.3%</span><span data-mode="cogs" style="display:none;">14.1%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,772</span><span data-mode="msrp" style="display:none;">$33,587</span><span data-mode="cogs" style="display:none;">$24,472</span></td>
         </tr><tr>
             <td class="month-cell">Mar 25</td>
             <td>$205,868</td>
-            <td>5.6%</td><td>6.8%</td><td>0.0%</td><td>2.3%</td><td>0.5%</td><td>0.5%</td><td>10.9%</td>
-            <td class="total-cell">26.6%</td>
-            <td class="total-cell">$54,820</td>
+            <td>5.6%</td><td>6.8%</td><td>0.0%</td><td>2.3%</td><td>0.5%</td><td>0.5%</td>
+            <td>10.9%</td>
+            <td>2.4%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">15.8%</span><span data-mode="msrp" style="display:none;">26.6%</span><span data-mode="cogs" style="display:none;">18.1%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$32,430</span><span data-mode="msrp" style="display:none;">$54,820</span><span data-mode="cogs" style="display:none;">$37,305</span></td>
         </tr><tr>
             <td class="month-cell">Apr 25</td>
             <td>$289,571</td>
-            <td>4.3%</td><td>10.1%</td><td>0.0%</td><td>2.0%</td><td>0.3%</td><td>0.5%</td><td>9.5%</td>
-            <td class="total-cell">26.8%</td>
-            <td class="total-cell">$77,668</td>
+            <td>4.3%</td><td>10.1%</td><td>0.0%</td><td>2.0%</td><td>0.3%</td><td>0.5%</td>
+            <td>9.5%</td>
+            <td>2.4%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.3%</span><span data-mode="msrp" style="display:none;">26.8%</span><span data-mode="cogs" style="display:none;">19.6%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$50,068</span><span data-mode="msrp" style="display:none;">$77,668</span><span data-mode="cogs" style="display:none;">$56,885</span></td>
         </tr><tr>
             <td class="month-cell">May 25</td>
             <td>$171,048</td>
-            <td>5.8%</td><td>1.0%</td><td>0.0%</td><td>2.2%</td><td>0.2%</td><td>0.3%</td><td>9.8%</td>
-            <td class="total-cell">19.3%</td>
-            <td class="total-cell">$33,025</td>
+            <td>5.8%</td><td>1.0%</td><td>0.0%</td><td>2.2%</td><td>0.2%</td><td>0.3%</td>
+            <td>9.8%</td>
+            <td>2.4%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">9.5%</span><span data-mode="msrp" style="display:none;">19.3%</span><span data-mode="cogs" style="display:none;">12.0%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$16,324</span><span data-mode="msrp" style="display:none;">$33,025</span><span data-mode="cogs" style="display:none;">$20,510</span></td>
         </tr><tr>
             <td class="month-cell">Jun 25</td>
             <td>$136,400</td>
-            <td>7.3%</td><td>1.4%</td><td>0.0%</td><td>2.2%</td><td>1.2%</td><td>3.5%</td><td>6.1%</td>
-            <td class="total-cell">21.6%</td>
-            <td class="total-cell">$29,465</td>
+            <td>7.3%</td><td>1.4%</td><td>0.0%</td><td>2.2%</td><td>1.2%</td><td>3.5%</td>
+            <td>6.1%</td>
+            <td>1.6%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">15.5%</span><span data-mode="msrp" style="display:none;">21.6%</span><span data-mode="cogs" style="display:none;">17.1%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$21,180</span><span data-mode="msrp" style="display:none;">$29,465</span><span data-mode="cogs" style="display:none;">$23,374</span></td>
         </tr><tr>
             <td class="month-cell">Jul 25</td>
             <td>$164,910</td>
-            <td>6.0%</td><td>2.2%</td><td>0.5%</td><td>6.6%</td><td>0.5%</td><td>2.6%</td><td>7.7%</td>
-            <td class="total-cell">26.0%</td>
-            <td class="total-cell">$42,946</td>
+            <td>6.0%</td><td>2.2%</td><td>0.5%</td><td>6.6%</td><td>0.5%</td><td>2.6%</td>
+            <td>7.7%</td>
+            <td>2.0%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">18.3%</span><span data-mode="msrp" style="display:none;">26.0%</span><span data-mode="cogs" style="display:none;">20.4%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$30,225</span><span data-mode="msrp" style="display:none;">$42,946</span><span data-mode="cogs" style="display:none;">$33,577</span></td>
         </tr><tr>
             <td class="month-cell">Aug 25</td>
             <td>$180,865</td>
-            <td>5.1%</td><td>0.7%</td><td>4.6%</td><td>1.7%</td><td>3.4%</td><td>2.2%</td><td>4.5%</td>
-            <td class="total-cell">22.2%</td>
-            <td class="total-cell">$40,108</td>
+            <td>5.1%</td><td>0.7%</td><td>4.6%</td><td>1.7%</td><td>3.4%</td><td>2.2%</td>
+            <td>4.5%</td>
+            <td>1.3%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.7%</span><span data-mode="msrp" style="display:none;">22.2%</span><span data-mode="cogs" style="display:none;">19.0%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$31,963</span><span data-mode="msrp" style="display:none;">$40,108</span><span data-mode="cogs" style="display:none;">$34,320</span></td>
         </tr><tr>
             <td class="month-cell">Sep 25</td>
             <td>$194,486</td>
-            <td>5.3%</td><td>0.8%</td><td>4.6%</td><td>1.9%</td><td>2.6%</td><td>2.0%</td><td>6.2%</td>
-            <td class="total-cell">23.3%</td>
-            <td class="total-cell">$45,315</td>
+            <td>5.3%</td><td>0.8%</td><td>4.6%</td><td>1.9%</td><td>2.6%</td><td>2.0%</td>
+            <td>6.2%</td>
+            <td>1.8%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.1%</span><span data-mode="msrp" style="display:none;">23.3%</span><span data-mode="cogs" style="display:none;">18.9%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$33,299</span><span data-mode="msrp" style="display:none;">$45,315</span><span data-mode="cogs" style="display:none;">$36,832</span></td>
         </tr><tr>
             <td class="month-cell">Oct 25</td>
             <td>$231,530</td>
-            <td>5.6%</td><td>3.1%</td><td>7.1%</td><td>1.2%</td><td>1.2%</td><td>2.4%</td><td>5.9%</td>
-            <td class="total-cell">26.5%</td>
-            <td class="total-cell">$61,455</td>
+            <td>5.6%</td><td>3.1%</td><td>7.1%</td><td>1.2%</td><td>1.2%</td><td>2.4%</td>
+            <td>5.9%</td>
+            <td>1.5%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">20.6%</span><span data-mode="msrp" style="display:none;">26.5%</span><span data-mode="cogs" style="display:none;">22.1%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$47,786</span><span data-mode="msrp" style="display:none;">$61,455</span><span data-mode="cogs" style="display:none;">$51,171</span></td>
         </tr><tr>
             <td class="month-cell">Nov 25</td>
             <td>$415,125</td>
-            <td>3.4%</td><td>0.3%</td><td>14.2%</td><td>0.6%</td><td>0.2%</td><td>2.4%</td><td>15.9%</td>
-            <td class="total-cell">37.0%</td>
-            <td class="total-cell">$153,518</td>
+            <td>3.4%</td><td>0.3%</td><td>14.2%</td><td>0.6%</td><td>0.2%</td><td>2.4%</td>
+            <td>15.9%</td>
+            <td>3.3%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">21.1%</span><span data-mode="msrp" style="display:none;">37.0%</span><span data-mode="cogs" style="display:none;">24.4%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$87,442</span><span data-mode="msrp" style="display:none;">$153,518</span><span data-mode="cogs" style="display:none;">$101,166</span></td>
         </tr><tr>
             <td class="month-cell">Dec 25</td>
             <td>$190,053</td>
-            <td>5.8%</td><td>0.3%</td><td>6.6%</td><td>1.4%</td><td>0.4%</td><td>3.4%</td><td>5.3%</td>
-            <td class="total-cell">23.2%</td>
-            <td class="total-cell">$44,021</td>
+            <td>5.8%</td><td>0.3%</td><td>6.6%</td><td>1.4%</td><td>0.4%</td><td>3.4%</td>
+            <td>5.3%</td>
+            <td>1.0%</td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">17.9%</span><span data-mode="msrp" style="display:none;">23.2%</span><span data-mode="cogs" style="display:none;">18.9%</span></td>
+            <td class="total-cell" data-total-mode="cell"><span data-mode="excluded">$34,019</span><span data-mode="msrp" style="display:none;">$44,021</span><span data-mode="cogs" style="display:none;">$36,000</span></td>
         </tr></tbody>
         </table>
     </div>
@@ -649,14 +845,14 @@ body {
             <div class="glossary-formula">Source: <code>SUM(dtc_shipping_discounts)</code> (from calc_daily_shopify)</div>
         </div>
         <div class="glossary-item">
-            <div class="glossary-label" style="color:#EC4899;">Free Items (MSRP)</div>
-            <div class="glossary-desc">Retail value of items given away (BOGO promos, free gifts-with-purchase, samples).</div>
-            <div class="glossary-formula">Source: <code>SUM(dtc_free_item_value)</code> (from calc_daily_shopify)</div>
+            <div class="glossary-label" style="color:#EC4899;">Free Items</div>
+            <div class="glossary-desc">Items given away rather than sold (BOGO, FOTM samples, GWP). Shown at MSRP (retail value of what was given) AND at COGS (actual cost to us). Use the toggle above to include in totals.</div>
+            <div class="glossary-formula">Source: <code>SUM(dtc_free_item_value), SUM(dtc_free_item_cogs)</code> (from calc_daily_shopify)</div>
         </div>
 </div>
 
 <div class="footer">
-    Generated 2026-05-08 13:42 ·
+    Generated 2026-05-08 15:38 ·
     Data thru 2025-12-31 ·
     Source: calc_daily_shopify ·
     <a href="../mtd.html" style="color:#D4A843;">← Back to MTD Dashboard</a>
@@ -667,11 +863,23 @@ body {
 <script>
 
     const stackLabels = ["Jul '24", "Aug '24", "Sep '24", "Oct '24", "Nov '24", "Dec '24", "Jan '25", "Feb '25", "Mar '25", "Apr '25", "May '25", "Jun '25", "Jul '25", "Aug '25", "Sep '25", "Oct '25", "Nov '25", "Dec '25"];
-    const stackDatasets = [{"label": "Subscription Implied", "data": [7278.0, 6650.0, 7748.0, 8208.0, 8367.0, 8969.0, 9491.0, 10133.0, 11613.0, 12589.0, 9890.0, 9903.0, 9876.0, 9234.0, 10260.0, 12951.0, 13982.0, 11047.0], "backgroundColor": "#8B5CF6", "borderColor": "#8B5CF6", "borderWidth": 1}, {"label": "Price Reduction Discounts", "data": [1746.0, 2364.0, 5737.0, 7372.0, 44634.0, 15296.0, 3989.0, 6251.0, 14011.0, 29140.0, 1680.0, 1896.0, 3576.0, 1190.0, 1508.0, 7149.0, 1397.0, 593.0], "backgroundColor": "#EAB308", "borderColor": "#EAB308", "borderWidth": 1}, {"label": "Automatic Discounts", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 775.0, 8405.0, 8849.0, 16462.0, 58951.0, 12568.0], "backgroundColor": "#EF4444", "borderColor": "#EF4444", "borderWidth": 1}, {"label": "Discount Codes", "data": [3821.0, 11956.0, 4309.0, 5481.0, 9162.0, 9280.0, 6292.0, 5054.0, 4742.0, 5935.0, 3848.0, 3035.0, 10865.0, 2985.0, 3659.0, 2830.0, 2383.0, 2697.0], "backgroundColor": "#3B82F6", "borderColor": "#3B82F6", "borderWidth": 1}, {"label": "Manual Discounts", "data": [422.0, 138.0, 614.0, 418.0, 2002.0, 975.0, 441.0, 132.0, 1072.0, 975.0, 328.0, 1623.0, 899.0, 6218.0, 5048.0, 2830.0, 813.0, 700.0], "backgroundColor": "#F59E0B", "borderColor": "#F59E0B", "borderWidth": 1}, {"label": "Shipping Discounts", "data": [0, 0, 0, 0, 72.0, 110.0, 236.0, 202.0, 992.0, 1429.0, 577.0, 4723.0, 4235.0, 3931.0, 3974.0, 5565.0, 9917.0, 6415.0], "backgroundColor": "#10B981", "borderColor": "#10B981", "borderWidth": 1}, {"label": "Free Items (MSRP)", "data": [8317.0, 11424.0, 12849.0, 8320.0, 25583.0, 17819.0, 11098.0, 11815.0, 22390.0, 27600.0, 16701.0, 8285.0, 12721.0, 8145.0, 12017.0, 13669.0, 66076.0, 10002.0], "backgroundColor": "#EC4899", "borderColor": "#EC4899", "borderWidth": 1}];
-    const pctDatasets  = [{"label": "Subscription Implied", "data": [4.58, 3.81, 4.31, 4.1, 2.4, 3.88, 5.28, 5.83, 5.64, 4.35, 5.78, 7.26, 5.99, 5.11, 5.28, 5.59, 3.37, 5.81], "backgroundColor": "#8B5CF6", "borderColor": "#8B5CF6", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Price Reduction Discounts", "data": [1.1, 1.35, 3.2, 3.68, 12.78, 6.62, 2.22, 3.59, 6.81, 10.06, 0.98, 1.39, 2.17, 0.66, 0.78, 3.09, 0.34, 0.31], "backgroundColor": "#EAB308", "borderColor": "#EAB308", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Automatic Discounts", "data": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.47, 4.65, 4.55, 7.11, 14.2, 6.61], "backgroundColor": "#EF4444", "borderColor": "#EF4444", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Discount Codes", "data": [2.41, 6.84, 2.4, 2.74, 2.62, 4.01, 3.5, 2.91, 2.3, 2.05, 2.25, 2.23, 6.59, 1.65, 1.88, 1.22, 0.57, 1.42], "backgroundColor": "#3B82F6", "borderColor": "#3B82F6", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Manual Discounts", "data": [0.27, 0.08, 0.34, 0.21, 0.57, 0.42, 0.25, 0.08, 0.52, 0.34, 0.19, 1.19, 0.55, 3.44, 2.6, 1.22, 0.2, 0.37], "backgroundColor": "#F59E0B", "borderColor": "#F59E0B", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Shipping Discounts", "data": [0.0, 0.0, 0.0, 0.0, 0.02, 0.05, 0.13, 0.12, 0.48, 0.49, 0.34, 3.46, 2.57, 2.17, 2.04, 2.4, 2.39, 3.38], "backgroundColor": "#10B981", "borderColor": "#10B981", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Free Items (MSRP)", "data": [5.24, 6.54, 7.16, 4.16, 7.33, 7.71, 6.17, 6.79, 10.88, 9.53, 9.76, 6.07, 7.71, 4.5, 6.18, 5.9, 15.92, 5.26], "backgroundColor": "#EC4899", "borderColor": "#EC4899", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Total Discount %", "data": [13.59, 18.62, 17.41, 14.88, 25.72, 22.68, 17.54, 19.31, 26.63, 26.82, 19.31, 21.6, 26.04, 22.18, 23.3, 26.54, 36.98, 23.16], "backgroundColor": "#D4A843", "borderColor": "#D4A843", "fill": false, "tension": 0.3, "borderWidth": 4, "pointRadius": 4, "borderDash": [6, 3]}];
-    const pieLabels    = ["Subscription Implied", "Price Reduction Discounts", "Automatic Discounts", "Discount Codes", "Manual Discounts", "Shipping Discounts", "Free Items (MSRP)"];
-    const pieValues    = [11047.0, 593.0, 12568.0, 2697.0, 700.0, 6415.0, 10002.0];
-    const pieColors    = ["#8B5CF6", "#EAB308", "#EF4444", "#3B82F6", "#F59E0B", "#10B981", "#EC4899"];
+    const stackDatasets = [{"label": "Subscription Implied", "data": [7278.0, 6650.0, 7748.0, 8208.0, 8367.0, 8969.0, 9491.0, 10133.0, 11613.0, 12589.0, 9890.0, 9903.0, 9876.0, 9234.0, 10260.0, 12951.0, 13982.0, 11047.0], "backgroundColor": "#8B5CF6", "borderColor": "#8B5CF6", "borderWidth": 1}, {"label": "Price Reduction Discounts", "data": [1746.0, 2364.0, 5737.0, 7372.0, 44634.0, 15296.0, 3989.0, 6251.0, 14011.0, 29140.0, 1680.0, 1896.0, 3576.0, 1190.0, 1508.0, 7149.0, 1397.0, 593.0], "backgroundColor": "#EAB308", "borderColor": "#EAB308", "borderWidth": 1}, {"label": "Automatic Discounts", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 775.0, 8405.0, 8849.0, 16462.0, 58951.0, 12568.0], "backgroundColor": "#EF4444", "borderColor": "#EF4444", "borderWidth": 1}, {"label": "Discount Codes", "data": [3821.0, 11956.0, 4309.0, 5481.0, 9162.0, 9280.0, 6292.0, 5054.0, 4742.0, 5935.0, 3848.0, 3035.0, 10865.0, 2985.0, 3659.0, 2830.0, 2383.0, 2697.0], "backgroundColor": "#3B82F6", "borderColor": "#3B82F6", "borderWidth": 1}, {"label": "Manual Discounts", "data": [422.0, 138.0, 614.0, 418.0, 2002.0, 975.0, 441.0, 132.0, 1072.0, 975.0, 328.0, 1623.0, 899.0, 6218.0, 5048.0, 2830.0, 813.0, 700.0], "backgroundColor": "#F59E0B", "borderColor": "#F59E0B", "borderWidth": 1}, {"label": "Shipping Discounts", "data": [0, 0, 0, 0, 72.0, 110.0, 236.0, 202.0, 992.0, 1429.0, 577.0, 4723.0, 4235.0, 3931.0, 3974.0, 5565.0, 9917.0, 6415.0], "backgroundColor": "#10B981", "borderColor": "#10B981", "borderWidth": 1}];
+    const pctDatasets  = [{"label": "Subscription Implied", "data": [4.58, 3.81, 4.31, 4.1, 2.4, 3.88, 5.28, 5.83, 5.64, 4.35, 5.78, 7.26, 5.99, 5.11, 5.28, 5.59, 3.37, 5.81], "backgroundColor": "#8B5CF6", "borderColor": "#8B5CF6", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Price Reduction Discounts", "data": [1.1, 1.35, 3.2, 3.68, 12.78, 6.62, 2.22, 3.59, 6.81, 10.06, 0.98, 1.39, 2.17, 0.66, 0.78, 3.09, 0.34, 0.31], "backgroundColor": "#EAB308", "borderColor": "#EAB308", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Automatic Discounts", "data": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.47, 4.65, 4.55, 7.11, 14.2, 6.61], "backgroundColor": "#EF4444", "borderColor": "#EF4444", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Discount Codes", "data": [2.41, 6.84, 2.4, 2.74, 2.62, 4.01, 3.5, 2.91, 2.3, 2.05, 2.25, 2.23, 6.59, 1.65, 1.88, 1.22, 0.57, 1.42], "backgroundColor": "#3B82F6", "borderColor": "#3B82F6", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Manual Discounts", "data": [0.27, 0.08, 0.34, 0.21, 0.57, 0.42, 0.25, 0.08, 0.52, 0.34, 0.19, 1.19, 0.55, 3.44, 2.6, 1.22, 0.2, 0.37], "backgroundColor": "#F59E0B", "borderColor": "#F59E0B", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}, {"label": "Shipping Discounts", "data": [0.0, 0.0, 0.0, 0.0, 0.02, 0.05, 0.13, 0.12, 0.48, 0.49, 0.34, 3.46, 2.57, 2.17, 2.04, 2.4, 2.39, 3.38], "backgroundColor": "#10B981", "borderColor": "#10B981", "fill": false, "tension": 0.35, "borderWidth": 2.5, "pointRadius": 3}];
+    const pieLabels    = ["Subscription Implied", "Price Reduction Discounts", "Automatic Discounts", "Discount Codes", "Manual Discounts", "Shipping Discounts"];
+    const pieValues    = [11047.0, 593.0, 12568.0, 2697.0, 700.0, 6415.0];
+    const pieColors    = ["#8B5CF6", "#EAB308", "#EF4444", "#3B82F6", "#F59E0B", "#10B981"];
+
+    // Free-items pre-computed series — selected by the free-items toggle
+    const freeItemsColor = "#EC4899";
+    const freeMsrpStack    = [8317.0, 11424.0, 12849.0, 8320.0, 25583.0, 17819.0, 11098.0, 11815.0, 22390.0, 27600.0, 16701.0, 8285.0, 12721.0, 8145.0, 12017.0, 13669.0, 66076.0, 10002.0];
+    const freeCogsStack    = [1836.0, 2945.0, 3151.0, 2060.0, 4869.0, 3531.0, 2448.0, 2700.0, 4875.0, 6818.0, 4186.0, 2193.0, 3352.0, 2357.0, 3534.0, 3384.0, 13724.0, 1982.0];
+    const freeMsrpPctSeries= [5.24, 6.54, 7.16, 4.16, 7.33, 7.71, 6.17, 6.79, 10.88, 9.53, 9.76, 6.07, 7.71, 4.5, 6.18, 5.9, 15.92, 5.26];
+    const freeCogsPctSeries= [1.16, 1.69, 1.75, 1.03, 1.39, 1.53, 1.36, 1.55, 2.37, 2.35, 2.45, 1.61, 2.03, 1.3, 1.82, 1.46, 3.31, 1.04];
+    const totalPctExcluded = [8.36, 12.08, 10.25, 10.73, 18.4, 14.98, 11.37, 12.52, 15.75, 17.29, 9.54, 15.53, 18.33, 17.67, 17.12, 20.64, 21.06, 17.9];
+    const totalPctMsrp     = [13.59, 18.62, 17.41, 14.88, 25.72, 22.68, 17.54, 19.31, 26.63, 26.82, 19.31, 21.6, 26.04, 22.18, 23.3, 26.54, 36.98, 23.16];
+    const totalPctCogs     = [9.51, 13.77, 12.01, 11.76, 19.79, 16.51, 12.73, 14.07, 18.12, 19.64, 11.99, 17.14, 20.36, 18.98, 18.94, 22.1, 24.37, 18.94];
+    const freeMsrpValue    = 10002.0;
+    const freeCogsValue    = 1982.0;
     
 
 Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
@@ -680,83 +888,195 @@ Chart.defaults.color = '#94a3b8';
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
 Chart.defaults.plugins.legend.labels.padding = 14;
 
-// ---- Pie: current month mix ----
-const pieTotal = pieValues.reduce((a,b)=>a+b, 0) || 1;
-new Chart(document.getElementById('pieChart'), {
-    type: 'doughnut',
-    data: {
-        labels: pieLabels,
-        datasets: [{
-            data: pieValues,
-            backgroundColor: pieColors,
-            borderColor: '#1e293b', borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom', labels: { color: '#cbd5e1', boxWidth: 12, padding: 10, font: { size: 11 } } },
-            tooltip: {
-                callbacks: {
-                    label: function(ctx) {
-                        const v = ctx.parsed;
-                        const p = (v / pieTotal * 100).toFixed(1);
-                        return ctx.label + ': $' + v.toLocaleString() + ' (' + p + '%)';
+// ---------- Free Items mode: 'excluded' | 'msrp' | 'cogs' ----------
+let freeMode = 'excluded';
+
+// ---- Pie chart instance — re-rendered when free-items mode changes ----
+let pieChartInstance = null;
+function buildPieData() {
+    const labels = [...pieLabels];
+    const values = [...pieValues];
+    const colors = [...pieColors];
+    if (freeMode === 'msrp' && freeMsrpValue > 0) {
+        labels.push('Free Items (MSRP)');
+        values.push(freeMsrpValue);
+        colors.push(freeItemsColor);
+    } else if (freeMode === 'cogs' && freeCogsValue > 0) {
+        labels.push('Free Items (COGS)');
+        values.push(freeCogsValue);
+        colors.push(freeItemsColor);
+    }
+    return { labels, values, colors };
+}
+function renderPie() {
+    const d = buildPieData();
+    const pieTotal = d.values.reduce((a,b)=>a+b, 0) || 1;
+    if (pieChartInstance) {
+        pieChartInstance.data.labels = d.labels;
+        pieChartInstance.data.datasets[0].data = d.values;
+        pieChartInstance.data.datasets[0].backgroundColor = d.colors;
+        pieChartInstance.update();
+        return;
+    }
+    pieChartInstance = new Chart(document.getElementById('pieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: d.labels,
+            datasets: [{
+                data: d.values,
+                backgroundColor: d.colors,
+                borderColor: '#1e293b', borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#cbd5e1', boxWidth: 12, padding: 10, font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const v = ctx.parsed;
+                            const total = ctx.dataset.data.reduce((a,b)=>a+b, 0) || 1;
+                            const p = (v / total * 100).toFixed(1);
+                            return ctx.label + ': $' + v.toLocaleString() + ' (' + p + '%)';
+                        }
                     }
                 }
             }
         }
-    }
-});
+    });
+}
 
-// ---- Stacked bar: monthly $ by type ----
-new Chart(document.getElementById('stackChart'), {
-    type: 'bar',
-    data: { labels: stackLabels, datasets: stackDatasets },
-    options: {
-        responsive: true, maintainAspectRatio: false,
-        scales: {
-            x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
-            y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
-        },
-        plugins: {
-            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } } },
-            tooltip: {
-                callbacks: {
-                    label: function(ctx) { return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(); }
+// ---- Stacked bar: 6 true types + optional Free Items series ----
+let stackChartInstance = null;
+function buildStackDatasets() {
+    const dsets = stackDatasets.map(d => Object.assign({}, d));
+    if (freeMode === 'msrp') {
+        dsets.push({ label: 'Free Items (MSRP)', data: freeMsrpStack,
+                     backgroundColor: freeItemsColor, borderColor: freeItemsColor, borderWidth: 1 });
+    } else if (freeMode === 'cogs') {
+        dsets.push({ label: 'Free Items (COGS)', data: freeCogsStack,
+                     backgroundColor: freeItemsColor, borderColor: freeItemsColor, borderWidth: 1 });
+    }
+    return dsets;
+}
+function renderStack() {
+    const dsets = buildStackDatasets();
+    if (stackChartInstance) {
+        stackChartInstance.data.datasets = dsets;
+        stackChartInstance.update();
+        return;
+    }
+    stackChartInstance = new Chart(document.getElementById('stackChart'), {
+        type: 'bar',
+        data: { labels: stackLabels, datasets: dsets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
+                y: { stacked: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(); }
+                    }
                 }
             }
         }
-    }
-});
+    });
+}
 
-// ---- Line: each type as % of gross ----
-new Chart(document.getElementById('lineChart'), {
-    type: 'line',
-    data: { labels: stackLabels, datasets: pctDatasets },
-    options: {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { intersect: false, mode: 'index' },
-        scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
-            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', callback: v => v + '%' } }
-        },
-        plugins: {
-            legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } } },
-            tooltip: {
-                callbacks: {
-                    label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'; }
+// ---- Line: each type as % of gross + Total Discount % line driven by toggle ----
+let lineChartInstance = null;
+function buildLineDatasets() {
+    const dsets = pctDatasets.map(d => Object.assign({}, d));
+    // Optionally append a Free Items % line
+    if (freeMode === 'msrp') {
+        dsets.push({ label: 'Free Items (MSRP) %', data: freeMsrpPctSeries,
+                     borderColor: freeItemsColor, backgroundColor: freeItemsColor,
+                     fill: false, tension: 0.35, borderWidth: 2.5, pointRadius: 3 });
+    } else if (freeMode === 'cogs') {
+        dsets.push({ label: 'Free Items (COGS) %', data: freeCogsPctSeries,
+                     borderColor: freeItemsColor, backgroundColor: freeItemsColor,
+                     fill: false, tension: 0.35, borderWidth: 2.5, pointRadius: 3 });
+    }
+    // Total Discount % line — chooses one of three pre-computed series
+    const totalSeries = freeMode === 'msrp' ? totalPctMsrp
+                      : freeMode === 'cogs' ? totalPctCogs
+                      : totalPctExcluded;
+    dsets.push({
+        label: 'Total Discount %',
+        data: totalSeries,
+        backgroundColor: '#D4A843', borderColor: '#D4A843',
+        fill: false, tension: 0.3, borderWidth: 4, pointRadius: 4, borderDash: [6, 3]
+    });
+    return dsets;
+}
+function renderLine() {
+    const dsets = buildLineDatasets();
+    if (lineChartInstance) {
+        lineChartInstance.data.datasets = dsets;
+        lineChartInstance.update();
+        return;
+    }
+    lineChartInstance = new Chart(document.getElementById('lineChart'), {
+        type: 'line',
+        data: { labels: stackLabels, datasets: dsets },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8', callback: v => v + '%' } }
+            },
+            plugins: {
+                legend: { labels: { color: '#cbd5e1', boxWidth: 12, font: { size: 10 } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%'; }
+                    }
                 }
             }
         }
-    }
-});
+    });
+}
 
-// ---- Table toggle ----
+// ---- Free Items mode toggle handler ----
+function setFreeItemsMode(mode) {
+    freeMode = mode;
+    // Update active button
+    document.querySelectorAll('.free-toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+    });
+    // Hero — show only the matching mode block, hide others
+    document.querySelectorAll('.hero-mode-block').forEach(b => {
+        b.style.display = (b.dataset.mode === mode) ? 'block' : 'none';
+    });
+    document.querySelectorAll('.hero-mode-label').forEach(s => {
+        s.style.display = (s.dataset.mode === mode) ? 'inline' : 'none';
+    });
+    // Table totals — swap the active spans inside Total Disc / Total % cells
+    document.querySelectorAll('[data-total-mode="cell"] span').forEach(s => {
+        s.style.display = (s.dataset.mode === mode) ? 'inline' : 'none';
+    });
+    // Re-render charts
+    renderPie();
+    renderStack();
+    renderLine();
+}
+
+// Initial chart renders
+renderPie();
+renderStack();
+renderLine();
+
+// ---- Table $ vs % toggle ----
 function toggleTable(mode) {
     document.getElementById('table-dollars').style.display = (mode === 'dollars') ? 'block' : 'none';
     document.getElementById('table-pct').style.display     = (mode === 'pct')     ? 'block' : 'none';
-    document.querySelectorAll('.toggle-btn').forEach((b, i) => {
+    document.querySelectorAll('.table-toggle .toggle-btn').forEach((b, i) => {
         if ((mode === 'dollars' && i === 0) || (mode === 'pct' && i === 1)) b.classList.add('active');
         else b.classList.remove('active');
     });
