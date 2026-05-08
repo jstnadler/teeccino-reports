@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-08T13:43:19.447716-07:00",
+  "lastUpdated": "2026-05-08T15:37:26.770070-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -92,18 +92,6 @@
       },
       "recentActivity": [
         {
-          "summary": "Closed AdSmith's GTM-tag-verify thread. AdSmith had already published GTM Version 37 with all 4 PDP upsell tags + 4 triggers + 15 DLVs at 13:48 PT (before ThemeSmith's verify dispatch landed). Real blocker is PieEye admin: 'Approve All' banner button misconfigured to leave Performance category at 0 (analytics_storage stays denied). ThemeSmith audited theme-side integration and confirmed our code is a faithful pass-through of cookie values to Consent Mode v2 — bug is on PieEye banner UI side, not in our snippet. Justin advised to fix in PieEye admin or contact PieEye support. Filed reply to AdSmith confirming diagnosis. No further action from theme side until PieEye is unstuck.",
-          "at": "2026-05-01T22:30:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Filed AdSmith inbox task to verify the 4 PDP upsell custom-event GTM tags are configured to forward to GA4. Justin reported he flipped the PieEye toggle and isn't seeing upsell events in his analytics view. ThemeSmith verified events ARE landing in window.dataLayer correctly on live (theme 160800145656) — so the gap is downstream forwarding. AdSmith owns the GTM tag config; their task: verify or create the 4 GA4 event tags (upsell_modal_view / accept / accept_success / dismiss) with the documented payload schema.",
-          "at": "2026-05-01T22:00:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
           "summary": "Done. PDP ATC upsell verified clean on live theme `160800145656` (main HEAD `8580cc2`).\n\n**Result:** ✅ No theme-side regressions. PieEye work (88216e8 + revert 93ceb7e) didn't touch upsell paths.\n\n**W",
           "at": "2026-05-04T09:11:51.005219-07:00",
           "source": "gateway",
@@ -150,6 +138,18 @@
           "at": "2026-05-07T17:15:00Z",
           "source": "interactive",
           "status": "success"
+        },
+        {
+          "summary": "Shipped shop-dropdown featured-product card to live theme 160800145656 (merge commit 43ee46a) + briefed Shopkeeper on rotation ownership. Date-driven card swaps between Mother's Day Gift Box (campaign, May 1-12) and Java Chicory (FOTM fallback). 5 files (~544 insertions). Live verified end-to-end on teeccino.com — card renders, product resolves to 'Mother's Day Gift Box', href correct.",
+          "at": "2026-05-06T20:20:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Shop dropdown featured card — clean architectural rebuild on dev. Replaced grid-on-wrapper approach with absolute-positioned aside off the wrapper's right edge. Removed all wrapper width/grid/z-index hacks. The card now inherits the same stacking context as the link list (which paints correctly). Awaiting Justin admin-browser validation since Playwright anonymous sessions don't reliably render the dropdown.",
+          "at": "2026-05-06T18:35:00Z",
+          "source": "interactive",
+          "status": "partial"
         }
       ],
       "pendingTasks": 11,
@@ -161,12 +161,16 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Add free-items toggle (Exclude / MSRP / COGS) to discounts dashboard; show both MSRP and COGS values on the Free Items card",
+        "source": "interactive",
+        "startedAt": "2026-05-08T13:45:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Update Discount Matrix to use direct dtc_price_reductions + fix 11-month shipping discount classification bug (target_type routing)",
-        "at": "2026-05-08T13:25:00Z"
+        "summary": "Task complete. One-page status:\n\n## PDP Upsell Pipeline — Status Report\n\n**1. Dashboard rebuilt** ✅\n- URL: https://jstnadler.github.io/teeccino-reports/pdp-upsell-performance.html\n- Commit: `c76082f`,",
+        "at": "2026-05-04T09:13:55.477248-07:00"
       },
       "recentActivity": [
         {
@@ -231,7 +235,7 @@
         }
       ],
       "pendingTasks": 4,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "agentsmith",
@@ -388,12 +392,6 @@
           "at": "2026-05-04T16:30:00-07:00",
           "source": "gateway",
           "status": "partial"
-        },
-        {
-          "summary": "GTM-PS43Q3B Version 37 published live: 4 GA4 Event tags + 4 Custom Event triggers + 15 Data Layer Variables wiring up ThemeSmith's PDP upsell modal events to Teeccino.com GA4 (G-QG7N4XBQHK). Closes DataOps inbox d3f2445a.",
-          "at": "2026-05-01T20:48:38Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 8,
@@ -405,12 +403,16 @@
       "emoji": "books",
       "role": "Product Information Management",
       "workspace": "clawd-catalogsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Reconcile organic certification: master vs live Shopify (tag + custom.organic)",
+        "source": "interactive",
+        "startedAt": "2026-05-08T20:50:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Pushed 509 PD nutrition values to Shopify metafields (178 creates, 331 updates, 0 failures). qty_differ went 286 -> 75; pct gaps closed.",
-        "at": "2026-05-07T21:46:00Z"
+        "summary": "M3 adoption complete and deployed. Summary:\n\n**Changes**\n- `teeccino-reports/catalog.html` — stripped the orphan `.top-nav` CSS block (the hardcoded `<nav>` HTML was already replaced by HubSmith in 4b",
+        "at": "2026-05-04T15:33:47.451699-07:00"
       },
       "recentActivity": [
         {
@@ -475,7 +477,7 @@
         }
       ],
       "pendingTasks": 12,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "brewsmith",
