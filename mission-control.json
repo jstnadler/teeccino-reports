@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-07T16:30:34.034528-07:00",
+  "lastUpdated": "2026-05-08T07:00:31.191304-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -104,12 +104,6 @@
           "status": "success"
         },
         {
-          "summary": "Filed Shopkeeper post-ship operations brief — PDP FOTM upsell is now live on theme 160800145656; covers how it works, the operational dependencies Shopkeeper owns at every monthly FOTM changeover, 4 new failure modes to watch, the no-deploy kill switch, donation-upsell-currently-off state, and the future per-PDP override mode (still pending CatalogSmith).",
-          "at": "2026-04-30T23:55:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
           "summary": "Done. PDP ATC upsell verified clean on live theme `160800145656` (main HEAD `8580cc2`).\n\n**Result:** ✅ No theme-side regressions. PieEye work (88216e8 + revert 93ceb7e) didn't touch upsell paths.\n\n**W",
           "at": "2026-05-04T09:11:51.005219-07:00",
           "source": "gateway",
@@ -150,6 +144,12 @@
           "at": "2026-05-07T19:50:00Z",
           "source": "interactive",
           "status": "success"
+        },
+        {
+          "summary": "PDP upsell status read for Justin: theme code clean, dataLayer events firing, line-item-property attribution healthy ($104.78 net through 5/3); GA4/GTM forwarding still PENDING per dashboard. Dispatched AdSmith (task d6f033b0) to re-check GTM container loading + GA4 event count and pick an unblock path.",
+          "at": "2026-05-07T17:15:00Z",
+          "source": "interactive",
+          "status": "success"
         }
       ],
       "pendingTasks": 11,
@@ -161,12 +161,16 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Running daily analytics pipeline",
+        "source": "interactive",
+        "startedAt": "2026-05-08T14:00:15Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Add daily-orders line to monthly fulfillment trend chart",
-        "at": "2026-05-07T20:42:00Z"
+        "summary": "Task complete. One-page status:\n\n## PDP Upsell Pipeline — Status Report\n\n**1. Dashboard rebuilt** ✅\n- URL: https://jstnadler.github.io/teeccino-reports/pdp-upsell-performance.html\n- Commit: `c76082f`,",
+        "at": "2026-05-04T09:13:55.477248-07:00"
       },
       "recentActivity": [
         {
@@ -286,24 +290,6 @@
         {
           "summary": "M3 adoption complete: register_page() wired + hub-nav mount in MC and project-dashboard build scripts. 5 dashboards register cleanly; orphan scan = 0.",
           "at": "2026-05-04T16:30:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Added mcp__plugin_playwright_playwright__* to settings.json permissions.allow. Fixes the namespace mismatch ThemeSmith hit during the ADA audit — actual plugin namespace is mcp__plugin_playwright_playwright__*, not the old mcp__playwright__* the allowlist carried.",
-          "at": "2026-05-01T00:42:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Recovery: gateway dispatch's 300s subprocess timeout killed ThemeSmith mid-ADA-audit. Reset inbox task 9f2b020a from failed→pending, restored ThemeSmith status to working, background-spawned claude -p directly via Bash run_in_background (no timeout). ThemeSmith is now grinding the ADA audit + fixes overnight as Justin originally expected. Saved feedback_gateway_timeout memory to prevent repeat. Filed gateway.py improvement note (add --no-invoke-async or --background flag) for follow-up.",
-          "at": "2026-04-30T17:22:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Dispatched ThemeSmith to run a WCAG 2.1 AA audit + fixes on the homepage and the new native-Liquid PDP templates (pdp-rebuild + 3 secondary live, plus PDP donation upsell modal and the freshly-shipped FOTM product upsell modal). Auto-approved, background-spawned via gateway. Justin expects report + fixes by morning 2026-05-01. Inbox task 9f2b020a-fe43-4041-a830-397d7a904b15.",
-          "at": "2026-04-30T17:15:00-07:00",
           "source": "interactive",
           "status": "success"
         }
@@ -1097,24 +1083,6 @@
       "status": "complete",
       "dispatched": "2026-05-04T09:07:00.482466-07:00",
       "completed": null
-    },
-    {
-      "id": "design-fotm-upsell-mode-4941bcdb",
-      "from": "agentsmith",
-      "to": "themesmith",
-      "summary": "Justin wants to design a 'Flavor of the Month' mode for the existing PDP donation upsell modal. He pinged AgentSmith first; AgentSmith scoped a proposal but the design + build is squarely your lane. When Justin opens you next, walk through the design questions below with him and propose an implementation.",
-      "status": "pending",
-      "dispatched": "2026-04-30T19:30:00-07:00",
-      "completed": null
-    },
-    {
-      "id": "9f2b020a-fe43-4041-a830-397d7a904b15",
-      "from": "agentsmith",
-      "to": "themesmith",
-      "summary": "ADA compliance audit + fixes: homepage + new PDP templates",
-      "status": "success",
-      "dispatched": "2026-04-30T17:13:30.662307-07:00",
-      "completed": null
     }
   ],
   "humanActions": [
@@ -1274,13 +1242,13 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-05-07T07:03:03.575364-07:00",
+        "lastRun": "2026-05-08T07:00:01.621211-07:00",
         "status": "healthy"
       },
       {
         "name": "AgentSmith Daily Recover",
         "schedule": "5:00 AM daily",
-        "lastRun": "2026-05-07T05:00:01.629953-07:00",
+        "lastRun": "2026-05-08T05:00:01.607738-07:00",
         "status": "healthy"
       }
     ]
