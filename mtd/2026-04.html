@@ -15,17 +15,7 @@ body {
 }
 .container { max-width: 1400px; margin: 0 auto; }
 
-/* ---- NAV ---- */
-.top-nav {
-    position: fixed; top: 0; left: 0; right: 0;
-    background: rgba(26,26,46,0.95); backdrop-filter: blur(12px);
-    z-index: 100; padding: 12px 24px;
-    display: flex; align-items: center; gap: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.top-nav a { color: #8B6914; text-decoration: none; font-size: 0.9em; transition: color 0.2s; }
-.top-nav a:hover { color: #D4A843; }
-.top-nav .brand { font-weight: 700; font-size: 1.1em; color: #D4A843; }
+/* ---- NAV ---- (top-nav rules removed — shared hub nav now loaded from /_partials/nav.html) */
 
 /* ---- HEADER ---- */
 .header { text-align: center; margin-bottom: 28px; }
@@ -423,13 +413,14 @@ body {
 <div class="header">
     <h1>April 2026 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 30 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated May 01, 2026 at 01:22 PM</div>
+    <div class="updated">Last updated May 08, 2026 at 09:28 AM</div>
 </div>
 
 
     <div class="month-nav">
         <select id="monthSelect" onchange="navigateMonth(this.value)">
-            <option value="2026-04" selected>Apr 2026</option>
+            <option value="2026-05">May 2026</option>
+<option value="2026-04" selected>Apr 2026</option>
 <option value="2026-03">Mar 2026</option>
 <option value="2026-02">Feb 2026</option>
 <option value="2026-01">Jan 2026</option>
@@ -476,7 +467,7 @@ body {
 <!-- ======== ANALYSIS ======== -->
 <div class="analysis-box">
     <div class="analysis-label">Key Takeaways</div>
-    <div class="analysis-text"><span class="win-icon">&#9650;</span> MER improved to 6.81x (from 5.92x LY)<br/><span class="loss-icon">&#9660;</span> Net revenue down 19% YoY ($204,158 vs $252,422) &bull; New customer acquisition down 37% (1,095 vs 1,732 LY) &bull; Shipping costs exceed revenue by $21,734</div>
+    <div class="analysis-text"><span class="win-icon">&#9650;</span> MER improved to 6.96x (from 5.92x LY)<br/><span class="loss-icon">&#9660;</span> Net revenue down 17% YoY ($208,695 vs $252,422) &bull; Missed forecast by 12% ($29,521 gap) &bull; New customer acquisition down 34% (1,142 vs 1,732 LY)</div>
 </div>
 
 <!-- ======== SALES ======== -->
@@ -488,8 +479,8 @@ body {
     
     <div class="kpi-card" onclick="openModal('gross')" style="cursor:pointer;">
         <div class="card-label">DTC Gross Sales</div>
-        <div class="card-value">$231,813</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 19.9%</span></div>
+        <div class="card-value">$236,681</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 18.3%</span></div>
         <div class="card-detail">LY: $289,571</div>
         
     </div>
@@ -499,7 +490,7 @@ body {
                     <span>DTC Gross Sales</span>
                     <button class="modal-close" onclick="closeModal('gross')">&times;</button>
                 </div>
-                <div class="modal-value">$231,813</div>
+                <div class="modal-value">$236,681</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Total value of all DTC orders at full retail price (True Gross). Calculated using price list MSRP, not Shopify line item prices. Free items (BOGO/gifts) are excluded.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of (units x price list retail price) for all non-free line items in DTC orders. Items with unit_price = $0 are excluded.</p></div>
@@ -508,10 +499,10 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('net')" style="cursor:pointer;">
         <div class="card-label">Net Revenue</div>
-        <div class="card-value">$204,158</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 19.1%</span></div>
+        <div class="card-value">$208,695</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 17.3%</span></div>
         <div class="card-detail">LY: $252,422</div>
-        
+        <div class="card-projected">Forecast: $238,217 (below by 12.4%)</div>
     </div>
         <div class="card-modal" id="modal-net">
             <div class="modal-inner">
@@ -519,9 +510,9 @@ body {
                     <span>Net Revenue</span>
                     <button class="modal-close" onclick="closeModal('net')">&times;</button>
                 </div>
-                <div class="modal-value">$204,158</div>
+                <div class="modal-value">$208,695</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>The money we actually kept — what hits our bank account and drives the forecast comparison. Net Revenue uses Shopify's currentTotalPrice (post-refund) on DTC orders. It differs from Subtotal because shipping revenue is added in, and free-shipping promos plus post-order refunds are subtracted.</p></div>
-                <div class='modal-section'><div class='modal-label'>This month's reconciliation</div><div class='recon-block'><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">DTC Gross (True Gross)</span><span class="recon-amt recon-neutral">$231,813</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Line-Item Discounts</span><span class="recon-amt recon-neg">$35,039</span></div><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">Subtotal (Net Sales)</span><span class="recon-amt recon-neutral">$196,774</span></div><div class="recon-row"><span class="recon-sign recon-pos">+</span><span class="recon-label">Shipping Revenue (gross)</span><span class="recon-amt recon-pos">$14,112</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Shipping Discounts (free ship)</span><span class="recon-amt recon-neg">$4,221</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Refunds & Returns</span><span class="recon-amt recon-neg">$2,508</span></div><div class="recon-row recon-total-row"><span class="recon-sign recon-total"></span><span class="recon-label">NET REVENUE</span><span class="recon-amt recon-total">$204,158</span></div></div></div>
+                <div class='modal-section'><div class='modal-label'>This month's reconciliation</div><div class='recon-block'><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">DTC Gross (True Gross)</span><span class="recon-amt recon-neutral">$236,681</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Line-Item Discounts</span><span class="recon-amt recon-neg">$35,324</span></div><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">Subtotal (Net Sales)</span><span class="recon-amt recon-neutral">$201,357</span></div><div class="recon-row"><span class="recon-sign recon-pos">+</span><span class="recon-label">Shipping Revenue (gross)</span><span class="recon-amt recon-pos">$14,112</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Shipping Discounts (free ship)</span><span class="recon-amt recon-neg">$4,096</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Refunds & Returns</span><span class="recon-amt recon-neg">$2,677</span></div><div class="recon-row recon-total-row"><span class="recon-sign recon-total"></span><span class="recon-label">NET REVENUE</span><span class="recon-amt recon-total">$208,695</span></div></div></div>
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>SUM(dtc_revenue) = Shopify currentTotalPrice (post-refund) for all DTC orders. Equivalent to: Subtotal + DTC Shipping Revenue (gross) - Shipping Discounts - Refunds & Returns.</p></div>
                 
             </div>
@@ -532,28 +523,28 @@ body {
             <div class="breakdown-item">
                 <div class="breakdown-label">New Customers</div>
                 <div class="breakdown-value">$54,111</div>
-                <div class="breakdown-detail">23% of gross | 1,095 orders</div>
+                <div class="breakdown-detail">23% of gross | 1,142 orders | Forecast: $52,671</div>
                 <div class="breakdown-ly">LY: $89,857 <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 39.8%</span></div>
             </div>
             <div class="breakdown-item">
                 <div class="breakdown-label">Returning Customers</div>
-                <div class="breakdown-value">$177,702</div>
-                <div class="breakdown-detail">77% of gross | 2,851 orders</div>
-                <div class="breakdown-ly">LY: $199,714 <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 11.0%</span></div>
+                <div class="breakdown-value">$182,570</div>
+                <div class="breakdown-detail">77% of gross | 2,900 orders | Forecast: $185,546</div>
+                <div class="breakdown-ly">LY: $199,714 <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 8.6%</span></div>
             </div>
             <div class="breakdown-item">
                 <div class="breakdown-label">Subscriptions</div>
-                <div class="breakdown-value">$69,723</div>
-                <div class="breakdown-detail">30% of gross | 1,366 orders | 4,051 units</div>
-                <div class="breakdown-ly">LY: $65,657 <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 6.2%</span></div>
+                <div class="breakdown-value">$70,379</div>
+                <div class="breakdown-detail">30% of gross | 1,381 orders | 4,087 units</div>
+                <div class="breakdown-ly">LY: $65,657 <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 7.2%</span></div>
             </div>
         </div>
     </div>
     <div class="kpi-card" onclick="openModal('orders')" style="cursor:pointer;">
         <div class="card-label">Total Orders</div>
-        <div class="card-value">3,946</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 19.8%</span></div>
-        <div class="card-detail">New: 1,095 | Returning: 2,851 | Subs: 1,366</div>
+        <div class="card-value">4,042</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 17.9%</span></div>
+        <div class="card-detail">New: 1,142 | Returning: 2,900 | Subs: 1,381</div>
         
     </div>
         <div class="card-modal" id="modal-orders">
@@ -562,7 +553,7 @@ body {
                     <span>Total Orders</span>
                     <button class="modal-close" onclick="closeModal('orders')">&times;</button>
                 </div>
-                <div class="modal-value">3,946</div>
+                <div class="modal-value">4,042</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Count of completed DTC orders. Broken down into new customer orders, returning customer orders, and subscription orders.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Count of orders from calc_daily_shopify where is_wholesale = 0.</p></div>
@@ -571,8 +562,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('aov')" style="cursor:pointer;">
         <div class="card-label">Avg Order Value</div>
-        <div class="card-value">$58.75</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 0.1%</span></div>
+        <div class="card-value">$58.56</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 0.5%</span></div>
         <div class="card-detail">LY: $58.83</div>
         
     </div>
@@ -582,7 +573,7 @@ body {
                     <span>Avg Order Value</span>
                     <button class="modal-close" onclick="closeModal('aov')">&times;</button>
                 </div>
-                <div class="modal-value">$58.75</div>
+                <div class="modal-value">$58.56</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Average True Gross per order. Indicates how much value each order represents at full retail.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>DTC Gross Sales / Total DTC Orders</p></div>
@@ -591,9 +582,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('units')" style="cursor:pointer;">
         <div class="card-label">Units Sold</div>
-        <div class="card-value">15,450</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 31.1%</span></div>
-        <div class="card-detail">LY: 22,420 | Sub units: 4,051</div>
+        <div class="card-value">15,865</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 29.2%</span></div>
+        <div class="card-detail">LY: 22,420 | Sub units: 4,087</div>
         
     </div>
         <div class="card-modal" id="modal-units">
@@ -602,7 +593,7 @@ body {
                     <span>Units Sold</span>
                     <button class="modal-close" onclick="closeModal('units')">&times;</button>
                 </div>
-                <div class="modal-value">15,450</div>
+                <div class="modal-value">15,865</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Total product units shipped across all DTC orders.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of line item quantities from all DTC orders.</p></div>
@@ -620,9 +611,9 @@ body {
     
     <div class="kpi-card" onclick="openModal('adspend')" style="cursor:pointer;">
         <div class="card-label">Total Ad Spend</div>
-        <div class="card-value">$29,997</div>
+        <div class="card-value">$29,998</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 29.7%</span></div>
-        <div class="card-detail">Meta: $20,756 | Google: $9,241<br/>LY: $42,664 (Meta: $36,890 / Google: $5,775)</div>
+        <div class="card-detail">Budget: $20,000 | Actual: 150% (over) | Meta: $20,756 / Google: $9,242<br/>LY: $42,664 (Meta: $36,890 / Google: $5,775)</div>
         
     </div>
         <div class="card-modal" id="modal-adspend">
@@ -631,7 +622,7 @@ body {
                     <span>Total Ad Spend</span>
                     <button class="modal-close" onclick="closeModal('adspend')">&times;</button>
                 </div>
-                <div class="modal-value">$29,997</div>
+                <div class="modal-value">$29,998</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Combined Meta (Facebook/Instagram) and Google Ads spend for the period.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of daily spend from raw_meta_ads + raw_google_ads.</p></div>
@@ -640,10 +631,10 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('mer')" style="cursor:pointer;">
         <div class="card-label">MER (Revenue / Spend)</div>
-        <div class="card-value">6.81x</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 15.0%</span></div>
+        <div class="card-value">6.96x</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 17.6%</span></div>
         <div class="card-detail">LY: 5.92x</div>
-        
+        <div class="card-projected">Forecast MER: 11.91x (on $20,000 budget)</div>
     </div>
         <div class="card-modal" id="modal-mer">
             <div class="modal-inner">
@@ -651,7 +642,7 @@ body {
                     <span>MER (Revenue / Spend)</span>
                     <button class="modal-close" onclick="closeModal('mer')">&times;</button>
                 </div>
-                <div class="modal-value">6.81x</div>
+                <div class="modal-value">6.96x</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Marketing Efficiency Ratio. How many dollars of net revenue we generate per dollar of ad spend. Higher is better. Target varies by season.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Net Revenue / Total Ad Spend</p></div>
@@ -660,8 +651,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('nc_mer')" style="cursor:pointer;">
         <div class="card-label">NC MER (New Customer)</div>
-        <div class="card-value">1.58x</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 7.0%</span></div>
+        <div class="card-value">1.64x</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 3.3%</span></div>
         <div class="card-detail">LY: 1.70x | Target: 2.25x</div>
         
     </div>
@@ -671,7 +662,7 @@ body {
                     <span>NC MER (New Customer)</span>
                     <button class="modal-close" onclick="closeModal('nc_mer')">&times;</button>
                 </div>
-                <div class="modal-value">1.58x</div>
+                <div class="modal-value">1.64x</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>New Customer MER. Revenue from first-time buyers divided by total ad spend. Our primary acquisition efficiency metric. Target is 2.25x.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>New Customer Net Revenue / Total Ad Spend</p></div>
@@ -680,8 +671,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('cpa')" style="cursor:pointer;">
         <div class="card-label">CPA (All Orders)</div>
-        <div class="card-value">$7.60</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 12.3%</span></div>
+        <div class="card-value">$7.42</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 14.4%</span></div>
         <div class="card-detail">LY: $8.67</div>
         
     </div>
@@ -691,7 +682,7 @@ body {
                     <span>CPA (All Orders)</span>
                     <button class="modal-close" onclick="closeModal('cpa')">&times;</button>
                 </div>
-                <div class="modal-value">$7.60</div>
+                <div class="modal-value">$7.42</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Cost Per Acquisition. Average ad spend to acquire one order (any type). Lower is better.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Total Ad Spend / Total Orders</p></div>
@@ -700,9 +691,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('nc_cpa')" style="cursor:pointer;">
         <div class="card-label">NC CPA (New Customer)</div>
-        <div class="card-value">$27.39</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 11.2%</span></div>
-        <div class="card-detail">LY: $24.63 | 1,095 new customers</div>
+        <div class="card-value">$26.27</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 6.6%</span></div>
+        <div class="card-detail">LY: $24.63 | 1,142 new customers</div>
         
     </div>
         <div class="card-modal" id="modal-nc_cpa">
@@ -711,7 +702,7 @@ body {
                     <span>NC CPA (New Customer)</span>
                     <button class="modal-close" onclick="closeModal('nc_cpa')">&times;</button>
                 </div>
-                <div class="modal-value">$27.39</div>
+                <div class="modal-value">$26.27</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>New Customer Cost Per Acquisition. How much we spend in ads to acquire each new customer. Key acquisition cost metric.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Total Ad Spend / New Customer Orders</p></div>
@@ -729,9 +720,9 @@ body {
     
     <div class="kpi-card" onclick="openModal('discounts')" style="cursor:pointer;">
         <div class="card-label">Total Discounts</div>
-        <div class="card-value">$35,039</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 24.8%</span></div>
-        <div class="card-detail">15.1% of gross | LY: $46,573</div>
+        <div class="card-value">$35,324</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 24.2%</span></div>
+        <div class="card-detail">14.9% of gross | LY: $46,573</div>
         
     </div>
         <div class="card-modal" id="modal-discounts">
@@ -740,7 +731,7 @@ body {
                     <span>Total Discounts</span>
                     <button class="modal-close" onclick="closeModal('discounts')">&times;</button>
                 </div>
-                <div class="modal-value">$35,039</div>
+                <div class="modal-value">$35,324</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>All line-item discounts applied to DTC orders: subscription implied discount, automatic promos, discount codes, and manual adjustments. Excludes shipping discounts (tracked separately) and free item value.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_discounts from calc_daily_shopify (subscription + automatic + code + manual).</p></div>
@@ -749,9 +740,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('promo_disc_pct')" style="cursor:pointer;">
         <div class="card-label">Promotional Discount %</div>
-        <div class="card-value">10.9%</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 355.5%</span></div>
-        <div class="card-detail">$25,201 promo spend | LY: 2.4% ($6,910)</div>
+        <div class="card-value">11.0%</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 360.1%</span></div>
+        <div class="card-detail">$25,987 promo spend | LY: 2.4% ($6,910)</div>
         
     </div>
         <div class="card-modal" id="modal-promo_disc_pct">
@@ -760,7 +751,7 @@ body {
                     <span>Promotional Discount %</span>
                     <button class="modal-close" onclick="closeModal('promo_disc_pct')">&times;</button>
                 </div>
-                <div class="modal-value">10.9%</div>
+                <div class="modal-value">11.0%</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Real promotional discount rate -- line-item promos only as a share of gross. EXCLUDES subscription implied discount (pricing plan, not a promo) AND shipping discounts (tracked separately as Shipping Promo %). Use this to judge how heavily we are discounting product to drive sales.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>(Automatic Discounts + Code Discounts + Manual Discounts) / Gross Sales. Shipping discounts are split out as their own metric so the free-ship lever doesn't blend into the product-promo rate.</p></div>
@@ -769,9 +760,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('shipping_promo_pct')" style="cursor:pointer;">
         <div class="card-label">Shipping Promo %</div>
-        <div class="card-value">1.8%</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 269.1%</span></div>
-        <div class="card-detail">$4,221 shipping disc | LY: 0.5% ($1,429)</div>
+        <div class="card-value">1.7%</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 250.8%</span></div>
+        <div class="card-detail">$4,096 shipping disc | LY: 0.5% ($1,429)</div>
         
     </div>
         <div class="card-modal" id="modal-shipping_promo_pct">
@@ -780,7 +771,7 @@ body {
                     <span>Shipping Promo %</span>
                     <button class="modal-close" onclick="closeModal('shipping_promo_pct')">&times;</button>
                 </div>
-                <div class="modal-value">1.8%</div>
+                <div class="modal-value">1.7%</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Free-shipping lever as a share of gross. Tracks how much customer-facing discount we give via shipping (free-ship thresholds, free-ship promos). Broken out from Promotional Discount % so we can see the two levers independently.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Discounts / Gross Sales. Shipping discounts sit in the bridge from Subtotal to Net Revenue, not in line-item discounts, so they are isolated here.</p></div>
@@ -789,8 +780,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('sub_disc')" style="cursor:pointer;">
         <div class="card-label">Subscription Discounts</div>
-        <div class="card-value">$14,051</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 13.5%</span></div>
+        <div class="card-value">$14,146</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 12.9%</span></div>
         <div class="card-detail">40% of total discounts | LY: $16,244</div>
         
     </div>
@@ -800,7 +791,7 @@ body {
                     <span>Subscription Discounts</span>
                     <button class="modal-close" onclick="closeModal('sub_disc')">&times;</button>
                 </div>
-                <div class="modal-value">$14,051</div>
+                <div class="modal-value">$14,146</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Recurring subscription discount amount baked into line item pricing. Subscribers receive a fixed percentage off retail.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_subscription_discounts from calc_daily_shopify.</p></div>
@@ -809,9 +800,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('auto_disc')" style="cursor:pointer;">
         <div class="card-label">Automatic Discounts</div>
-        <div class="card-value">$22,100</div>
+        <div class="card-value">$22,727</div>
         <div class="card-yoy"><span class="yoy-badge neutral">--</span></div>
-        <div class="card-detail">63% of total discounts | LY: $0</div>
+        <div class="card-detail">64% of total discounts | LY: $0</div>
         
     </div>
         <div class="card-modal" id="modal-auto_disc">
@@ -820,7 +811,7 @@ body {
                     <span>Automatic Discounts</span>
                     <button class="modal-close" onclick="closeModal('auto_disc')">&times;</button>
                 </div>
-                <div class="modal-value">$22,100</div>
+                <div class="modal-value">$22,727</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Shopify automatic discounts (BOGO, buy-X-get-Y, automatic % off). Applied without a code at checkout.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_automatic_discounts from calc_daily_shopify.</p></div>
@@ -829,8 +820,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('code_disc')" style="cursor:pointer;">
         <div class="card-label">Discount Codes</div>
-        <div class="card-value">$1,660</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 72.0%</span></div>
+        <div class="card-value">$1,773</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 70.1%</span></div>
         <div class="card-detail">5% of total discounts | LY: $5,935</div>
         
     </div>
@@ -840,7 +831,7 @@ body {
                     <span>Discount Codes</span>
                     <button class="modal-close" onclick="closeModal('code_disc')">&times;</button>
                 </div>
-                <div class="modal-value">$1,660</div>
+                <div class="modal-value">$1,773</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Manually entered coupon/promo codes at checkout. Includes influencer codes, email campaign codes, etc.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_code_discounts from calc_daily_shopify.</p></div>
@@ -849,8 +840,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('manual_disc')" style="cursor:pointer;">
         <div class="card-label">Manual Discounts</div>
-        <div class="card-value">$1,442</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 47.8%</span></div>
+        <div class="card-value">$1,487</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 52.4%</span></div>
         <div class="card-detail">4% of total discounts | LY: $975</div>
         
     </div>
@@ -860,7 +851,7 @@ body {
                     <span>Manual Discounts</span>
                     <button class="modal-close" onclick="closeModal('manual_disc')">&times;</button>
                 </div>
-                <div class="modal-value">$1,442</div>
+                <div class="modal-value">$1,487</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Discounts manually applied by customer service (order edits, goodwill adjustments, price matches).</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of dtc_manual_discounts from calc_daily_shopify.</p></div>
@@ -869,9 +860,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('free_items')" style="cursor:pointer;">
         <div class="card-label">Free Items Given</div>
-        <div class="card-value">3,527 items</div>
-        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 40.8%</span></div>
-        <div class="card-detail">Value: $11,160 | LY: 5,959 items ($27,600)</div>
+        <div class="card-value">3,602 items</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 39.6%</span></div>
+        <div class="card-detail">Value: $11,425 | LY: 5,959 items ($27,600)</div>
         
     </div>
         <div class="card-modal" id="modal-free_items">
@@ -880,7 +871,7 @@ body {
                     <span>Free Items Given</span>
                     <button class="modal-close" onclick="closeModal('free_items')">&times;</button>
                 </div>
-                <div class="modal-value">3,527 items</div>
+                <div class="modal-value">3,602 items</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Products given away at $0 (BOGO deals, free gifts with purchase). Tracked separately from discounts because these represent full product cost.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Count and value of line items where unit_price = $0, excluding ignored SKUs.</p></div>
@@ -949,9 +940,9 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('ship_charged')" style="cursor:pointer;">
         <div class="card-label">Shipping Charged to Customers</div>
-        <div class="card-value">$13,655</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 0.1%</span></div>
-        <div class="card-detail">LY: $13,674 | Margin: $-21,734</div>
+        <div class="card-value">$14,240</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 4.1%</span></div>
+        <div class="card-detail">LY: $13,674 | Margin: $-21,149</div>
         
     </div>
         <div class="card-modal" id="modal-ship_charged">
@@ -960,7 +951,7 @@ body {
                     <span>Shipping Charged to Customers</span>
                     <button class="modal-close" onclick="closeModal('ship_charged')">&times;</button>
                 </div>
-                <div class="modal-value">$13,655</div>
+                <div class="modal-value">$14,240</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Revenue from shipping charges collected from customers. The difference between this and actual shipping cost is our shipping margin (positive = we collect more than we pay).</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of total_shipping from Shopify orders (calc_daily_shopify).</p></div>
@@ -969,8 +960,8 @@ body {
         </div>
     <div class="kpi-card" onclick="openModal('ship_margin')" style="cursor:pointer;">
         <div class="card-label">Shipping Margin</div>
-        <div class="card-value">$-21,734</div>
-        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 10.9%</span></div>
+        <div class="card-value">$-21,149</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 7.9%</span></div>
         <div class="card-detail">LY: $-19,603 | Cost/shipment: $7.83 (LY: $7.29)</div>
         
     </div>
@@ -980,7 +971,7 @@ body {
                     <span>Shipping Margin</span>
                     <button class="modal-close" onclick="closeModal('ship_margin')">&times;</button>
                 </div>
-                <div class="modal-value">$-21,734</div>
+                <div class="modal-value">$-21,149</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Difference between what customers paid for shipping and our actual carrier costs. Positive = we collect more than we pay. Negative = we subsidize shipping.</p></div>
                 
                 <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Charged to Customers - Shipping Cost (Actual)</p></div>
@@ -990,6 +981,12 @@ body {
 </div>
 
 <!-- ======== CHARTS ======== -->
+<div class="chart-row" style="grid-template-columns: 1fr;">
+    <div class="chart-box">
+        <h3>Daily Gross Sales vs Daily Ad Spend</h3>
+        <canvas id="salesVsSpendChart" height="120"></canvas>
+    </div>
+</div>
 <div class="chart-row">
     <div class="chart-box">
         <h3>Daily Gross Sales vs Last Year</h3>
@@ -1292,9 +1289,74 @@ function closeAdModal() {
 }
 
 // Charts
-const trendData = {"dates": ["2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30"], "gross": [6899.0, 4262.0, 1902.0, 1206.0, 4066.0, 5465.0, 5166.0, 4359.0, 4621.0, 4237.0, 5355.0, 4503.0, 5031.0, 5458.0, 4273.0, 5559.0, 3829.0, 4776.0, 4576.0, 10806.0, 22530.0, 18812.0, 12945.0, 10757.0, 11593.0, 16920.0, 18226.0, 11579.0, 6630.0, 5474.0], "orders": [146, 83, 44, 26, 87, 116, 112, 97, 93, 98, 101, 100, 100, 101, 88, 117, 82, 81, 93, 152, 284, 265, 193, 158, 200, 241, 283, 202, 112, 91], "ly_dates": ["2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-05", "2025-04-06", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-12", "2025-04-13", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-19", "2025-04-20", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-26", "2025-04-27", "2025-04-28", "2025-04-29", "2025-04-30"], "ly_gross": [6266.0, 7799.0, 5887.0, 7074.0, 5314.0, 5751.0, 6383.0, 7248.0, 7400.0, 5708.0, 6159.0, 5829.0, 5309.0, 4455.0, 4668.0, 7501.0, 7006.0, 4975.0, 5975.0, 4895.0, 36915.0, 21979.0, 12023.0, 13655.0, 15778.0, 21124.0, 21825.0, 14687.0, 4829.0, 5152.0], "ly_orders": [137, 150, 117, 126, 115, 117, 116, 148, 135, 116, 140, 100, 154, 79, 104, 162, 157, 113, 115, 89, 483, 312, 200, 206, 217, 286, 308, 233, 90, 97]};
-const cumData = {"days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], "cum": [6899.0, 11161.0, 13063.0, 14268.0, 18335.0, 23800.0, 28966.0, 33324.0, 37945.0, 42182.0, 47537.0, 52040.0, 57071.0, 62528.0, 66802.0, 72361.0, 76191.0, 80966.0, 85542.0, 96348.0, 118877.0, 137689.0, 150634.0, 161392.0, 172984.0, 189904.0, 208130.0, 219709.0, 226339.0, 231813.0], "ly_days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], "ly_cum": [6266.0, 14066.0, 19953.0, 27027.0, 32341.0, 38092.0, 44474.0, 51723.0, 59122.0, 64831.0, 70990.0, 76819.0, 82128.0, 86583.0, 91252.0, 98752.0, 105758.0, 110733.0, 116708.0, 121603.0, 158518.0, 180498.0, 192521.0, 206176.0, 221954.0, 243078.0, 264903.0, 279590.0, 284419.0, 289571.0]};
-const discData = {"labels": ["Subscription", "Automatic", "Discount Codes", "Manual"], "values": [14051.0, 22100.0, 1660.0, 1442.0]};
+const trendData = {"dates": ["2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30"], "gross": [6899.0, 4262.0, 4549.0, 3426.0, 4066.0, 5465.0, 5166.0, 4359.0, 4621.0, 4237.0, 5355.0, 4503.0, 5031.0, 5458.0, 4273.0, 5559.0, 3829.0, 4776.0, 4576.0, 10806.0, 22530.0, 18812.0, 12945.0, 10757.0, 11593.0, 16920.0, 18226.0, 11579.0, 6630.0, 5474.0], "orders": [146, 83, 91, 75, 87, 116, 112, 97, 93, 98, 101, 100, 100, 101, 88, 117, 82, 81, 93, 152, 284, 265, 193, 158, 200, 241, 283, 202, 112, 91], "meta_spend": [331.0, 357.0, 424.0, 488.0, 600.0, 539.0, 502.0, 505.0, 496.0, 484.0, 507.0, 568.0, 535.0, 519.0, 528.0, 508.0, 578.0, 396.0, 564.0, 651.0, 655.0, 652.0, 641.0, 627.0, 1348.0, 2128.0, 2052.0, 1805.0, 452.0, 319.0], "google_spend": [313.0, 311.0, 295.0, 293.0, 288.0, 438.0, 292.0, 295.0, 324.0, 268.0, 302.0, 294.0, 258.0, 192.0, 199.0, 272.0, 307.0, 337.0, 304.0, 284.0, 264.0, 300.0, 369.0, 287.0, 401.0, 440.0, 354.0, 388.0, 280.0, 292.0], "total_spend": [644.0, 668.0, 719.0, 781.0, 888.0, 976.0, 794.0, 800.0, 819.0, 752.0, 809.0, 862.0, 794.0, 711.0, 727.0, 780.0, 884.0, 733.0, 868.0, 935.0, 918.0, 952.0, 1010.0, 914.0, 1749.0, 2568.0, 2405.0, 2193.0, 733.0, 611.0], "ly_dates": ["2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-05", "2025-04-06", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-12", "2025-04-13", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-19", "2025-04-20", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-26", "2025-04-27", "2025-04-28", "2025-04-29", "2025-04-30"], "ly_gross": [6266.0, 7799.0, 5887.0, 7074.0, 5314.0, 5751.0, 6383.0, 7248.0, 7400.0, 5708.0, 6159.0, 5829.0, 5309.0, 4455.0, 4668.0, 7501.0, 7006.0, 4975.0, 5975.0, 4895.0, 36915.0, 21979.0, 12023.0, 13655.0, 15778.0, 21124.0, 21825.0, 14687.0, 4829.0, 5152.0], "ly_orders": [137, 150, 117, 126, 115, 117, 116, 148, 135, 116, 140, 100, 154, 79, 104, 162, 157, 113, 115, 89, 483, 312, 200, 206, 217, 286, 308, 233, 90, 97]};
+const cumData = {"days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], "cum": [6899.0, 11161.0, 15710.0, 19136.0, 23203.0, 28668.0, 33834.0, 38192.0, 42813.0, 47050.0, 52405.0, 56908.0, 61939.0, 67396.0, 71670.0, 77229.0, 81058.0, 85834.0, 90410.0, 101215.0, 123745.0, 142557.0, 155502.0, 166259.0, 177852.0, 194772.0, 212998.0, 224577.0, 231207.0, 236681.0], "ly_days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], "ly_cum": [6266.0, 14066.0, 19953.0, 27027.0, 32341.0, 38092.0, 44474.0, 51723.0, 59122.0, 64831.0, 70990.0, 76819.0, 82128.0, 86583.0, 91252.0, 98752.0, 105758.0, 110733.0, 116708.0, 121603.0, 158518.0, 180498.0, 192521.0, 206176.0, 221954.0, 243078.0, 264903.0, 279590.0, 284419.0, 289571.0]};
+const discData = {"labels": ["Subscription", "Automatic", "Discount Codes", "Manual"], "values": [14146.0, 22727.0, 1773.0, 1487.0]};
+
+// Daily Gross Sales vs Daily Ad Spend (dual-axis line chart)
+new Chart(document.getElementById('salesVsSpendChart'), {
+    type: 'line',
+    data: {
+        labels: trendData.dates.map(d => d.slice(5)),
+        datasets: [
+            {
+                label: 'Daily Gross Sales',
+                data: trendData.gross,
+                borderColor: '#D4A843',
+                backgroundColor: 'rgba(212,168,67,0.15)',
+                yAxisID: 'ySales',
+                tension: 0.3,
+                borderWidth: 2.5,
+                pointRadius: 3,
+                pointBackgroundColor: '#D4A843',
+                fill: true,
+                order: 1,
+            },
+            {
+                label: 'Daily Ad Spend',
+                data: trendData.total_spend,
+                borderColor: '#58a6ff',
+                backgroundColor: 'rgba(88,166,255,0.10)',
+                yAxisID: 'ySpend',
+                tension: 0.3,
+                borderWidth: 2,
+                pointRadius: 2.5,
+                pointBackgroundColor: '#58a6ff',
+                fill: false,
+                order: 2,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString()
+                }
+            }
+        },
+        scales: {
+            x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { display: false } },
+            ySales: {
+                type: 'linear', position: 'left',
+                ticks: { color: '#D4A843', callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+                title: { display: true, text: 'Gross Sales', color: '#D4A843', font: { size: 11 } },
+                grid: { color: 'rgba(255,255,255,0.04)' },
+                beginAtZero: true,
+            },
+            ySpend: {
+                type: 'linear', position: 'right',
+                ticks: { color: '#58a6ff', callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+                title: { display: true, text: 'Ad Spend', color: '#58a6ff', font: { size: 11 } },
+                grid: { display: false },
+                beginAtZero: true,
+            }
+        }
+    }
+});
 
 new Chart(document.getElementById('dailyChart'), {
     type: 'bar',
