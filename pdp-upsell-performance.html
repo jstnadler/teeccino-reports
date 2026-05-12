@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDP Upsell Performance — Teeccino</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha512-SIMGYRUjwY8+gKg7nn9EItdD8LCADSDfJNutF9TPrvEo86sQmFMh6MyralfIyhADlajSxqc7G0gs7+MwWF/ogQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   :root {
     --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
@@ -17,7 +18,6 @@
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: var(--text); padding: 24px; padding-top: 70px; line-height: 1.5; min-height: 100vh;
   }
-  /* top-nav rules removed — shared hub nav now loaded from /_partials/nav.html */
 
   header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; flex-wrap: wrap; gap: 12px; }
   h1 { font-size: 1.7rem; background: linear-gradient(135deg, #D4A843, #8B6914); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -29,9 +29,40 @@
   .badge-stub  { background: rgba(251,191,36,0.18); color: var(--yellow); }
   .badge-live  { background: rgba(74,222,128,0.18); color: var(--green); }
 
-  .stats-bar { display: flex; gap: 32px; margin: 24px 0 28px; flex-wrap: wrap; }
-  .stat .num { font-size: 2rem; font-weight: 700; color: var(--accent); }
-  .stat .num.pending { font-size: 1rem; color: var(--text-dim); font-weight: 500; }
+  /* Filter bar */
+  .filter-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px;
+    padding: 14px 18px; margin: 18px 0 24px;
+    background: rgba(212,168,67,0.06); border: 1px solid rgba(212,168,67,0.18);
+    border-radius: 10px;
+  }
+  .filter-bar .group { display: flex; align-items: center; gap: 8px; }
+  .filter-bar label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
+  .filter-bar input[type=date] {
+    background: rgba(255,255,255,0.06); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 10px; font-size: 0.85rem; font-family: inherit;
+    color-scheme: dark;
+  }
+  .filter-bar input[type=date]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .pill-group { display: inline-flex; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .pill {
+    background: transparent; color: var(--text-dim); border: 0;
+    padding: 6px 12px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    border-right: 1px solid var(--border);
+    transition: background 0.15s, color 0.15s;
+  }
+  .pill:last-child { border-right: 0; }
+  .pill:hover:not(:disabled) { background: rgba(255,255,255,0.06); color: var(--text); }
+  .pill.active { background: var(--accent); color: #1a1a2e; }
+  .pill:disabled { opacity: 0.45; cursor: not-allowed; }
+  .filter-meta { margin-left: auto; font-size: 0.78rem; color: var(--text-dim); }
+  .filter-meta strong { color: var(--accent); font-weight: 600; }
+
+  .stats-bar { display: flex; gap: 32px; margin: 12px 0 28px; flex-wrap: wrap; }
+  .stat .num { font-size: 2rem; font-weight: 700; color: var(--accent); transition: color 0.15s; }
+  .stat .num.zero { color: var(--text-dim); }
   .stat .label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -53,11 +84,33 @@
     background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 8px; font-size: 0.88rem;
   }
 
+  .chart-wrap {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 14px; position: relative;
+  }
+  .chart-wrap .chart-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .chart-wrap canvas { width: 100% !important; max-height: 340px; }
+  .chart-empty { height: 340px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-style: italic; font-size: 0.9rem; }
+
   .data-table { width: 100%; border-collapse: separate; border-spacing: 0; }
   .data-table th, .data-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-  .data-table th { background: rgba(212,168,67,0.08); color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.4px; }
+  .data-table th {
+    background: rgba(212,168,67,0.08); color: var(--accent); font-weight: 600;
+    text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.4px;
+    cursor: pointer; user-select: none; position: relative;
+  }
+  .data-table th:hover { background: rgba(212,168,67,0.14); }
+  .data-table th.sort-asc::after,
+  .data-table th.sort-desc::after {
+    content: ''; display: inline-block; margin-left: 6px;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    vertical-align: middle;
+  }
+  .data-table th.sort-asc::after  { border-bottom: 5px solid var(--accent); }
+  .data-table th.sort-desc::after { border-top: 5px solid var(--accent); }
   .data-table td:nth-child(n+2) { text-align: right; font-variant-numeric: tabular-nums; }
   .data-table th:nth-child(n+2) { text-align: right; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
 
   .arch-block {
     padding: 14px 18px; background: rgba(96,165,250,0.05); border-left: 2px solid var(--blue);
@@ -68,7 +121,6 @@
 
   .good { color: var(--green); font-weight: 600; }
   .bad { color: var(--red); font-weight: 600; }
-
   .updated-stamp { color: var(--text-dim); font-size: 0.75rem; }
 
   .pipe-row { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
@@ -98,7 +150,7 @@
   <div class="subtitle">
     <span class="badge badge-live">LIVE</span>
     &middot; Tracking live since 2026-04-30 17:14 PT
-    &middot; <span class="updated-stamp">Updated 2026-05-11 20:58:22</span>
+    &middot; <span class="updated-stamp">Updated 2026-05-11 23:53:26</span>
   </div>
 </header>
 
@@ -106,7 +158,6 @@
   Joins two data streams: (1) Shopify line-item <code>_upsell_*</code> properties for revenue attribution
   (live now via <code>ingest_shopify.py</code>), (2) GA4 events for funnel metrics
   (impressions, accept rate, dismiss reasons — pending GA4 ingest setup).
-  First accept: 2026-05-01T01:58:38.729Z &middot; Latest: 2026-05-11T05:21:38.093Z
 </div>
 
 <!-- Pipeline status row -->
@@ -134,62 +185,121 @@
   </div>
 </div>
 
-<!-- Revenue hero -->
-<h2>Revenue Attribution (Stream 2 — Shopify line-item properties)</h2>
-<div class="stats-bar">
-          <div class="stat"><div class="num">$362.85</div><div class="label">Attributed Revenue</div></div>
-          <div class="stat"><div class="num">24</div><div class="label">Orders w/ Upsell</div></div>
-          <div class="stat"><div class="num">24</div><div class="label">Upsell Line Items</div></div>
-          <div class="stat"><div class="num">$71.17</div><div class="label">Discount $ Given</div></div>
-          <div class="stat"><div class="num">$284.68</div><div class="label">Net Contribution</div></div>
-        </div>
-
-<!-- AOV Lift -->
-<div class="grid-2">
-  <div class="card">
-    <div class="card-hdr"><h3>AOV Lift</h3></div>
-    
-          <div class="kv"><span class="k">Avg Order Value (with upsell)</span><span class="v">$74.24</span></div>
-          <div class="kv"><span class="k">Avg Order Value (without)</span><span class="v">$50.50</span></div>
-          <div class="kv"><span class="k">Lift</span><span class="v"><span class="good">47.0%</span></span></div>
-          <div class="kv"><span class="k">Sample size (upsell orders)</span><span class="v">24</span></div>
-          <div class="narrative">Comparison vs DTC orders since 2026-04-30. Sample grows as more upsell-accepted orders flow in.</div>
-        
+<!-- Interactive filter bar -->
+<h2>Filters</h2>
+<div class="filter-bar">
+  <div class="group">
+    <label for="date-from">From</label>
+    <input type="date" id="date-from">
   </div>
-  <div class="card">
-    <div class="card-hdr"><h3>Discount Cost &amp; Net Contribution</h3></div>
-    <div class="kv"><span class="k">Total upsell revenue</span><span class="v">$362.85</span></div>
-    <div class="kv"><span class="k">Discount cost (sum of pct × line_subtotal)</span><span class="v">$71.17</span></div>
-    <div class="kv"><span class="k">Donation pass-through</span><span class="v">$7.00</span></div>
-    <div class="kv"><span class="k">Net contribution</span><span class="v">$284.68</span></div>
-    <div class="narrative">Net = upsell revenue − discount giveaways − donation pass-through. Donations net to zero (or could be CSR-flagged depending on accounting treatment).</div>
+  <div class="group">
+    <label for="date-to">To</label>
+    <input type="date" id="date-to">
+  </div>
+  <div class="pill-group" id="preset-group" role="group" aria-label="Date presets">
+    <button class="pill" data-preset="7">Last 7d</button>
+    <button class="pill" data-preset="30">Last 30d</button>
+    <button class="pill active" data-preset="all">All</button>
+  </div>
+  <div class="group">
+    <label>Source</label>
+    <div class="pill-group" id="source-group" role="group" aria-label="Data source">
+      <button class="pill active" data-source="both">Both</button>
+      <button class="pill" data-source="shopify">Shopify</button>
+      <button class="pill" data-source="ga4" title="Awaiting GA4 ingest">GA4</button>
+    </div>
+  </div>
+  <div class="filter-meta">
+    Showing <strong id="visible-count">0</strong> rows
+    &middot; range <strong id="visible-range">—</strong>
   </div>
 </div>
 
+<!-- Revenue hero -->
+<h2>Revenue Attribution</h2>
+<div class="stats-bar" id="stats-bar"></div>
+
+<!-- AOV + Discount cards -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-hdr"><h3>AOV Lift</h3></div>
+    <div id="aov-block"></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><h3>Discount Cost &amp; Net Contribution</h3></div>
+    <div id="discount-block"></div>
+  </div>
+</div>
+
+<!-- Daily line chart by product -->
+<h2>Upsells per Day, by Product</h2>
+<div class="chart-wrap">
+  <div class="chart-hdr">
+    <h3>Daily accept count</h3>
+    <span class="updated-stamp">One line per upsold product · click legend to toggle</span>
+  </div>
+  <div id="chart-host">
+    <canvas id="daily-chart" aria-label="Upsells per day by product"></canvas>
+  </div>
+</div>
+
+<!-- By Product (NEW, sortable) -->
+<h2>By Product</h2>
+<div class="card" style="padding: 0; overflow: hidden;">
+  <table class="data-table" id="product-table">
+    <thead>
+      <tr>
+        <th data-key="product_name" data-type="str">Product</th>
+        <th data-key="orders" data-type="num">Orders</th>
+        <th data-key="lines" data-type="num">Lines</th>
+        <th data-key="quantity" data-type="num">Qty</th>
+        <th data-key="revenue" data-type="num" class="sort-desc">Revenue</th>
+        <th data-key="discount" data-type="num">Disc $</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<!-- By Campaign (sortable) -->
 <h2>By Campaign</h2>
 <div class="card" style="padding: 0; overflow: hidden;">
-        <table class="data-table">
-          <thead><tr><th>Campaign</th><th>Orders</th><th>Lines</th><th>Revenue</th></tr></thead>
-          <tbody><tr><td>fotm-java-herbal-coffee-2026-05</td><td>19</td><td>19</td><td>$348.85</td></tr><tr><td>donation-wild-foundation</td><td>3</td><td>3</td><td>$7.00</td></tr><tr><td>fotm-2026-04</td><td>1</td><td>1</td><td>$3.50</td></tr><tr><td>fotm-2026-05</td><td>1</td><td>1</td><td>$3.50</td></tr></tbody>
-        </table>
-        </div>
+  <table class="data-table" id="campaign-table">
+    <thead>
+      <tr>
+        <th data-key="campaign" data-type="str">Campaign</th>
+        <th data-key="orders" data-type="num">Orders</th>
+        <th data-key="lines" data-type="num">Lines</th>
+        <th data-key="revenue" data-type="num" class="sort-desc">Revenue</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
+<!-- By Modal (sortable) -->
 <h2>By Modal Type</h2>
 <div class="card" style="padding: 0; overflow: hidden;">
-        <table class="data-table">
-          <thead><tr><th>Modal Version</th><th>Orders</th><th>Lines</th><th>Revenue</th></tr></thead>
-          <tbody><tr><td>product-v1</td><td>21</td><td>21</td><td>$355.85</td></tr><tr><td>donation-v2</td><td>3</td><td>3</td><td>$7.00</td></tr></tbody>
-        </table>
-        </div>
+  <table class="data-table" id="modal-table">
+    <thead>
+      <tr>
+        <th data-key="modal_v" data-type="str">Modal Version</th>
+        <th data-key="orders" data-type="num">Orders</th>
+        <th data-key="lines" data-type="num">Lines</th>
+        <th data-key="revenue" data-type="num" class="sort-desc">Revenue</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <!-- Funnel section (GA4) -->
-<h2>Funnel Metrics (Stream 1 — GA4 events) <span class="badge badge-stub">PENDING</span></h2>
+<h2>Funnel Metrics (GA4 events) <span class="badge badge-stub">PENDING</span></h2>
 <div class="grid-2">
   <div class="card">
     <div class="card-hdr"><h3>Modal Funnel</h3></div>
     <div class="empty">
-      Awaiting GA4 ingest. Once AdSmith publishes the GTM tags + DataOps stands up <code>ingest_ga4.py</code>,
-      this card will show:
+      Awaiting GA4 ingest. Once DataOps stands up <code>ingest_ga4.py</code>, this card will show:
       <ul style="text-align:left; margin: 12px auto; max-width: 360px; line-height: 1.8;">
         <li>Impressions (modal_view count)</li>
         <li>Accept rate (accept_success / view)</li>
@@ -229,8 +339,433 @@
 </div>
 
 <div style="margin-top: 40px; text-align: center;">
-  <span class="updated-stamp">Built by build_pdp_upsell_dashboard.py · 2026-05-11 20:58:22</span>
+  <span class="updated-stamp">Built by build_pdp_upsell_dashboard.py · 2026-05-11 23:53:26</span>
 </div>
+
+<script id="upsell-payload" type="application/json">{"rows": [{"order_id": "gid://shopify/Order/6800901341432", "date": "2026-05-01", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "9478059000056", "source_variant_id": "48245225455864", "campaign": "fotm-2026-04", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-01T01:58:38.729Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6798670594296", "date": "2026-05-01", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "9133083099384", "source_variant_id": "46596470898936", "campaign": "fotm-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-01T07:32:37.058Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6802806866168", "date": "2026-05-02", "sku": "EDONATION-1.00", "product_name": "Wild Foundation - 1.00", "quantity": 5, "line_subtotal": 5.0, "modal_v": "donation-v2", "source_product_id": "9483769512184", "source_variant_id": "48269800866040", "campaign": "donation-wild-foundation", "source_mode": null, "discount_pct": 0, "accepted_at": "2026-05-02T23:31:09.283Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6803805274360", "date": "2026-05-03", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681934463145", "source_variant_id": "39688700821673", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-03T15:06:04.716Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6803906986232", "date": "2026-05-03", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681917456553", "source_variant_id": "39688637284521", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-03T16:09:02.909Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6804409417976", "date": "2026-05-03", "sku": "60070", "product_name": "Java Chicory Herbal Coffee - 5lb ground", "quantity": 1, "line_subtotal": 89.99, "modal_v": "product-v1", "source_product_id": "6800923918505", "source_variant_id": "43551405670648", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-03T20:10:36.779Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6806347088120", "date": "2026-05-04", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "9397552185592", "source_variant_id": "47954133418232", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-04T12:36:25.019Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6806769074424", "date": "2026-05-04", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "9478059000056", "source_variant_id": "48245225357560", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-04T22:10:31.538Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6807376560376", "date": "2026-05-04", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "6800923918505", "source_variant_id": "43551405670648", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-05T05:53:54.888Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6808163713272", "date": "2026-05-05", "sku": "EDONATION-1.00", "product_name": "Wild Foundation - 1.00", "quantity": 1, "line_subtotal": 1.0, "modal_v": "donation-v2", "source_product_id": "9483769512184", "source_variant_id": "48269800866040", "campaign": "donation-wild-foundation", "source_mode": null, "discount_pct": 0, "accepted_at": "2026-05-04T21:09:53.947Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6808122687736", "date": "2026-05-05", "sku": "EDONATION-1.00", "product_name": "Wild Foundation - 1.00", "quantity": 1, "line_subtotal": 1.0, "modal_v": "donation-v2", "source_product_id": "9483769512184", "source_variant_id": "48269800866040", "campaign": "donation-wild-foundation", "source_mode": null, "discount_pct": 0, "accepted_at": "2026-05-05T14:08:26.999Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6809394708728", "date": "2026-05-05", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "6681927418025", "source_variant_id": "39688672542889", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-05T22:56:45.481Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6810738196728", "date": "2026-05-06", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "8990564024568", "source_variant_id": "46359528734968", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-06T14:47:15.665Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6811639841016", "date": "2026-05-06", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681911722153", "source_variant_id": "39688614052009", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-06T21:07:37.018Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6813271556344", "date": "2026-05-07", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681931972777", "source_variant_id": "45166808006904", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-07T14:41:40.144Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6814261018872", "date": "2026-05-07", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 3, "line_subtotal": 50.97, "modal_v": "product-v1", "source_product_id": "6681918111913", "source_variant_id": "39688639316137", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-07T20:48:20.406Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6814259347704", "date": "2026-05-07", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681919291561", "source_variant_id": "46152362885368", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-07T20:56:38.218Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6814537023736", "date": "2026-05-07", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "9145046565112", "source_variant_id": "46626516304120", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-08T00:00:36.228Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6815565938936", "date": "2026-05-08", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681926729897", "source_variant_id": "44300701073656", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-08T14:19:56.091Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6820221387000", "date": "2026-05-10", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "9133037617400", "source_variant_id": "46596219371768", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-09T03:28:51.469Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6820005314808", "date": "2026-05-10", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "9145046565112", "source_variant_id": "46626516304120", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-10T22:32:26.594Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6820106797304", "date": "2026-05-10", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681926729897", "source_variant_id": "39688670183593", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-11T00:29:43.652Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6820240752888", "date": "2026-05-10", "sku": "50070", "product_name": "Java Chicory Herbal Coffee - Trial Size", "quantity": 1, "line_subtotal": 3.5, "modal_v": "product-v1", "source_product_id": "6681928138921", "source_variant_id": "44300701008120", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-11T02:51:47.921Z", "source": "shopify"}, {"order_id": "gid://shopify/Order/6820363731192", "date": "2026-05-10", "sku": "80070L", "product_name": "Java Chicory Herbal Coffee - 11 ounce ground", "quantity": 1, "line_subtotal": 16.99, "modal_v": "product-v1", "source_product_id": "6681913163945", "source_variant_id": "39688619983017", "campaign": "fotm-java-herbal-coffee-2026-05", "source_mode": "fotm", "discount_pct": 20, "accepted_at": "2026-05-11T05:21:38.093Z", "source": "shopify"}], "non_upsell_daily": [{"date": "2026-04-30", "orders": 91, "revenue": 4842.41}, {"date": "2026-05-01", "orders": 110, "revenue": 5031.32}, {"date": "2026-05-02", "orders": 69, "revenue": 3334.2799999999997}, {"date": "2026-05-03", "orders": 96, "revenue": 5437.21}, {"date": "2026-05-04", "orders": 85, "revenue": 4468.84}, {"date": "2026-05-05", "orders": 66, "revenue": 2979.0}, {"date": "2026-05-06", "orders": 73, "revenue": 3297.07}, {"date": "2026-05-07", "orders": 88, "revenue": 4562.04}, {"date": "2026-05-08", "orders": 106, "revenue": 5429.13}, {"date": "2026-05-09", "orders": 82, "revenue": 4240.78}, {"date": "2026-05-10", "orders": 104, "revenue": 5366.58}], "tracking_live_since": "2026-04-30 17:14 PT", "tracking_live_date": "2026-04-30", "built_at": "2026-05-11 23:53:26", "ga4_available": false}</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById('upsell-payload').textContent);
+
+  // -------- formatters --------
+  const fmtMoney = (n) => n == null ? '--' : '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const fmtInt   = (n) => n == null ? '--' : n.toLocaleString('en-US');
+  const fmtPct   = (n, d = 1) => n == null ? '--' : (n * 100).toFixed(d) + '%';
+
+  // -------- date helpers --------
+  const today = new Date().toISOString().slice(0, 10);
+  const allDates = DATA.rows.map(r => r.date).concat(DATA.non_upsell_daily.map(r => r.date));
+  const minDate  = allDates.length ? allDates.reduce((a, b) => a < b ? a : b) : DATA.tracking_live_date;
+  const maxDate  = allDates.length ? allDates.reduce((a, b) => a > b ? a : b) : today;
+
+  // -------- filter state --------
+  const state = {
+    from: minDate,
+    to: maxDate,
+    source: 'both',
+    sort: {
+      product:  {key: 'revenue',     dir: 'desc'},
+      campaign: {key: 'revenue',     dir: 'desc'},
+      modal:    {key: 'revenue',     dir: 'desc'},
+    },
+  };
+
+  document.getElementById('date-from').min = DATA.tracking_live_date;
+  document.getElementById('date-from').max = maxDate;
+  document.getElementById('date-to').min   = DATA.tracking_live_date;
+  document.getElementById('date-to').max   = maxDate;
+  document.getElementById('date-from').value = state.from;
+  document.getElementById('date-to').value   = state.to;
+
+  // -------- color palette for product lines --------
+  const PALETTE = [
+    '#D4A843', '#60a5fa', '#a78bfa', '#4ade80', '#fb923c',
+    '#f87171', '#fbbf24', '#22d3ee', '#f472b6', '#a3e635',
+  ];
+
+  // -------- main filter --------
+  function filtered() {
+    let rows = DATA.rows.filter(r => r.date >= state.from && r.date <= state.to);
+    if (state.source === 'shopify') rows = rows.filter(r => r.source === 'shopify');
+    else if (state.source === 'ga4') rows = rows.filter(r => r.source === 'ga4');
+    return rows;
+  }
+
+  function filteredNonUpsellDaily() {
+    return DATA.non_upsell_daily.filter(r => r.date >= state.from && r.date <= state.to);
+  }
+
+  // -------- aggregations --------
+  function aggregate(rows) {
+    const orderIds = new Set();
+    let revenue = 0, discount = 0, donation = 0, qty = 0;
+    for (const r of rows) {
+      orderIds.add(r.order_id);
+      revenue += r.line_subtotal;
+      discount += r.line_subtotal * (r.discount_pct || 0) / 100.0;
+      if (r.modal_v === 'donation-v2') donation += r.line_subtotal;
+      qty += r.quantity;
+    }
+    return {
+      orders: orderIds.size,
+      lines: rows.length,
+      qty,
+      revenue,
+      discount,
+      donation,
+      net: revenue - discount - donation,
+    };
+  }
+
+  function groupBy(rows, keyFn) {
+    const buckets = new Map();
+    for (const r of rows) {
+      const k = keyFn(r) || '(unset)';
+      if (!buckets.has(k)) buckets.set(k, []);
+      buckets.get(k).push(r);
+    }
+    return buckets;
+  }
+
+  function aovBlock(rows, nonUpsellDaily) {
+    const upsellOrderIds = new Set(rows.map(r => r.order_id));
+    if (upsellOrderIds.size === 0) {
+      return '<div class="empty">No upsell-attributed orders in this range.</div>';
+    }
+    // upsell AOV: sum line_subtotals per order then average
+    const perOrderRevenue = new Map();
+    for (const r of rows) {
+      perOrderRevenue.set(r.order_id, (perOrderRevenue.get(r.order_id) || 0) + r.line_subtotal);
+    }
+    // Note: line_subtotal is upsell-line revenue, not full order total — but for AOV vs control
+    // we want full order total. We don't have it embedded per order; only the non-upsell daily
+    // series carries order totals. As a proxy we use the upsell line revenue average as
+    // "upsell-line AOV." Reporting label below makes that explicit.
+    const upsellLineAOV = Array.from(perOrderRevenue.values()).reduce((a, b) => a + b, 0) / perOrderRevenue.size;
+
+    const nu = nonUpsellDaily.reduce((acc, r) => { acc.orders += r.orders; acc.revenue += r.revenue; return acc; }, {orders: 0, revenue: 0});
+    const nonAOV = nu.orders > 0 ? nu.revenue / nu.orders : null;
+    const lift = (nonAOV && nonAOV > 0) ? (upsellLineAOV - nonAOV) / nonAOV : null;
+    const liftClass = lift == null ? '' : (lift > 0 ? 'good' : 'bad');
+    const liftStr = lift == null ? '--' : `<span class="${liftClass}">${fmtPct(lift)}</span>`;
+
+    return `
+      <div class="kv"><span class="k">Avg upsell-line value (per order)</span><span class="v">${fmtMoney(upsellLineAOV)}</span></div>
+      <div class="kv"><span class="k">Avg DTC order value (no upsell, in range)</span><span class="v">${fmtMoney(nonAOV)}</span></div>
+      <div class="kv"><span class="k">Lift vs non-upsell AOV</span><span class="v">${liftStr}</span></div>
+      <div class="kv"><span class="k">Sample size (upsell orders)</span><span class="v">${fmtInt(upsellOrderIds.size)}</span></div>
+      <div class="narrative">"Upsell-line value" is revenue from the accepted upsell line only (we don't carry full order total per upsell row). Lift compares that line's avg per order to the average non-upsell DTC order in the same date range.</div>
+    `;
+  }
+
+  function discountBlock(stats) {
+    return `
+      <div class="kv"><span class="k">Total upsell revenue</span><span class="v">${fmtMoney(stats.revenue)}</span></div>
+      <div class="kv"><span class="k">Discount cost (sum of pct × line_subtotal)</span><span class="v">${fmtMoney(stats.discount)}</span></div>
+      <div class="kv"><span class="k">Donation pass-through</span><span class="v">${fmtMoney(stats.donation)}</span></div>
+      <div class="kv"><span class="k">Net contribution</span><span class="v">${fmtMoney(stats.net)}</span></div>
+      <div class="narrative">Net = upsell revenue − discount giveaways − donation pass-through. Donations net to zero (or could be CSR-flagged depending on accounting treatment).</div>
+    `;
+  }
+
+  function statsBar(stats) {
+    const zero = stats.lines === 0 ? 'zero' : '';
+    return `
+      <div class="stat"><div class="num ${zero}">${fmtMoney(stats.revenue)}</div><div class="label">Attributed Revenue</div></div>
+      <div class="stat"><div class="num ${zero}">${fmtInt(stats.orders)}</div><div class="label">Orders w/ Upsell</div></div>
+      <div class="stat"><div class="num ${zero}">${fmtInt(stats.lines)}</div><div class="label">Upsell Line Items</div></div>
+      <div class="stat"><div class="num ${zero}">${fmtMoney(stats.discount)}</div><div class="label">Discount $ Given</div></div>
+      <div class="stat"><div class="num ${zero}">${fmtMoney(stats.net)}</div><div class="label">Net Contribution</div></div>
+    `;
+  }
+
+  // -------- table renderers --------
+  function sortRows(arr, key, dir, type) {
+    const mul = dir === 'asc' ? 1 : -1;
+    return arr.slice().sort((a, b) => {
+      const av = a[key], bv = b[key];
+      if (type === 'str') return mul * String(av || '').localeCompare(String(bv || ''));
+      return mul * ((av || 0) - (bv || 0));
+    });
+  }
+
+  function renderProductTable(rows) {
+    const buckets = groupBy(rows, r => r.product_name);
+    const data = [];
+    for (const [name, rs] of buckets.entries()) {
+      const a = aggregate(rs);
+      data.push({product_name: name, orders: a.orders, lines: a.lines, quantity: a.qty, revenue: a.revenue, discount: a.discount});
+    }
+    const s = state.sort.product;
+    const tbody = document.querySelector('#product-table tbody');
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty" style="border:0;">No upsells in this range.</td></tr>';
+      return;
+    }
+    const ths = document.querySelectorAll('#product-table th');
+    ths.forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    const activeTh = Array.from(ths).find(th => th.dataset.key === s.key);
+    if (activeTh) activeTh.classList.add(s.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+
+    const type = activeTh ? activeTh.dataset.type : 'num';
+    const sorted = sortRows(data, s.key, s.dir, type);
+    tbody.innerHTML = sorted.map(d => `
+      <tr>
+        <td>${escapeHtml(d.product_name)}</td>
+        <td>${fmtInt(d.orders)}</td>
+        <td>${fmtInt(d.lines)}</td>
+        <td>${fmtInt(d.quantity)}</td>
+        <td>${fmtMoney(d.revenue)}</td>
+        <td>${fmtMoney(d.discount)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderCampaignTable(rows) {
+    const buckets = groupBy(rows, r => r.campaign);
+    const data = [];
+    for (const [name, rs] of buckets.entries()) {
+      const a = aggregate(rs);
+      data.push({campaign: name, orders: a.orders, lines: a.lines, revenue: a.revenue});
+    }
+    const s = state.sort.campaign;
+    const tbody = document.querySelector('#campaign-table tbody');
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty" style="border:0;">No upsells in this range.</td></tr>';
+      return;
+    }
+    const ths = document.querySelectorAll('#campaign-table th');
+    ths.forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    const activeTh = Array.from(ths).find(th => th.dataset.key === s.key);
+    if (activeTh) activeTh.classList.add(s.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    const type = activeTh ? activeTh.dataset.type : 'num';
+    const sorted = sortRows(data, s.key, s.dir, type);
+    tbody.innerHTML = sorted.map(d => `
+      <tr>
+        <td>${escapeHtml(d.campaign)}</td>
+        <td>${fmtInt(d.orders)}</td>
+        <td>${fmtInt(d.lines)}</td>
+        <td>${fmtMoney(d.revenue)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderModalTable(rows) {
+    const buckets = groupBy(rows, r => r.modal_v);
+    const data = [];
+    for (const [name, rs] of buckets.entries()) {
+      const a = aggregate(rs);
+      data.push({modal_v: name, orders: a.orders, lines: a.lines, revenue: a.revenue});
+    }
+    const s = state.sort.modal;
+    const tbody = document.querySelector('#modal-table tbody');
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty" style="border:0;">No upsells in this range.</td></tr>';
+      return;
+    }
+    const ths = document.querySelectorAll('#modal-table th');
+    ths.forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    const activeTh = Array.from(ths).find(th => th.dataset.key === s.key);
+    if (activeTh) activeTh.classList.add(s.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    const type = activeTh ? activeTh.dataset.type : 'num';
+    const sorted = sortRows(data, s.key, s.dir, type);
+    tbody.innerHTML = sorted.map(d => `
+      <tr>
+        <td>${escapeHtml(d.modal_v)}</td>
+        <td>${fmtInt(d.orders)}</td>
+        <td>${fmtInt(d.lines)}</td>
+        <td>${fmtMoney(d.revenue)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // -------- chart --------
+  let chart = null;
+
+  function eachDate(from, to) {
+    const out = [];
+    const d = new Date(from + 'T00:00:00Z');
+    const end = new Date(to + 'T00:00:00Z');
+    while (d <= end) {
+      out.push(d.toISOString().slice(0, 10));
+      d.setUTCDate(d.getUTCDate() + 1);
+    }
+    return out;
+  }
+
+  function renderChart(rows) {
+    const labels = eachDate(state.from, state.to);
+    const host = document.getElementById('chart-host');
+
+    if (rows.length === 0) {
+      host.innerHTML = '<div class="chart-empty">No upsells in this date range and source.</div>';
+      if (chart) { chart.destroy(); chart = null; }
+      return;
+    }
+    // If we replaced the canvas with the empty state, put it back
+    if (!document.getElementById('daily-chart')) {
+      host.innerHTML = '<canvas id="daily-chart" aria-label="Upsells per day by product"></canvas>';
+    }
+
+    // Aggregate count per product per day
+    const products = new Map(); // name -> Map(date -> count)
+    for (const r of rows) {
+      if (!products.has(r.product_name)) products.set(r.product_name, new Map());
+      const m = products.get(r.product_name);
+      m.set(r.date, (m.get(r.date) || 0) + 1);
+    }
+    const productNames = Array.from(products.keys()).sort();
+
+    const datasets = productNames.map((name, i) => {
+      const color = PALETTE[i % PALETTE.length];
+      return {
+        label: name,
+        data: labels.map(d => products.get(name).get(d) || 0),
+        borderColor: color,
+        backgroundColor: color + '33',
+        tension: 0.25,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        borderWidth: 2,
+        spanGaps: true,
+      };
+    });
+
+    const canvas = document.getElementById('daily-chart');
+    if (chart) chart.destroy();
+    chart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#e2e8f0', usePointStyle: true, padding: 14, font: {size: 11} } },
+          tooltip: {
+            backgroundColor: 'rgba(20,22,40,0.95)',
+            borderColor: 'rgba(212,168,67,0.4)',
+            borderWidth: 1,
+            titleColor: '#D4A843',
+            bodyColor: '#e2e8f0',
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y} upsell${ctx.parsed.y === 1 ? '' : 's'}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: '#888', maxRotation: 0, autoSkip: true, maxTicksLimit: 14 },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#888', precision: 0, stepSize: 1 },
+            grid: { color: 'rgba(255,255,255,0.06)' },
+            title: { display: true, text: 'Upsells', color: '#888', font: {size: 11} },
+          },
+        },
+      },
+    });
+  }
+
+  // -------- helpers --------
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  // -------- master render --------
+  function render() {
+    const rows = filtered();
+    const stats = aggregate(rows);
+    document.getElementById('stats-bar').innerHTML = statsBar(stats);
+    document.getElementById('discount-block').innerHTML = discountBlock(stats);
+    document.getElementById('aov-block').innerHTML = aovBlock(rows, filteredNonUpsellDaily());
+    document.getElementById('visible-count').textContent = fmtInt(rows.length);
+    document.getElementById('visible-range').textContent = state.from + ' → ' + state.to;
+    renderProductTable(rows);
+    renderCampaignTable(rows);
+    renderModalTable(rows);
+    renderChart(rows);
+  }
+
+  // -------- event wiring --------
+  document.getElementById('date-from').addEventListener('change', e => {
+    state.from = e.target.value || DATA.tracking_live_date;
+    clearPresetActive();
+    render();
+  });
+  document.getElementById('date-to').addEventListener('change', e => {
+    state.to = e.target.value || maxDate;
+    clearPresetActive();
+    render();
+  });
+
+  function clearPresetActive() {
+    document.querySelectorAll('#preset-group .pill').forEach(b => b.classList.remove('active'));
+  }
+
+  document.querySelectorAll('#preset-group .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#preset-group .pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const preset = btn.dataset.preset;
+      if (preset === 'all') {
+        state.from = minDate;
+        state.to = maxDate;
+      } else {
+        const days = parseInt(preset, 10);
+        const end = new Date(maxDate + 'T00:00:00Z');
+        const start = new Date(end);
+        start.setUTCDate(start.getUTCDate() - (days - 1));
+        const startStr = start.toISOString().slice(0, 10);
+        state.from = startStr < DATA.tracking_live_date ? DATA.tracking_live_date : startStr;
+        state.to = maxDate;
+      }
+      document.getElementById('date-from').value = state.from;
+      document.getElementById('date-to').value = state.to;
+      render();
+    });
+  });
+
+  document.querySelectorAll('#source-group .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.source === 'ga4' && !DATA.ga4_available) {
+        // Still let the user select it — they'll see the empty state.
+      }
+      document.querySelectorAll('#source-group .pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.source = btn.dataset.source;
+      render();
+    });
+  });
+
+  // Sortable table headers
+  function wireSort(tableId, stateKey) {
+    document.querySelectorAll(`#${tableId} th`).forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.key;
+        const s = state.sort[stateKey];
+        if (s.key === key) {
+          s.dir = s.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          s.key = key;
+          s.dir = th.dataset.type === 'num' ? 'desc' : 'asc';
+        }
+        render();
+      });
+    });
+  }
+  wireSort('product-table',  'product');
+  wireSort('campaign-table', 'campaign');
+  wireSort('modal-table',    'modal');
+
+  // Initial render
+  render();
+})();
+</script>
 
 </body>
 </html>
