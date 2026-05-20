@@ -7,8 +7,17 @@
       <script>
         fetch('/teeccino-reports/_partials/nav.html')
           .then(r => r.text())
-          .then(html => { document.getElementById('hub-nav').innerHTML = html;
-                          document.body.classList.add('has-hub-nav'); });
+          .then(html => {
+            var slot = document.getElementById('hub-nav');
+            slot.innerHTML = html;
+            document.body.classList.add('has-hub-nav');
+            // Re-execute any <script> tags from the fragment (innerHTML does NOT run them).
+            slot.querySelectorAll('script').forEach(function (s) {
+              var n = document.createElement('script');
+              if (s.src) { n.src = s.src; } else { n.textContent = s.textContent; }
+              document.head.appendChild(n);
+            });
+          });
       </script>
 
   Aesthetics: gold #D4A843 on dark #1a1a2e, matches index.html. Uses inline <style scoped> equivalent
@@ -58,9 +67,24 @@
     transition: background 0.15s;
   }
   #hub-nav-bar .home-link:hover { background: rgba(212, 168, 67, 0.1); }
-  body.has-hub-nav { padding-top: 60px !important; }
+  /* Allow the nav itself to wrap onto multiple rows on intermediate desktop widths.
+     Original CSS only enabled flex-wrap at <=880px, so 1100-1699px viewports clipped content
+     (or overflowed) instead of wrapping cleanly. With wrap enabled here, the JS sync below
+     measures the actual rendered height and updates body padding to match. */
+  #hub-nav-bar { flex-wrap: wrap; row-gap: 6px; }
+  /* CSS fallback padding — applies before the JS sync runs (sub-100ms flash) and if JS is disabled.
+     Covers the worst observed wrap (91px @ 1100-1499) plus the new flex-wrap behavior which can
+     produce 2-3 row nav at narrower widths. The JS sync tightens this on wide viewports (down to
+     ~61px when nav is single-line) and loosens it if the nav wraps deeper than expected. */
+  body.has-hub-nav { padding-top: 140px !important; }
+  @media (min-width: 1500px) {
+    body.has-hub-nav { padding-top: 80px !important; }
+  }
+  @media (min-width: 1700px) {
+    body.has-hub-nav { padding-top: 60px !important; }
+  }
   @media (max-width: 880px) {
-    #hub-nav-bar { gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+    #hub-nav-bar { gap: 8px; padding: 10px 12px; }
     #hub-nav-bar .group { margin-left: 0; gap: 8px; }
     #hub-nav-bar .group-label { display: none; }
     #hub-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
@@ -94,16 +118,45 @@
   <span class="spacer"></span>
   <a class="home-link" href="/teeccino-reports/index.html">All Reports →</a>
 </nav>
-<script>
-  // Highlight the active link based on the current pathname.
-  (function () {
-    var here = window.location.pathname.replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
-    if (!here) here = 'index.html';
-    document.querySelectorAll('#hub-nav-bar a.nav-link').forEach(function (a) {
-      var href = a.getAttribute('href').replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
-      if (href === here || (here.startsWith(href.replace('.html', '')) && href !== 'index.html')) {
-        a.classList.add('active');
-      }
-    });
-  })();
-</script>
+<!--
+  BOOTSTRAP TRICK: dashboards fetch this fragment and assign it via innerHTML, which per HTML spec
+  does NOT execute <script> tags inserted that way. To make our nav-sync + active-link logic run
+  without requiring every dashboard's include block to be rewritten, we use an <img> with an
+  invalid src so onerror fires synchronously after innerHTML parsing. HTML event attributes
+  (onerror/onload) DO get honored on innerHTML-injected elements — this is the well-known
+  workaround. The <img> stays display:none and contributes nothing to layout.
+-->
+<img src="data:," alt="" style="display:none"
+     onerror="(function(){
+       if (window.__hubNavBootstrapped) return;
+       window.__hubNavBootstrapped = true;
+       /* 1) Active-link highlight */
+       var here = window.location.pathname.replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
+       if (!here) here = 'index.html';
+       document.querySelectorAll('#hub-nav-bar a.nav-link').forEach(function (a) {
+         var href = a.getAttribute('href').replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
+         if (href === here || (here.startsWith(href.replace('.html', '')) && href !== 'index.html')) {
+           a.classList.add('active');
+         }
+       });
+       /* 2) Dynamic body padding-top sync to actual nav height + 8px clearance.
+          Adapts to any nav height (wraps, future nav additions, browser zoom) — replaces the
+          brittle static 60px rule that clipped H1s on viewports below ~1700px. */
+       var nav = document.getElementById('hub-nav-bar');
+       if (!nav) return;
+       var CLEARANCE = 8;
+       function sync() {
+         var h = nav.offsetHeight;
+         if (h > 0) document.body.style.paddingTop = (h + CLEARANCE) + 'px';
+       }
+       sync();
+       var pending = false;
+       window.addEventListener('resize', function () {
+         if (pending) return;
+         pending = true;
+         requestAnimationFrame(function () { pending = false; sync(); });
+       });
+       if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+       if (typeof ResizeObserver !== 'undefined') new ResizeObserver(sync).observe(nav);
+     })()">
+
