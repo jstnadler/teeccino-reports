@@ -69,7 +69,7 @@
 
 <div class="container">
   <h1>♻️ Subscription Analytics</h1>
-  <p class="sub">Full subscription business analysis — acquisition, retention, cohorts, plans, economics, top SKUs. Generated 2026-05-20 12:19.</p>
+  <p class="sub">Full subscription business analysis — acquisition, retention, cohorts, plans, economics, top SKUs. Generated 2026-05-20 12:44.</p>
 
   <div class="definitions">
     <strong>Definitions:</strong><br>
@@ -1420,20 +1420,116 @@
 
   <div class="section">
     <div class="section-title">📋 Selling Plan Breakdown (last 90 days)</div>
-    <div class="table-scroll"><table>
-      <thead>
-        <tr>
-          <th>Plan</th>
-          <th>Shopify ID</th>
-          <th class="num">Orders</th>
-          <th class="num">Units</th>
-          <th class="num">Gross</th>
-          <th class="num">Share of Units</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="definitions" style="margin-bottom:14px;">
+      Plan metadata (name, cadence, discount) is fetched from the Shopify Admin API by <code>fetch_selling_plans.py</code> and cached in <code>selling_plan_map.json</code>. Re-run that script if new plans appear.
+    </div>
+
+    <div style="margin-top:8px;">
+      <div style="font-size:0.95em;color:#D4A843;margin-bottom:8px;font-weight:600;">By cadence</div>
+      <div class="table-scroll"><table>
+        <thead>
+          <tr>
+            <th>Cadence</th>
+            <th class="num">Plans</th>
+            <th class="num">Orders</th>
+            <th class="num">Units</th>
+            <th class="num">Gross</th>
+            <th class="num">Share of Units</th>
+          </tr>
+        </thead>
+        <tbody>
               <tr>
-                <td>Plan A (legacy, top-volume)</td>
+                <td><strong>Monthly</strong></td>
+                <td class="num muted">5</td>
+                <td class="num">2,415</td>
+                <td class="num strong">4,111</td>
+                <td class="num">$71,765</td>
+                <td class="num">48.4%</td>
+              </tr>
+
+              <tr>
+                <td><strong>Every 3 months</strong></td>
+                <td class="num muted">1</td>
+                <td class="num">1,214</td>
+                <td class="num strong">2,729</td>
+                <td class="num">$61,939</td>
+                <td class="num">32.1%</td>
+              </tr>
+
+              <tr>
+                <td><strong>Every 2 months</strong></td>
+                <td class="num muted">1</td>
+                <td class="num">832</td>
+                <td class="num strong">1,649</td>
+                <td class="num">$32,049</td>
+                <td class="num">19.4%</td>
+              </tr></tbody>
+      </table></div>
+    </div>
+
+    <div style="margin-top:24px;">
+      <div style="font-size:0.95em;color:#D4A843;margin-bottom:8px;font-weight:600;">By discount tier</div>
+      <div class="table-scroll"><table>
+        <thead>
+          <tr>
+            <th>Discount Tier</th>
+            <th class="num">Plans</th>
+            <th class="num">Orders</th>
+            <th class="num">Units</th>
+            <th class="num">Gross</th>
+            <th class="num">Share of Units</th>
+          </tr>
+        </thead>
+        <tbody>
+              <tr>
+                <td><strong>15.0% off</strong></td>
+                <td class="num muted">5</td>
+                <td class="num">4,455</td>
+                <td class="num strong">8,480</td>
+                <td class="num">$165,679</td>
+                <td class="num">99.9%</td>
+              </tr>
+
+              <tr>
+                <td><strong>$0.0 off</strong></td>
+                <td class="num muted">1</td>
+                <td class="num">5</td>
+                <td class="num strong">8</td>
+                <td class="num">$55</td>
+                <td class="num">0.1%</td>
+              </tr>
+
+              <tr>
+                <td><strong>22.0% off</strong></td>
+                <td class="num muted">1</td>
+                <td class="num">1</td>
+                <td class="num strong">1</td>
+                <td class="num">$19</td>
+                <td class="num">0.0%</td>
+              </tr></tbody>
+      </table></div>
+    </div>
+
+    <div style="margin-top:24px;">
+      <div style="font-size:0.95em;color:#D4A843;margin-bottom:8px;font-weight:600;">Per-plan detail</div>
+      <div class="table-scroll"><table>
+        <thead>
+          <tr>
+            <th>Plan Name</th>
+            <th>Cadence</th>
+            <th>Discount</th>
+            <th>Shopify ID</th>
+            <th class="num">Orders</th>
+            <th class="num">Units</th>
+            <th class="num">Gross</th>
+            <th class="num">Share of Units</th>
+          </tr>
+        </thead>
+        <tbody>
+              <tr>
+                <td>Delivered every month</td>
+                <td>Every 1 month</td>
+                <td>15.0% off</td>
                 <td class="mono muted">3590062328</td>
                 <td class="num">2,140</td>
                 <td class="num strong">3,745</td>
@@ -1442,7 +1538,9 @@
               </tr>
 
               <tr>
-                <td>Plan B (legacy)</td>
+                <td>Delivered every 3 months</td>
+                <td>Every 3 months</td>
+                <td>15.0% off</td>
                 <td class="mono muted">3590127864</td>
                 <td class="num">1,214</td>
                 <td class="num strong">2,729</td>
@@ -1451,7 +1549,9 @@
               </tr>
 
               <tr>
-                <td>Plan C (legacy)</td>
+                <td>Delivered every 2 months</td>
+                <td>Every 2 months</td>
+                <td>15.0% off</td>
                 <td class="mono muted">3590095096</td>
                 <td class="num">832</td>
                 <td class="num strong">1,649</td>
@@ -1460,7 +1560,9 @@
               </tr>
 
               <tr>
-                <td>Plan D (newer)</td>
+                <td>Delivered every month</td>
+                <td>Every 1 month</td>
+                <td>15.0% off</td>
                 <td class="mono muted">5156012280</td>
                 <td class="num">187</td>
                 <td class="num strong">274</td>
@@ -1469,7 +1571,9 @@
               </tr>
 
               <tr>
-                <td>Plan E (newer)</td>
+                <td>Deilvered every month</td>
+                <td>Every 1 month</td>
+                <td>15.0% off</td>
                 <td class="mono muted">5102436600</td>
                 <td class="num">82</td>
                 <td class="num strong">83</td>
@@ -1478,7 +1582,9 @@
               </tr>
 
               <tr>
-                <td>Plan F</td>
+                <td>Delivered every month!</td>
+                <td>Every 1 month</td>
+                <td>$0.0 off</td>
                 <td class="mono muted">4915659000</td>
                 <td class="num">5</td>
                 <td class="num strong">8</td>
@@ -1487,15 +1593,18 @@
               </tr>
 
               <tr>
-                <td>Plan G (recent)</td>
+                <td>Deliver every 1 month</td>
+                <td>Every 1 month</td>
+                <td>22.0% off</td>
                 <td class="mono muted">5908758776</td>
                 <td class="num">1</td>
                 <td class="num strong">1</td>
                 <td class="num">$19</td>
                 <td class="num">0.0%</td>
               </tr></tbody>
-    </table></div>
-    <div class="legend">Plan labels are placeholders — the dashboard surfaces Shopify selling-plan GIDs. To get human-readable names (e.g., "Every 30 Days"), we'd need to map these against Shopify Admin → Selling Plans. Ping DataOps to add the mapping if needed.</div>
+      </table></div>
+      <div class="legend">Note: there are multiple Monthly plans (program evolved over time). The "Deilvered every month" plan has a typo in Shopify — should be cleaned up by Shopkeeper.</div>
+    </div>
   </div>
 
   <div class="section">
