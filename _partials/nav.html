@@ -147,7 +147,10 @@
        var CLEARANCE = 8;
        function sync() {
          var h = nav.offsetHeight;
-         if (h > 0) document.body.style.paddingTop = (h + CLEARANCE) + 'px';
+         /* setProperty with 'important' priority is required to override the !important
+            CSS fallback above. Without it, the static media-query rules win and the JS
+            sync has no effect (which was the original bug DataOps caught). */
+         if (h > 0) document.body.style.setProperty('padding-top', (h + CLEARANCE) + 'px', 'important');
        }
        sync();
        var pending = false;
