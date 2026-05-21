@@ -60,6 +60,188 @@ body {
 .section-header .section-icon.ads { background: rgba(96,165,250,0.12); }
 .section-header .section-icon.costs { background: rgba(248,113,113,0.12); }
 .section-header .section-icon.profit { background: rgba(212,168,67,0.15); color: #fbbf24; }
+.section-header .section-icon.shipping { background: rgba(168,85,247,0.15); color: #c4b5fd; }
+.section-header .section-icon.promos { background: rgba(236,72,153,0.15); color: #f9a8d4; }
+.section-header .section-icon.ads-creative { background: rgba(96,165,250,0.18); color: #93c5fd; }
+
+/* ---- ANCHOR JUMP BAR ---- */
+.jump-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: rgba(30,41,59,0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 56px;  /* clears the shared hub-nav at top of page */
+    z-index: 50;
+}
+.jump-bar a {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 0.82em;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.jump-bar a:hover {
+    background: rgba(212,168,67,0.15);
+    color: #fde68a;
+    border-color: rgba(212,168,67,0.3);
+}
+.jump-bar a.active {
+    background: rgba(212,168,67,0.2);
+    color: #fde68a;
+    border-color: rgba(212,168,67,0.4);
+}
+.jump-bar .jump-bar-emoji { font-size: 0.95em; opacity: 0.85; }
+@media (max-width: 700px) {
+    .jump-bar { overflow-x: auto; flex-wrap: nowrap; }
+}
+
+/* Give section headers scroll-margin so anchor-jumps don't hide under sticky bars */
+.section-header { scroll-margin-top: 120px; }
+
+/* ---- SHIPPING SECTION ---- */
+.ship-panels {
+    display: flex; flex-direction: column;
+    gap: 18px;
+    margin: 18px 0 8px 0;
+}
+.ship-panel {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 20px 22px;
+}
+.ship-panel-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ship-panel-head h3 {
+    color: #c4b5fd;
+    font-size: 0.95em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.ship-panel-sub { color: #94a3b8; font-size: 0.78em; }
+.ship-row-2 {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 18px;
+}
+@media (max-width: 1000px) { .ship-row-2 { grid-template-columns: 1fr; } }
+
+.ship-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88em;
+}
+.ship-table th {
+    color: #94a3b8;
+    font-size: 0.72em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ship-table th.num, .ship-table td.num { text-align: right; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+.ship-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: #e2e8f0;
+}
+.ship-table tbody tr:last-child td { border-bottom: none; }
+.ship-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.ship-carrier-name { color: #c4b5fd; font-weight: 600; }
+.ship-svc-name { color: #e2e8f0; font-weight: 500; }
+.ship-svc-carrier { color: #94a3b8; font-size: 0.85em; }
+
+.ship-bar-wrap {
+    background: rgba(255,255,255,0.04);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    min-width: 80px;
+}
+.ship-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+    border-radius: 4px;
+}
+.ship-bar-pct { color: #94a3b8; font-size: 0.72em; }
+
+/* Domestic / International */
+.ship-geo-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+.ship-geo-card {
+    padding: 14px;
+    background: rgba(168,85,247,0.06);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 10px;
+}
+.ship-geo-label { color: #c4b5fd; font-size: 0.72em; text-transform: uppercase; font-weight: 600; letter-spacing: 0.4px; margin-bottom: 6px; }
+.ship-geo-count { color: #fff; font-size: 1.5em; font-weight: 800; line-height: 1.1; }
+.ship-geo-meta { color: #94a3b8; font-size: 0.78em; margin-top: 4px; }
+.ship-geo-cost { color: #cbd5e1; font-size: 0.82em; margin-top: 6px; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+.ship-geo-stackbar {
+    display: flex;
+    height: 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.ship-geo-stack-dom { height: 100%; background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.ship-geo-stack-intl { height: 100%; background: linear-gradient(90deg, #06b6d4, #0891b2); }
+
+/* Top states */
+.ship-states { display: flex; flex-direction: column; gap: 6px; }
+.ship-state-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 90px 90px;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+.ship-state-row:hover { background: rgba(255,255,255,0.03); }
+.ship-state-code {
+    color: #c4b5fd;
+    font-weight: 700;
+    font-size: 0.85em;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+}
+.ship-state-bar-wrap {
+    background: rgba(255,255,255,0.04);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.ship-state-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+    border-radius: 4px;
+}
+.ship-state-count { color: #94a3b8; font-size: 0.82em; text-align: right; }
+.ship-state-cost { color: #cbd5e1; font-size: 0.82em; text-align: right; font-family: 'SF Mono', Menlo, Consolas, monospace; }
 
 /* ---- PROFIT WATERFALL ---- */
 .wf-toolbar {
@@ -644,7 +826,7 @@ body {
 <div class="header">
     <h1>April 2025 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 30 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated May 21, 2026 at 12:01 AM</div>
+    <div class="updated">Last updated May 21, 2026 at 12:17 AM</div>
 </div>
 
 
@@ -701,8 +883,21 @@ body {
     <div class="analysis-text"><span class="win-icon">&#9650;</span> Net revenue up 7% YoY ($252,422 vs $236,602) &bull; Subscription gross up 73% YoY<br/><span class="loss-icon">&#9660;</span> MER declined to 5.92x (from 6.74x LY) &bull; Ad spend up 22% YoY ($42,664 vs $35,094) &bull; Shipping costs exceed revenue by $19,603</div>
 </div>
 
+<!-- ======== JUMP BAR ======== -->
+<nav class="jump-bar" id="jumpBar" aria-label="Section navigation">
+    <a href="#sec-profitability"><span class="jump-bar-emoji">π</span> Profitability</a>
+    <a href="#sec-sales"><span class="jump-bar-emoji">$</span> Sales</a>
+    <a href="#sec-ads"><span class="jump-bar-emoji">A</span> Advertising</a>
+    <a href="#sec-costs"><span class="jump-bar-emoji">%</span> Costs &amp; Discounts</a>
+    <a href="#sec-shipping"><span class="jump-bar-emoji">&#9990;</span> Shipping</a>
+    <a href="#sec-waterfall"><span class="jump-bar-emoji">&#8650;</span> Profit Waterfall</a>
+    <a href="#sec-charts"><span class="jump-bar-emoji">&#128200;</span> Charts</a>
+    <a href="#sec-top-ads"><span class="jump-bar-emoji">&#127919;</span> Top Ads</a>
+    <a href="#sec-promotions"><span class="jump-bar-emoji">&#127873;</span> Promotions</a>
+</nav>
+
 <!-- ======== PROFITABILITY (hero band) ======== -->
-<div class="section-header">
+<div class="section-header" id="sec-profitability">
     <div class="section-icon profit">π</div>
     <h2>Profitability</h2>
 </div>
@@ -777,7 +972,7 @@ body {
 </div>
 
 <!-- ======== SALES ======== -->
-<div class="section-header">
+<div class="section-header" id="sec-sales">
     <div class="section-icon sales">$</div>
     <h2>Sales Performance</h2>
 </div>
@@ -909,7 +1104,7 @@ body {
 </div>
 
 <!-- ======== ADVERTISING ======== -->
-<div class="section-header">
+<div class="section-header" id="sec-ads">
     <div class="section-icon ads">A</div>
     <h2>Advertising & Acquisition</h2>
 </div>
@@ -1017,10 +1212,10 @@ body {
         </div>
 </div>
 
-<!-- ======== COSTS ======== -->
-<div class="section-header">
+<!-- ======== COSTS & DISCOUNTS ======== -->
+<div class="section-header" id="sec-costs">
     <div class="section-icon costs">%</div>
-    <h2>Costs, Shipping & Discounts</h2>
+    <h2>Costs &amp; Discounts</h2>
 </div>
 <div class="kpi-grid">
     
@@ -1244,12 +1439,21 @@ body {
                 
             </div>
         </div>
+</div>
+
+<!-- ======== SHIPPING ======== -->
+<div class="section-header" id="sec-shipping">
+    <div class="section-icon shipping">&#9990;</div>
+    <h2>Shipping &mdash; Carriers, Services &amp; Geography</h2>
+</div>
+<div class="kpi-grid">
+    
     <div class="kpi-card" onclick="openModal('ship_cost')" style="cursor:pointer;">
         <div class="card-label">Shipping Cost (Actual)</div>
         <div class="card-value">$33,277</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 21.0%</span></div>
-        <div class="card-detail">LY: $42,131 | 4,567 shipments | Avg: $7.29</div>
-        <div class="card-projected">DHL eCommerce: 3,221 ($21,146) | USPS: 1,326 ($11,635) | FedEx: 1 ($24)</div>
+        <div class="card-detail">LY: $42,131 | 4,567 shipments | Avg $7.29</div>
+        
     </div>
         <div class="card-modal" id="modal-ship_cost">
             <div class="modal-inner">
@@ -1265,22 +1469,22 @@ body {
             </div>
         </div>
     <div class="kpi-card" onclick="openModal('ship_charged')" style="cursor:pointer;">
-        <div class="card-label">Shipping Charged to Customers</div>
+        <div class="card-label">Shipping Revenue (Charged)</div>
         <div class="card-value">$13,674</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 3.0%</span></div>
-        <div class="card-detail">LY: $13,281 | Margin: $-19,603</div>
+        <div class="card-detail">LY: $13,281 | Per order: $2.78</div>
         
     </div>
         <div class="card-modal" id="modal-ship_charged">
             <div class="modal-inner">
                 <div class="modal-header">
-                    <span>Shipping Charged to Customers</span>
+                    <span>Shipping Revenue (Charged)</span>
                     <button class="modal-close" onclick="closeModal('ship_charged')">&times;</button>
                 </div>
                 <div class="modal-value">$13,674</div>
-                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Revenue from shipping charges collected from customers. The difference between this and actual shipping cost is our shipping margin (positive = we collect more than we pay).</p></div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Revenue from shipping charges collected from customers (gross, pre-discount). The difference between this and actual shipping cost is our shipping margin.</p></div>
                 
-                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of total_shipping from Shopify orders (calc_daily_shopify).</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Sum of total_shipping from raw_orders for non-wholesale orders.</p></div>
                 
             </div>
         </div>
@@ -1288,7 +1492,7 @@ body {
         <div class="card-label">Shipping Margin</div>
         <div class="card-value">$-19,603</div>
         <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 32.1%</span></div>
-        <div class="card-detail">LY: $-28,850 | Cost/shipment: $7.29 (LY: $8.90)</div>
+        <div class="card-detail">LY: $-28,850 | We subsidize shipping</div>
         
     </div>
         <div class="card-modal" id="modal-ship_margin">
@@ -1300,14 +1504,264 @@ body {
                 <div class="modal-value">$-19,603</div>
                 <div class='modal-section'><div class='modal-label'>What is this?</div><p>Difference between what customers paid for shipping and our actual carrier costs. Positive = we collect more than we pay. Negative = we subsidize shipping.</p></div>
                 
-                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Charged to Customers - Shipping Cost (Actual)</p></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Shipping Charged - Shipping Cost (Actual)</p></div>
+                
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('ship_cost_per_order')" style="cursor:pointer;">
+        <div class="card-label">Cost / Order</div>
+        <div class="card-value">$6.76</div>
+        <div class="card-yoy"><span class="yoy-badge neutral">--</span></div>
+        <div class="card-detail">Avg package: 42.6oz (LY: 43.8oz) | Avg ship: $7.29</div>
+        
+    </div>
+        <div class="card-modal" id="modal-ship_cost_per_order">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Cost / Order</span>
+                    <button class="modal-close" onclick="closeModal('ship_cost_per_order')">&times;</button>
+                </div>
+                <div class="modal-value">$6.76</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Average shipping cost per order. Lower is better.</p></div>
+                
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Total Shipping Cost / Total DTC Orders</p></div>
                 
             </div>
         </div>
 </div>
 
+        <div class="ship-panels">
+
+            <div class="ship-panel">
+                <div class="ship-panel-head">
+                    <h3>Carrier Breakdown</h3>
+                    <div class="ship-panel-sub">4,567 shipments, $33,277 total &middot; 37 voided &middot; 2 returns</div>
+                </div>
+                <table class="ship-table">
+                    <thead><tr>
+                        <th>Carrier</th>
+                        <th class="num">Shipments</th>
+                        <th class="num">Total Cost</th>
+                        <th class="num">Avg Cost</th>
+                        <th class="num">Avg Weight</th>
+                        <th class="num">Share</th>
+                    </tr></thead>
+                    <tbody>
+            <tr>
+                <td class="ship-carrier-name">DHL eCommerce</td>
+                <td class="num">3,221</td>
+                <td class="num">$21,146</td>
+                <td class="num">$6.57</td>
+                <td class="num">33.5oz</td>
+                <td class="num">
+                    <div class="ship-bar-wrap"><div class="ship-bar" style="width:63.5%"></div></div>
+                    <div class="ship-bar-pct">64% of cost</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="ship-carrier-name">USPS</td>
+                <td class="num">1,326</td>
+                <td class="num">$11,635</td>
+                <td class="num">$8.77</td>
+                <td class="num">61.8oz</td>
+                <td class="num">
+                    <div class="ship-bar-wrap"><div class="ship-bar" style="width:35.0%"></div></div>
+                    <div class="ship-bar-pct">35% of cost</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="ship-carrier-name">FedEx</td>
+                <td class="num">1</td>
+                <td class="num">$24</td>
+                <td class="num">$23.92</td>
+                <td class="num">345.0oz</td>
+                <td class="num">
+                    <div class="ship-bar-wrap"><div class="ship-bar" style="width:0.1%"></div></div>
+                    <div class="ship-bar-pct">0% of cost</div>
+                </td>
+            </tr></tbody>
+                </table>
+            </div>
+
+            <div class="ship-row-2">
+                <div class="ship-panel">
+                    <div class="ship-panel-head">
+                        <h3>Top Services</h3>
+                        <div class="ship-panel-sub">By total cost &middot; top 8</div>
+                    </div>
+                    <table class="ship-table ship-table-svc">
+                        <thead><tr>
+                            <th>Service</th>
+                            <th>Carrier</th>
+                            <th class="num">Ships</th>
+                            <th class="num">Cost</th>
+                            <th class="num">Avg $</th>
+                            <th class="num">Avg oz</th>
+                            <th class="num">% Cost</th>
+                        </tr></thead>
+                        <tbody>
+            <tr>
+                <td class="ship-svc-name">Smartmail Parcels Expedited</td>
+                <td class="ship-svc-carrier">Dhl Global Mail</td>
+                <td class="num">2,162</td>
+                <td class="num">$14,974</td>
+                <td class="num">$6.93</td>
+                <td class="num">36.2oz</td>
+                <td class="num">45%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Usps Ground Advantage</td>
+                <td class="ship-svc-carrier">Stamps Com</td>
+                <td class="num">1,073</td>
+                <td class="num">$9,593</td>
+                <td class="num">$8.94</td>
+                <td class="num">72.3oz</td>
+                <td class="num">29%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Smartmail Parcels Ground</td>
+                <td class="ship-svc-carrier">Dhl Global Mail</td>
+                <td class="num">704</td>
+                <td class="num">$4,089</td>
+                <td class="num">$5.81</td>
+                <td class="num">36.5oz</td>
+                <td class="num">12%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Dhl Sm Parcel Expedited Max</td>
+                <td class="ship-svc-carrier">Dhl Global Mail</td>
+                <td class="num">355</td>
+                <td class="num">$2,083</td>
+                <td class="num">$5.87</td>
+                <td class="num">11.3oz</td>
+                <td class="num">6%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Usps Priority Mail</td>
+                <td class="ship-svc-carrier">Stamps Com</td>
+                <td class="num">140</td>
+                <td class="num">$1,406</td>
+                <td class="num">$10.05</td>
+                <td class="num">22.4oz</td>
+                <td class="num">4%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Usps First Class Mail</td>
+                <td class="ship-svc-carrier">Stamps Com</td>
+                <td class="num">112</td>
+                <td class="num">$611</td>
+                <td class="num">$5.45</td>
+                <td class="num">10.5oz</td>
+                <td class="num">2%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Fedex Home Delivery</td>
+                <td class="ship-svc-carrier">Fedex</td>
+                <td class="num">19</td>
+                <td class="num">$472</td>
+                <td class="num">$24.87</td>
+                <td class="num">224.3oz</td>
+                <td class="num">1%</td>
+            </tr>
+            <tr>
+                <td class="ship-svc-name">Globalpost Priority</td>
+                <td class="ship-svc-carrier">Stamps Com</td>
+                <td class="num">1</td>
+                <td class="num">$24</td>
+                <td class="num">$24.32</td>
+                <td class="num">12.8oz</td>
+                <td class="num">0%</td>
+            </tr></tbody>
+                    </table>
+                </div>
+
+                <div class="ship-panel">
+                    <div class="ship-panel-head">
+                        <h3>Domestic vs International</h3>
+                        <div class="ship-panel-sub">By shipment count + cost</div>
+                    </div>
+                    <div class="ship-geo-split">
+                        <div class="ship-geo-card">
+                            <div class="ship-geo-label">Domestic (US)</div>
+                            <div class="ship-geo-count">4,566</div>
+                            <div class="ship-geo-meta">100.0% of shipments</div>
+                            <div class="ship-geo-cost">$33,253 &middot; $7.28 avg</div>
+                        </div>
+                        <div class="ship-geo-card">
+                            <div class="ship-geo-label">International</div>
+                            <div class="ship-geo-count">1</div>
+                            <div class="ship-geo-meta">0.0% of shipments</div>
+                            <div class="ship-geo-cost">$24 &middot; $24.32 avg</div>
+                        </div>
+                    </div>
+                    <div class="ship-geo-stackbar">
+                        <div class="ship-geo-stack-dom" style="width:100.0%" title="Domestic 100%"></div>
+                        <div class="ship-geo-stack-intl" style="width:0.0%" title="International 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ship-panel">
+                <div class="ship-panel-head">
+                    <h3>Top US States by Shipments</h3>
+                    <div class="ship-panel-sub">Top 8 destination states</div>
+                </div>
+                <div class="ship-states">
+            <div class="ship-state-row">
+                <div class="ship-state-code">CA</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:100.0%"></div></div>
+                <div class="ship-state-count">637 ship</div>
+                <div class="ship-state-cost">$3,564</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">NY</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:39.4%"></div></div>
+                <div class="ship-state-count">251 ship</div>
+                <div class="ship-state-cost">$1,963</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">FL</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:39.1%"></div></div>
+                <div class="ship-state-count">249 ship</div>
+                <div class="ship-state-cost">$1,938</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">TX</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:34.5%"></div></div>
+                <div class="ship-state-count">220 ship</div>
+                <div class="ship-state-cost">$1,541</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">PA</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:33.9%"></div></div>
+                <div class="ship-state-count">216 ship</div>
+                <div class="ship-state-cost">$1,695</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">WA</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:31.2%"></div></div>
+                <div class="ship-state-count">199 ship</div>
+                <div class="ship-state-cost">$1,297</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">MI</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:22.3%"></div></div>
+                <div class="ship-state-count">142 ship</div>
+                <div class="ship-state-cost">$1,133</div>
+            </div>
+            <div class="ship-state-row">
+                <div class="ship-state-code">IL</div>
+                <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:22.0%"></div></div>
+                <div class="ship-state-count">140 ship</div>
+                <div class="ship-state-cost">$1,006</div>
+            </div></div>
+            </div>
+
+        </div>
+        
+
 <!-- ======== PROFIT WATERFALL ======== -->
-<div class="section-header">
+<div class="section-header" id="sec-waterfall">
     <div class="section-icon profit">π</div>
     <h2>Profit Waterfall &mdash; Gross to Contribution Margin</h2>
 </div>
@@ -1469,6 +1923,7 @@ body {
     
 
 <!-- ======== CHARTS ======== -->
+<div id="sec-charts"></div>
 <div class="chart-row" style="grid-template-columns: 1fr;">
     <div class="chart-box">
         <h3>Daily Gross Sales vs Daily Ad Spend</h3>
@@ -1487,7 +1942,7 @@ body {
 </div>
 
 <!-- ======== TOP ADS ======== -->
-<div class="section-panel">
+<div class="section-panel" id="sec-top-ads">
     <h2>Top Meta Ads &mdash; April 2025</h2>
     <div class="ads-grid">
         <div class="ad-card" onclick="openAdModal(0)" title="Elaine Gordon (Influencer)">
@@ -1632,7 +2087,7 @@ body {
 </div>
 
 <!-- ======== PROMOTIONS ======== -->
-<div class="section-panel">
+<div class="section-panel" id="sec-promotions">
     <h2>Promotions & Discounts &mdash; April 2025</h2>
     <div class="promo-split">
         <div>
@@ -1726,6 +2181,35 @@ body {
 </div>
 
 <script>
+// Smooth-scroll for jump bar + scroll-spy active-link highlight
+document.querySelectorAll('.jump-bar a').forEach(a => {
+    a.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            e.preventDefault();
+            const top = target.getBoundingClientRect().top + window.scrollY - 110;
+            window.scrollTo({top, behavior: 'smooth'});
+            history.replaceState(null, '', this.getAttribute('href'));
+        }
+    });
+});
+(function setupScrollSpy() {
+    const links = Array.from(document.querySelectorAll('.jump-bar a'));
+    const targets = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+    if (!targets.length) return;
+    function update() {
+        const y = window.scrollY + 150;
+        let active = targets[0];
+        for (const t of targets) {
+            if (t.offsetTop <= y) active = t;
+        }
+        links.forEach(a => a.classList.toggle('active',
+            a.getAttribute('href') === '#' + active.id));
+    }
+    window.addEventListener('scroll', update, {passive: true});
+    update();
+})();
+
 // Modal logic
 function openModal(id) {
     const modal = document.getElementById('modal-' + id);
