@@ -62,18 +62,71 @@ body {
 .section-header .section-icon.profit { background: rgba(212,168,67,0.15); color: #fbbf24; }
 
 /* ---- PROFIT WATERFALL ---- */
+.wf-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin: 18px 0 8px 0;
+    color: #94a3b8;
+    font-size: 0.82em;
+}
+.wf-toolbar-hint strong { color: #fbbf24; font-weight: 700; }
+.wf-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #cbd5e1;
+    padding: 6px 12px 6px 8px;
+    border-radius: 999px;
+    font-size: 0.85em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.wf-toggle:hover { border-color: rgba(212,168,67,0.4); color: #fff; }
+.wf-toggle-track {
+    position: relative;
+    width: 30px; height: 16px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+.wf-toggle-thumb {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    background: #94a3b8;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+.wf-toggle.on .wf-toggle-track { background: rgba(212,168,67,0.45); }
+.wf-toggle.on .wf-toggle-thumb { left: 16px; background: #fbbf24; }
+.wf-toggle.on { border-color: rgba(212,168,67,0.4); color: #fde68a; }
+
 .waterfall-table {
     background: #1e293b;
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 14px;
     padding: 8px 0;
-    margin: 18px 0 0 0;
+    margin: 0;
     overflow: hidden;
 }
-.wf-header {
+/* Default grid (LY hidden): 5 columns */
+.wf-header, .wf-row {
     display: grid;
     grid-template-columns: 220px 160px 1fr 160px 100px;
     gap: 16px;
+    align-items: center;
+}
+/* When .with-ly: 6 columns, LY slotted between AMOUNT and BAR */
+.waterfall-table.with-ly .wf-header,
+.waterfall-table.with-ly .wf-row {
+    grid-template-columns: 220px 150px 140px 1fr 140px 100px;
+}
+.wf-header {
     padding: 10px 22px;
     color: #94a3b8;
     font-size: 0.72em;
@@ -83,10 +136,6 @@ body {
     border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .wf-row {
-    display: grid;
-    grid-template-columns: 220px 160px 1fr 160px 100px;
-    gap: 16px;
-    align-items: center;
     padding: 12px 22px;
     border-bottom: 1px solid rgba(255,255,255,0.04);
     font-size: 0.95em;
@@ -95,18 +144,48 @@ body {
 .wf-label { color: #e2e8f0; font-weight: 500; }
 .wf-amount { color: #fff; font-weight: 600; font-family: 'SF Mono', Menlo, Consolas, monospace; }
 .wf-sign { color: #f87171; font-weight: 700; margin-right: 4px; }
+
+/* LY column — visible only when .with-ly is on */
+.wf-col-ly, .wf-ly-amount { display: none; }
+.waterfall-table.with-ly .wf-col-ly,
+.waterfall-table.with-ly .wf-ly-amount { display: block; }
+.wf-ly-amount {
+    color: #64748b;
+    font-weight: 500;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.88em;
+}
+.wf-sign-ly { color: rgba(248,113,113,0.5); font-weight: 600; margin-right: 3px; }
+
 .wf-bar-wrap {
+    position: relative;
     background: rgba(255,255,255,0.04);
     height: 14px;
     border-radius: 4px;
     overflow: hidden;
 }
 .wf-bar {
+    position: relative;
+    z-index: 2;
     height: 100%;
     background: linear-gradient(90deg, #60a5fa, #3b82f6);
     border-radius: 4px;
     transition: width 0.4s ease;
 }
+/* LY ghost bar — only visible when .with-ly is on */
+.wf-bar-ly {
+    display: none;
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    z-index: 1;
+    border-right: 2px dashed rgba(255,255,255,0.55);
+    background: rgba(148,163,184,0.18);
+    border-radius: 4px 0 0 4px;
+}
+.waterfall-table.with-ly .wf-bar-ly { display: block; }
+.waterfall-table.with-ly .wf-bar { opacity: 0.92; }
+
 .wf-pct { color: #94a3b8; font-size: 0.85em; }
 .wf-yoy-col { text-align: right; }
 .wf-yoy { font-size: 0.78em; }
@@ -170,6 +249,15 @@ body {
 .wf-recap-value { font-size: 1.7em; font-weight: 800; color: #fff; line-height: 1.1; }
 .wf-recap-highlight .wf-recap-value { color: #fde68a; }
 .wf-recap-sub { color: #94a3b8; font-size: 0.82em; margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wf-recap-ly {
+    color: #64748b;
+    font-size: 0.78em;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+}
+.wf-recap-highlight .wf-recap-ly { color: #fbbf24; opacity: 0.7; }
 .wf-caveat {
     margin-top: 12px;
     padding: 10px 14px;
@@ -180,11 +268,26 @@ body {
     font-size: 0.82em;
 }
 
+@media (max-width: 1100px) {
+    /* Collapse LY into a 5-col layout even when .with-ly */
+    .waterfall-table.with-ly .wf-header,
+    .waterfall-table.with-ly .wf-row {
+        grid-template-columns: 180px 130px 110px 1fr 90px;
+    }
+    .waterfall-table.with-ly .wf-col-pct,
+    .waterfall-table.with-ly .wf-pct { display: none; }
+}
 @media (max-width: 900px) {
-    .wf-header, .wf-row {
+    /* Mobile: drop YoY and CONTEXT, keep LY as toggle still works */
+    .wf-header, .wf-row,
+    .waterfall-table.with-ly .wf-header,
+    .waterfall-table.with-ly .wf-row {
         grid-template-columns: 130px 110px 1fr 80px;
     }
-    .wf-header .wf-col-yoy, .wf-row .wf-yoy-col { display: none; }
+    .wf-header .wf-col-yoy, .wf-row .wf-yoy-col,
+    .wf-header .wf-col-pct, .wf-row .wf-pct,
+    .waterfall-table.with-ly .wf-col-ly,
+    .waterfall-table.with-ly .wf-ly-amount { display: none; }
     .wf-footer { grid-template-columns: 1fr; }
 }
 
@@ -541,7 +644,7 @@ body {
 <div class="header">
     <h1>October 2024 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated May 20, 2026 at 11:54 PM</div>
+    <div class="updated">Last updated May 21, 2026 at 12:01 AM</div>
 </div>
 
 
@@ -1209,10 +1312,18 @@ body {
     <h2>Profit Waterfall &mdash; Gross to Contribution Margin</h2>
 </div>
 
-    <div class="waterfall-table">
+    <div class="wf-toolbar">
+        <span class="wf-toolbar-hint">Compare to <strong>2023</strong> &mdash;</span>
+        <button class="wf-toggle" id="wfToggleLy" onclick="toggleWaterfallLy()">
+            <span class="wf-toggle-track"><span class="wf-toggle-thumb"></span></span>
+            <span class="wf-toggle-label">Show last year</span>
+        </button>
+    </div>
+    <div class="waterfall-table with-ly" id="waterfallTable">
         <div class="wf-header">
             <div class="wf-col-label">METRIC</div>
-            <div class="wf-col-amount">AMOUNT</div>
+            <div class="wf-col-amount">2024</div>
+            <div class="wf-col-ly">2023 (LY)</div>
             <div class="wf-col-bar">SHARE OF GROSS</div>
             <div class="wf-col-pct">CONTEXT</div>
             <div class="wf-col-yoy">YoY</div>
@@ -1221,56 +1332,88 @@ body {
         <div class="wf-row wf-start">
             <div class="wf-label">DTC Gross Sales</div>
             <div class="wf-amount">$200,191</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:100.0%"></div></div>
+            <div class="wf-ly-amount">$167,230</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:100.0%"></div>
+                <div class="wf-bar" style="width:100.0%"></div>
+            </div>
             <div class="wf-pct">100%</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge good">▲ 19.7%</span></div>
         </div>
         <div class="wf-row wf-minus">
             <div class="wf-label">− Discounts</div>
             <div class="wf-amount"><span class="wf-sign">−</span> $21,330</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:10.7%"></div></div>
+            <div class="wf-ly-amount"><span class="wf-sign-ly">−</span> $13,413</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:8.0%"></div>
+                <div class="wf-bar" style="width:10.7%"></div>
+            </div>
             <div class="wf-pct">10.7% of gross</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 59.0%</span></div>
         </div>
         <div class="wf-row wf-minus">
             <div class="wf-label">− Shipping Cost (actual)</div>
             <div class="wf-amount"><span class="wf-sign">−</span> $28,979</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:14.5%"></div></div>
+            <div class="wf-ly-amount"><span class="wf-sign-ly">−</span> $0</div>
+            <div class="wf-bar-wrap">
+                
+                <div class="wf-bar" style="width:14.5%"></div>
+            </div>
             <div class="wf-pct">14.5% of gross</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge neutral">--</span></div>
         </div>
         <div class="wf-row wf-minus">
             <div class="wf-label">− COGS</div>
             <div class="wf-amount"><span class="wf-sign">−</span> $50,986</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:25.5%"></div></div>
+            <div class="wf-ly-amount"><span class="wf-sign-ly">−</span> $48,853</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:29.2%"></div>
+                <div class="wf-bar" style="width:25.5%"></div>
+            </div>
             <div class="wf-pct">25.5% of gross</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 4.4%</span></div>
         </div>
         <div class="wf-row wf-subtotal">
             <div class="wf-label">Gross Profit</div>
             <div class="wf-amount">$98,896</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:49.4%"></div></div>
+            <div class="wf-ly-amount">$104,964</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:62.8%"></div>
+                <div class="wf-bar" style="width:49.4%"></div>
+            </div>
             <div class="wf-pct">49.4% margin</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▼ 5.8%</span></div>
         </div>
         <div class="wf-row wf-minus">
             <div class="wf-label">− Meta Spend</div>
             <div class="wf-amount"><span class="wf-sign">−</span> $15,659</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:7.8%"></div></div>
+            <div class="wf-ly-amount"><span class="wf-sign-ly">−</span> $8,240</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:4.9%"></div>
+                <div class="wf-bar" style="width:7.8%"></div>
+            </div>
             <div class="wf-pct">7.8% of gross</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 90.0%</span></div>
         </div>
         <div class="wf-row wf-minus">
             <div class="wf-label">− Google Spend</div>
             <div class="wf-amount"><span class="wf-sign">−</span> $11,344</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:5.7%"></div></div>
+            <div class="wf-ly-amount"><span class="wf-sign-ly">−</span> $12,762</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:7.6%"></div>
+                <div class="wf-bar" style="width:5.7%"></div>
+            </div>
             <div class="wf-pct">5.7% of gross</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge good">▼ 11.1%</span></div>
         </div>
         <div class="wf-row wf-final">
             <div class="wf-label">Contribution Margin</div>
             <div class="wf-amount">$71,894</div>
-            <div class="wf-bar-wrap"><div class="wf-bar" style="width:35.9%"></div></div>
+            <div class="wf-ly-amount">$83,961</div>
+            <div class="wf-bar-wrap">
+                <div class="wf-bar-ly" style="width:50.2%"></div>
+                <div class="wf-bar" style="width:35.9%"></div>
+            </div>
             <div class="wf-pct">35.9% CM</div>
             <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▼ 14.4%</span></div>
         </div>
@@ -1280,19 +1423,49 @@ body {
             <div class="wf-recap-label">Gross Profit</div>
             <div class="wf-recap-value">$98,896</div>
             <div class="wf-recap-sub">49.4% margin <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 5.8%</span></div>
+            <div class="wf-recap-ly">LY: $104,964 (62.8%)</div>
         </div>
         <div class="wf-recap wf-recap-highlight">
             <div class="wf-recap-label">Contribution Margin</div>
             <div class="wf-recap-value">$71,894</div>
             <div class="wf-recap-sub">35.9% CM <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 14.4%</span></div>
+            <div class="wf-recap-ly">LY: $83,961 (50.2%)</div>
         </div>
         <div class="wf-recap">
             <div class="wf-recap-label">Profit / Order</div>
             <div class="wf-recap-value">$19.47</div>
-            <div class="wf-recap-sub">vs LY $23.83 <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 18.3%</span></div>
+            <div class="wf-recap-sub"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 18.3%</span></div>
+            <div class="wf-recap-ly">LY: $23.83</div>
         </div>
     </div>
     
+    <script>
+    (function() {
+        const KEY = 'tc.mtd.waterfall.showLy';
+        const tbl = document.getElementById('waterfallTable');
+        const btn = document.getElementById('wfToggleLy');
+        if (!tbl || !btn) return;
+        // Default: on. Read persisted preference if any.
+        const saved = localStorage.getItem(KEY);
+        const showLy = saved === null ? true : saved === '1';
+        applyLy(showLy);
+        window.toggleWaterfallLy = function() {
+            const next = !tbl.classList.contains('with-ly');
+            applyLy(next);
+            localStorage.setItem(KEY, next ? '1' : '0');
+        };
+        function applyLy(on) {
+            tbl.classList.toggle('with-ly', on);
+            btn.classList.toggle('on', on);
+            const lbl = btn.querySelector('.wf-toggle-label');
+            if (lbl) lbl.textContent = on ? 'Showing last year' : 'Show last year';
+            // Also dim/hide LY in recap chips
+            document.querySelectorAll('.wf-recap-ly').forEach(el => {
+                el.style.display = on ? '' : 'none';
+            });
+        }
+    })();
+    </script>
     
 
 <!-- ======== CHARTS ======== -->
