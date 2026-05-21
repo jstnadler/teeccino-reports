@@ -59,6 +59,134 @@ body {
 .section-header .section-icon.sales { background: rgba(74,222,128,0.12); }
 .section-header .section-icon.ads { background: rgba(96,165,250,0.12); }
 .section-header .section-icon.costs { background: rgba(248,113,113,0.12); }
+.section-header .section-icon.profit { background: rgba(212,168,67,0.15); color: #fbbf24; }
+
+/* ---- PROFIT WATERFALL ---- */
+.waterfall-table {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 8px 0;
+    margin: 18px 0 0 0;
+    overflow: hidden;
+}
+.wf-header {
+    display: grid;
+    grid-template-columns: 220px 160px 1fr 160px 100px;
+    gap: 16px;
+    padding: 10px 22px;
+    color: #94a3b8;
+    font-size: 0.72em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.wf-row {
+    display: grid;
+    grid-template-columns: 220px 160px 1fr 160px 100px;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.95em;
+}
+.wf-row:last-child { border-bottom: none; }
+.wf-label { color: #e2e8f0; font-weight: 500; }
+.wf-amount { color: #fff; font-weight: 600; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+.wf-sign { color: #f87171; font-weight: 700; margin-right: 4px; }
+.wf-bar-wrap {
+    background: rgba(255,255,255,0.04);
+    height: 14px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.wf-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+.wf-pct { color: #94a3b8; font-size: 0.85em; }
+.wf-yoy-col { text-align: right; }
+.wf-yoy { font-size: 0.78em; }
+
+/* "start" row = DTC Gross Sales */
+.wf-start .wf-label { color: #fff; font-weight: 700; font-size: 1.05em; }
+.wf-start .wf-amount { color: #4ade80; font-weight: 800; font-size: 1.1em; }
+.wf-start .wf-bar { background: linear-gradient(90deg, #4ade80, #22c55e); }
+
+/* "minus" rows = costs */
+.wf-minus .wf-label { color: #cbd5e1; padding-left: 16px; }
+.wf-minus .wf-amount { color: #fca5a5; }
+.wf-minus .wf-bar { background: linear-gradient(90deg, #fca5a5, #f87171); opacity: 0.85; }
+
+/* "subtotal" = Gross Profit */
+.wf-subtotal {
+    background: rgba(59,130,246,0.06);
+    border-top: 1px solid rgba(59,130,246,0.25);
+    border-bottom: 1px solid rgba(59,130,246,0.25);
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+.wf-subtotal .wf-label { color: #93c5fd; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.92em; }
+.wf-subtotal .wf-amount { color: #60a5fa; font-weight: 800; font-size: 1.15em; }
+.wf-subtotal .wf-bar { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+.wf-subtotal .wf-pct { color: #93c5fd; font-weight: 600; }
+
+/* "final" = Contribution Margin (the headline number) */
+.wf-final {
+    background: linear-gradient(90deg, rgba(212,168,67,0.10), rgba(212,168,67,0.04));
+    border-top: 2px solid rgba(212,168,67,0.45);
+    border-bottom: none;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    margin-top: 4px;
+}
+.wf-final .wf-label { color: #fbbf24; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.95em; }
+.wf-final .wf-amount { color: #fde68a; font-weight: 900; font-size: 1.3em; }
+.wf-final .wf-bar { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.wf-final .wf-pct { color: #fbbf24; font-weight: 700; }
+
+/* Footer recap */
+.wf-footer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 16px;
+}
+.wf-recap {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 18px 22px;
+}
+.wf-recap-highlight {
+    background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(245,158,11,0.04));
+    border-color: rgba(212,168,67,0.35);
+}
+.wf-recap-label { color: #94a3b8; font-size: 0.72em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.wf-recap-highlight .wf-recap-label { color: #fbbf24; }
+.wf-recap-value { font-size: 1.7em; font-weight: 800; color: #fff; line-height: 1.1; }
+.wf-recap-highlight .wf-recap-value { color: #fde68a; }
+.wf-recap-sub { color: #94a3b8; font-size: 0.82em; margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.wf-caveat {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 8px;
+    color: #fbbf24;
+    font-size: 0.82em;
+}
+
+@media (max-width: 900px) {
+    .wf-header, .wf-row {
+        grid-template-columns: 130px 110px 1fr 80px;
+    }
+    .wf-header .wf-col-yoy, .wf-row .wf-yoy-col { display: none; }
+    .wf-footer { grid-template-columns: 1fr; }
+}
 
 /* ---- KPI CARDS ---- */
 .kpi-grid {
@@ -413,7 +541,7 @@ body {
 <div class="header">
     <h1>May 2024 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated May 08, 2026 at 01:42 PM</div>
+    <div class="updated">Last updated May 20, 2026 at 11:54 PM</div>
 </div>
 
 
@@ -468,6 +596,81 @@ body {
 <div class="analysis-box">
     <div class="analysis-label">Key Takeaways</div>
     <div class="analysis-text"><span class="win-icon">&#9650;</span> Net revenue up 8% YoY ($153,443 vs $142,111) &bull; New customer orders up 11% (1,322 vs 1,188 LY) &bull; Subscription gross up 11% YoY<br/><span class="loss-icon">&#9660;</span> MER declined to 5.06x (from 5.83x LY) &bull; Ad spend up 24% YoY ($30,316 vs $24,368) &bull; Discounts up 87% YoY ($16,930 vs $9,065)</div>
+</div>
+
+<!-- ======== PROFITABILITY (hero band) ======== -->
+<div class="section-header">
+    <div class="section-icon profit">π</div>
+    <h2>Profitability</h2>
+</div>
+<div class="kpi-grid">
+    
+    <div class="kpi-card" onclick="openModal('contribution_margin')" style="cursor:pointer;">
+        <div class="card-label">Contribution Margin</div>
+        <div class="card-value">$45,787</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 34.3%</span></div>
+        <div class="card-detail">LY: $69,665 | 28.1% CM</div>
+        
+    </div>
+        <div class="card-modal" id="modal-contribution_margin">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Contribution Margin</span>
+                    <button class="modal-close" onclick="closeModal('contribution_margin')">&times;</button>
+                </div>
+                <div class="modal-value">$45,787</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Profit left after subtracting the variable costs of selling: Gross Sales minus discounts, shipping cost, COGS, and ad spend (Meta + Google). This is the dollars available to pay overhead, salaries, and profit. Excludes Shopify platform fees and other operating costs (those sit below CM).</p></div>
+                <div class='modal-section'><div class='modal-label'>Gross → Contribution Margin walk</div><div class='recon-block'><div class="recon-row"><span class="recon-sign recon-neutral"></span><span class="recon-label">DTC Gross Sales</span><span class="recon-amt recon-neutral">$163,027</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Discounts</span><span class="recon-amt recon-neg">$16,930</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Shipping Cost (actual)</span><span class="recon-amt recon-neg">$24,966</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">COGS</span><span class="recon-amt recon-neg">$45,028</span></div><div class="recon-row recon-total-row"><span class="recon-sign recon-total"></span><span class="recon-label">Gross Profit</span><span class="recon-amt recon-total">$76,103</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Meta Spend</span><span class="recon-amt recon-neg">$21,822</span></div><div class="recon-row"><span class="recon-sign recon-neg">−</span><span class="recon-label">Google Spend</span><span class="recon-amt recon-neg">$8,494</span></div><div class="recon-row recon-total-row"><span class="recon-sign recon-total"></span><span class="recon-label">CONTRIBUTION MARGIN</span><span class="recon-amt recon-total">$45,787</span></div></div></div>
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>DTC Gross - Discounts - Shipping Cost - COGS - Meta - Google</p></div>
+                
+            </div>
+        </div>
+    <div class="kpi-card">
+        <div class="card-label">CM %</div>
+        <div class="card-value">28.1%</div>
+        <div class="card-yoy"><span class="yoy-badge bad">▼ 20.7pp</span></div>
+        <div class="card-detail">LY: 48.7% &middot; CM / DTC Gross Sales</div>
+    </div>
+    <div class="kpi-card" onclick="openModal('gross_profit')" style="cursor:pointer;">
+        <div class="card-label">Gross Profit</div>
+        <div class="card-value">$76,103</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 19.1%</span></div>
+        <div class="card-detail">LY: $94,033 | 46.7% GP margin</div>
+        
+    </div>
+        <div class="card-modal" id="modal-gross_profit">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Gross Profit</span>
+                    <button class="modal-close" onclick="closeModal('gross_profit')">&times;</button>
+                </div>
+                <div class="modal-value">$76,103</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Profit on goods sold, before any advertising spend. Gross Sales minus discounts, shipping cost, and COGS.</p></div>
+                
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>DTC Gross - Discounts - Shipping Cost - COGS</p></div>
+                
+            </div>
+        </div>
+    <div class="kpi-card" onclick="openModal('profit_per_order')" style="cursor:pointer;">
+        <div class="card-label">Profit / Order</div>
+        <div class="card-value">$13.66</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 41.6%</span></div>
+        <div class="card-detail">LY: $23.39 &middot; CM / 3,352 orders</div>
+        
+    </div>
+        <div class="card-modal" id="modal-profit_per_order">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <span>Profit / Order</span>
+                    <button class="modal-close" onclick="closeModal('profit_per_order')">&times;</button>
+                </div>
+                <div class="modal-value">$13.66</div>
+                <div class='modal-section'><div class='modal-label'>What is this?</div><p>Contribution margin divided by total DTC orders. How many dollars of variable-cost profit each order generates on average.</p></div>
+                
+                <div class='modal-section'><div class='modal-label'>How it's calculated</div><p class='formula'>Contribution Margin / Total DTC Orders</p></div>
+                
+            </div>
+        </div>
 </div>
 
 <!-- ======== SALES ======== -->
@@ -999,6 +1202,98 @@ body {
             </div>
         </div>
 </div>
+
+<!-- ======== PROFIT WATERFALL ======== -->
+<div class="section-header">
+    <div class="section-icon profit">π</div>
+    <h2>Profit Waterfall &mdash; Gross to Contribution Margin</h2>
+</div>
+
+    <div class="waterfall-table">
+        <div class="wf-header">
+            <div class="wf-col-label">METRIC</div>
+            <div class="wf-col-amount">AMOUNT</div>
+            <div class="wf-col-bar">SHARE OF GROSS</div>
+            <div class="wf-col-pct">CONTEXT</div>
+            <div class="wf-col-yoy">YoY</div>
+        </div>
+        
+        <div class="wf-row wf-start">
+            <div class="wf-label">DTC Gross Sales</div>
+            <div class="wf-amount">$163,027</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:100.0%"></div></div>
+            <div class="wf-pct">100%</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge good">▲ 14.1%</span></div>
+        </div>
+        <div class="wf-row wf-minus">
+            <div class="wf-label">− Discounts</div>
+            <div class="wf-amount"><span class="wf-sign">−</span> $16,930</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:10.4%"></div></div>
+            <div class="wf-pct">10.4% of gross</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 86.8%</span></div>
+        </div>
+        <div class="wf-row wf-minus">
+            <div class="wf-label">− Shipping Cost (actual)</div>
+            <div class="wf-amount"><span class="wf-sign">−</span> $24,966</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:15.3%"></div></div>
+            <div class="wf-pct">15.3% of gross</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge neutral">--</span></div>
+        </div>
+        <div class="wf-row wf-minus">
+            <div class="wf-label">− COGS</div>
+            <div class="wf-amount"><span class="wf-sign">−</span> $45,028</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:27.6%"></div></div>
+            <div class="wf-pct">27.6% of gross</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 13.1%</span></div>
+        </div>
+        <div class="wf-row wf-subtotal">
+            <div class="wf-label">Gross Profit</div>
+            <div class="wf-amount">$76,103</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:46.7%"></div></div>
+            <div class="wf-pct">46.7% margin</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▼ 19.1%</span></div>
+        </div>
+        <div class="wf-row wf-minus">
+            <div class="wf-label">− Meta Spend</div>
+            <div class="wf-amount"><span class="wf-sign">−</span> $21,822</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:13.4%"></div></div>
+            <div class="wf-pct">13.4% of gross</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 11.1%</span></div>
+        </div>
+        <div class="wf-row wf-minus">
+            <div class="wf-label">− Google Spend</div>
+            <div class="wf-amount"><span class="wf-sign">−</span> $8,494</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:5.2%"></div></div>
+            <div class="wf-pct">5.2% of gross</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▲ 80.0%</span></div>
+        </div>
+        <div class="wf-row wf-final">
+            <div class="wf-label">Contribution Margin</div>
+            <div class="wf-amount">$45,787</div>
+            <div class="wf-bar-wrap"><div class="wf-bar" style="width:28.1%"></div></div>
+            <div class="wf-pct">28.1% CM</div>
+            <div class="wf-yoy-col"><span class="wf-yoy yoy-badge bad">▼ 34.3%</span></div>
+        </div>
+    </div>
+    <div class="wf-footer">
+        <div class="wf-recap">
+            <div class="wf-recap-label">Gross Profit</div>
+            <div class="wf-recap-value">$76,103</div>
+            <div class="wf-recap-sub">46.7% margin <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 19.1%</span></div>
+        </div>
+        <div class="wf-recap wf-recap-highlight">
+            <div class="wf-recap-label">Contribution Margin</div>
+            <div class="wf-recap-value">$45,787</div>
+            <div class="wf-recap-sub">28.1% CM <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 34.3%</span></div>
+        </div>
+        <div class="wf-recap">
+            <div class="wf-recap-label">Profit / Order</div>
+            <div class="wf-recap-value">$13.66</div>
+            <div class="wf-recap-sub">vs LY $23.39 <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 41.6%</span></div>
+        </div>
+    </div>
+    
+    
 
 <!-- ======== CHARTS ======== -->
 <div class="chart-row" style="grid-template-columns: 1fr;">
