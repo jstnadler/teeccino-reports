@@ -109,6 +109,82 @@ body {
 /* Give section headers scroll-margin so anchor-jumps don't hide under sticky bars */
 .section-header { scroll-margin-top: 120px; }
 
+/* ---- GLOBAL "vs LY" TOGGLE ---- */
+/* Lives next to the jump-bar. Toggles body.show-ly which controls
+   visibility of: chart LY datasets, donut LY pie, shipping LY badges. */
+.ly-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -18px 0 22px auto;
+    padding: 6px 10px;
+    background: rgba(30,41,59,0.5);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    font-size: 0.78em;
+    color: #94a3b8;
+    width: fit-content;
+}
+.ly-toolbar-hint { color: #64748b; }
+.ly-toolbar-hint strong { color: #fbbf24; font-weight: 700; }
+.ly-toggle-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #cbd5e1;
+    padding: 4px 10px 4px 6px;
+    border-radius: 999px;
+    font-size: 0.95em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.ly-toggle-btn:hover { border-color: rgba(212,168,67,0.4); color: #fff; }
+.ly-toggle-btn .ly-track {
+    position: relative; width: 26px; height: 14px;
+    background: rgba(255,255,255,0.12); border-radius: 999px;
+    transition: background 0.2s ease;
+}
+.ly-toggle-btn .ly-thumb {
+    position: absolute; top: 2px; left: 2px;
+    width: 10px; height: 10px;
+    background: #94a3b8; border-radius: 50%;
+    transition: all 0.2s ease;
+}
+body.show-ly .ly-toggle-btn .ly-track { background: rgba(212,168,67,0.45); }
+body.show-ly .ly-toggle-btn .ly-thumb { left: 14px; background: #fbbf24; }
+body.show-ly .ly-toggle-btn { border-color: rgba(212,168,67,0.4); color: #fde68a; }
+
+/* When LY off, hide all ly-inline subtext + shipping LY rows + donut-ly */
+.ly-inline {
+    color: #64748b; font-size: 0.86em; margin-left: 6px;
+}
+body:not(.show-ly) .ly-inline { display: none; }
+body:not(.show-ly) .donut-ly-wrap { display: none !important; }
+
+/* Inline YoY badges (compact) */
+.yoy-inline {
+    display: inline-block;
+    padding: 1px 6px; border-radius: 999px;
+    font-size: 0.78em; font-weight: 600;
+    margin-left: 4px;
+}
+.yoy-inline.yoy-good { color: #4ade80; background: rgba(74,222,128,0.10); }
+.yoy-inline.yoy-bad { color: #f87171; background: rgba(248,113,113,0.10); }
+.yoy-inline.yoy-neutral { color: #94a3b8; }
+
+.ship-geo-ly { display: block; margin-top: 6px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.06); font-family: 'SF Mono', Menlo, Consolas, monospace; }
+
+/* Donut LY: two donuts side-by-side */
+.donut-row { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: center; }
+body.show-ly .donut-row { grid-template-columns: 1fr 1fr; }
+.donut-cy-wrap, .donut-ly-wrap { text-align: center; position: relative; }
+.donut-wrap-label {
+    color: #94a3b8; font-size: 0.78em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.donut-ly-wrap .donut-wrap-label { color: #fbbf24; }
+
 /* ---- SHIPPING SECTION ---- */
 .ship-panels {
     display: flex; flex-direction: column;
@@ -826,7 +902,7 @@ body {
 <div class="header">
     <h1>December 2025 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated May 21, 2026 at 09:30 AM</div>
+    <div class="updated">Last updated May 21, 2026 at 01:10 PM</div>
 </div>
 
 
@@ -895,6 +971,45 @@ body {
     <a href="#sec-top-ads"><span class="jump-bar-emoji">&#127919;</span> Top Ads</a>
     <a href="#sec-promotions"><span class="jump-bar-emoji">&#127873;</span> Promotions</a>
 </nav>
+
+<!-- ======== GLOBAL "vs LY" TOGGLE ======== -->
+<div class="ly-toolbar" role="region" aria-label="Year-over-year comparison toggle">
+    <span class="ly-toolbar-hint">Compare to <strong>2024</strong></span>
+    <button class="ly-toggle-btn" id="globalLyToggle" onclick="toggleGlobalLy()" aria-label="Toggle prior-year comparison">
+        <span class="ly-track"><span class="ly-thumb"></span></span>
+        <span class="ly-toggle-label">on</span>
+    </button>
+</div>
+<script>
+(function() {
+    const KEY = 'tc.mtd.showLy';
+    const saved = localStorage.getItem(KEY);
+    const on = saved === null ? true : saved === '1';
+    applyGlobalLy(on);
+    window.toggleGlobalLy = function() {
+        const next = !document.body.classList.contains('show-ly');
+        applyGlobalLy(next);
+        localStorage.setItem(KEY, next ? '1' : '0');
+        // Live-update Chart.js datasets if charts exist
+        if (window._mtdCharts) window._mtdCharts.forEach(c => syncChartLy(c, next));
+    };
+    function applyGlobalLy(on) {
+        document.body.classList.toggle('show-ly', on);
+        const btn = document.getElementById('globalLyToggle');
+        if (btn) {
+            const lbl = btn.querySelector('.ly-toggle-label');
+            if (lbl) lbl.textContent = on ? 'on' : 'off';
+        }
+    }
+    window.syncChartLy = function(chart, on) {
+        // Any dataset with .label starting with the LY year is treated as LY
+        chart.data.datasets.forEach(ds => {
+            if (ds._ly === true) ds.hidden = !on;
+        });
+        chart.update('none');
+    };
+})();
+</script>
 
 <!-- ======== PROFITABILITY (hero band) ======== -->
 <div class="section-header" id="sec-profitability">
@@ -1549,9 +1664,9 @@ body {
                     <tbody>
             <tr>
                 <td class="ship-carrier-name">DHL eCommerce</td>
-                <td class="num">4,557</td>
-                <td class="num">$32,275</td>
-                <td class="num">$7.08</td>
+                <td class="num">4,557<span class="ly-inline"> &middot; LY 3,217 <span class="yoy-inline yoy-good">▲ 42%</span></span></td>
+                <td class="num">$32,275<span class="ly-inline"> &middot; LY $20,877 <span class="yoy-inline yoy-bad">▲ 55%</span></span></td>
+                <td class="num">$7.08<span class="ly-inline"> &middot; LY $6.49</span></td>
                 <td class="num">32.0oz</td>
                 <td class="num">
                     <div class="ship-bar-wrap"><div class="ship-bar" style="width:68.6%"></div></div>
@@ -1560,9 +1675,9 @@ body {
             </tr>
             <tr>
                 <td class="ship-carrier-name">USPS</td>
-                <td class="num">1,382</td>
-                <td class="num">$14,260</td>
-                <td class="num">$10.32</td>
+                <td class="num">1,382<span class="ly-inline"> &middot; LY 1,553 <span class="yoy-inline yoy-bad">▼ 11%</span></span></td>
+                <td class="num">$14,260<span class="ly-inline"> &middot; LY $14,397 <span class="yoy-inline yoy-good">▼ 1%</span></span></td>
+                <td class="num">$10.32<span class="ly-inline"> &middot; LY $9.27</span></td>
                 <td class="num">64.2oz</td>
                 <td class="num">
                     <div class="ship-bar-wrap"><div class="ship-bar" style="width:30.3%"></div></div>
@@ -1571,9 +1686,9 @@ body {
             </tr>
             <tr>
                 <td class="ship-carrier-name">FedEx</td>
-                <td class="num">22</td>
-                <td class="num">$513</td>
-                <td class="num">$23.30</td>
+                <td class="num">22<span class="ly-inline"> &middot; LY 41 <span class="yoy-inline yoy-neutral">—</span></span></td>
+                <td class="num">$513<span class="ly-inline"> &middot; LY $861 <span class="yoy-inline yoy-good">▼ 40%</span></span></td>
+                <td class="num">$23.30<span class="ly-inline"> &middot; LY $20.99</span></td>
                 <td class="num">183.8oz</td>
                 <td class="num">
                     <div class="ship-bar-wrap"><div class="ship-bar" style="width:1.1%"></div></div>
@@ -1603,8 +1718,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Smartmail Parcels Expedited</td>
                 <td class="ship-svc-carrier">Dhl Global Mail</td>
-                <td class="num">3,342</td>
-                <td class="num">$24,713</td>
+                <td class="num">3,342<span class="ly-inline"> <span class="yoy-inline yoy-good">▲ 46%</span></span></td>
+                <td class="num">$24,713<span class="ly-inline"> <span class="yoy-inline yoy-bad">▲ 64%</span></span></td>
                 <td class="num">$7.39</td>
                 <td class="num">32.9oz</td>
                 <td class="num">53%</td>
@@ -1612,8 +1727,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Usps Ground Advantage</td>
                 <td class="ship-svc-carrier">Stamps Com</td>
-                <td class="num">878</td>
-                <td class="num">$8,601</td>
+                <td class="num">878<span class="ly-inline"> <span class="yoy-inline yoy-bad">▼ 25%</span></span></td>
+                <td class="num">$8,601<span class="ly-inline"> <span class="yoy-inline yoy-good">▼ 22%</span></span></td>
                 <td class="num">$9.80</td>
                 <td class="num">89.0oz</td>
                 <td class="num">18%</td>
@@ -1621,8 +1736,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Smartmail Parcels Ground</td>
                 <td class="ship-svc-carrier">Dhl Global Mail</td>
-                <td class="num">1,150</td>
-                <td class="num">$7,068</td>
+                <td class="num">1,150<span class="ly-inline"> <span class="yoy-inline yoy-good">▲ 111%</span></span></td>
+                <td class="num">$7,068<span class="ly-inline"> <span class="yoy-inline yoy-bad">▲ 131%</span></span></td>
                 <td class="num">$6.15</td>
                 <td class="num">30.4oz</td>
                 <td class="num">15%</td>
@@ -1630,8 +1745,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Usps Priority Mail</td>
                 <td class="ship-svc-carrier">Stamps Com</td>
-                <td class="num">425</td>
-                <td class="num">$5,175</td>
+                <td class="num">425<span class="ly-inline"> <span class="yoy-inline yoy-good">▲ 52%</span></span></td>
+                <td class="num">$5,175<span class="ly-inline"> <span class="yoy-inline yoy-bad">▲ 84%</span></span></td>
                 <td class="num">$12.18</td>
                 <td class="num">23.2oz</td>
                 <td class="num">11%</td>
@@ -1639,8 +1754,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Fedex Home Delivery</td>
                 <td class="ship-svc-carrier">Fedex</td>
-                <td class="num">22</td>
-                <td class="num">$513</td>
+                <td class="num">22<span class="ly-inline"> <span class="yoy-inline yoy-neutral">—</span></span></td>
+                <td class="num">$513<span class="ly-inline"> <span class="yoy-inline yoy-good">▼ 40%</span></span></td>
                 <td class="num">$23.30</td>
                 <td class="num">183.8oz</td>
                 <td class="num">1%</td>
@@ -1648,8 +1763,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Dhl Sm Parcel Expedited Max</td>
                 <td class="ship-svc-carrier">Dhl Global Mail</td>
-                <td class="num">65</td>
-                <td class="num">$494</td>
+                <td class="num">65<span class="ly-inline"> <span class="yoy-inline yoy-bad">▼ 83%</span></span></td>
+                <td class="num">$494<span class="ly-inline"> <span class="yoy-inline yoy-good">▼ 82%</span></span></td>
                 <td class="num">$7.60</td>
                 <td class="num">16.7oz</td>
                 <td class="num">1%</td>
@@ -1657,8 +1772,8 @@ body {
             <tr>
                 <td class="ship-svc-name">Usps First Class Mail</td>
                 <td class="ship-svc-carrier">Stamps Com</td>
-                <td class="num">79</td>
-                <td class="num">$485</td>
+                <td class="num">79<span class="ly-inline"> <span class="yoy-inline yoy-bad">▼ 27%</span></span></td>
+                <td class="num">$485<span class="ly-inline"> <span class="yoy-inline yoy-good">▼ 16%</span></span></td>
                 <td class="num">$6.14</td>
                 <td class="num">9.2oz</td>
                 <td class="num">1%</td>
@@ -1675,14 +1790,16 @@ body {
                         <div class="ship-geo-card">
                             <div class="ship-geo-label">Domestic (US)</div>
                             <div class="ship-geo-count">5,961</div>
-                            <div class="ship-geo-meta">100.0% of shipments</div>
+                            <div class="ship-geo-meta">100.0% of shipments &middot; <span class="yoy-inline yoy-good">▲ 24%</span></div>
                             <div class="ship-geo-cost">$47,048 &middot; $7.89 avg</div>
+                            <div class="ship-geo-ly ly-inline">LY: 4,811 ship &middot; $36,135</div>
                         </div>
                         <div class="ship-geo-card">
                             <div class="ship-geo-label">International</div>
                             <div class="ship-geo-count">0</div>
-                            <div class="ship-geo-meta">0.0% of shipments</div>
+                            <div class="ship-geo-meta">0.0% of shipments &middot; <span class="yoy-inline yoy-neutral">—</span></div>
                             <div class="ship-geo-cost">$0 &middot; $0.00 avg</div>
+                            <div class="ship-geo-ly ly-inline">LY: 0 ship &middot; $0</div>
                         </div>
                     </div>
                     <div class="ship-geo-stackbar">
@@ -1701,49 +1818,49 @@ body {
             <div class="ship-state-row">
                 <div class="ship-state-code">CA</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:100.0%"></div></div>
-                <div class="ship-state-count">775 ship</div>
+                <div class="ship-state-count">775 ship<span class="ly-inline"> &middot; LY 638 <span class="yoy-inline yoy-good">▲ 21%</span></span></div>
                 <div class="ship-state-cost">$4,829</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">NY</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:47.4%"></div></div>
-                <div class="ship-state-count">367 ship</div>
+                <div class="ship-state-count">367 ship<span class="ly-inline"> &middot; LY 284 <span class="yoy-inline yoy-good">▲ 29%</span></span></div>
                 <div class="ship-state-cost">$3,158</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">FL</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:41.4%"></div></div>
-                <div class="ship-state-count">321 ship</div>
+                <div class="ship-state-count">321 ship<span class="ly-inline"> &middot; LY 248 <span class="yoy-inline yoy-good">▲ 29%</span></span></div>
                 <div class="ship-state-cost">$2,732</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">TX</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:37.7%"></div></div>
-                <div class="ship-state-count">292 ship</div>
+                <div class="ship-state-count">292 ship<span class="ly-inline"> &middot; LY 252 <span class="yoy-inline yoy-good">▲ 16%</span></span></div>
                 <div class="ship-state-cost">$2,191</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">PA</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:36.8%"></div></div>
-                <div class="ship-state-count">285 ship</div>
+                <div class="ship-state-count">285 ship<span class="ly-inline"> &middot; LY 206 <span class="yoy-inline yoy-good">▲ 38%</span></span></div>
                 <div class="ship-state-cost">$2,389</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">MI</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:27.1%"></div></div>
-                <div class="ship-state-count">210 ship</div>
+                <div class="ship-state-count">210 ship<span class="ly-inline"> &middot; LY 148 <span class="yoy-inline yoy-good">▲ 42%</span></span></div>
                 <div class="ship-state-cost">$1,846</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">WA</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:26.7%"></div></div>
-                <div class="ship-state-count">207 ship</div>
+                <div class="ship-state-count">207 ship<span class="ly-inline"> &middot; LY 167 <span class="yoy-inline yoy-good">▲ 24%</span></span></div>
                 <div class="ship-state-cost">$1,509</div>
             </div>
             <div class="ship-state-row">
                 <div class="ship-state-code">MA</div>
                 <div class="ship-state-bar-wrap"><div class="ship-state-bar" style="width:23.5%"></div></div>
-                <div class="ship-state-count">182 ship</div>
+                <div class="ship-state-count">182 ship<span class="ly-inline"> &middot; LY 128 <span class="yoy-inline yoy-good">▲ 42%</span></span></div>
                 <div class="ship-state-cost">$1,581</div>
             </div></div>
             </div>
@@ -2161,8 +2278,17 @@ body {
             </table>
         </div>
         <div class="promo-chart-wrap">
-            <canvas id="discountChart" width="240" height="240"></canvas>
-            <p style="color:#64748b;font-size:0.72em;margin-top:8px;line-height:1.4;text-align:center;max-width:240px;">
+            <div class="donut-row">
+                <div class="donut-cy-wrap">
+                    <div class="donut-wrap-label">2025</div>
+                    <canvas id="discountChart" width="240" height="240"></canvas>
+                </div>
+                <div class="donut-ly-wrap">
+                    <div class="donut-wrap-label">2024 (LY)</div>
+                    <canvas id="discountChartLy" width="220" height="220"></canvas>
+                </div>
+            </div>
+            <p style="color:#64748b;font-size:0.72em;margin-top:8px;line-height:1.4;text-align:center;max-width:480px;">
                 <strong>Price Reduction Discounts</strong> = items listed below MSRP (sales / temporary price cuts) &mdash; Shopify doesn't tag these as discounts. Categories can overlap when Stay.ai applies a sub discount as a Shopify automatic discount, so chart sum can differ slightly from headline Total Discounts.
             </p>
         </div>
@@ -2255,12 +2381,16 @@ function closeAdModal() {
 }
 
 // Charts
-const trendData = {"dates": ["2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-06", "2025-12-07", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-13", "2025-12-14", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-20", "2025-12-21", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-27", "2025-12-28", "2025-12-29", "2025-12-30", "2025-12-31"], "gross": [20949.0, 7803.0, 5402.0, 4608.0, 4611.0, 4669.0, 4918.0, 6100.0, 5714.0, 5666.0, 4958.0, 5358.0, 4617.0, 4937.0, 5048.0, 4477.0, 4380.0, 5216.0, 3984.0, 4327.0, 4733.0, 7220.0, 8248.0, 3619.0, 3051.0, 4017.0, 5798.0, 9480.0, 8945.0, 9345.0, 7856.0], "orders": [320, 127, 108, 105, 95, 90, 116, 113, 116, 111, 96, 105, 102, 103, 105, 77, 96, 97, 78, 78, 87, 129, 133, 64, 58, 78, 91, 168, 167, 170, 139], "meta_spend": [2006.0, 664.0, 659.0, 722.0, 703.0, 623.0, 836.0, 776.0, 705.0, 536.0, 497.0, 523.0, 474.0, 604.0, 520.0, 455.0, 395.0, 321.0, 301.0, 276.0, 423.0, 370.0, 344.0, 272.0, 258.0, 259.0, 208.0, 962.0, 824.0, 775.0, 731.0], "google_spend": [265.0, 115.0, 270.0, 323.0, 204.0, 226.0, 233.0, 231.0, 268.0, 199.0, 190.0, 184.0, 202.0, 178.0, 170.0, 174.0, 162.0, 161.0, 148.0, 122.0, 109.0, 117.0, 115.0, 84.0, 88.0, 146.0, 180.0, 241.0, 262.0, 268.0, 260.0], "total_spend": [2271.0, 779.0, 929.0, 1045.0, 907.0, 849.0, 1068.0, 1007.0, 973.0, 736.0, 686.0, 707.0, 676.0, 782.0, 690.0, 628.0, 557.0, 482.0, 449.0, 398.0, 532.0, 487.0, 459.0, 356.0, 346.0, 405.0, 389.0, 1202.0, 1086.0, 1043.0, 991.0], "ly_dates": ["2024-12-01", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-07", "2024-12-08", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-14", "2024-12-15", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-21", "2024-12-22", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-28", "2024-12-29", "2024-12-30", "2024-12-31"], "ly_gross": [19967.0, 28856.0, 7827.0, 4007.0, 4616.0, 4541.0, 5244.0, 5871.0, 7220.0, 10057.0, 9043.0, 8378.0, 6980.0, 9800.0, 11099.0, 7545.0, 5149.0, 4197.0, 4619.0, 5633.0, 3759.0, 5293.0, 3307.0, 2517.0, 2769.0, 5008.0, 4260.0, 9065.0, 8606.0, 10488.0, 5490.0], "ly_orders": [297, 452, 135, 88, 88, 97, 108, 115, 128, 151, 138, 135, 119, 141, 164, 124, 89, 80, 80, 107, 67, 103, 56, 54, 57, 86, 69, 138, 138, 168, 86]};
+const trendData = {"dates": ["2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-06", "2025-12-07", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-13", "2025-12-14", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-20", "2025-12-21", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-27", "2025-12-28", "2025-12-29", "2025-12-30", "2025-12-31"], "gross": [20949.0, 7803.0, 5402.0, 4608.0, 4611.0, 4669.0, 4918.0, 6100.0, 5714.0, 5666.0, 4958.0, 5358.0, 4617.0, 4937.0, 5048.0, 4477.0, 4380.0, 5216.0, 3984.0, 4327.0, 4733.0, 7220.0, 8248.0, 3619.0, 3051.0, 4017.0, 5798.0, 9480.0, 8945.0, 9345.0, 7856.0], "orders": [320, 127, 108, 105, 95, 90, 116, 113, 116, 111, 96, 105, 102, 103, 105, 77, 96, 97, 78, 78, 87, 129, 133, 64, 58, 78, 91, 168, 167, 170, 139], "meta_spend": [2006.0, 664.0, 659.0, 722.0, 703.0, 623.0, 836.0, 776.0, 705.0, 536.0, 497.0, 523.0, 474.0, 604.0, 520.0, 455.0, 395.0, 321.0, 301.0, 276.0, 423.0, 370.0, 344.0, 272.0, 258.0, 259.0, 208.0, 962.0, 824.0, 775.0, 731.0], "google_spend": [265.0, 115.0, 270.0, 323.0, 204.0, 226.0, 233.0, 231.0, 268.0, 199.0, 190.0, 184.0, 202.0, 178.0, 170.0, 174.0, 162.0, 161.0, 148.0, 122.0, 109.0, 117.0, 115.0, 84.0, 88.0, 146.0, 180.0, 241.0, 262.0, 268.0, 260.0], "total_spend": [2271.0, 779.0, 929.0, 1045.0, 907.0, 849.0, 1068.0, 1007.0, 973.0, 736.0, 686.0, 707.0, 676.0, 782.0, 690.0, 628.0, 557.0, 482.0, 449.0, 398.0, 532.0, 487.0, 459.0, 356.0, 346.0, 405.0, 389.0, 1202.0, 1086.0, 1043.0, 991.0], "ly_dates": ["2024-12-01", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-07", "2024-12-08", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-14", "2024-12-15", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-21", "2024-12-22", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-28", "2024-12-29", "2024-12-30", "2024-12-31"], "ly_gross": [19967.0, 28856.0, 7827.0, 4007.0, 4616.0, 4541.0, 5244.0, 5871.0, 7220.0, 10057.0, 9043.0, 8378.0, 6980.0, 9800.0, 11099.0, 7545.0, 5149.0, 4197.0, 4619.0, 5633.0, 3759.0, 5293.0, 3307.0, 2517.0, 2769.0, 5008.0, 4260.0, 9065.0, 8606.0, 10488.0, 5490.0], "ly_orders": [297, 452, 135, 88, 88, 97, 108, 115, 128, 151, 138, 135, 119, 141, 164, 124, 89, 80, 80, 107, 67, 103, 56, 54, 57, 86, 69, 138, 138, 168, 86], "ly_meta_spend": [1934.0, 2096.0, 778.0, 482.0, 249.0, 240.0, 201.0, 251.0, 253.0, 249.0, 314.0, 461.0, 395.0, 386.0, 485.0, 454.0, 220.0, 147.0, 141.0, 135.0, 127.0, 161.0, 160.0, 140.0, 146.0, 138.0, 135.0, 132.0, 173.0, 426.0, 507.0], "ly_google_spend": [921.0, 945.0, 464.0, 168.0, 113.0, 200.0, 153.0, 132.0, 190.0, 180.0, 337.0, 477.0, 419.0, 401.0, 437.0, 334.0, 144.0, 86.0, 68.0, 101.0, 68.0, 89.0, 88.0, 73.0, 72.0, 103.0, 79.0, 104.0, 87.0, 73.0, 344.0], "ly_total_spend": [2854.0, 3041.0, 1241.0, 649.0, 362.0, 439.0, 353.0, 383.0, 442.0, 429.0, 651.0, 938.0, 814.0, 786.0, 922.0, 788.0, 364.0, 233.0, 209.0, 237.0, 195.0, 250.0, 249.0, 213.0, 219.0, 240.0, 214.0, 236.0, 259.0, 500.0, 851.0]};
 const cumData = {"days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], "cum": [20949.0, 28752.0, 34154.0, 38762.0, 43373.0, 48042.0, 52960.0, 59060.0, 64774.0, 70440.0, 75398.0, 80756.0, 85373.0, 90310.0, 95358.0, 99835.0, 104215.0, 109431.0, 113415.0, 117741.0, 122474.0, 129694.0, 137943.0, 141561.0, 144613.0, 148629.0, 154428.0, 163908.0, 172852.0, 182197.0, 190053.0], "ly_days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], "ly_cum": [19967.0, 48823.0, 56649.0, 60657.0, 65273.0, 69814.0, 75058.0, 80929.0, 88149.0, 98206.0, 107250.0, 115628.0, 122608.0, 132408.0, 143508.0, 151052.0, 156201.0, 160398.0, 165016.0, 170649.0, 174408.0, 179701.0, 183007.0, 185524.0, 188293.0, 193301.0, 197561.0, 206626.0, 215232.0, 225720.0, 231211.0]};
-const discData = {"labels": ["Subscription (implied)", "Price Reduction Discounts", "Automatic", "Discount Codes", "Manual", "Shipping Discounts"], "values": [11047.0, 593.0, 12568.0, 2697.0, 700.0, 6415.0]};
+const discData = {"labels": ["Subscription (implied)", "Price Reduction Discounts", "Automatic", "Discount Codes", "Manual", "Shipping Discounts"], "values": [11047.0, 593.0, 12568.0, 2697.0, 700.0, 6415.0], "values_ly": [8969.0, 15296.0, 0, 9280.0, 975.0, 110.0], "year": 2025, "ly_year": 2024};
+
+// Global chart registry so the LY toggle can sync them all
+window._mtdCharts = [];
+const _initialLyOn = document.body.classList.contains('show-ly');
 
 // Daily Gross Sales vs Daily Ad Spend (dual-axis line chart)
-new Chart(document.getElementById('salesVsSpendChart'), {
+const salesVsSpendChart = new Chart(document.getElementById('salesVsSpendChart'), {
     type: 'line',
     data: {
         labels: trendData.dates.map(d => d.slice(5)),
@@ -2290,6 +2420,32 @@ new Chart(document.getElementById('salesVsSpendChart'), {
                 pointBackgroundColor: '#58a6ff',
                 fill: false,
                 order: 2,
+            },
+            {
+                _ly: true, hidden: !_initialLyOn,
+                label: 'LY Gross Sales',
+                data: trendData.ly_gross,
+                borderColor: 'rgba(212,168,67,0.45)',
+                borderDash: [4, 4],
+                yAxisID: 'ySales',
+                tension: 0.3,
+                borderWidth: 1.5,
+                pointRadius: 0,
+                fill: false,
+                order: 3,
+            },
+            {
+                _ly: true, hidden: !_initialLyOn,
+                label: 'LY Ad Spend',
+                data: trendData.ly_total_spend,
+                borderColor: 'rgba(88,166,255,0.45)',
+                borderDash: [4, 4],
+                yAxisID: 'ySpend',
+                tension: 0.3,
+                borderWidth: 1.5,
+                pointRadius: 0,
+                fill: false,
+                order: 4,
             }
         ]
     },
@@ -2297,7 +2453,7 @@ new Chart(document.getElementById('salesVsSpendChart'), {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-            legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
+            legend: { labels: { color: '#94a3b8', font: { size: 12 }, filter: (item, data) => !data.datasets[item.datasetIndex].hidden } },
             tooltip: {
                 callbacks: {
                     label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString()
@@ -2323,8 +2479,9 @@ new Chart(document.getElementById('salesVsSpendChart'), {
         }
     }
 });
+window._mtdCharts.push(salesVsSpendChart);
 
-new Chart(document.getElementById('dailyChart'), {
+const dailyChart = new Chart(document.getElementById('dailyChart'), {
     type: 'bar',
     data: {
         labels: trendData.dates.map(d => d.slice(5)),
@@ -2336,6 +2493,7 @@ new Chart(document.getElementById('dailyChart'), {
                 borderRadius: 4, order: 1
             },
             {
+                _ly: true, hidden: !_initialLyOn,
                 label: '2024',
                 data: trendData.ly_gross,
                 type: 'line',
@@ -2347,7 +2505,7 @@ new Chart(document.getElementById('dailyChart'), {
     options: {
         responsive: true,
         plugins: {
-            legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+            legend: { labels: { color: '#94a3b8', font: { size: 11 }, filter: (item, data) => !data.datasets[item.datasetIndex].hidden } },
             tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } }
         },
         scales: {
@@ -2356,8 +2514,9 @@ new Chart(document.getElementById('dailyChart'), {
         }
     }
 });
+window._mtdCharts.push(dailyChart);
 
-new Chart(document.getElementById('cumChart'), {
+const cumChart = new Chart(document.getElementById('cumChart'), {
     type: 'line',
     data: {
         labels: cumData.ly_days.length > cumData.days.length ? cumData.ly_days : cumData.days,
@@ -2369,6 +2528,7 @@ new Chart(document.getElementById('cumChart'), {
                 fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2.5,
             },
             {
+                _ly: true, hidden: !_initialLyOn,
                 label: '2024',
                 data: cumData.ly_cum,
                 borderColor: 'rgba(255,255,255,0.25)', borderDash: [5, 5],
@@ -2379,7 +2539,7 @@ new Chart(document.getElementById('cumChart'), {
     options: {
         responsive: true,
         plugins: {
-            legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+            legend: { labels: { color: '#94a3b8', font: { size: 11 }, filter: (item, data) => !data.datasets[item.datasetIndex].hidden } },
             tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } }
         },
         scales: {
@@ -2388,27 +2548,19 @@ new Chart(document.getElementById('cumChart'), {
         }
     }
 });
+window._mtdCharts.push(cumChart);
 
-// Discount donut
-new Chart(document.getElementById('discountChart'), {
-    type: 'doughnut',
-    data: {
-        labels: discData.labels,
-        datasets: [{
-            data: discData.values,
-            backgroundColor: ['#D4A843', '#ec4899', '#60a5fa', '#4ade80', '#f87171', '#a78bfa'],
-            borderWidth: 0,
-            hoverOffset: 6,
-        }]
-    },
-    options: {
+// Discount donut — CY + LY side-by-side
+const DONUT_COLORS = ['#D4A843', '#ec4899', '#60a5fa', '#4ade80', '#f87171', '#a78bfa'];
+function _donutOpts(showLegend) {
+    return {
         responsive: false,
         cutout: '62%',
         plugins: {
-            legend: {
+            legend: showLegend ? {
                 position: 'bottom',
                 labels: { color: '#94a3b8', font: { size: 11 }, padding: 8, boxWidth: 12 }
-            },
+            } : { display: false },
             tooltip: {
                 callbacks: {
                     label: ctx => {
@@ -2419,7 +2571,33 @@ new Chart(document.getElementById('discountChart'), {
                 }
             }
         }
-    }
+    };
+}
+new Chart(document.getElementById('discountChart'), {
+    type: 'doughnut',
+    data: {
+        labels: discData.labels,
+        datasets: [{
+            data: discData.values,
+            backgroundColor: DONUT_COLORS,
+            borderWidth: 0,
+            hoverOffset: 6,
+        }]
+    },
+    options: _donutOpts(true)
+});
+new Chart(document.getElementById('discountChartLy'), {
+    type: 'doughnut',
+    data: {
+        labels: discData.labels,
+        datasets: [{
+            data: discData.values_ly,
+            backgroundColor: DONUT_COLORS.map(c => c + 'a8'),  // slightly muted
+            borderWidth: 0,
+            hoverOffset: 6,
+        }]
+    },
+    options: _donutOpts(false)  // shares legend with CY donut
 });
 </script>
 </body>
