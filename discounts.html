@@ -95,6 +95,23 @@ body {
 .card-detail { color: #94a3b8; font-size: 0.82em; margin-top: 8px; }
 .card-definition { color: #64748b; font-size: 0.75em; margin-top: 10px; line-height: 1.5; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
 
+/* ---- PROMO HERO (Promotional Cost vs Recurring Subscription) ---- */
+.promo-hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; margin-top: 4px; }
+.promo-block { background: rgba(15,23,42,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px 20px; }
+.promo-block-primary { border-color: rgba(212,168,67,0.3); background: rgba(212,168,67,0.05); }
+.promo-block-secondary { border-color: rgba(167,139,250,0.28); background: rgba(167,139,250,0.05); }
+.promo-block-label { color: #cbd5e1; font-size: 0.85em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.promo-block-tag { font-size: 0.78em; font-weight: 600; text-transform: none; letter-spacing: 0; padding: 2px 8px; border-radius: 6px; background: rgba(212,168,67,0.16); color: #fde68a; }
+.promo-block-tag.structural { background: rgba(167,139,250,0.16); color: #c4b5fd; }
+.promo-hero .hero-value { font-size: 2.5em; margin-bottom: 8px; }
+.promo-comp-list { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 7px; }
+.promo-comp-row { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: 10px; }
+.promo-comp-dot { width: 9px; height: 9px; border-radius: 50%; }
+.promo-comp-label { color: #cbd5e1; font-size: 0.84em; }
+.promo-comp-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.promo-comp-pct { color: #94a3b8; font-size: 0.8em; font-variant-numeric: tabular-nums; text-align: right; min-width: 34px; }
+.promo-block-note { color: #94a3b8; font-size: 0.8em; line-height: 1.55; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); }
+
 /* ---- CHARTS ---- */
 .chart-row {
     display: grid;
@@ -221,6 +238,7 @@ body {
     .glossary-grid { grid-template-columns: 1fr; }
     .header h1 { font-size: 1.6em; }
     .hero-value { font-size: 2.4em; }
+    .promo-hero-grid { grid-template-columns: 1fr; }
     .ship-split-row { grid-template-columns: 14px 1fr auto; }
     .ship-split-bar-track { display: none; }
 }
@@ -349,74 +367,55 @@ body {
 
 
     <div class="free-items-toggle">
-        <span class="free-toggle-label">Free items in totals:</span>
+        <span class="free-toggle-label">Free items in breakdown below:</span>
         <button class="free-toggle-btn active" data-mode="excluded" onclick="setFreeItemsMode('excluded')">Excluded</button>
         <button class="free-toggle-btn" data-mode="msrp" onclick="setFreeItemsMode('msrp')">At MSRP</button>
         <button class="free-toggle-btn" data-mode="cogs" onclick="setFreeItemsMode('cogs')">At COGS</button>
     </div>
 
 
-    <div class="hero-card">
-        <div class="hero-label">
-            Total Discounts Given — May 2026<span style="color:#94a3b8;font-size:0.78em;"> (through 2026-05-25)</span>
-            <span class="hero-mode-tag"><span class="hero-mode-label" data-mode="excluded" style="display:inline;">Free items excluded</span><span class="hero-mode-label" data-mode="msrp" style="display:none;">Free items at MSRP</span><span class="hero-mode-label" data-mode="cogs" style="display:none;">Free items at COGS</span></span>
-        </div>
-        
-        <div class="hero-mode-block" data-mode="excluded" style="display:block">
-            <div class="hero-value">$20,944</div>
-            <div class="hero-sub">
-                <span style="font-size:1.25em;color:#D4A843;font-weight:700;">13.5%</span>
-                <span style="color:#94a3b8;">of gross</span>
-                <span class="yoy-badge bad" style="margin-left:8px;">+4.0 pp vs LY</span>
+    <div class="hero-card promo-hero">
+        <div class="hero-label">Discount Breakdown — May 2026<span style="color:#94a3b8;font-size:0.78em;"> (through 2026-05-25)</span></div>
+        <div class="promo-hero-grid">
+            <div class="promo-block promo-block-primary">
+                <div class="promo-block-label">Promotional Cost <span class="promo-block-tag">marketing-driven</span></div>
+                <div class="hero-value">$16,598</div>
+                <div class="hero-sub">
+                    <span style="font-size:1.2em;color:#D4A843;font-weight:700;">10.7%</span>
+                    <span style="color:#94a3b8;">of gross</span>
+                    <span class="yoy-badge bad" style="margin-left:6px;">+4.1 pp</span>
+                </div>
+                <div class="hero-sub">
+                    <span style="color:#94a3b8;">vs LY:</span>
+                    <span>$11,369</span>
+                    <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 46.0% vs LY</span>
+                </div>
+                <div class="promo-comp-list"><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#EF4444;"></span><span class="promo-comp-label">Promotions (auto + code + manual + price reductions)</span><span class="promo-comp-val">$13,114</span><span class="promo-comp-pct">79%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#10B981;"></span><span class="promo-comp-label">Free Shipping promos</span><span class="promo-comp-val">$219</span><span class="promo-comp-pct">1%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#EC4899;"></span><span class="promo-comp-label">Free Gifts (at COGS)</span><span class="promo-comp-val">$2,855</span><span class="promo-comp-pct">17%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#06B6D4;"></span><span class="promo-comp-label">First-time subscription (acquisition)</span><span class="promo-comp-val">$410</span><span class="promo-comp-pct">2%</span></div></div>
             </div>
-            <div class="hero-sub">
-                <span style="color:#94a3b8;">vs LY:</span>
-                <span>$16,324</span>
-                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 28.3% vs LY</span>
-            </div>
-            <div class="hero-detail">
-                Gross: $155,140 &nbsp;|&nbsp;
-                Orders: 2,701 &nbsp;|&nbsp;
-                Avg discount/order: $8
-            </div>
-        </div>
-        
-        <div class="hero-mode-block" data-mode="msrp" style="display:none">
-            <div class="hero-value">$21,245</div>
-            <div class="hero-sub">
-                <span style="font-size:1.25em;color:#D4A843;font-weight:700;">13.7%</span>
-                <span style="color:#94a3b8;">of gross</span>
-                <span class="yoy-badge good" style="margin-left:8px;">-5.6 pp vs LY</span>
-            </div>
-            <div class="hero-sub">
-                <span style="color:#94a3b8;">vs LY:</span>
-                <span>$33,025</span>
-                <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 35.7% vs LY</span>
-            </div>
-            <div class="hero-detail">
-                Gross: $155,140 &nbsp;|&nbsp;
-                Orders: 2,701 &nbsp;|&nbsp;
-                Avg discount/order: $8
+            <div class="promo-block promo-block-secondary">
+                <div class="promo-block-label">Recurring Subscription Discount <span class="promo-block-tag structural">structural</span></div>
+                <div class="hero-value" style="background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">$7,202</div>
+                <div class="hero-sub">
+                    <span style="font-size:1.2em;color:#a78bfa;font-weight:700;">4.6%</span>
+                    <span style="color:#94a3b8;">of gross</span>
+                    <span class="yoy-badge good" style="margin-left:6px;">-0.7 pp</span>
+                </div>
+                <div class="hero-sub">
+                    <span style="color:#94a3b8;">vs LY:</span>
+                    <span>$9,141</span>
+                    <span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 21.2% vs LY</span>
+                </div>
+                <div class="promo-block-note">
+                    Implied discount on <strong>repeat</strong> subscriber orders — structural pricing for
+                    existing subscribers, not a marketing promotion. Kept out of Promotional Cost so the
+                    promo number reflects only the levers you actively pull to drive sales.
+                </div>
             </div>
         </div>
-        
-        <div class="hero-mode-block" data-mode="cogs" style="display:none">
-            <div class="hero-value">$23,799</div>
-            <div class="hero-sub">
-                <span style="font-size:1.25em;color:#D4A843;font-weight:700;">15.3%</span>
-                <span style="color:#94a3b8;">of gross</span>
-                <span class="yoy-badge bad" style="margin-left:8px;">+3.3 pp vs LY</span>
-            </div>
-            <div class="hero-sub">
-                <span style="color:#94a3b8;">vs LY:</span>
-                <span>$20,510</span>
-                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 16.0% vs LY</span>
-            </div>
-            <div class="hero-detail">
-                Gross: $155,140 &nbsp;|&nbsp;
-                Orders: 2,701 &nbsp;|&nbsp;
-                Avg discount/order: $9
-            </div>
+        <div class="hero-detail">
+            Gross: $155,140 &nbsp;|&nbsp; Orders: 2,701 &nbsp;|&nbsp;
+            Combined (Promotional + Recurring Sub): $23,799
+            &nbsp;|&nbsp; Free gifts shown at COGS ($301 at MSRP)
         </div>
     </div>
 
@@ -432,7 +431,7 @@ body {
         </p>
         <table class="recon-table">
             <tr class="recon-head">
-                <td>This page — Total Discounts (free items excluded)</td>
+                <td>Sum of all 6 discount categories (incl shipping, free items excluded)</td>
                 <td class="recon-num">$20,944</td>
             </tr>
             <tr><td>Less: Shipping discounts <span class="recon-hint">(sit below Subtotal, so not in Gross&minus;Subtotal)</span></td>
@@ -947,7 +946,7 @@ body {
 </div>
 
 <div class="footer">
-    Generated 2026-05-26 15:25 ·
+    Generated 2026-05-26 16:22 ·
     Data thru 2026-05-25 ·
     Source: calc_daily_shopify ·
     <a href="mtd.html" style="color:#D4A843;">← Back to MTD Dashboard</a>
