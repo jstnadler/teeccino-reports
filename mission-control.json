@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-26T10:31:15.319628-07:00",
+  "lastUpdated": "2026-05-26T10:35:44.494995-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -143,16 +143,12 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "working",
-      "currentTask": {
-        "summary": "Inbox sweep (9 task(s))",
-        "source": "gateway-sweep",
-        "startedAt": "2026-05-26T10:31:14.915942-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Google Ads caught up through 2026-05-22 and raw_google_ads_campaigns backfilled to 2024-04-01 with no retention caps. AdSmith is clear to rebuild.",
-        "at": "2026-05-22T18:15:00Z"
+        "summary": "Inbox sweep — processed 9 pending tasks (4 closeouts, 2 real edits, 3 notification acks)",
+        "at": "2026-05-26T18:05:00Z"
       },
       "recentActivity": [
         {
@@ -180,43 +176,43 @@
           "status": "success"
         },
         {
-          "summary": "Daily analytics pipeline 2026-05-26 — 2026-05-25 ingested cleanly (232 DTC / $15,681 gross / 238 total orders); 4 matrices + KPI + MTD/YTD/discounts/fulfillment/PDP upsell/ops dashboards pushed; Discord sent; ShipStation still 401 (21d stale, needs reauth)",
-          "at": "2026-05-26T14:04:06Z",
-          "source": "interactive",
-          "status": "partial"
+          "summary": "Housekeeping — DataOps' own outgoing completion notice to AdSmith echoed in our inbox. Matching outbox artifact already exists. Closing inbox copy.",
+          "at": "2026-05-26T18:03:00Z",
+          "source": "gateway-sweep",
+          "status": "unknown"
         },
         {
-          "summary": "Daily pipeline 2026-05-25 — 2026-05-24 ingested cleanly (152 DTC / $10,176 gross / 160 total orders). Meta + Google rolling 7-day refresh OK. All matrices + KPI report + dashboards built and pushed. ShipStation still 401 (20d stale — needs reauth).",
-          "at": "2026-05-25T14:03:27Z",
-          "source": "interactive",
+          "summary": "Housekeeping — this is DataOps' own outgoing ack to AdSmith that ended up echoed in our inbox. Matching outbox artifact already exists. Closing inbox copy with no action required.",
+          "at": "2026-05-26T18:02:00Z",
+          "source": "gateway-sweep",
+          "status": "unknown"
+        },
+        {
+          "summary": "Acknowledged Chocolate Mint → Chocolate Peppermint rename. Ran grep across /Automations/analytics/ — zero hardcoded 'Chocolate Mint' refs in any builder, transform, or matrix script (only hit is the notification file itself). SKU unchanged, so all aggregations continue working unmodified. Dashboard product-name labels will pick up the new title on the next pipeline run that re-reads master/Shopify titles. No further DataOps action needed.",
+          "at": "2026-05-26T18:01:00Z",
+          "source": "gateway-sweep",
+          "status": "unknown"
+        },
+        {
+          "summary": "Confirmed to ThemeSmith: YES, the daily Shopify ingest IS extracting the _upsell_* line-item properties into raw_upsell_attributions. Path went live 2026-05-01 (extended) and was end-to-end verified 2026-05-04 with 6 attributed orders ($135.97 total). This is a PieEye-immune, server-side revenue-attribution signal that works today, independent of GTM/GA4 status.",
+          "at": "2026-05-26T18:00:00Z",
+          "source": "gateway-sweep",
           "status": "success"
         },
         {
-          "summary": "Daily pipeline 2026-05-24: ingested 2026-05-23 (165 DTC orders, $10,760 gross); all transforms + 4 matrix workbooks + 7 dashboards built and pushed. ShipStation API still 401 (19d stale, needs reauth).",
-          "at": "2026-05-24T14:02:00Z",
-          "source": "interactive",
+          "summary": "Acknowledged AdSmith's notification that GTM Version 37 is live with 4 GA4 event tags for PDP upsell tracking. PieEye consent gating is understood (events will scale with PieEye consent rates, not 100% of PDP traffic — reporting note, not a bug). GA4 ingest is still BLOCKED on Justin provisioning a service-account JSON at OneDrive/Apps/GoogleAnalyticsAPI/.env — that is the only gate before we can build ingest_ga4.py and complete the funnel half of the upsell dashboard. Shopify-side line-item-property ingest is already live and producing data, so revenue attribution works today.",
+          "at": "2026-05-26T17:59:00Z",
+          "source": "gateway-sweep",
+          "status": "unknown"
+        },
+        {
+          "summary": "Added `run_script(\"build_ad_spend_yoy.py\")` to daily_run.py in the dashboard-build block, immediately after build_pdp_upsell_dashboard and before build_ops_dashboard. Next 6am scheduled run will regenerate ad-spend-yoy.html with current data. Did NOT also patch run_pipeline.py — that script is essentially superseded by daily_run.py and Justin's scheduler points at daily_run.py.",
+          "at": "2026-05-26T17:58:00Z",
+          "source": "gateway-sweep",
           "status": "success"
-        },
-        {
-          "summary": "Daily pipeline ran end-to-end; 2026-05-22 ingested ($8,664 gross / 144 DTC orders). ShipStation API returned 401 Unauthorized — shipment data now 18 days stale (last 2026-05-05). Status page flagged Pipeline health: Critical because of it.",
-          "at": "2026-05-23T00:15:00Z",
-          "source": "interactive",
-          "status": "partial"
-        },
-        {
-          "summary": "Daily pipeline ran end-to-end for 2026-05-21. Shopify + Meta ingested cleanly, all transforms + matrices + dashboards built and pushed. Google Ads OAuth expired and ShipStation returned 401 — both non-critical for today's run but block fresh ad/shipping data.",
-          "at": "2026-05-22T00:15:00Z",
-          "source": "interactive",
-          "status": "partial"
-        },
-        {
-          "summary": "Dispatched ThemeSmith to audit existing GA4 access per Justin's recollection. Result: nothing pre-provisioned. Justin's original humanAction (provision GA4 Data API service-account creds) remains the path forward. ThemeSmith surfaced existing GCP project `majestic-camp-487222-b8` we can reuse to consolidate creds.",
-          "at": "2026-05-21T23:15:00Z",
-          "source": "interactive",
-          "status": "partial"
         }
       ],
-      "pendingTasks": 4,
+      "pendingTasks": 0,
       "health": "healthy"
     },
     {
