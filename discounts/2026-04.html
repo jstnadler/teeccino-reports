@@ -168,6 +168,52 @@ body {
 .glossary-formula { color: #64748b; font-size: 0.76em; }
 .glossary-formula code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #94a3b8; font-family: 'SF Mono', 'Consolas', monospace; }
 
+/* ---- RECONCILIATION NOTE ---- */
+.recon-note {
+    background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.28);
+    border-radius: 14px; padding: 20px 24px; margin-bottom: 24px;
+}
+.recon-title {
+    color: #93c5fd; font-size: 0.95em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px;
+}
+.recon-intro { color: #cbd5e1; font-size: 0.9em; line-height: 1.6; margin-bottom: 16px; }
+.recon-intro code, .recon-foot-note code, .recon-hint code {
+    background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px;
+    color: #93c5fd; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.92em;
+}
+.recon-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+.recon-table td {
+    padding: 9px 4px; font-size: 0.9em; color: #cbd5e1;
+    border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top;
+}
+.recon-table .recon-num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.recon-table .recon-sub { color: #f87171; }
+.recon-table .recon-add { color: #4ade80; }
+.recon-table .recon-head td { color: #fff; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.recon-table .recon-foot td { color: #93c5fd; font-weight: 700; border-top: 2px solid rgba(59,130,246,0.4); border-bottom: none; padding-top: 12px; }
+.recon-hint { color: #64748b; font-size: 0.85em; font-weight: 400; display: block; margin-top: 2px; }
+.recon-foot-note { color: #94a3b8; font-size: 0.84em; line-height: 1.55; margin: 0; }
+
+/* ---- SHIPPING SPLIT PANEL ---- */
+.ship-split-panel {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 22px 24px; margin-bottom: 24px;
+}
+.ship-split-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.ship-split-total { font-size: 1.7em; font-weight: 800; color: #10B981; letter-spacing: -0.5px; }
+.ship-split-total-label { color: #94a3b8; font-size: 0.88em; }
+.ship-split-body { display: flex; flex-direction: column; gap: 12px; }
+.ship-split-row { display: grid; grid-template-columns: 14px minmax(180px, 1.4fr) 2fr auto auto; align-items: center; gap: 12px; }
+.ship-split-dot { width: 10px; height: 10px; border-radius: 50%; }
+.ship-split-label { color: #e2e8f0; font-size: 0.9em; font-weight: 600; }
+.ship-split-hint { color: #64748b; font-size: 0.82em; font-weight: 400; display: block; }
+.ship-split-bar-track { background: rgba(255,255,255,0.06); border-radius: 6px; height: 10px; overflow: hidden; }
+.ship-split-bar { display: block; height: 100%; border-radius: 6px; min-width: 2px; transition: width 0.3s; }
+.ship-split-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; min-width: 70px; }
+.ship-split-pct { color: #94a3b8; font-size: 0.85em; font-variant-numeric: tabular-nums; text-align: right; min-width: 38px; }
+.ship-split-note { color: #64748b; font-size: 0.82em; line-height: 1.55; margin: 16px 0 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+
 /* ---- RESPONSIVE ---- */
 @media (max-width: 900px) {
     .kpi-grid { grid-template-columns: 1fr; }
@@ -175,6 +221,8 @@ body {
     .glossary-grid { grid-template-columns: 1fr; }
     .header h1 { font-size: 1.6em; }
     .hero-value { font-size: 2.4em; }
+    .ship-split-row { grid-template-columns: 14px 1fr auto; }
+    .ship-split-bar-track { display: none; }
 }
 
 .footer { text-align: center; color: #64748b; font-size: 0.78em; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -372,6 +420,37 @@ body {
         </div>
     </div>
 
+
+    <div class="recon-note">
+        <div class="recon-title">How this reconciles to the MTD dashboard</div>
+        <p class="recon-intro">
+            This page totals <strong>all six discount categories, including shipping</strong>.
+            The MTD dashboard's <em>Total Discounts</em> card uses <code>dtc_discounts</code> =
+            True&nbsp;Gross&nbsp;&minus;&nbsp;Subtotal — a clean order-level figure that is
+            <strong>line-item only (no shipping)</strong> and can't double-count. Both are correct;
+            they measure different scopes. Here's the bridge for April 2026:
+        </p>
+        <table class="recon-table">
+            <tr class="recon-head">
+                <td>This page — Total Discounts (free items excluded)</td>
+                <td class="recon-num">$41,745</td>
+            </tr>
+            <tr><td>Less: Shipping discounts <span class="recon-hint">(sit below Subtotal, so not in Gross&minus;Subtotal)</span></td>
+                <td class="recon-num recon-sub">&minus;$5,378</td></tr>
+            <tr><td>Line-item categories only (sub + price reduction + auto + code + manual)</td>
+                <td class="recon-num">$36,367</td></tr>
+            <tr><td>Less: category overlap <span class="recon-hint">(same dollars booked in two buckets — e.g. Stay.ai sub discount also tagged automatic)</span></td><td class="recon-num recon-sub">&minus;$1,034</td></tr>
+            <tr class="recon-foot">
+                <td>MTD dashboard — Total Discounts <span class="recon-hint">(<code>dtc_discounts</code>)</span></td>
+                <td class="recon-num">$35,333</td></tr>
+        </table>
+        <p class="recon-foot-note">
+            Rule of thumb: use the <strong>MTD residual</strong> ($35,333) as the
+            clean product-discount total, and this page to see <em>how</em> that spend splits across
+            levers — plus the shipping lever the residual leaves out.
+        </p>
+    </div>
+
 <div class="section-header"><h2>Breakdown by Type</h2></div>
 <div class="kpi-grid">
     
@@ -460,6 +539,22 @@ body {
         <div class="card-count">3,602 items given</div>
     </div>
 </div>
+
+<div class="section-header"><h2>Shipping Discount — Subscription vs One-Time</h2></div>
+
+    <div class="ship-split-panel">
+        <div class="ship-split-head">
+            <span class="ship-split-total">$5,378</span>
+            <span class="ship-split-total-label">free shipping given · April 2026</span>
+        </div>
+        <div class="ship-split-body"><div class="ship-split-row"><span class="ship-split-dot" style="background:#8B5CF6;"></span><span class="ship-split-label">Recurring subscription<span class="ship-split-hint">renewal orders</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:7%;background:#8B5CF6;"></span></span><span class="ship-split-val">$393</span><span class="ship-split-pct">7%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#06B6D4;"></span><span class="ship-split-label">First-time subscription<span class="ship-split-hint">initial sub order</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:6%;background:#06B6D4;"></span></span><span class="ship-split-val">$330</span><span class="ship-split-pct">6%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#10B981;"></span><span class="ship-split-label">One-time / non-subscription<span class="ship-split-hint">non-sub orders</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:87%;background:#10B981;"></span></span><span class="ship-split-val">$4,655</span><span class="ship-split-pct">87%</span></div></div>
+        <p class="ship-split-note">
+            Split is by the <strong>order's subscription flag</strong>, not the discount title — Stay.ai
+            doesn't reliably tag subscription free-ship as its own discount, so title-based tracking would
+            miss it. Exact for months from ~Jun&nbsp;2025 onward (older shipping waivers have no per-order
+            allocation rows and show as <em>Unattributed</em>).
+        </p>
+    </div>
 
 <div class="section-header"><h2>This Month's Mix</h2></div>
 <div class="chart-row">
@@ -852,7 +947,7 @@ body {
 </div>
 
 <div class="footer">
-    Generated 2026-05-26 07:02 ·
+    Generated 2026-05-26 15:25 ·
     Data thru 2026-04-30 ·
     Source: calc_daily_shopify ·
     <a href="../mtd.html" style="color:#D4A843;">← Back to MTD Dashboard</a>
