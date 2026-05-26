@@ -130,6 +130,38 @@
      onerror="(function(){
        if (window.__hubNavBootstrapped) return;
        window.__hubNavBootstrapped = true;
+       /* 0) SHARE MODE — ?share=1 produces a clean, externally-shareable view:
+          hides the hub nav, hides the provenance banner, appends a small
+          'Shared by Teeccino' footer, and zeroes body padding-top. URL-only
+          (not sticky): if the recipient clicks an internal link without the
+          param, the nav reappears. To share a no-nav link, append ?share=1
+          (or &share=1 if the URL already has query params). */
+       var __params = new URLSearchParams(window.location.search);
+       if (__params.get('share') === '1' || __params.get('share') === 'true') {
+         var __s = document.createElement('style');
+         __s.id = 'share-mode-style';
+         __s.textContent =
+           '#hub-nav, #hub-nav-bar { display: none !important; }' +
+           '.prov-banner { display: none !important; }' +
+           'body.has-hub-nav { padding-top: 0 !important; }' +
+           'body { padding-top: 0 !important; }' +
+           '#share-footer { margin: 64px auto 24px; padding: 20px 16px; text-align: center; ' +
+             'color: #94a3b8; font-size: 0.82em; line-height: 1.5; ' +
+             'border-top: 1px solid rgba(0, 0, 0, 0.08); max-width: 880px; ' +
+             'font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; }' +
+           '#share-footer strong { color: #D4A843; font-weight: 700; letter-spacing: -0.01em; }' +
+           '#share-footer .share-sub { display: block; margin-top: 4px; color: #cbd5e1; font-size: 0.92em; }';
+         document.head.appendChild(__s);
+         document.body.classList.remove('has-hub-nav');
+         if (!document.getElementById('share-footer')) {
+           var __f = document.createElement('div');
+           __f.id = 'share-footer';
+           __f.innerHTML = 'Shared by <strong>Teeccino</strong>' +
+             '<span class=\'share-sub\'>Internal report — please do not redistribute.</span>';
+           document.body.appendChild(__f);
+         }
+         return;
+       }
        /* 1) Active-link highlight */
        var here = window.location.pathname.replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
        if (!here) here = 'index.html';
