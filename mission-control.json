@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-27T09:10:30.387639-07:00",
+  "lastUpdated": "2026-05-27T09:12:35.444829-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -11,11 +11,15 @@
       "emoji": "cart",
       "role": "Shopify Operations",
       "workspace": "clawd-shopkeeper",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Dispatch AgentSmith to correct stale live-theme ID in CLAUDE.md + protected-ids.json",
+        "source": "interactive",
+        "startedAt": "2026-05-27T16:00:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Memorial Day Sale full teardown: deactivated OTP+SUB, zeroed disc metafields on 272 variants + 1 straggler bundle (85002, non-webproduct, found via all-variants scan), restored free-ship $40->$59 (5 zones), flipped campaign_sale_enabled->false on live theme. PDP verified clean (only standing native compare-at markdown remains). FOTM discounts untouched.",
+        "summary": "Memorial Day Sale full teardown per Justin's explicit instruction. Deactivated OTP+SUB discounts, zeroed discount metafields on 272 variants + 1 straggler bundle, restored free-ship threshold $40->$59 (5 zones), flipped campaign_sale_enabled->false (PDP badge kill switch). PDP spot-check confirms no campaign badge; only standing native compare-at markdown remains.",
         "at": "2026-05-26T20:20:00Z"
       },
       "recentActivity": [
@@ -125,16 +129,12 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "working",
-      "currentTask": {
-        "summary": "Klaviyo dashboard: consult on ingest architecture before build",
-        "source": "gateway",
-        "startedAt": "2026-05-27T09:10:26.268869-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Google Ads caught up through 2026-05-22 and raw_google_ads_campaigns backfilled to 2024-04-01 with no retention caps. AdSmith is clear to rebuild.",
-        "at": "2026-05-22T18:15:00Z"
+        "summary": "Klaviyo dashboard ingest architecture consultation (AgentSmith)",
+        "at": "2026-05-27T09:18:00Z"
       },
       "recentActivity": [
         {
@@ -168,6 +168,12 @@
           "status": "partial"
         },
         {
+          "summary": "Architecture take on Klaviyo ingest+dashboard: Path A fits cleanly (ingest_ga4.py is the exact precedent). Endorse with adjustments — keep ingest a dumb mirror, do attribution in transforms against order_journey UTMs I already own, ship Klaviyo's number AND my UTM-matched number side by side, defer the unified waterfall to phase 2, register MCP now.",
+          "at": "2026-05-27T09:17:00Z",
+          "source": "gateway",
+          "status": "success"
+        },
+        {
           "summary": "Discounts deep-dive cards now show the actual prior-year dollar figure (LY: $X,XXX + % of gross) in addition to the YoY % change badge. Previously only showed the % change and LY % of gross. Rebuilt + pushed Apr/May.",
           "at": "2026-05-26T22:08:00Z",
           "source": "interactive",
@@ -190,15 +196,9 @@
           "at": "2026-05-26T21:12:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Resolved the apparent discounts discrepancy between the MTD costs section and the Discount Deep-Dive: not a data bug, two different definitions under the same 'Total Discounts' label. MTD uses dtc_discounts (True Gross - Subtotal, line-item only, no shipping, no double-count); deep-dive sums all 6 category columns incl shipping. Added a dynamic reconciliation bridge + a subscription-vs-one-time shipping-discount split panel to build_discounts_dashboard.py. Rebuilt + pushed April and May pages.",
-          "at": "2026-05-26T20:55:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
-      "pendingTasks": 1,
+      "pendingTasks": 0,
       "health": "healthy"
     },
     {
@@ -853,7 +853,7 @@
       "from": "agentsmith",
       "to": "dataops",
       "summary": "Klaviyo dashboard: consult on ingest architecture before build",
-      "status": "pending",
+      "status": "in-progress",
       "dispatched": "2026-05-27T09:10:26.268343-07:00",
       "completed": null
     },
