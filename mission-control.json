@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-27T12:09:48.646319-07:00",
+  "lastUpdated": "2026-05-27T12:11:42.705214-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -59,17 +59,12 @@
       "emoji": "palette",
       "role": "Shopify Theme Development",
       "workspace": "clawd-themesmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Investigate shop collection cards still unclickable after cache purge (stretched-link functional bug?)",
-        "source": "interactive",
-        "startedAt": "2026-05-27T19:20:00Z",
-        "branch": "main"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Accessory PDP field map: 6 product metafields + 4 native fields total; only custom.specs is universally required. accessoryv4 and accessory-no-variant are both legacy main-product templates — migrate to canonical accessory.",
-        "at": "2026-05-21T00:22:36Z"
+        "summary": "Found+fixed REAL card bug: base.css a:empty{display:none} was hiding the empty stretched-link (0x0). Added display:block (dfd9431, live). Verified clickable+navigates in preview. BLOCKED: frozen home/collection page cache serves old CSS to anonymous until a Theme Editor save flushes it.",
+        "at": "2026-05-27T19:35:00Z"
       },
       "recentActivity": [
         {
@@ -83,6 +78,12 @@
           "at": "2026-05-21T14:35:00Z",
           "source": "dispatched",
           "status": "success"
+        },
+        {
+          "summary": "Root-caused why cards STILL unclickable after the cache purge: Dawn base.css `a:empty,...{display:none}` was hiding the empty stretched-link (.shopall-card__link) created by the 5/22 refactor, collapsing the click overlay to 0x0. The stale cache had masked it. Fix: display:block on .shopall-card__link:empty (specificity 0,2,0 beats a:empty 0,1,1). Shipped to live (commit dfd9431).",
+          "at": "2026-05-27T19:35:00Z",
+          "source": "interactive",
+          "status": "partial"
         },
         {
           "summary": "Fixed two unclickable-element bugs on live: (1) Product Tabs V2 / Shop All cards unclickable = stale Shopify full-page cache serving pre-5/22 wrapping-anchor markup (code already correct) — purged via Admin API template re-save; (2) desktop nav SHOP dropdown tiny hitbox = announcement-bar slideshow overflowing 27px into header stealing clicks — shipped overflow:hidden clip to live (commit 622de8b).",
@@ -125,12 +126,6 @@
           "at": "2026-05-20T22:55:00Z",
           "source": "interactive",
           "status": "partial"
-        },
-        {
-          "summary": "Fixed shop-all card SALE pill to show TOTAL savings vs compare_at (matches PDP campaign-sale-badge math) instead of raw custom.discount metafield value. Card and PDP now show identical % for the same product.",
-          "at": "2026-05-20T22:40:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 16,
