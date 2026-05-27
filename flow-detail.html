@@ -50,7 +50,7 @@
 
 <div class="container">
   <h1>🔻 Flow Detail (Klaviyo)</h1>
-  <p class="sub">Per-email sequence, rendered previews &amp; trailing-90d performance · 179 email previews · built 2026-05-27 13:22 · <a href="klaviyo.html">← back to Email (Klaviyo)</a></p>
+  <p class="sub">Per-email sequence, rendered previews &amp; trailing-90d performance · 179 email previews · built 2026-05-27 13:28 · <a href="klaviyo.html">← back to Email (Klaviyo)</a></p>
 
   <div class="glossary">
     Pick a flow to see every email in order with its <b>rendered preview</b>, the time-delay before it, and how it performs.
@@ -79,18 +79,13 @@ function fmtUsd(v){ return '$'+Math.round(v||0).toLocaleString(); }
 function pct(n,d){ return d ? (100*n/d) : null; }
 function fmtPct(v,dg){ return v==null ? '—' : v.toFixed(dg==null?1:dg)+'%'; }
 
-function render(fid, period){
-  const f = FLOWS[fid]; const seq = document.getElementById('flowSeq'); const meta = document.getElementById('flowMeta');
-  if(!f){ seq.innerHTML=''; meta.innerHTML=''; return; }
+function statsFor(f, period){
   const bucket = (f.stats && f.stats[period]) ? f.stats[period] : {};
-  // resolve per-email stats for this period, with computed rates
   const rows = f.msgs.map(m => {
     const s = bucket[m.mid] || {recip:0,deliv:0,opens:0,clicks:0,conv:0,rev:0};
     const deliv = s.deliv || s.recip;
-    return {...m, recip:s.recip, conv:s.conv, rev:s.rev,
-             open:pct(s.opens,deliv), click:pct(s.clicks,deliv)};
+    return {recip:s.recip, conv:s.conv, rev:s.rev, open:pct(s.opens,deliv), click:pct(s.clicks,deliv)};
   });
-  // classify within flow+period
   const judged = rows.filter(r=>r.recip>=30 && r.click!=null).map(r=>r.click).sort((a,b)=>a-b);
   const med = judged.length ? judged[Math.floor(judged.length/2)] : null;
   const bestRev = Math.max(0, ...rows.map(r=>r.rev||0));
@@ -100,39 +95,67 @@ function render(fid, period){
     else if((med && r.click!=null && r.click<=0.6*med) || (r.recip>=50 && r.rev===0)) r.perf='weak';
     else r.perf='ok';
   });
-  const tot = rows.reduce((s,r)=>s+(r.rev||0),0);
-  const plabel = period==='trailing90' ? 'trailing-90d' : period;
-  meta.innerHTML = `<b style="color:#fff">${esc(f.name)}</b> · ${f.msgs.length} emails · ${fmtUsd(tot)} revenue · <b style="color:#D4A843">${plabel}</b>`;
+  return rows;
+}
+
+// Build sequence STRUCTURE once per flow — iframes are expensive, don't rebuild on month change.
+function buildFlow(fid){
+  const f = FLOWS[fid]; const seq = document.getElementById('flowSeq');
+  if(!f){ seq.innerHTML=''; return; }
   const parts = [];
-  rows.forEach((m,i) => {
+  f.msgs.forEach((m,i) => {
     if(m.delay) parts.push(`<div class="seq-delay">wait ${m.delay}</div>`);
     else if(i>0) parts.push(`<div class="seq-delay">next email</div>`);
     const prev = m.prev
       ? `<div class="frame-box"><iframe loading="lazy" src="${m.prev}"></iframe></div><a class="expand" href="${m.prev}" target="_blank">open full email ↗</a>`
       : `<div class="noprev">no preview<br>available</div>`;
     parts.push(
-      `<div class="email ${m.perf}">`+
+      `<div class="email" data-i="${i}">`+
         `<div class="email-step">${m.order}</div>`+
         `<div class="preview-frame">${prev}</div>`+
         `<div class="email-body">`+
-          `<span class="email-badge badge-${m.perf}">${BADGE[m.perf]}</span>`+
+          `<span class="email-badge"></span>`+
           `<div class="email-subj">${esc(m.subject)}</div>`+
           `<div class="email-prev">${esc(m.preview)}</div>`+
           `<div class="stat-grid">`+
-            `<div class="stat"><div class="v">${fmtInt(m.recip)}</div><div class="l">Recipients</div></div>`+
-            `<div class="stat"><div class="v">${fmtPct(m.open)}</div><div class="l">Open rate</div></div>`+
-            `<div class="stat"><div class="v">${fmtPct(m.click)}</div><div class="l">Click rate</div></div>`+
-            `<div class="stat"><div class="v">${fmtInt(m.conv)}</div><div class="l">Conversions</div></div>`+
-            `<div class="stat"><div class="v">${fmtUsd(m.rev)}</div><div class="l">Revenue</div></div>`+
+            `<div class="stat"><div class="v" data-f="recip"></div><div class="l">Recipients</div></div>`+
+            `<div class="stat"><div class="v" data-f="open"></div><div class="l">Open rate</div></div>`+
+            `<div class="stat"><div class="v" data-f="click"></div><div class="l">Click rate</div></div>`+
+            `<div class="stat"><div class="v" data-f="conv"></div><div class="l">Conversions</div></div>`+
+            `<div class="stat"><div class="v" data-f="rev"></div><div class="l">Revenue</div></div>`+
           `</div>`+
         `</div>`+
       `</div>`);
   });
   seq.innerHTML = parts.join('');
 }
+
+// Update only STATS in place for the selected period (iframes untouched).
+function applyStats(fid, period){
+  const f = FLOWS[fid]; if(!f) return;
+  const rows = statsFor(f, period);
+  const tot = rows.reduce((s,r)=>s+(r.rev||0),0);
+  const plabel = period==='trailing90' ? 'trailing-90d' : period;
+  document.getElementById('flowMeta').innerHTML =
+    `<b style="color:#fff">${esc(f.name)}</b> · ${f.msgs.length} emails · ${fmtUsd(tot)} revenue · <b style="color:#D4A843">${plabel}</b>`;
+  const cards = document.querySelectorAll('#flowSeq .email');
+  rows.forEach((r,i) => {
+    const c = cards[i]; if(!c) return;
+    c.className = 'email ' + r.perf;
+    const badge = c.querySelector('.email-badge');
+    badge.className = 'email-badge badge-' + r.perf; badge.textContent = BADGE[r.perf];
+    c.querySelector('[data-f=recip]').textContent = fmtInt(r.recip);
+    c.querySelector('[data-f=open]').textContent = fmtPct(r.open);
+    c.querySelector('[data-f=click]').textContent = fmtPct(r.click);
+    c.querySelector('[data-f=conv]').textContent = fmtInt(r.conv);
+    c.querySelector('[data-f=rev]').textContent = fmtUsd(r.rev);
+  });
+}
+
 const fp = document.getElementById('flow-picker'), mp = document.getElementById('month-picker');
-function go(){ render(fp.value, mp.value); }
-fp.addEventListener('change', go); mp.addEventListener('change', go);
-fp.value = "XQH7iR"; render("XQH7iR", 'trailing90');
+fp.addEventListener('change', ()=>{ buildFlow(fp.value); applyStats(fp.value, mp.value); });
+mp.addEventListener('change', ()=>applyStats(fp.value, mp.value));
+fp.value = "XQH7iR";
+buildFlow("XQH7iR"); applyStats("XQH7iR", 'trailing90');
 </script>
 </body></html>
