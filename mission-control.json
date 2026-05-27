@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-27T09:15:25.218277-07:00",
+  "lastUpdated": "2026-05-27T09:24:54.011157-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -131,12 +131,16 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Klaviyo Phase 1: ingest_klaviyo.py + schema + daily-run wiring + v1 dashboard",
+        "source": "gateway",
+        "startedAt": "2026-05-27T09:24:53.652560-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Klaviyo dashboard: consult on ingest architecture before build",
-        "at": "2026-05-27T09:12:48.592687-07:00"
+        "summary": "Google Ads caught up through 2026-05-22 and raw_google_ads_campaigns backfilled to 2024-04-01 with no retention caps. AdSmith is clear to rebuild.",
+        "at": "2026-05-22T18:15:00Z"
       },
       "recentActivity": [
         {
@@ -200,7 +204,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 0,
+      "pendingTasks": 1,
       "health": "healthy"
     },
     {
@@ -209,11 +213,15 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Dispatching DataOps Klaviyo Phase 1 build (background-spawn, >5min work)",
+        "source": "interactive",
+        "startedAt": "2026-05-27T09:13:18-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Relayed DataOps consultation on Klaviyo ingest architecture - green-lit with 8 adjustments",
+        "summary": "DataOps consultation on Klaviyo ingest architecture complete. Green light Path A + Path B with 8 specific adjustments. One flag from DataOps verified false (hub_register.py exists per v1.7).",
         "at": "2026-05-27T09:13:18-07:00"
       },
       "recentActivity": [
@@ -692,6 +700,27 @@
       "tasksPending": 0
     },
     {
+      "id": "klaviyo-dashboard",
+      "name": "Klaviyo Email & SMS Dashboard",
+      "status": "active",
+      "priority": "high",
+      "owner": "dataops",
+      "contributors": [
+        "agentsmith",
+        "hubsmith",
+        "Justin"
+      ],
+      "category": "Data & KPI",
+      "started": "2026-05-27",
+      "lastActivity": "2026-05-27",
+      "description": "Stand up Klaviyo (email + SMS) as a first-class data source in DataOps' analytics pipeline. New ingest_klaviyo.py mirrors the ingest_ga4.py pattern (required=False, inline DDL, graceful no-creds exit, --date / backfill flags, INSERT OR REPLACE). New raw_klaviyo_* tables (campaigns, flows, flow_messages, lists) — no extension of existing tables. Wire into daily_run.py. Publish klaviyo.html on teeccino-reports with DUAL-ATTRIBUTION revenue (Klaviyo-reported vs DataOps' UTM-matched Shopify ledger), deliverability band, campaigns table, flows performance, list health (forward-only — Klaviyo doesn't backfill list sizes), engagement segments, send-time heatmap, subject-line winners. 13-month backfill paced over multiple days (225/day query_campaign_values cap is the binding constraint). Klaviyo MCP server (official, Anthropic-partnered) registered for ad-hoc agentic exploration. Unified MER waterfall across Klaviyo+Meta+Google deferred to a Phase-2 project. Architecture green-lit by DataOps consultation 2026-05-27 (outbox 2026-05-27T091700Z-klaviyo-ingest-architecture-consult.json).",
+      "dashboardUrl": "https://jstnadler.github.io/teeccino-reports/klaviyo.html",
+      "milestoneDone": 0,
+      "milestoneTotal": 6,
+      "tasksDone": 0,
+      "tasksPending": 0
+    },
+    {
       "id": "new-customer-accounts",
       "name": "Upgrade to New Customer Accounts",
       "status": "planning",
@@ -852,6 +881,15 @@
     }
   ],
   "recentDispatches": [
+    {
+      "id": "2f7b5d2f-695b-4ce6-953a-34bc28d59ac1",
+      "from": "agentsmith",
+      "to": "dataops",
+      "summary": "Klaviyo Phase 1: ingest_klaviyo.py + schema + daily-run wiring + v1 dashboard",
+      "status": "pending",
+      "dispatched": "2026-05-27T09:24:53.651763-07:00",
+      "completed": null
+    },
     {
       "id": "25ed9644-5332-489c-9ee8-49f075e140a9",
       "from": "agentsmith",
