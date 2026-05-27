@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-27T09:32:24.995499-07:00",
+  "lastUpdated": "2026-05-27T10:09:35.655682-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -15,10 +15,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Dispatched AgentSmith to fix stale live-theme-ID guardrails. protected-ids.json now protects real live theme 160800145656 (old 155857649912 kept as archived); Shopkeeper CLAUDE.md + agent def corrected; FOTM verifier script fixed. Both safety files verified. ThemeSmith TOOLS.md/AGENTS.md/SOUL.md still have dead push IDs — flagged to Justin for ThemeSmith dispatch.",
-        "at": "2026-05-27T16:10:00Z"
+        "summary": "Dispatched ThemeSmith to fix dead theme IDs in TOOLS.md/AGENTS.md/SOUL.md. All 3 fixed; verified TOOLS.md has zero active dead push targets (every --theme= now resolves to dev 160979255544). Full theme-migration guardrail correction now complete across all files.",
+        "at": "2026-05-27T16:25:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Dispatched ThemeSmith to reconcile dead theme IDs in TOOLS.md/AGENTS.md/SOUL.md (the docs-only follow-up to the 2026-05-27 guardrail correction). All 3 fixed; verified TOOLS.md has zero active dead push targets — every --theme= now resolves to dev 160979255544.",
+          "at": "2026-05-27T16:25:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Dispatched AgentSmith to correct stale live-theme-ID guardrails after MD teardown surfaced the theme migration (teeccino-theme/* -> teeccino-dawn-refresh/*). AgentSmith fixed protected-ids.json (real live theme 160800145656 now protected; old 155857649912 retained as archived), Shopkeeper CLAUDE.md + agent definition, and a read-only FOTM verifier script. Verified both safety-critical files. ThemeSmith docs follow-up flagged.",
           "at": "2026-05-27T16:10:00Z",
@@ -74,6 +80,12 @@
           "status": "success"
         },
         {
+          "summary": "Reconciled stale dead theme IDs in TOOLS.md, AGENTS.md, SOUL.md to new dawn-refresh IDs (dev 160979255544, live 160800145656); old IDs marked DEAD legacy.",
+          "at": "2026-05-27T00:00:00Z",
+          "source": "dispatched",
+          "status": "success"
+        },
+        {
           "summary": "Shipped Loox stars under product image + replaced 'View →' CTA with price block at card bottom on shop-all card. Live verified anonymously.",
           "at": "2026-05-21T03:40:00Z",
           "source": "interactive",
@@ -112,12 +124,6 @@
         {
           "summary": "Shipped active-promotion treatment for shop-all cards to live (theme 160800145656). Two modes via new campaign_sale_sitewide setting: TARGETED = full campaign-label pill + ribbon under price; SITEWIDE = compact 'SALE -X%' pill, no ribbon. Sitewide flipped ON for current Memorial Day Sale.",
           "at": "2026-05-20T22:20:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Shop All template (5 new files) shipped to live theme 160800145656 via cherry-pick of dev work to main. Zero live impact at ship time — no collection has templateSuffix='shop-all' set. Activation is per-collection opt-in.",
-          "at": "2026-05-20T21:25:00Z",
           "source": "interactive",
           "status": "success"
         }
@@ -209,11 +215,15 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Patch gateway.py: add --no-invoke + --invoke-timeout for regular dispatch (close 300s timeout infra gap)",
+        "source": "interactive",
+        "startedAt": "2026-05-27T09:30:00-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Klaviyo Phase 1 partial: M1 landed, M2+M3 blocked by gateway 300s timeout; flagged as infra follow-up",
+        "summary": "Klaviyo Phase 1 dispatch landed M1 (ingest + schema + daily-run wiring) before gateway.py 300s subprocess timeout killed DataOps mid-work. M2 (verification) + M3 (dashboard) still queued — DataOps inbox task 2f7b5d2f still pending pickup. Gateway has no working path for >5min dispatched work; documenting as an AgentSmith infra follow-up.",
         "at": "2026-05-27T09:27:00-07:00"
       },
       "recentActivity": [
@@ -484,12 +494,6 @@
         {
           "summary": "Added ?share=1 mode to shared nav partial. Appending the param hides the hub nav, hides the provenance banner, and appends a 'Shared by Teeccino' footer. Works on all 92 pages via single edit to _partials/nav.html. Verified live on ad-spend-yoy.html.",
           "at": "2026-05-26T11:08:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Fixed shared hub-nav overlap bug — dynamic JS sync with setProperty('important'), CSS fallback tiers, flex-wrap always-on. Originally drafted by HubSmith during dispatch 6c020721; subprocess timed out before commit; finalized + 2nd-round bugfix + verified by DataOps to unblock Justin.",
-          "at": "2026-05-20T16:50:00Z",
           "source": "interactive",
           "status": "unknown"
         },
@@ -899,7 +903,7 @@
       "from": "agentsmith",
       "to": "dataops",
       "summary": "Klaviyo dashboard: consult on ingest architecture before build",
-      "status": "in-progress",
+      "status": "complete",
       "dispatched": "2026-05-27T09:10:26.268343-07:00",
       "completed": "2026-05-27T09:12:48.591849-07:00"
     },
