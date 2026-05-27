@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email & SMS (Klaviyo) — Teeccino</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --border:#30363d; --txt:#e6edf3; --muted:#8b949e;
+           --accent:#7ee787; --email:#58a6ff; --sms:#d2a8ff; --warn:#f85149; --ok:#3fb950; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt);
+          font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  body.has-hub-nav { padding-top:60px; }
+  .container { max-width:1200px; margin:0 auto; padding:28px 20px 80px; }
+  h1 { font-size:1.7em; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; font-size:0.92em; }
+  h2 { font-size:1.12em; margin:0; }
+  .band { background:var(--card); border:1px solid var(--border); border-radius:10px;
+           padding:18px 20px; margin-bottom:16px; }
+  .band-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .band-range { color:var(--muted); font-size:0.8em; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  .kpi { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+  .kpi-label { color:var(--muted); font-size:0.78em; text-transform:uppercase; letter-spacing:.4px; }
+  .kpi-value { font-size:1.5em; font-weight:650; margin:4px 0 2px; }
+  .kpi-delta { font-size:0.78em; color:var(--muted); }
+  .kpi-delta.ok { color:var(--ok); } .kpi-delta.warn { color:var(--warn); }
+  .delta.up { color:var(--ok); } .delta.down { color:var(--warn); } .delta.flat { color:var(--muted); }
+  .vsly { color:var(--muted); }
+  .section { background:var(--card); border:1px solid var(--border); border-radius:10px;
+              padding:18px 20px; margin-bottom:16px; }
+  .section h2 { margin-bottom:12px; }
+  .note { color:var(--muted); font-size:0.82em; margin:6px 0 0; }
+  table { width:100%; border-collapse:collapse; font-size:0.85em; }
+  th, td { text-align:right; padding:7px 9px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  th:nth-child(2), td:nth-child(2), td.name { text-align:left; white-space:normal; }
+  th { color:var(--muted); font-weight:600; cursor:pointer; user-select:none; position:sticky; top:0;
+        background:var(--card); font-size:0.92em; }
+  th:hover { color:var(--txt); }
+  tbody tr:hover { background:rgba(255,255,255,0.03); }
+  td.rev { color:var(--accent); font-weight:600; }
+  .chip { display:inline-block; padding:1px 8px; border-radius:10px; font-size:0.82em; font-weight:600; }
+  .chip.email { background:rgba(88,166,255,.15); color:var(--email); }
+  .chip.sms { background:rgba(210,168,255,.15); color:var(--sms); }
+  .chip.live { background:rgba(63,185,80,.15); color:var(--ok); }
+  .chip.draft { background:rgba(139,148,158,.15); color:var(--muted); }
+  .table-wrap { max-height:560px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px) { .grid2 { grid-template-columns:1fr; } }
+  canvas { max-height:300px; }
+</style></head><body>
+
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(r=>r.text()).then(html=>{
+    document.getElementById('hub-nav').innerHTML = html;
+    document.body.classList.add('has-hub-nav');
+  });
+</script>
+
+<div class="container">
+  <h1>📧 Email &amp; SMS (Klaviyo)</h1>
+  <p class="sub">Campaign &amp; flow performance from Klaviyo · 793 campaigns 2024-04-04 → 2026-05-26
+     · revenue is Klaviyo-attributed (5-day click / email, 24h / SMS) · built 2026-05-27 11:52</p>
+
+  
+    <div class="band">
+      <div class="band-head"><h2>Last 28 days</h2><span class="band-range">2026-04-29 → 2026-05-27</span></div>
+      <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Campaigns sent</div>
+      <div class="kpi-value">30</div>
+      <div class="kpi-delta"><span class="delta down">▼ 3.2%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Recipients</div>
+      <div class="kpi-value">842,834</div>
+      <div class="kpi-delta"><span class="delta up">▲ 19.3%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Attributed revenue</div>
+      <div class="kpi-value">$29,569</div>
+      <div class="kpi-delta"><span class="delta down">▼ 9.6%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Conversions</div>
+      <div class="kpi-value">520</div>
+      <div class="kpi-delta"><span class="delta down">▼ 9.1%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Open rate</div>
+      <div class="kpi-value">58.9%</div>
+      <div class="kpi-delta"><span class="delta down">▼ 1.7%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Revenue / recipient</div>
+      <div class="kpi-value">$0.04</div>
+      <div class="kpi-delta"><span class="delta down">▼ 24.2%</span> <span class="vsly">vs LY</span></div>
+    </div></div>
+    </div>
+    <div class="band">
+      <div class="band-head"><h2>Month to date</h2><span class="band-range">2026-05-01 → 2026-05-27</span></div>
+      <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Campaigns sent</div>
+      <div class="kpi-value">28</div>
+      <div class="kpi-delta"><span class="delta up">▲ 3.7%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Recipients</div>
+      <div class="kpi-value">780,511</div>
+      <div class="kpi-delta"><span class="delta up">▲ 17.8%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Attributed revenue</div>
+      <div class="kpi-value">$28,269</div>
+      <div class="kpi-delta"><span class="delta down">▼ 11.2%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Conversions</div>
+      <div class="kpi-value">494</div>
+      <div class="kpi-delta"><span class="delta down">▼ 11.2%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Open rate</div>
+      <div class="kpi-value">58.8%</div>
+      <div class="kpi-delta"><span class="delta down">▼ 2.5%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Revenue / recipient</div>
+      <div class="kpi-value">$0.04</div>
+      <div class="kpi-delta"><span class="delta down">▼ 24.6%</span> <span class="vsly">vs LY</span></div>
+    </div></div>
+    </div>
+    <div class="band">
+      <div class="band-head"><h2>Year to date</h2><span class="band-range">2026-01-01 → 2026-05-27</span></div>
+      <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-label">Campaigns sent</div>
+      <div class="kpi-value">128</div>
+      <div class="kpi-delta"><span class="delta down">▼ 20.0%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Recipients</div>
+      <div class="kpi-value">3,722,924</div>
+      <div class="kpi-delta"><span class="delta down">▼ 0.6%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Attributed revenue</div>
+      <div class="kpi-value">$203,330</div>
+      <div class="kpi-delta"><span class="delta up">▲ 7.1%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Conversions</div>
+      <div class="kpi-value">3,456</div>
+      <div class="kpi-delta"><span class="delta up">▲ 3.0%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Open rate</div>
+      <div class="kpi-value">57.8%</div>
+      <div class="kpi-delta"><span class="delta down">▼ 2.2%</span> <span class="vsly">vs LY</span></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Revenue / recipient</div>
+      <div class="kpi-value">$0.05</div>
+      <div class="kpi-delta"><span class="delta up">▲ 7.7%</span> <span class="vsly">vs LY</span></div>
+    </div></div>
+    </div>
+
+  <div class="section">
+    <h2>Monthly attributed revenue</h2>
+    <canvas id="revChart"></canvas>
+    <p class="note">Email vs SMS Klaviyo-attributed revenue by send month. Campaign metrics are cumulative-since-send.</p>
+  </div>
+
+  <div class="section">
+    <h2>Deliverability <span class="note">(last 120 days · 3,081,698 recipients)</span></h2>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Bounce rate</div><div class="kpi-value">0.48%</div>
+        <div class="kpi-delta ok">target &lt; 2%</div></div>
+      <div class="kpi"><div class="kpi-label">Spam-complaint rate</div><div class="kpi-value">0.015%</div>
+        <div class="kpi-delta ok">target &lt; 0.1%</div></div>
+      <div class="kpi"><div class="kpi-label">Unsub rate</div><div class="kpi-value">0.28%</div>
+        <div class="kpi-delta ok">target &lt; 0.5%</div></div></div>
+  </div>
+
+  <div class="section">
+    <h2>Campaigns <span class="note">(last 120 days · 104 sends · click a header to sort)</span></h2>
+    <div class="table-wrap"><table id="campTable">
+      <thead><tr>
+        <th>Sent</th><th>Campaign</th><th>Ch</th><th>Recipients</th><th>Open%</th><th>Click%</th>
+        <th>Conv</th><th>Revenue</th><th>$/Recip</th><th>Unsub%</th><th>Spam%</th>
+      </tr></thead><tbody>
+        <tr>
+          <td data-sort="2026-05-26">2026-05-26</td>
+          <td class="name">TeeChia Recipe - 1/1 5.26</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27186">27,186</td>
+          <td data-sort="62.57404613856286">62.6%</td>
+          <td data-sort="0.8020898487803083">0.8%</td>
+          <td data-sort="0">0</td>
+          <td data-sort="0" class="rev">$0</td>
+          <td data-sort="0">$0.00</td>
+          <td data-sort="0.22805855955271095">0.23%</td>
+          <td data-sort="0.0036783638637534026">0.004%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-26">2026-05-26</td>
+          <td class="name">Memorial Day Sale (Last Day) 5/5 - 05.25 (RESEND)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="40347">40,347</td>
+          <td data-sort="54.979407532377316">55.0%</td>
+          <td data-sort="0.5458244430109661">0.5%</td>
+          <td data-sort="17">17</td>
+          <td data-sort="1005.73001" class="rev">$1,006</td>
+          <td data-sort="0.02492700845168166">$0.02</td>
+          <td data-sort="0.49817830321957024">0.50%</td>
+          <td data-sort="0.009913996083971546">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-25">2026-05-25</td>
+          <td class="name">Memorial Day Sale (Last Day) 5/5 - 05.25</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="38234">38,234</td>
+          <td data-sort="50.282174449431714">50.3%</td>
+          <td data-sort="0.5564742630653332">0.6%</td>
+          <td data-sort="38">38</td>
+          <td data-sort="2139.21001" class="rev">$2,139</td>
+          <td data-sort="0.05595046320029293">$0.06</td>
+          <td data-sort="0.12815818381545221">0.13%</td>
+          <td data-sort="0.007846419417272585">0.008%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-25">2026-05-25</td>
+          <td class="name">Memorial Day Sale (Last Day) 5/5 - 05.25</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="0">0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">0</td>
+          <td data-sort="0" class="rev">$0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-24">2026-05-24</td>
+          <td class="name">Memorial Day Sale (Ends Tom) 4/5 - 05.24</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29799">29,799</td>
+          <td data-sort="57.685722917855585">57.7%</td>
+          <td data-sort="0.6646748799892578">0.7%</td>
+          <td data-sort="36">36</td>
+          <td data-sort="2455.13" class="rev">$2,455</td>
+          <td data-sort="0.08238967750595658">$0.08</td>
+          <td data-sort="0.1443001443001443">0.14%</td>
+          <td data-sort="0.0033558173093056814">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-23">2026-05-23</td>
+          <td class="name">New Accessories: French Press + Tote 1/1 - 05.17</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="26786">26,786</td>
+          <td data-sort="61.99634041599761">62.0%</td>
+          <td data-sort="1.0680010455954292">1.1%</td>
+          <td data-sort="14">14</td>
+          <td data-sort="927.90001" class="rev">$928</td>
+          <td data-sort="0.03464123086687075">$0.03</td>
+          <td data-sort="0.13066527290375568">0.13%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-23">2026-05-23</td>
+          <td class="name">Memorial Day Sale (Reminder 3) 3/5 - 05.23</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31709">31,709</td>
+          <td data-sort="55.568525996971225">55.6%</td>
+          <td data-sort="0.6057546693589096">0.6%</td>
+          <td data-sort="34">34</td>
+          <td data-sort="2012.75999" class="rev">$2,013</td>
+          <td data-sort="0.0634759844208269">$0.06</td>
+          <td data-sort="0.13876186571635812">0.14%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-23">2026-05-23</td>
+          <td class="name">Memorial Day Sale (Reminder 3) 3/5 - 05.23</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="0">0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">0</td>
+          <td data-sort="0" class="rev">$0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-22">2026-05-22</td>
+          <td class="name">Memorial Day Sale (Reminder -Resend) 2/5 - 05.22</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="30336">30,336</td>
+          <td data-sort="59.41397743021184">59.4%</td>
+          <td data-sort="0.8018214215006929">0.8%</td>
+          <td data-sort="28">28</td>
+          <td data-sort="1884.12999" class="rev">$1,884</td>
+          <td data-sort="0.06210871538765823">$0.06</td>
+          <td data-sort="0.1351529535864979">0.14%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-22">2026-05-22</td>
+          <td class="name">Memorial Day Sale 2026 (Plain Text Reminder) 3/5 - 05.2</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32640">32,640</td>
+          <td data-sort="56.90677315312548">56.9%</td>
+          <td data-sort="0.7740746429119951">0.8%</td>
+          <td data-sort="34">34</td>
+          <td data-sort="1947.15" class="rev">$1,947</td>
+          <td data-sort="0.05965533088235295">$0.06</td>
+          <td data-sort="0.22058823529411764">0.22%</td>
+          <td data-sort="0.015318627450980392">0.015%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-21">2026-05-21</td>
+          <td class="name">Memorial Day Sale (Reminder 1) 2/5 - 05.21</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="34159">34,159</td>
+          <td data-sort="53.16818927149215">53.2%</td>
+          <td data-sort="0.6939564300773015">0.7%</td>
+          <td data-sort="37">37</td>
+          <td data-sort="2181.57999" class="rev">$2,182</td>
+          <td data-sort="0.0638654524429872">$0.06</td>
+          <td data-sort="0.14344682221376504">0.14%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-21">2026-05-21</td>
+          <td class="name">Memorial Day Sale (Launch) 1/5 - 05.20 (Resend Non-openers but Engaged</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="18198">18,198</td>
+          <td data-sort="43.037000384847985">43.0%</td>
+          <td data-sort="0.9566221342569685">1.0%</td>
+          <td data-sort="22">22</td>
+          <td data-sort="1131.36999" class="rev">$1,131</td>
+          <td data-sort="0.06217001813386086">$0.06</td>
+          <td data-sort="0.16485328058028353">0.16%</td>
+          <td data-sort="0.005495109352676118">0.005%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-21">2026-05-21</td>
+          <td class="name">Memorial Day Sale (Launch) 1/5 - 05.20 (Resend Openers)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="13875">13,875</td>
+          <td data-sort="88.44268204758471">88.4%</td>
+          <td data-sort="1.0670511896178803">1.1%</td>
+          <td data-sort="23">23</td>
+          <td data-sort="1087.49" class="rev">$1,087</td>
+          <td data-sort="0.07837765765765765">$0.08</td>
+          <td data-sort="0.2594594594594595">0.26%</td>
+          <td data-sort="0.021621621621621623">0.022%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-20">2026-05-20</td>
+          <td class="name">Memorial Day Sale (Launch) 1/5 - 05.20</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="39985">39,985</td>
+          <td data-sort="53.53082586267341">53.5%</td>
+          <td data-sort="0.9340411679270797">0.9%</td>
+          <td data-sort="65">65</td>
+          <td data-sort="3452.7" class="rev">$3,453</td>
+          <td data-sort="0.08634988120545203">$0.09</td>
+          <td data-sort="0.1550581468050519">0.16%</td>
+          <td data-sort="0.015005627110166312">0.015%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-18">2026-05-18</td>
+          <td class="name">Better Sleep & Caffeine 1/1 - 05.18</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28887">28,887</td>
+          <td data-sort="61.58164679789299">61.6%</td>
+          <td data-sort="0.852509010257832">0.9%</td>
+          <td data-sort="3">3</td>
+          <td data-sort="162.62" class="rev">$163</td>
+          <td data-sort="0.005629521930280057">$0.01</td>
+          <td data-sort="0.18001177000034618">0.18%</td>
+          <td data-sort="0.003461764807698965">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-17">2026-05-17</td>
+          <td class="name">Best blends for Women 1/1 - 05.14</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29490">29,490</td>
+          <td data-sort="62.96056884292178">63.0%</td>
+          <td data-sort="0.5171299288946348">0.5%</td>
+          <td data-sort="9">9</td>
+          <td data-sort="387.0" class="rev">$387</td>
+          <td data-sort="0.013123092573753815">$0.01</td>
+          <td data-sort="0.1966768396066463">0.20%</td>
+          <td data-sort="0.00339097999321804">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-15">2026-05-15</td>
+          <td class="name">FOTM 2 (Java) - 2/3 5.15</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28609">28,609</td>
+          <td data-sort="59.79579705584111">59.8%</td>
+          <td data-sort="0.6783453966921921">0.7%</td>
+          <td data-sort="8">8</td>
+          <td data-sort="430.13" class="rev">$430</td>
+          <td data-sort="0.015034779265266175">$0.02</td>
+          <td data-sort="0.15030235240658535">0.15%</td>
+          <td data-sort="0.006990807088678388">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-12">2026-05-12</td>
+          <td class="name">Ingredient Focus: Dandelion Root 1/1 - 05.12</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32066">32,066</td>
+          <td data-sort="60.61817046518888">60.6%</td>
+          <td data-sort="0.9210115516703091">0.9%</td>
+          <td data-sort="19">19</td>
+          <td data-sort="1136.85999" class="rev">$1,137</td>
+          <td data-sort="0.03545375132539138">$0.04</td>
+          <td data-sort="0.1746398054013597">0.17%</td>
+          <td data-sort="0.006237135907191418">0.006%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-11">2026-05-11</td>
+          <td class="name">From Hot to Iced Teeccino 1/1 - 04.17</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29353">29,353</td>
+          <td data-sort="62.12854416575791">62.1%</td>
+          <td data-sort="0.8724100327153762">0.9%</td>
+          <td data-sort="6">6</td>
+          <td data-sort="303.54" class="rev">$304</td>
+          <td data-sort="0.010341021360678637">$0.01</td>
+          <td data-sort="0.1498994991994004">0.15%</td>
+          <td data-sort="0.010220420399959119">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-10">2026-05-10</td>
+          <td class="name">Mother’s Day Sale 2026 (Last Day) - 2/2 05.10</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29239">29,239</td>
+          <td data-sort="61.429500119752284">61.4%</td>
+          <td data-sort="0.6158688883566565">0.6%</td>
+          <td data-sort="14">14</td>
+          <td data-sort="863.43001" class="rev">$863</td>
+          <td data-sort="0.02953008003009679">$0.03</td>
+          <td data-sort="0.14022367386025514">0.14%</td>
+          <td data-sort="0.010260268819043059">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-09">2026-05-09</td>
+          <td class="name">Mother's Day Sale 2026 1/1 - 05.09 (Plain text)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29120">29,120</td>
+          <td data-sort="60.350334878928386">60.4%</td>
+          <td data-sort="0.8208827065086725">0.8%</td>
+          <td data-sort="20">20</td>
+          <td data-sort="1104.94999" class="rev">$1,105</td>
+          <td data-sort="0.03794471119505495">$0.04</td>
+          <td data-sort="0.16483516483516483">0.16%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-09">2026-05-09</td>
+          <td class="name">Women's Health & Caffeine 1/1 - 05.09</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="26762">26,762</td>
+          <td data-sort="68.988974023547">69.0%</td>
+          <td data-sort="0.8372266866006354">0.8%</td>
+          <td data-sort="7">7</td>
+          <td data-sort="403.56" class="rev">$404</td>
+          <td data-sort="0.015079590464090875">$0.02</td>
+          <td data-sort="0.17935879231746507">0.18%</td>
+          <td data-sort="0.007473283013227711">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-08">2026-05-08</td>
+          <td class="name">Mother’s Day Sale 2026 (Launch) - 1/3 05.08</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="42311">42,311</td>
+          <td data-sort="53.107932379713915">53.1%</td>
+          <td data-sort="0.8156992552311148">0.8%</td>
+          <td data-sort="20">20</td>
+          <td data-sort="992.53" class="rev">$993</td>
+          <td data-sort="0.02345796601356621">$0.02</td>
+          <td data-sort="0.3852426083051689">0.39%</td>
+          <td data-sort="0.023634515846942875">0.024%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-07">2026-05-07</td>
+          <td class="name">FOTM 1 (Java) - 1/3 05.07</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27678">27,678</td>
+          <td data-sort="59.96674738858568">60.0%</td>
+          <td data-sort="0.5493909711931182">0.5%</td>
+          <td data-sort="10">10</td>
+          <td data-sort="611.64" class="rev">$612</td>
+          <td data-sort="0.022098417515716454">$0.02</td>
+          <td data-sort="0.11922826793843486">0.12%</td>
+          <td data-sort="0.0036129778163162076">0.004%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-05">2026-05-05</td>
+          <td class="name">Cinco De Maya 1/1 - 5.05</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29870">29,870</td>
+          <td data-sort="54.3328978662111">54.3%</td>
+          <td data-sort="0.7503433490771447">0.8%</td>
+          <td data-sort="4">4</td>
+          <td data-sort="312.79" class="rev">$313</td>
+          <td data-sort="0.010471710746568464">$0.01</td>
+          <td data-sort="0.21091396049548042">0.21%</td>
+          <td data-sort="0.0033478406427854034">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-04">2026-05-04</td>
+          <td class="name">Gift Ideas for Mom 1/1 - 05.03</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27949">27,949</td>
+          <td data-sort="59.40622425957096">59.4%</td>
+          <td data-sort="0.6303047666797981">0.6%</td>
+          <td data-sort="7">7</td>
+          <td data-sort="279.51001" class="rev">$280</td>
+          <td data-sort="0.010000715946903289">$0.01</td>
+          <td data-sort="0.14669576729042183">0.15%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-03">2026-05-03</td>
+          <td class="name">Mother's Day Box 2026- 1/1 05.01</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27059">27,059</td>
+          <td data-sort="66.44101653534568">66.4%</td>
+          <td data-sort="1.1282506566048902">1.1%</td>
+          <td data-sort="11">11</td>
+          <td data-sort="714.33001" class="rev">$714</td>
+          <td data-sort="0.026398980376214937">$0.03</td>
+          <td data-sort="0.27717210539931264">0.28%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-05-01">2026-05-01</td>
+          <td class="name">Teeccino helping you go - 1/1 04.10</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28864">28,864</td>
+          <td data-sort="63.011609773002945">63.0%</td>
+          <td data-sort="1.7605267717899844">1.8%</td>
+          <td data-sort="8">8</td>
+          <td data-sort="340.75" class="rev">$341</td>
+          <td data-sort="0.01180536308203991">$0.01</td>
+          <td data-sort="0.2251940133037694">0.23%</td>
+          <td data-sort="0.0034645232815964525">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-30">2026-04-30</td>
+          <td class="name">FOTM 3 (Vanilla Nut) - 3/3 4.29</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28252">28,252</td>
+          <td data-sort="60.009205494972385">60.0%</td>
+          <td data-sort="0.5346268233961196">0.5%</td>
+          <td data-sort="9">9</td>
+          <td data-sort="351.0" class="rev">$351</td>
+          <td data-sort="0.012423899192977489">$0.01</td>
+          <td data-sort="0.19113691066119212">0.19%</td>
+          <td data-sort="0.007079144839303412">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-29">2026-04-29</td>
+          <td class="name">Caroline's Newsletter (April) 04.29</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="34071">34,071</td>
+          <td data-sort="59.6276939338775">59.6%</td>
+          <td data-sort="0.613659052205062">0.6%</td>
+          <td data-sort="17">17</td>
+          <td data-sort="948.95001" class="rev">$949</td>
+          <td data-sort="0.027852132605441577">$0.03</td>
+          <td data-sort="0.2876346452995216">0.29%</td>
+          <td data-sort="0.00880514220304658">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-28">2026-04-28</td>
+          <td class="name">Earth Day Sale 2026 (Extension) - 8/8 04.28</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31281">31,281</td>
+          <td data-sort="59.241615244428814">59.2%</td>
+          <td data-sort="0.8152955846148927">0.8%</td>
+          <td data-sort="45">45</td>
+          <td data-sort="2958.0" class="rev">$2,958</td>
+          <td data-sort="0.09456219430325118">$0.09</td>
+          <td data-sort="0.20140021099069721">0.20%</td>
+          <td data-sort="0.009590486237652249">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-27">2026-04-27</td>
+          <td class="name">Earth Day Sale 2026 (Last Day) - 3/3 04.27 (Segment C - Email openers)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="41144">41,144</td>
+          <td data-sort="55.33270123744925">55.3%</td>
+          <td data-sort="0.7269102666958404">0.7%</td>
+          <td data-sort="37">37</td>
+          <td data-sort="2354.97" class="rev">$2,355</td>
+          <td data-sort="0.05723726424265992">$0.06</td>
+          <td data-sort="0.38644759867781453">0.39%</td>
+          <td data-sort="0.0218743923779895">0.022%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-27">2026-04-27</td>
+          <td class="name">Earth Day Sale 2026 (Last Day) - 7/7 04.27 (Segment B)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="18550">18,550</td>
+          <td data-sort="4.19499890326826">4.2%</td>
+          <td data-sort="0.15354244351831542">0.2%</td>
+          <td data-sort="1">1</td>
+          <td data-sort="37.37" class="rev">$37</td>
+          <td data-sort="0.0020145552560646898">$0.00</td>
+          <td data-sort="0.46900269541778977">0.47%</td>
+          <td data-sort="0.09703504043126684">0.097%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-27">2026-04-27</td>
+          <td class="name">Earth Day Sale 2026 (Last Day) - 7/7 04.27 (Segment B)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="0">0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">0</td>
+          <td data-sort="0" class="rev">$0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-27">2026-04-27</td>
+          <td class="name">Earth Day Sale 2026 (Last Day) - 7/7 04.27</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="49460">49,460</td>
+          <td data-sort="50.04248775947882">50.0%</td>
+          <td data-sort="0.7141990045724922">0.7%</td>
+          <td data-sort="61">61</td>
+          <td data-sort="3598.79" class="rev">$3,599</td>
+          <td data-sort="0.07276162555600485">$0.07</td>
+          <td data-sort="0.36797412050141526">0.37%</td>
+          <td data-sort="0.05054589567327133">0.051%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-26">2026-04-26</td>
+          <td class="name">Earth Day Sale 2026 (Ends Tom) - 6/7 04.26</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="42740">42,740</td>
+          <td data-sort="53.578952296240814">53.6%</td>
+          <td data-sort="0.8286128926548383">0.8%</td>
+          <td data-sort="58">58</td>
+          <td data-sort="3774.37003" class="rev">$3,774</td>
+          <td data-sort="0.08831001474029013">$0.09</td>
+          <td data-sort="0.34394010294805805">0.34%</td>
+          <td data-sort="0.030416471689284044">0.030%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-25">2026-04-25</td>
+          <td class="name">Earth Day Sale (Plain text reminder) 04.25</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="36947">36,947</td>
+          <td data-sort="56.91811978771797">56.9%</td>
+          <td data-sort="0.9747644319289505">1.0%</td>
+          <td data-sort="39">39</td>
+          <td data-sort="2649.3" class="rev">$2,649</td>
+          <td data-sort="0.07170541586597018">$0.07</td>
+          <td data-sort="0.23005927409532573">0.23%</td>
+          <td data-sort="0.008119739085717378">0.008%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-25">2026-04-25</td>
+          <td class="name">Earth Day Sale 2026 (Reminder 4: Certified Organic) - 5/7 04.25</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33566">33,566</td>
+          <td data-sort="56.162097735399286">56.2%</td>
+          <td data-sort="0.7210965435041716">0.7%</td>
+          <td data-sort="43">43</td>
+          <td data-sort="2664.70002" class="rev">$2,665</td>
+          <td data-sort="0.07938688017636895">$0.08</td>
+          <td data-sort="0.16683548829172376">0.17%</td>
+          <td data-sort="0.005958410296132991">0.006%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-24">2026-04-24</td>
+          <td class="name">Earth Day Sale 2026 (Reminder 3: Sustainability Practive) - 4/7 04.24</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33370">33,370</td>
+          <td data-sort="57.27092828016311">57.3%</td>
+          <td data-sort="0.8335332213960183">0.8%</td>
+          <td data-sort="40">40</td>
+          <td data-sort="2627.50001" class="rev">$2,628</td>
+          <td data-sort="0.07873838807311957">$0.08</td>
+          <td data-sort="0.22475277195085405">0.22%</td>
+          <td data-sort="0.0239736290080911">0.024%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-23">2026-04-23</td>
+          <td class="name">Earth Day Sale 2026 (Reminder 2: Bulk Bags + Eco packaging) - 3/7 04.2</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="57698">57,698</td>
+          <td data-sort="36.19451027224721">36.2%</td>
+          <td data-sort="0.7669198186262619">0.8%</td>
+          <td data-sort="63">63</td>
+          <td data-sort="4158.36001" class="rev">$4,158</td>
+          <td data-sort="0.07207112915525668">$0.07</td>
+          <td data-sort="0.20624631703005303">0.21%</td>
+          <td data-sort="0.03466324655967278">0.035%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-22">2026-04-22</td>
+          <td class="name">Earth Day Sale 2026 (Launch) -1/7 04.21 (Resend - openers Non buyers</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="30328">30,328</td>
+          <td data-sort="45.86424725484377">45.9%</td>
+          <td data-sort="0.8436850807648281">0.8%</td>
+          <td data-sort="35">35</td>
+          <td data-sort="2187.46001" class="rev">$2,187</td>
+          <td data-sort="0.07212674788973884">$0.07</td>
+          <td data-sort="0.13848588762859404">0.14%</td>
+          <td data-sort="0.039567396465312585">0.040%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-22">2026-04-22</td>
+          <td class="name">Earth Day Sale 2026 (Reminder 1 Plain Text) - 2/7 04.22</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33362">33,362</td>
+          <td data-sort="56.98650674662669">57.0%</td>
+          <td data-sort="0.7886056971514243">0.8%</td>
+          <td data-sort="36">36</td>
+          <td data-sort="2800.94001" class="rev">$2,801</td>
+          <td data-sort="0.08395599814159822">$0.08</td>
+          <td data-sort="0.21881182183322342">0.22%</td>
+          <td data-sort="0.011989688867573886">0.012%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-21">2026-04-21</td>
+          <td class="name">Earth Day Sale 2026 (Launch) -1/7 04.21 (Resend))</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29201">29,201</td>
+          <td data-sort="27.606521441293328">27.6%</td>
+          <td data-sort="0.8768324428003836">0.9%</td>
+          <td data-sort="60">60</td>
+          <td data-sort="3980.26001" class="rev">$3,980</td>
+          <td data-sort="0.13630560631485222">$0.14</td>
+          <td data-sort="0.2260196568610664">0.23%</td>
+          <td data-sort="0.030820862299236328">0.031%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-21">2026-04-21</td>
+          <td class="name">Earth Day Sale 2026 (Launch) -1/7 04.21 (Segment B - Suppression List)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="18786">18,786</td>
+          <td data-sort="7.684426229508197">7.7%</td>
+          <td data-sort="0.3882657463330457">0.4%</td>
+          <td data-sort="13">13</td>
+          <td data-sort="1078.57999" class="rev">$1,079</td>
+          <td data-sort="0.05741403119344192">$0.06</td>
+          <td data-sort="0.26083253486638985">0.26%</td>
+          <td data-sort="0.06387735547748323">0.064%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-21">2026-04-21</td>
+          <td class="name">Earth Day Sale 2026 (Launch) -1/7 04.21</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="55893">55,893</td>
+          <td data-sort="47.6584220978516">47.7%</td>
+          <td data-sort="1.335981224047662">1.3%</td>
+          <td data-sort="182">182</td>
+          <td data-sort="12685.73003" class="rev">$12,686</td>
+          <td data-sort="0.22696455781582667">$0.23</td>
+          <td data-sort="0.3614048270803142">0.36%</td>
+          <td data-sort="0.02683699210992432">0.027%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-20">2026-04-20</td>
+          <td class="name">#YouSaveWeGive (Kiss The Ground) 1/1 - 04.20</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="26469">26,469</td>
+          <td data-sort="62.99727726516412">63.0%</td>
+          <td data-sort="0.5483285433368628">0.5%</td>
+          <td data-sort="14">14</td>
+          <td data-sort="953.68999" class="rev">$954</td>
+          <td data-sort="0.036030450338131396">$0.04</td>
+          <td data-sort="0.25690430314707774">0.26%</td>
+          <td data-sort="0.011334013374135782">0.011%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-18">2026-04-18</td>
+          <td class="name">Why I switched to Teeccino 1/1 04.19</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="26757">26,757</td>
+          <td data-sort="62.48036502356197">62.5%</td>
+          <td data-sort="0.620839254992894">0.6%</td>
+          <td data-sort="12">12</td>
+          <td data-sort="674.12" class="rev">$674</td>
+          <td data-sort="0.025194154800612923">$0.03</td>
+          <td data-sort="0.1943416676010016">0.19%</td>
+          <td data-sort="0.014949359046230893">0.015%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-16">2026-04-16</td>
+          <td class="name">Ingredient: Mushroom 1/1 04.16</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="17620">17,620</td>
+          <td data-sort="53.35869626937709">53.4%</td>
+          <td data-sort="0.6473226960422463">0.6%</td>
+          <td data-sort="12">12</td>
+          <td data-sort="781.33998" class="rev">$781</td>
+          <td data-sort="0.04434392622020431">$0.04</td>
+          <td data-sort="0.27809307604994327">0.28%</td>
+          <td data-sort="0.028376844494892167">0.028%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-14">2026-04-14</td>
+          <td class="name">Collection Focus: Miraculous Mushrooms 1/1 - 04.15</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="25958">25,958</td>
+          <td data-sort="66.34167019923696">66.3%</td>
+          <td data-sort="0.7322054799799607">0.7%</td>
+          <td data-sort="14">14</td>
+          <td data-sort="675.55999" class="rev">$676</td>
+          <td data-sort="0.026025117112258262">$0.03</td>
+          <td data-sort="0.21188073041066338">0.21%</td>
+          <td data-sort="0.015409507666230064">0.015%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-13">2026-04-13</td>
+          <td class="name">Focus w/o Jitters - 1/1 04.13</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29456">29,456</td>
+          <td data-sort="57.25056034775521">57.3%</td>
+          <td data-sort="0.49242681518712217">0.5%</td>
+          <td data-sort="3">3</td>
+          <td data-sort="71.66" class="rev">$72</td>
+          <td data-sort="0.0024327810972297665">$0.00</td>
+          <td data-sort="0.23085279739272135">0.23%</td>
+          <td data-sort="0.010184682237914177">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-12">2026-04-12</td>
+          <td class="name">FOTM 2 (Vanilla Nut) - 2/3 4.12</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28446">28,446</td>
+          <td data-sort="62.647338235811546">62.6%</td>
+          <td data-sort="0.6755568065866788">0.7%</td>
+          <td data-sort="15">15</td>
+          <td data-sort="740.49999" class="rev">$740</td>
+          <td data-sort="0.02603177916051466">$0.03</td>
+          <td data-sort="0.2390494269844618">0.24%</td>
+          <td data-sort="0.007030865499542994">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-08">2026-04-08</td>
+          <td class="name">DYK - Teeccino Sizes - 1/1 04.08</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28863">28,863</td>
+          <td data-sort="57.9420129014358">57.9%</td>
+          <td data-sort="0.6832211971977526">0.7%</td>
+          <td data-sort="18">18</td>
+          <td data-sort="918.57" class="rev">$919</td>
+          <td data-sort="0.03182517409832658">$0.03</td>
+          <td data-sort="0.28410075182759936">0.28%</td>
+          <td data-sort="0.02078785988982434">0.021%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-06">2026-04-06</td>
+          <td class="name">Instants: Bold Vs Creamy 1/1 - 04.06</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32926">32,926</td>
+          <td data-sort="61.06097894449002">61.1%</td>
+          <td data-sort="0.6714672014097773">0.7%</td>
+          <td data-sort="13">13</td>
+          <td data-sort="465.1" class="rev">$465</td>
+          <td data-sort="0.01412561501548928">$0.01</td>
+          <td data-sort="0.4191216667679038">0.42%</td>
+          <td data-sort="0.009111340581910952">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-05">2026-04-05</td>
+          <td class="name">FOTM 1 (Vanilla Nut) - ⅓ 4.05</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28200">28,200</td>
+          <td data-sort="61.287690670450516">61.3%</td>
+          <td data-sort="0.652713728272437">0.7%</td>
+          <td data-sort="16">16</td>
+          <td data-sort="808.77999" class="rev">$809</td>
+          <td data-sort="0.028680141489361703">$0.03</td>
+          <td data-sort="0.2375886524822695">0.24%</td>
+          <td data-sort="0.01773049645390071">0.018%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-03">2026-04-03</td>
+          <td class="name">Free Detoxing Ebook - 1/1 04.06</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32693">32,693</td>
+          <td data-sort="62.498469824947975">62.5%</td>
+          <td data-sort="1.2731056432855918">1.3%</td>
+          <td data-sort="5">5</td>
+          <td data-sort="211.54" class="rev">$212</td>
+          <td data-sort="0.006470498271801303">$0.01</td>
+          <td data-sort="0.348698498149451">0.35%</td>
+          <td data-sort="0.012235035022787753">0.012%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-04-01">2026-04-01</td>
+          <td class="name">Detox Naturally: Dandelion Blends 1/1 - 04.03</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27306">27,306</td>
+          <td data-sort="63.74596892406919">63.7%</td>
+          <td data-sort="0.5716798592788038">0.6%</td>
+          <td data-sort="9">9</td>
+          <td data-sort="618.60001" class="rev">$619</td>
+          <td data-sort="0.0226543620449718">$0.02</td>
+          <td data-sort="0.2124075294807002">0.21%</td>
+          <td data-sort="0.007324397568300008">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-31">2026-03-31</td>
+          <td class="name">Focus: Instant Blends 1/1 - 03.29</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27773">27,773</td>
+          <td data-sort="60.11381645296067">60.1%</td>
+          <td data-sort="0.6771358593862555">0.7%</td>
+          <td data-sort="12">12</td>
+          <td data-sort="528.44" class="rev">$528</td>
+          <td data-sort="0.019027112663378105">$0.02</td>
+          <td data-sort="0.20883591977820185">0.21%</td>
+          <td data-sort="0.0072012386130414436">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-30">2026-03-30</td>
+          <td class="name">Caroline's Newsletter (March) 03.30</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33762">33,762</td>
+          <td data-sort="58.64777543942852">58.6%</td>
+          <td data-sort="0.7973441621958087">0.8%</td>
+          <td data-sort="10">10</td>
+          <td data-sort="347.17" class="rev">$347</td>
+          <td data-sort="0.010282862389668858">$0.01</td>
+          <td data-sort="0.3554291807357384">0.36%</td>
+          <td data-sort="0.005923819678928973">0.006%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-27">2026-03-27</td>
+          <td class="name">FOTM 3 (Dandelion Dark Roast) - 3/3 3.30</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31639">31,639</td>
+          <td data-sort="60.47747035573123">60.5%</td>
+          <td data-sort="0.6039525691699604">0.6%</td>
+          <td data-sort="12">12</td>
+          <td data-sort="453.44" class="rev">$453</td>
+          <td data-sort="0.014331679256613673">$0.01</td>
+          <td data-sort="0.32870823983058883">0.33%</td>
+          <td data-sort="0.0094819684566516">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-25">2026-03-25</td>
+          <td class="name">World Rewilding Day 2026 (Last Call) - 6/6 03.25 (Segment B: Open Send</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="8755">8,755</td>
+          <td data-sort="36.18699279917705">36.2%</td>
+          <td data-sort="0.582923762715739">0.6%</td>
+          <td data-sort="5">5</td>
+          <td data-sort="285.7" class="rev">$286</td>
+          <td data-sort="0.032632781267846946">$0.03</td>
+          <td data-sort="1.0394060536836094">1.04%</td>
+          <td data-sort="0.2855511136493432">0.286%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-25">2026-03-25</td>
+          <td class="name">World Rewilding Day 2026 (Last Call) - 6/6 03.25</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="37670">37,670</td>
+          <td data-sort="53.32217083931324">53.3%</td>
+          <td data-sort="0.8425025248498379">0.8%</td>
+          <td data-sort="67">67</td>
+          <td data-sort="4088.84002" class="rev">$4,089</td>
+          <td data-sort="0.10854366923281125">$0.11</td>
+          <td data-sort="0.19644279267321477">0.20%</td>
+          <td data-sort="0.026546323334218212">0.027%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-24">2026-03-24</td>
+          <td class="name">World Rewilding Day 2026 (Ends Tom) - 5/6 03.24</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31278">31,278</td>
+          <td data-sort="56.491430033256584">56.5%</td>
+          <td data-sort="0.7642619595804554">0.8%</td>
+          <td data-sort="48">48</td>
+          <td data-sort="2892.49002" class="rev">$2,892</td>
+          <td data-sort="0.09247682140801843">$0.09</td>
+          <td data-sort="0.1822367159025513">0.18%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-23">2026-03-23</td>
+          <td class="name">World Rewilding Day 2026 (Reminder 3) - 4/6 03.23</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="34824">34,824</td>
+          <td data-sort="55.01479587439308">55.0%</td>
+          <td data-sort="0.7555951389088402">0.8%</td>
+          <td data-sort="37">37</td>
+          <td data-sort="1917.09" class="rev">$1,917</td>
+          <td data-sort="0.055050827015851136">$0.06</td>
+          <td data-sort="0.4048931771192281">0.40%</td>
+          <td data-sort="0.01722949689869056">0.017%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-21">2026-03-21</td>
+          <td class="name">What is rewilding - 1/1 03.19</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="18813">18,813</td>
+          <td data-sort="59.938284741434344">59.9%</td>
+          <td data-sort="0.8991274739306235">0.9%</td>
+          <td data-sort="26">26</td>
+          <td data-sort="1947.28999" class="rev">$1,947</td>
+          <td data-sort="0.10350768032743315">$0.10</td>
+          <td data-sort="0.37208313400308296">0.37%</td>
+          <td data-sort="0.015946420028703556">0.016%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-20">2026-03-20</td>
+          <td class="name">#YouSaveWeGive (Wild Foundation) 1/1</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="26130">26,130</td>
+          <td data-sort="66.63603996784197">66.6%</td>
+          <td data-sort="0.5436239041384326">0.5%</td>
+          <td data-sort="13">13</td>
+          <td data-sort="826.61" class="rev">$827</td>
+          <td data-sort="0.031634519709146575">$0.03</td>
+          <td data-sort="0.29085342518178336">0.29%</td>
+          <td data-sort="0.007654037504783774">0.008%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-20">2026-03-20</td>
+          <td class="name">World Rewilding Day 2026 (Plain Text Reminder 1) - 2/3 03.21</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27915">27,915</td>
+          <td data-sort="60.16775997419077">60.2%</td>
+          <td data-sort="0.878230634118364">0.9%</td>
+          <td data-sort="39">39</td>
+          <td data-sort="2388.18001" class="rev">$2,388</td>
+          <td data-sort="0.08555185420025076">$0.09</td>
+          <td data-sort="0.17911517105498836">0.18%</td>
+          <td data-sort="0.0035823034210997673">0.004%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-19">2026-03-19</td>
+          <td class="name">World Rewilding Day 2026 (Launch) - 1/3 03.20</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="9133">9,133</td>
+          <td data-sort="33.40292275574113">33.4%</td>
+          <td data-sort="0.9998901219646192">1.0%</td>
+          <td data-sort="7">7</td>
+          <td data-sort="344.92" class="rev">$345</td>
+          <td data-sort="0.037766341837293334">$0.04</td>
+          <td data-sort="1.1715756049490857">1.17%</td>
+          <td data-sort="0.14234096134895435">0.142%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-19">2026-03-19</td>
+          <td class="name">World Rewilding Day 2026 (Launch) - 1/3 03.20</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="37330">37,330</td>
+          <td data-sort="54.68404891450735">54.7%</td>
+          <td data-sort="1.4814415773312504">1.5%</td>
+          <td data-sort="105">105</td>
+          <td data-sort="6831.78" class="rev">$6,832</td>
+          <td data-sort="0.18301044736137154">$0.18</td>
+          <td data-sort="0.20626841682293062">0.21%</td>
+          <td data-sort="0.016072863648540048">0.016%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-18">2026-03-18</td>
+          <td class="name">Ingredient: Matcha 1/1 - 03.15</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31950">31,950</td>
+          <td data-sort="61.84288800526003">61.8%</td>
+          <td data-sort="0.8860640596136385">0.9%</td>
+          <td data-sort="12">12</td>
+          <td data-sort="515.91" class="rev">$516</td>
+          <td data-sort="0.016147417840375586">$0.02</td>
+          <td data-sort="0.3380281690140845">0.34%</td>
+          <td data-sort="0.006259780907668232">0.006%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-17">2026-03-17</td>
+          <td class="name">St Patrick’s Day - 1/1 03.17</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32493">32,493</td>
+          <td data-sort="59.06025802875882">59.1%</td>
+          <td data-sort="0.723589001447178">0.7%</td>
+          <td data-sort="4">4</td>
+          <td data-sort="225.67999" class="rev">$226</td>
+          <td data-sort="0.006945495645215893">$0.01</td>
+          <td data-sort="0.25236204721016836">0.25%</td>
+          <td data-sort="0.009232757824762256">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-16">2026-03-16</td>
+          <td class="name">New Look of Teeccino 1/1 - 03.13</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33225">33,225</td>
+          <td data-sort="62.42510011743097">62.4%</td>
+          <td data-sort="0.7196410827737798">0.7%</td>
+          <td data-sort="12">12</td>
+          <td data-sort="742.28" class="rev">$742</td>
+          <td data-sort="0.022341008276899926">$0.02</td>
+          <td data-sort="0.400300978179082">0.40%</td>
+          <td data-sort="0.015048908954100828">0.015%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-16">2026-03-16</td>
+          <td class="name">New Look of Teeccino 1/1 - 03.13</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="0">0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">0</td>
+          <td data-sort="0" class="rev">$0</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+          <td data-sort="0">—</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-15">2026-03-15</td>
+          <td class="name">What’s Your Brew Personality 1/1 - 03.11</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29553">29,553</td>
+          <td data-sort="63.05760509036756">63.1%</td>
+          <td data-sort="0.8969065186488865">0.9%</td>
+          <td data-sort="5">5</td>
+          <td data-sort="152.17" class="rev">$152</td>
+          <td data-sort="0.0051490542415321625">$0.01</td>
+          <td data-sort="0.3654451324738605">0.37%</td>
+          <td data-sort="0.00676750245321964">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-13">2026-03-13</td>
+          <td class="name">FOTM 2 (Dandelion Dark Roast) - 2/3 3.12</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31851">31,851</td>
+          <td data-sort="62.22787673169353">62.2%</td>
+          <td data-sort="0.7696415669274024">0.8%</td>
+          <td data-sort="28">28</td>
+          <td data-sort="1251.89999" class="rev">$1,252</td>
+          <td data-sort="0.03930488807258799">$0.04</td>
+          <td data-sort="0.326520360428244">0.33%</td>
+          <td data-sort="0.01883771310162946">0.019%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-10">2026-03-10</td>
+          <td class="name">Cacao, Cocoa, carob 1/1 - 03.04</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31195">31,195</td>
+          <td data-sort="64.45663330767258">64.5%</td>
+          <td data-sort="1.5556838593790094">1.6%</td>
+          <td data-sort="14">14</td>
+          <td data-sort="541.84" class="rev">$542</td>
+          <td data-sort="0.01736945023240904">$0.02</td>
+          <td data-sort="0.2949190575412726">0.29%</td>
+          <td data-sort="0.006411283859592883">0.006%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-08">2026-03-08</td>
+          <td class="name">Int’l Women's Day (Last Day) 2/2 - 03.08</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="35512">35,512</td>
+          <td data-sort="58.3424885208034">58.3%</td>
+          <td data-sort="0.9042508239668723">0.9%</td>
+          <td data-sort="54">54</td>
+          <td data-sort="2811.17999" class="rev">$2,811</td>
+          <td data-sort="0.07916140994593378">$0.08</td>
+          <td data-sort="0.3688893895021401">0.37%</td>
+          <td data-sort="0.01407974769092138">0.014%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-07">2026-03-07</td>
+          <td class="name">Int’l Women's Day 2026 (Reiminder) 2/3 - 03.07</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29528">29,528</td>
+          <td data-sort="65.86944002168096">65.9%</td>
+          <td data-sort="2.0190385853179307">2.0%</td>
+          <td data-sort="39">39</td>
+          <td data-sort="2537.92999" class="rev">$2,538</td>
+          <td data-sort="0.0859499454754809">$0.09</td>
+          <td data-sort="0.3285017610403685">0.33%</td>
+          <td data-sort="0.010159848279599025">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-06">2026-03-06</td>
+          <td class="name">Int’l Women's Day 2026 (Launch) 1/3 - 03.06</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="36478">36,478</td>
+          <td data-sort="55.784534328522035">55.8%</td>
+          <td data-sort="1.2430711816036442">1.2%</td>
+          <td data-sort="72">72</td>
+          <td data-sort="4579.77998" class="rev">$4,580</td>
+          <td data-sort="0.12554909753824223">$0.13</td>
+          <td data-sort="0.2604309446789846">0.26%</td>
+          <td data-sort="0.019189648555293603">0.019%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-03-05">2026-03-05</td>
+          <td class="name">FOTM 1 (Dandelion Dark Roast) - ⅓ 3.05</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31784">31,784</td>
+          <td data-sort="60.209028521060254">60.2%</td>
+          <td data-sort="0.7460807152301202">0.7%</td>
+          <td data-sort="23">23</td>
+          <td data-sort="1251.34999" class="rev">$1,251</td>
+          <td data-sort="0.039370437641580665">$0.04</td>
+          <td data-sort="0.2516989680342311">0.25%</td>
+          <td data-sort="0.009438711301283665">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-28">2026-02-28</td>
+          <td class="name">5lb Bag Flash Sale (Last Day) 2/2 - 02.28</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="34515">34,515</td>
+          <td data-sort="56.532073393431695">56.5%</td>
+          <td data-sort="1.1768457056726283">1.2%</td>
+          <td data-sort="51">51</td>
+          <td data-sort="4132.41012" class="rev">$4,132</td>
+          <td data-sort="0.1197279478487614">$0.12</td>
+          <td data-sort="0.35057221497899466">0.35%</td>
+          <td data-sort="0.0057945820657685065">0.006%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-26">2026-02-26</td>
+          <td class="name">5lb Bag Flash Sale (Launch) 1/2 - 02.26</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33480">33,480</td>
+          <td data-sort="56.58409776795052">56.6%</td>
+          <td data-sort="1.6613380344817283">1.7%</td>
+          <td data-sort="65">65</td>
+          <td data-sort="5168.83013" class="rev">$5,169</td>
+          <td data-sort="0.15438560722819594">$0.15</td>
+          <td data-sort="0.24790919952210275">0.25%</td>
+          <td data-sort="0.008960573476702509">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-25">2026-02-25</td>
+          <td class="name">FOTM 3 (Dark Chocolate) - 3/3 2.25</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31316">31,316</td>
+          <td data-sort="61.74338007474367">61.7%</td>
+          <td data-sort="0.7570191969846999">0.8%</td>
+          <td data-sort="26">26</td>
+          <td data-sort="1128.80999" class="rev">$1,129</td>
+          <td data-sort="0.036045790969472476">$0.04</td>
+          <td data-sort="0.23630093243070635">0.24%</td>
+          <td data-sort="0.012773023374632776">0.013%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-24">2026-02-24</td>
+          <td class="name">Teeccino VS Decaf 1/1 - 02.22</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32020">32,020</td>
+          <td data-sort="61.29143214509068">61.3%</td>
+          <td data-sort="0.7942464040025016">0.8%</td>
+          <td data-sort="23">23</td>
+          <td data-sort="1268.51" class="rev">$1,269</td>
+          <td data-sort="0.03961617738913179">$0.04</td>
+          <td data-sort="0.3060587133041849">0.31%</td>
+          <td data-sort="0.003123048094940662">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-21">2026-02-21</td>
+          <td class="name">FOTM 2 (Dark Chocolate) - 1/3 02.20</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29830">29,830</td>
+          <td data-sort="64.46605196982398">64.5%</td>
+          <td data-sort="0.7476948868398994">0.7%</td>
+          <td data-sort="16">16</td>
+          <td data-sort="778.45" class="rev">$778</td>
+          <td data-sort="0.02609621186724774">$0.03</td>
+          <td data-sort="0.28494803888702647">0.28%</td>
+          <td data-sort="0.010056989607777405">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-20">2026-02-20</td>
+          <td class="name">Self Love = Teeccino Time 1/1 - 02.19</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28759">28,759</td>
+          <td data-sort="64.60724970430668">64.6%</td>
+          <td data-sort="0.6644402699506018">0.7%</td>
+          <td data-sort="13">13</td>
+          <td data-sort="608.89" class="rev">$609</td>
+          <td data-sort="0.02117215480371362">$0.02</td>
+          <td data-sort="0.2851281338015925">0.29%</td>
+          <td data-sort="0">0.000%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-18">2026-02-18</td>
+          <td class="name">Presidents’ Day (Last Day) 6/6 - 02.18</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="42069">42,069</td>
+          <td data-sort="52.41349646339132">52.4%</td>
+          <td data-sort="0.8268017587459376">0.8%</td>
+          <td data-sort="70">70</td>
+          <td data-sort="4012.68001" class="rev">$4,013</td>
+          <td data-sort="0.0953832991038532">$0.10</td>
+          <td data-sort="0.33040956523806125">0.33%</td>
+          <td data-sort="0.021393425087356487">0.021%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-17">2026-02-17</td>
+          <td class="name">Presidents’ Day (Reminder 4) 5/6 - 02.17</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33364">33,364</td>
+          <td data-sort="58.15069109225557">58.2%</td>
+          <td data-sort="0.5876532845621083">0.6%</td>
+          <td data-sort="44">44</td>
+          <td data-sort="2340.29001" class="rev">$2,340</td>
+          <td data-sort="0.07014416766574752">$0.07</td>
+          <td data-sort="0.323702193981537">0.32%</td>
+          <td data-sort="0.017983455221196498">0.018%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-16">2026-02-16</td>
+          <td class="name">Presidents' Day (Reminder 3) 4/6 - 02.16</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33629">33,629</td>
+          <td data-sort="60.6484235574063">60.6%</td>
+          <td data-sort="0.7227840571088637">0.7%</td>
+          <td data-sort="69">69</td>
+          <td data-sort="3762.43001" class="rev">$3,762</td>
+          <td data-sort="0.11188052008682982">$0.11</td>
+          <td data-sort="0.4341490975051295">0.43%</td>
+          <td data-sort="0.008920871866543757">0.009%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-16">2026-02-16</td>
+          <td class="name">Presidents' Day (Reminder 2) 3/6 - 02.15</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="27256">27,256</td>
+          <td data-sort="63.386433710174714">63.4%</td>
+          <td data-sort="0.7487887241227427">0.7%</td>
+          <td data-sort="47">47</td>
+          <td data-sort="2782.28001" class="rev">$2,782</td>
+          <td data-sort="0.10207954248605812">$0.10</td>
+          <td data-sort="0.21279718227179337">0.21%</td>
+          <td data-sort="0.00733783387144115">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-14">2026-02-14</td>
+          <td class="name">Presidents’ Day (Reminder 1) 2/6 - 02.14</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33454">33,454</td>
+          <td data-sort="60.42937447673723">60.4%</td>
+          <td data-sort="0.9448630546585337">0.9%</td>
+          <td data-sort="95">95</td>
+          <td data-sort="6009.06003" class="rev">$6,009</td>
+          <td data-sort="0.17962157081365457">$0.18</td>
+          <td data-sort="0.3945716506247384">0.39%</td>
+          <td data-sort="0.020924254199796734">0.021%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-14">2026-02-14</td>
+          <td class="name">Presidents’ Day (Launch) 1/6 - 02.13 (Resend)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="32110">32,110</td>
+          <td data-sort="60.96603303209723">61.0%</td>
+          <td data-sort="0.8008725459644749">0.8%</td>
+          <td data-sort="61">61</td>
+          <td data-sort="3487.71998" class="rev">$3,488</td>
+          <td data-sort="0.10861787542821551">$0.11</td>
+          <td data-sort="0.3020865773902211">0.30%</td>
+          <td data-sort="0.012457178449081284">0.012%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-13">2026-02-13</td>
+          <td class="name">Presidents’ Day (Launch) 1/6 - 02.13</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="42301">42,301</td>
+          <td data-sort="52.92692870332622">52.9%</td>
+          <td data-sort="1.5108275977841195">1.5%</td>
+          <td data-sort="172">172</td>
+          <td data-sort="10887.96003" class="rev">$10,888</td>
+          <td data-sort="0.2573924973404884">$0.26</td>
+          <td data-sort="0.34278149452731616">0.34%</td>
+          <td data-sort="0.014184061842509633">0.014%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-11">2026-02-11</td>
+          <td class="name">Ingredient Focus: Carob Pods 1/1 - 02.11</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29379">29,379</td>
+          <td data-sort="64.04169079328315">64.0%</td>
+          <td data-sort="0.9468987363329814">0.9%</td>
+          <td data-sort="11">11</td>
+          <td data-sort="521.86999" class="rev">$522</td>
+          <td data-sort="0.01776336805200994">$0.02</td>
+          <td data-sort="0.35059055788147997">0.35%</td>
+          <td data-sort="0.013615167296368155">0.014%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-10">2026-02-10</td>
+          <td class="name">Valentine's Day Box (Launch) 01.23 (RESEND)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="31486">31,486</td>
+          <td data-sort="62.36142435119596">62.4%</td>
+          <td data-sort="0.8926018868523872">0.9%</td>
+          <td data-sort="26">26</td>
+          <td data-sort="1295.33001" class="rev">$1,295</td>
+          <td data-sort="0.041139872006606105">$0.04</td>
+          <td data-sort="0.3938258273518389">0.39%</td>
+          <td data-sort="0.01905608842025027">0.019%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-09">2026-02-09</td>
+          <td class="name">Chocolaty Blends focus 1/1 - 02.09</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="30773">30,773</td>
+          <td data-sort="61.3391491162397">61.3%</td>
+          <td data-sort="0.8398164122261645">0.8%</td>
+          <td data-sort="19">19</td>
+          <td data-sort="760.85001" class="rev">$761</td>
+          <td data-sort="0.024724596561921164">$0.02</td>
+          <td data-sort="0.2339713385110324">0.23%</td>
+          <td data-sort="0.009748805771293017">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-07">2026-02-07</td>
+          <td class="name">FOTM 1 (Dark Chocolate) - 1/3 2.06</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29568">29,568</td>
+          <td data-sort="64.64479025710419">64.6%</td>
+          <td data-sort="1.1129905277401895">1.1%</td>
+          <td data-sort="49">49</td>
+          <td data-sort="1983.21001" class="rev">$1,983</td>
+          <td data-sort="0.06707284936417748">$0.07</td>
+          <td data-sort="0.25027056277056275">0.25%</td>
+          <td data-sort="0.01691017316017316">0.017%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-04">2026-02-04</td>
+          <td class="name">Valentine's Day Box (Launch) 01.23</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="30542">30,542</td>
+          <td data-sort="58.13412797170738">58.1%</td>
+          <td data-sort="0.9758333879101447">1.0%</td>
+          <td data-sort="23">23</td>
+          <td data-sort="1029.16001" class="rev">$1,029</td>
+          <td data-sort="0.033696549341889856">$0.03</td>
+          <td data-sort="0.3175954423416934">0.32%</td>
+          <td data-sort="0.009822539453866807">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-02-03">2026-02-03</td>
+          <td class="name">Chocolate recipes 1/1 - 02.02</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="30157">30,157</td>
+          <td data-sort="61.859261471085894">61.9%</td>
+          <td data-sort="1.3834975614611327">1.4%</td>
+          <td data-sort="16">16</td>
+          <td data-sort="552.29001" class="rev">$552</td>
+          <td data-sort="0.018313824650993137">$0.02</td>
+          <td data-sort="0.27191033590874425">0.27%</td>
+          <td data-sort="0.009947939118612595">0.010%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-01-31">2026-01-31</td>
+          <td class="name">Subscription Savings Week (Last Day) - 3/3 01.31</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33293">33,293</td>
+          <td data-sort="57.674628210905816">57.7%</td>
+          <td data-sort="0.5017275048820791">0.5%</td>
+          <td data-sort="31">31</td>
+          <td data-sort="1876.86002" class="rev">$1,877</td>
+          <td data-sort="0.05637401315591866">$0.06</td>
+          <td data-sort="0.3784579341002613">0.38%</td>
+          <td data-sort="0.024029075180968973">0.024%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-01-30">2026-01-30</td>
+          <td class="name">Caroline's Newsletter (Jan) 01.30</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="33746">33,746</td>
+          <td data-sort="60.42568328689156">60.4%</td>
+          <td data-sort="0.9634196952629395">1.0%</td>
+          <td data-sort="13">13</td>
+          <td data-sort="558.89" class="rev">$559</td>
+          <td data-sort="0.016561666567889526">$0.02</td>
+          <td data-sort="0.28151484620399453">0.28%</td>
+          <td data-sort="0.02370651336454691">0.024%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-01-29">2026-01-29</td>
+          <td class="name">Subscription Savings Week (Launch) - 1/3 01.25 (opensend)</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="2070">2,070</td>
+          <td data-sort="38.37602706621556">38.4%</td>
+          <td data-sort="0.7733204446592556">0.8%</td>
+          <td data-sort="0">0</td>
+          <td data-sort="0" class="rev">$0</td>
+          <td data-sort="0">$0.00</td>
+          <td data-sort="2.5120772946859904">2.51%</td>
+          <td data-sort="0.33816425120772947">0.338%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-01-29">2026-01-29</td>
+          <td class="name">Focus: Instants 1/1 - 01.30</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29955">29,955</td>
+          <td data-sort="59.66599866399466">59.7%</td>
+          <td data-sort="0.6179024716098864">0.6%</td>
+          <td data-sort="18">18</td>
+          <td data-sort="841.89999" class="rev">$842</td>
+          <td data-sort="0.02810549123685528">$0.03</td>
+          <td data-sort="0.29377399432482054">0.29%</td>
+          <td data-sort="0.006676681689200467">0.007%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-01-27">2026-01-27</td>
+          <td class="name">Subscription Savings Week (Reminder) - 2/3 01.27</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="28954">28,954</td>
+          <td data-sort="60.105703133096135">60.1%</td>
+          <td data-sort="0.5008808594424677">0.5%</td>
+          <td data-sort="21">21</td>
+          <td data-sort="1003.58999" class="rev">$1,004</td>
+          <td data-sort="0.03466153174000138">$0.03</td>
+          <td data-sort="0.3695517027008358">0.37%</td>
+          <td data-sort="0.0034537542308489327">0.003%</td>
+        </tr>
+        <tr>
+          <td data-sort="2026-01-27">2026-01-27</td>
+          <td class="name">Subscription Savings Week (Reminder 1 - Plain Text) 2/4 - 01.26</td>
+          <td><span class="chip email">EMAIL</span></td>
+          <td data-sort="29227">29,227</td>
+          <td data-sort="65.70284697508897">65.7%</td>
+          <td data-sort="0.44141801259238983">0.4%</td>
+          <td data-sort="15">15</td>
+          <td data-sort="752.79" class="rev">$753</td>
+          <td data-sort="0.025756663359222637">$0.03</td>
+          <td data-sort="0.4413727033222705">0.44%</td>
+          <td data-sort="0.017107469121018237">0.017%</td>
+        </tr></tbody>
+    </table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="section">
+      <h2>Flows <span class="note">(43 live / 114 total)</span></h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Flow</th><th>Status</th><th>Trigger</th></tr></thead>
+        <tbody>
+        <tr><td class="name">(Feb 2025 - New Offer) Welcome | Free Shipping Pop-up</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">(V2 May 2024) WeFunder Investors - Thank You</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">14-Day Detox Ebook Sign-ups</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Ambassador | Passed Test</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Ambassador | Qualifier</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">F | POST | Email | 3X Customer Thank You + Invite to Subscri</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | POST | Email | New Customer Thank You | Placed Order 1X</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | POST | Email | Repeat Customer Thank You | Placed Order </td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | POST | Free Sampler Thank You | Herbal Coffee AND Tea</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | POST | Free Sampler Thank You | Herbal Coffee Only</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | POST | Free Sampler Thank You | Herbal Tea Only</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | POST | Winback Flow | Placed 0 order in 90 Days | Non-Pu</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">F | POST | Winback Flow | Placed 0 order in 90 Days | Past P</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">F | POST | Winback | Placed Order 1x | 0x in 120/135 Days</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | PRE | Email | Abandoned Cart | Added to Cart - Herbal Co</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | PRE | Email | Abandoned Cart | Added to Cart - Herbal Te</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | PRE | Email | Abandoned Checkout | Checkout Started - Ge</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | PRE | Email | Abandoned Checkout | Checkout Started - He</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | PRE | Email | Browse Abandonment | Viewed Product (Tripl</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | PRE | Email | Welcome Series - Caroline's Healthy Tips N</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">F | PRE | Email | Welcome Series | 10% Off Pop-Up</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">F | RET | Email | Sunset | Unengaged 180 Days</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">F | Replenishment (10 ct tea box)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | Replenishment (25 ct tea box)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | Replenishment (Coffee 11/10oz)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | Replenishment (Coffee 5lb bag)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">F | Social Nature Welcome Flow</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Fall Survey 2024: $10 OFF Thank You(Source: web link 1)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Holiday Ebook Sign up</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Manychat &gt; Push to Newsletter</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Manychat &gt; Today's Offer</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">OPENSEND (Feb 2025 - New Offer) Welcome | Free Shipping Pop-</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Quitting Caffeine Ebook (Coffee Substitute Ad)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Quitting Caffeine Painlessly ebook</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Quiz Follow-Up</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Rewilding</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Subscription (Retextion) Winback Flow</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">Survey: $10 OFF Thank You(Source: Email)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Survey: $10 OFF Thank You(Source: Socials)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">V1 - Herbal Coffee Sampler Flow</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">V1 - Herbal Coffee Starter Kit - Thank You Flow (Dec2024)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">V1 - Mushroom Starter Kit - Thank You Flow (Dec2024)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Added to List</td></tr>
+        <tr><td class="name">Welcome SubNSave (Retextion)</td>
+        <td><span class="chip live">live</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">(V. Jan 2024) F | PRE |Abandoned Checkout | Checkout Started</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">Abandoned Cart Reminder - Added to Cart Trigger</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2023 Winback | Placed Order 1x | 0x in 120/135 Days</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2023 | Abandoned Cart | - Herbal Coffee/General</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2023 | Abandoned Checkout</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2023 | Browse Abandonment</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2024 | Abandoned Cart | - Herbal Coffee/General</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2024 | Abandoned Checkout</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2024 | Browse Abandonment</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2025 | Abandoned Cart | - Herbal Coffee/General (Triple W</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2025 | Abandoned Checkout (Triple Whale)</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">BF 2025 | Browse Abandonment (Triple Whale)</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">CM 2023 | Abandoned Cart | - Herbal Coffee/General</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">CM 2023 | Abandoned Checkout</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">CM 2023 | Browse Abandonment</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">Delete Later</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr>
+        <tr><td class="name">Earth Day 2026 | Abandoned Cart | - Herbal Coffee/General (T</td>
+        <td><span class="chip draft">manual</span></td>
+        <td>Metric</td></tr></tbody></table></div>
+      <p class="note">Per-flow performance (opens/clicks/revenue by step) deferred to backfill M4.</p>
+    </div>
+    <div class="section">
+      <h2>List health <span class="note">(snapshot 2026-05-27)</span></h2>
+      <div class="table-wrap"><table id="listTable">
+        <thead><tr><th>List</th><th>Profiles</th></tr></thead>
+        <tbody><tr><td class='name'>Teeccino Newsletter</td><td data-sort='190541'>190,541</td></tr><tr><td class='name'>Exclude For Suppression (Jan 18 2025)</td><td data-sort='30028'>30,028</td></tr><tr><td class='name'>SMS Subscribers</td><td data-sort='26738'>26,738</td></tr><tr><td class='name'>OpenSend</td><td data-sort='17820'>17,820</td></tr><tr><td class='name'>Teeccino Newsletter (Offer B - March)</td><td data-sort='12706'>12,706</td></tr><tr><td class='name'>Footer Newsletter</td><td data-sort='7171'>7,171</td></tr><tr><td class='name'>Dec 2024 Checkout Abandoners (Shopify List c/o Justin)</td><td data-sort='4440'>4,440</td></tr><tr><td class='name'>Manychat</td><td data-sort='4294'>4,294</td></tr><tr><td class='name'>Manychat > Today's Offer</td><td data-sort='3351'>3,351</td></tr><tr><td class='name'>Black Friday 2025 Sign ups</td><td data-sort='2130'>2,130</td></tr><tr><td class='name'>For unsuppression (2024 Sale Openers)</td><td data-sort='1697'>1,697</td></tr><tr><td class='name'>Answered Survey Monkey (Source 1: Email)</td><td data-sort='1679'>1,679</td></tr><tr><td class='name'>Answered Fall Survey (Web link 1)</td><td data-sort='1615'>1,615</td></tr><tr><td class='name'>Rewilding</td><td data-sort='1466'>1,466</td></tr><tr><td class='name'>Retextion Subscribers (Jan 28 2024)</td><td data-sort='1387'>1,387</td></tr><tr><td class='name'>Answered Survey Monkey (Source 2: Socials)</td><td data-sort='1218'>1,218</td></tr><tr><td class='name'>Ambassador</td><td data-sort='1202'>1,202</td></tr><tr><td class='name'>Holiday E-book Sign-up</td><td data-sort='1194'>1,194</td></tr><tr><td class='name'>Quitting Caffeine</td><td data-sort='1060'>1,060</td></tr><tr><td class='name'>Recharge Subscribers (Ver Jan-5-2023)</td><td data-sort='915'>915</td></tr><tr><td class='name'>Retextion Subscribers (As of Feb 25 3AM)</td><td data-sort='899'>899</td></tr><tr><td class='name'>48 Hour Early Access Black Friday 2023</td><td data-sort='713'>713</td></tr><tr><td class='name'>WeFunder Investors</td><td data-sort='472'>472</td></tr><tr><td class='name'>Source: Social Nature</td><td data-sort='469'>469</td></tr><tr><td class='name'>14-Day Detox Ebook Sign-ups</td><td data-sort='419'>419</td></tr><tr><td class='name'>Black Friday 2024 Sign ups</td><td data-sort='259'>259</td></tr><tr><td class='name'>Wefunder 2023 - Level 1 not redeemeed</td><td data-sort='193'>193</td></tr><tr><td class='name'>Level 1 Investor</td><td data-sort='166'>166</td></tr><tr><td class='name'>Black Friday 2025 Early Access</td><td data-sort='165'>165</td></tr><tr><td class='name'>Mailmend</td><td data-sort='138'>138</td></tr><tr><td class='name'>June 2024 - Level 1 Investor</td><td data-sort='110'>110</td></tr><tr><td class='name'>Social Nature New List 2</td><td data-sort='99'>99</td></tr><tr><td class='name'>Social Nature New List 1</td><td data-sort='86'>86</td></tr><tr><td class='name'>Wefunder 2023 - Level 2 not redeemed</td><td data-sort='83'>83</td></tr><tr><td class='name'>Raffle Sign Ups - Teeccino Handwoven Bag Combo</td><td data-sort='82'>82</td></tr><tr><td class='name'>Level 2 Investor</td><td data-sort='75'>75</td></tr><tr><td class='name'>June 2024 - Level 2 Investor</td><td data-sort='38'>38</td></tr><tr><td class='name'>SMS Subscribers via Keywords</td><td data-sort='37'>37</td></tr><tr><td class='name'>Passed Ambassador Test</td><td data-sort='30'>30</td></tr><tr><td class='name'>Wefunder (2024) - Level 1</td><td data-sort='29'>29</td></tr></tbody></table></div>
+      <p class="note">64 lists shown with live counts. 95 segments tracked; segment sizes
+        are expensive/rate-limited on Klaviyo's API and fetched on a separate cadence (forward-only).</p>
+    </div>
+  </div>
+</div>
+
+<script>
+new Chart(document.getElementById('revChart'), {
+  type:'bar',
+  data:{ labels:["2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05"],
+    datasets:[
+      {label:'Email', data:[65876.64, 29346.41, 33049.0, 35533.35, 33390.23, 31160.09, 36306.33, 77763.97, 42812.04, 30077.6, 29080.77, 28444.58, 70357.1, 33455.5, 16713.27, 32197.6, 36815.8, 33396.39, 42082.85, 111833.12, 24627.59, 29312.09, 52511.03, 37461.97, 55775.74, 28268.79], backgroundColor:'#58a6ff'},
+      {label:'SMS', data:[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], backgroundColor:'#d2a8ff'}
+    ]},
+  options:{ responsive:true, scales:{ x:{stacked:true,ticks:{color:'#8b949e'},grid:{color:'#21262d'}},
+    y:{stacked:true,ticks:{color:'#8b949e',callback:v=>'$'+v.toLocaleString()},grid:{color:'#21262d'}} },
+    plugins:{legend:{labels:{color:'#e6edf3'}}} }
+});
+function makeSortable(id){
+  const t=document.getElementById(id); if(!t) return;
+  t.querySelectorAll('th').forEach((th,i)=>{ th.addEventListener('click',()=>{
+    const tb=t.tBodies[0]; const rows=[...tb.rows];
+    const asc=th.dataset.asc!=='1'; th.dataset.asc=asc?'1':'0';
+    rows.sort((a,b)=>{ const av=a.cells[i].dataset.sort??a.cells[i].textContent,
+      bv=b.cells[i].dataset.sort??b.cells[i].textContent;
+      const an=parseFloat(av),bn=parseFloat(bv);
+      const c=(!isNaN(an)&&!isNaN(bn))?an-bn:(''+av).localeCompare(''+bv);
+      return asc?c:-c; });
+    rows.forEach(r=>tb.appendChild(r));
+  });});
+}
+makeSortable('campTable'); makeSortable('listTable');
+</script>
+</body></html>
