@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="pageTitle">Project Dashboard — Teeccino</title>
-<link rel="stylesheet" href="provenance-banner.css">
 <style>
   :root {
     --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
@@ -170,9 +169,6 @@
   </div>
 </header>
 <div class="subtitle" id="subtitle">Loading...</div>
-
-<!-- Data provenance banner -->
-<div id="provenance-mount"></div>
 
 <!-- Stats -->
 <div class="stats-bar" id="statsBar"></div>
@@ -503,41 +499,5 @@ async function init() {
 
 init();
 </script>
-
-<!-- Provenance banner (data lineage) -->
-<script>
-window.PROVENANCE_CONFIG = {
-  pageTitle: "Promo Management",
-  owner: "Shopkeeper",
-  master: {
-    label: "Promo state (live)",
-    path: "Shopify Admin: Discounts + custom.discount / custom.first_subscription_discount variant metafields",
-    lastUpdated: null,
-    rowCount: null,
-    rowGrain: "promo"
-  },
-  sources: [
-    { name: "Shopify Admin API — discountAutomaticNodes", flow: "active/scheduled/expired discounts (live pull)" },
-    { name: "Shopify variant metafields",                 flow: "custom.discount + custom.first_subscription_discount (per-variant pct)" },
-    { name: "Shopify theme settings (live)",              flow: "campaign_sale_* badge settings (config/settings_data.json)" },
-    { name: "Promo Calendars 2026.xlsx",                  flow: "planned campaign windows (OneDrive: Marketing/Promo Calendars - Teeccino.com)" },
-    { name: "Shopkeeper outbox artifacts",                flow: "launch + teardown audit trail (clawd-shopkeeper/outbox/*.json)" }
-  ],
-  pipeline: [
-    "Justin's marketing calendar → Shopkeeper launch checklist",
-    "Shopkeeper Automations/promo_metafield_update.py + manage_discounts.py → Shopify",
-    "Shopify state → mission control + this page",
-    "Shopkeeper outbox → activity log"
-  ],
-  feedsInto: [
-    { target: "AdSmith campaign calendar",      role: "promo windows drive ad creative + budget pacing" },
-    { target: "DataOps promo_calendar.json",    role: "dated campaign history for MTD chart shading + discounts deep-dive" },
-    { target: "Justin's promo decisions",       role: "live state for mid-flight adjustments" },
-    { target: "ThemeSmith campaign sale badge", role: "Shopkeeper-owned theme settings flip per campaign" }
-  ]
-};
-</script>
-<script src="provenance-banner.js"></script>
-
 </body>
 </html>

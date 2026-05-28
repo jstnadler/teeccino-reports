@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Versatility Campaign — Teeccino</title>
-<link rel="stylesheet" href="provenance-banner.css">
 <style>
   :root {
     --bg: #1a1a2e; --card: rgba(255,255,255,0.05); --border: rgba(255,255,255,0.1);
@@ -119,9 +118,6 @@
   <h1 id="campaignTitle">Versatility Campaign</h1>
   <div id="headerMeta" class="subtitle"></div>
 </header>
-
-<div id="provenance-mount"></div>
-
 <div id="subtitle" class="subtitle">Loading…</div>
 
 <!-- Top stats -->
@@ -207,37 +203,6 @@
   <span id="updatedStamp" class="updated-stamp"></span>
 </div>
 
-<!-- Provenance banner (data lineage) -->
-<script>
-window.PROVENANCE_CONFIG = {
-  pageTitle: "Versatility Campaign",
-  owner: "AdSmith",
-  master: {
-    label: "Campaign state",
-    path: "C:\\Users\\JustinAdler\\clawd\\data\\projects\\campaign-versatility\\campaign-versatility-state.json + AdSmith campaign brief (markdown)",
-    lastUpdated: null,                            // updated post-fetch from campaign-versatility-state.json (d.updated)
-    rowCount: null,                               // updated post-fetch (milestone count)
-    rowGrain: "milestone"
-  },
-  sources: [
-    { name: "AdSmith campaign brief",  flow: "campaign plan, milestones, audience, budget, open questions" },
-    { name: "Meta Ads API",            flow: "live campaign spend / ROAS / purchases (when campaign is live)" },
-    { name: "Google Ads API",          flow: "live campaign spend / conversions (when campaign is live)" }
-  ],
-  pipeline: [
-    "AdSmith campaign-planning skill → campaign-versatility-state.json (master)",
-    "Meta + Google Ads APIs → cron → live-metrics merge into state.json",
-    "campaign-versatility-state.json → this page"
-  ],
-  feedsInto: [
-    { target: "Versatility Campaign dashboard (this page)", role: "rendered output" },
-    { target: "Justin's daily campaign review",             role: "decision input" },
-    { target: "Mission Control",                            role: "project status surface" }
-  ]
-};
-</script>
-<script src="provenance-banner.js"></script>
-
 <script>
 var DATA_URL = 'campaign-versatility-state.json';
 
@@ -299,15 +264,6 @@ function render(d) {
   renderLiveMetrics(d);
 
   document.getElementById('updatedStamp').textContent = 'Updated ' + new Date(d.updated).toLocaleString();
-
-  // Refresh provenance banner with live freshness + milestone count from the loaded state
-  if (window.ProvenanceBanner && typeof window.ProvenanceBanner.update === 'function') {
-    window.ProvenanceBanner.update({
-      lastUpdated: d.updated,
-      rowCount: (d.milestones || []).length,
-      rowGrain: 'milestone'
-    });
-  }
 }
 
 function renderStats(d) {
