@@ -188,6 +188,7 @@
     .pipeline-stage:last-child { border-radius: 0 0 10px 10px; }
   }
 </style>
+<link rel="stylesheet" href="provenance-banner.css">
 </head>
 <body>
 
@@ -210,6 +211,8 @@
   </div>
 </header>
 <div class="subtitle" id="lastUpdated">Loading...</div>
+
+<div id="provenance-mount"></div>
 
 <!-- Stats Bar -->
 <div class="stats-bar" id="statsBar"></div>
@@ -596,6 +599,19 @@ function render(data) {
   document.getElementById('lastUpdated').textContent =
     'Last updated: ' + updated.toLocaleString() + ' | Project: ' + (data.project || 'packaging-rollover');
 
+  // Refresh provenance banner freshness badge from loaded data
+  if (window.ProvenanceBanner && typeof window.ProvenanceBanner.update === 'function') {
+    var pvCount = (data.products && data.products.length)
+      || (data.skus && data.skus.length)
+      || (data.totals && data.totals.totalSkus)
+      || null;
+    window.ProvenanceBanner.update({
+      lastUpdated: data.lastUpdated,
+      rowCount: pvCount,
+      rowGrain: 'SKU'
+    });
+  }
+
   renderStats(data);
   renderPipeline(data);
   renderProgress(data);
@@ -618,5 +634,39 @@ async function init() {
 
 init();
 </script>
+
+<!-- Provenance banner (data lineage) -->
+<script>
+window.PROVENANCE_CONFIG = {
+  pageTitle: "Packaging Rollover",
+  owner: "AssetSmith",
+  master: {
+    label: "Rollover tracker",
+    path: "C:\\Users\\JustinAdler\\OneDrive - teeccino.com\\TC Teams - Documents\\Marketing and eCommerce\\Projects\\New Packaging.xlsx",
+    lastUpdated: null,                            // updated post-fetch from rollover-status.json
+    rowCount: null,                               // updated post-fetch
+    rowGrain: "SKU"
+  },
+  sources: [
+    { name: "New Packaging.xlsx tracker", flow: "rollover status + per-slot DONE flags + Canva folder links (\\OneDrive\\Marketing\\Projects\\New Packaging.xlsx)" },
+    { name: "Designer deliverables (Canva)", flow: "carousel renders exported via Canva MCP" },
+    { name: "New Packaging Carousel deposits", flow: "spec-named slot files (\\OneDrive\\Marketing\\Shopify\\New Packaging Carousel)" },
+    { name: "Shopify Admin API", flow: "live PDP verification (media + variant_image metafields)" }
+  ],
+  pipeline: [
+    "Canva → AssetSmith deposit (\\Shopify\\New Packaging Carousel)",
+    "AssetSmith → Shopify image push (variant_image_1..6 + variant.image_id + product.media)",
+    "AssetSmith → rollover-status.json",
+    "rollover-status.json → this page"
+  ],
+  feedsInto: [
+    { target: "Packaging Rollover dashboard (this page)", role: "rendered output" },
+    { target: "Mission Control rollover summary", role: "downstream status" },
+    { target: "Shopkeeper carousel ops", role: "render-order / promo coordination" },
+    { target: "AdSmith creative", role: "packaging photography source" }
+  ]
+};
+</script>
+<script src="provenance-banner.js"></script>
 </body>
 </html>
