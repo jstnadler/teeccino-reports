@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-28T11:12:04.276606-07:00",
+  "lastUpdated": "2026-05-28T11:12:06.999344-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -89,12 +89,16 @@
       "emoji": "palette",
       "role": "Shopify Theme Development",
       "workspace": "clawd-themesmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Inbox sweep (21 task(s))",
+        "source": "gateway-sweep",
+        "startedAt": "2026-05-28T11:12:06.694588-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Both fixes (cards display:block dfd9431, nav overflow 622de8b) deployed+verified live on PDP/preview. BLOCKED delivering to anonymous home + Shop All: Shopify full-page cache for those 2 pages won't invalidate by ANY lever (re-save, republish, throwaway asset, content-diff edit, Theme Editor save). Recurring multi-day stickiness — needs Shopify support purge or TTL.",
-        "at": "2026-05-27T19:45:00Z"
+        "summary": "Root-caused why cards STILL unclickable after the cache purge: Dawn base.css `a:empty,...{display:none}` was hiding the empty stretched-link (.shopall-card__link) created by the 5/22 refactor, collapsing the click overlay to 0x0. The stale cache had masked it. Fix: display:block on .shopall-card__link:empty (specificity 0,2,0 beats a:empty 0,1,1). Shipped to live (commit dfd9431).",
+        "at": "2026-05-27T19:35:00Z"
       },
       "recentActivity": [
         {
