@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-05-29T09:21:17.338768-07:00",
+  "lastUpdated": "2026-05-29T10:30:41.965668-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -171,8 +171,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Run daily analytics pipeline (through 2026-05-28)",
-        "at": "2026-05-29T13:15:00Z"
+        "summary": "Add variant_id to Shopify ingestion + raw_line_items schema",
+        "at": "2026-05-29T17:30:38Z"
       },
       "recentActivity": [
         {
@@ -206,6 +206,12 @@
           "status": "success"
         },
         {
+          "summary": "Added variant_id to raw_line_items + ingest_shopify.py so the rotating FOTM free-packet variant (and any monthly-renamed variant) is trackable by stable Shopify variant GID.",
+          "at": "2026-05-29T17:30:38Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Daily analytics pipeline ran successfully through 2026-05-28; all dashboards/matrices built and pushed. ShipStation still 401 (stale 24d, known cred issue).",
           "at": "2026-05-29T13:15:00Z",
           "source": "interactive",
@@ -226,12 +232,6 @@
         {
           "summary": "Added run_script(\"build_ad_performance.py\") to daily_run.py right after build_ad_spend_yoy.py — Ad Performance report will rebuild nightly alongside the other dashboards.",
           "at": "2026-05-28T00:10:00Z",
-          "source": "gateway-sweep",
-          "status": "success"
-        },
-        {
-          "summary": "Both Meta tables already built + backfilled per the earlier resume sweep — full target window 2024-04-01 -> present achieved (no phased fallback needed). Daily wire-in already in place via ingest_meta.py --api.",
-          "at": "2026-05-28T00:05:00Z",
           "source": "gateway-sweep",
           "status": "success"
         }
@@ -843,7 +843,7 @@
     },
     {
       "id": "klaviyo-dashboard",
-      "name": "Klaviyo Email & SMS Dashboard",
+      "name": "Klaviyo Email Dashboard",
       "status": "active",
       "priority": "high",
       "owner": "dataops",
@@ -854,7 +854,7 @@
       ],
       "category": "Data & KPI",
       "started": "2026-05-27",
-      "lastActivity": "2026-05-27T19:05:00Z",
+      "lastActivity": "2026-05-29T00:00:00Z",
       "description": "Stand up Klaviyo (email + SMS) as a first-class data source in DataOps' analytics pipeline. New ingest_klaviyo.py mirrors the ingest_ga4.py pattern (required=False, inline DDL, graceful no-creds exit, --date / backfill flags, INSERT OR REPLACE). New raw_klaviyo_* tables (campaigns, flows, flow_messages, lists) — no extension of existing tables. Wire into daily_run.py. Publish klaviyo.html on teeccino-reports with DUAL-ATTRIBUTION revenue (Klaviyo-reported vs DataOps' UTM-matched Shopify ledger), deliverability band, campaigns table, flows performance, list health (forward-only — Klaviyo doesn't backfill list sizes), engagement segments, send-time heatmap, subject-line winners. 13-month backfill paced over multiple days (225/day query_campaign_values cap is the binding constraint). Klaviyo MCP server (official, Anthropic-partnered) registered for ad-hoc agentic exploration. Unified MER waterfall across Klaviyo+Meta+Google deferred to a Phase-2 project. Architecture green-lit by DataOps consultation 2026-05-27 (outbox 2026-05-27T091700Z-klaviyo-ingest-architecture-consult.json).",
       "dashboardUrl": "https://jstnadler.github.io/teeccino-reports/klaviyo.html",
       "milestoneDone": 4,
@@ -1067,15 +1067,6 @@
       "status": "success",
       "dispatched": "2026-05-22T11:07:53.475759-07:00",
       "completed": "2026-05-22T18:15:00Z"
-    },
-    {
-      "id": "a484d151-ec78-4b96-b6a2-bd6694171743",
-      "from": "agentsmith",
-      "to": "dataops",
-      "summary": "Fix Google Ads ingestion staleness (18d stale) + extend raw_google_ads_campaigns backfill to 2024-04-01 to match Meta. Blocks AdSmith funnel YoY email to ECH.",
-      "status": "blocked",
-      "dispatched": "2026-05-22T10:21:44.755496-07:00",
-      "completed": "2026-05-22T10:40:00-07:00"
     }
   ],
   "humanActions": [
