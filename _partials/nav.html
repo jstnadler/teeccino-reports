@@ -132,12 +132,35 @@
        window.__hubNavBootstrapped = true;
        /* 0) SHARE MODE — ?share=1 produces a clean, externally-shareable view:
           hides the hub nav, hides the provenance banner, appends a small
-          'Shared by Teeccino' footer, and zeroes body padding-top. URL-only
-          (not sticky): if the recipient clicks an internal link without the
-          param, the nav reappears. To share a no-nav link, append ?share=1
-          (or &share=1 if the URL already has query params). */
+          'Shared by Teeccino' footer, and zeroes body padding-top.
+
+          SESSION-STICKY: the first time a tab sees ?share=1 we persist a flag in
+          sessionStorage and re-apply share mode on every subsequent page in that
+          tab — even when navigation happens via JS (e.g. the MTD month dropdown's
+          window.location.href, which would otherwise drop the query string and
+          bring the nav back). Stickiness is per-tab only: it does not leak to other
+          tabs, and a fresh visit with no flag behaves normally.
+            - Enable / share : append ?share=1 (or &share=1) to any URL.
+            - Disable / reset : append ?share=0 (or ?share=false) to turn it back off.
+          If sessionStorage is unavailable (blocked/private mode), we fall back to
+          the original URL-only behavior. */
        var __params = new URLSearchParams(window.location.search);
-       if (__params.get('share') === '1' || __params.get('share') === 'true') {
+       var __shareParam = __params.get('share');
+       var __shareOn = false;
+       try {
+         if (__shareParam === '0' || __shareParam === 'false') {
+           sessionStorage.removeItem('teeccino-share');
+         } else if (__shareParam === '1' || __shareParam === 'true') {
+           sessionStorage.setItem('teeccino-share', '1');
+           __shareOn = true;
+         } else if (sessionStorage.getItem('teeccino-share') === '1') {
+           __shareOn = true;
+         }
+       } catch (e) {
+         /* storage blocked — fall back to URL-only */
+         __shareOn = (__shareParam === '1' || __shareParam === 'true');
+       }
+       if (__shareOn) {
          var __s = document.createElement('style');
          __s.id = 'share-mode-style';
          __s.textContent =
