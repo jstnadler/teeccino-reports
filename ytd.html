@@ -85,73 +85,130 @@ body {
 }
 .chart-box h3 { color: #D4A843; font-size: 1em; margin-bottom: 12px; }
 
-/* ── Discount Breakdown section (added 2026-06-04) ───────────────────── */
-.disc-context { color: #aaa; font-size: 0.88em; margin-bottom: 18px; line-height: 1.4; }
-.disc-context strong { color: #fff; }
+/* ── Discount Breakdown section — scoped mirror of discounts.html ────── */
+/* All rules scoped under .dd-scope so they don't clobber YTD's existing  */
+/* .kpi-card / .kpi-grid / .chart-row used by the top of the page.        */
 
-.disc-summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 14px;
-    margin-bottom: 22px;
+.dd-scope .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin: 36px 0 16px 0; padding-bottom: 8px;
+    border-bottom: 2px solid rgba(212,168,67,0.2);
 }
-.disc-summary-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-left: 4px solid #888;
-    border-radius: 10px;
-    padding: 18px 20px;
+.dd-scope .section-header h2 {
+    font-size: 1.15em; font-weight: 700; color: #D4A843;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    border: none; padding: 0;
 }
-.disc-summary-card.visible { border-left-color: #5B9BD5; }
-.disc-summary-card.hidden  { border-left-color: #ED7D31; }
-.disc-summary-card.total   { border-left-color: #D4A843; }
-.disc-summary-card .label { color: #999; font-size: 0.82em; margin-bottom: 6px; }
-.disc-summary-card .value { font-size: 1.6em; font-weight: 700; }
-.disc-summary-card .yoy { font-size: 0.85em; margin-top: 4px; }
-.disc-summary-card .yoy.good { color: #4ade80; }
-.disc-summary-card .yoy.bad  { color: #f87171; }
-.disc-summary-card .detail { color: #888; font-size: 0.78em; margin-top: 6px; line-height: 1.4; }
 
-.disc-subhead {
-    color: #D4A843; font-size: 0.95em; margin: 6px 0 12px 0;
-    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
-}
-.disc-bucket-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 12px;
+.dd-scope .hero-card {
+    background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.04));
+    border: 1px solid rgba(212,168,67,0.35);
+    border-radius: 18px; padding: 28px 32px;
     margin-bottom: 24px;
 }
-.disc-bucket-card {
-    position: relative;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px;
-    padding: 14px 16px 14px 16px;
+.dd-scope .hero-label { color: #94a3b8; font-size: 0.9em; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 12px; }
+.dd-scope .hero-value { font-size: 3.2em; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 10px;
+    background: linear-gradient(135deg, #D4A843, #F5D784);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.disc-bucket-card .chip {
-    position: absolute; top: 10px; right: 10px;
-    font-size: 0.62em; padding: 2px 7px;
-    border-radius: 10px; font-weight: 600;
-    letter-spacing: 0.04em;
-}
-.disc-bucket-card .chip.hidden  { background: rgba(237,125,49,0.18); color: #ED7D31; border: 1px solid rgba(237,125,49,0.3); }
-.disc-bucket-card .chip.visible { background: rgba(91,155,213,0.18); color: #5B9BD5; border: 1px solid rgba(91,155,213,0.3); }
-.disc-bucket-card .label { color: #ccc; font-size: 0.82em; margin-bottom: 4px; padding-right: 80px; }
-.disc-bucket-card .value { font-size: 1.2em; font-weight: 700; color: #fff; }
-.disc-bucket-card .yoy { font-size: 0.78em; margin-top: 3px; }
-.disc-bucket-card .yoy.good { color: #4ade80; }
-.disc-bucket-card .yoy.bad  { color: #f87171; }
-.disc-bucket-card .detail { color: #888; font-size: 0.72em; margin-top: 4px; }
+.dd-scope .hero-sub { font-size: 1.05em; margin-top: 6px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dd-scope .hero-detail { color: #64748b; font-size: 0.86em; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); }
+.dd-scope .hero-mode-tag { display: none; }  /* Free items mode toggle disabled on YTD (defaults to COGS only) */
+.dd-scope .hero-mode-block[data-mode="cogs"] { display: block !important; }
+.dd-scope .hero-mode-block[data-mode="excluded"],
+.dd-scope .hero-mode-block[data-mode="msrp"] { display: none !important; }
 
-.disc-footnote {
-    color: #888; font-size: 0.78em; font-style: italic;
-    margin-top: 16px; padding: 10px 14px;
-    background: rgba(255,255,255,0.02); border-radius: 8px;
-    border-left: 3px solid rgba(255,255,255,0.15);
-    line-height: 1.5;
+.dd-scope .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-bottom: 8px;
 }
-.disc-footnote strong { color: #ccc; font-style: normal; }
+.dd-scope .kpi-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 20px 22px;
+    transition: all 0.25s ease;
+}
+.dd-scope .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.dd-scope .card-label { color: #94a3b8; font-size: 0.82em; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.3px; }
+.dd-scope .card-value { font-size: 1.85em; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: #fff; }
+.dd-scope .card-yoy { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+.dd-scope .yoy-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 0.78em; font-weight: 600;
+}
+.dd-scope .yoy-badge.good { color: #4ade80; background: rgba(74,222,128,0.1); }
+.dd-scope .yoy-badge.bad { color: #f87171; background: rgba(248,113,113,0.1); }
+.dd-scope .yoy-badge.neutral { color: #94a3b8; background: rgba(148,163,184,0.08); }
+.dd-scope .card-detail { color: #94a3b8; font-size: 0.82em; margin-top: 8px; }
+.dd-scope .card-definition { color: #64748b; font-size: 0.75em; margin-top: 10px; line-height: 1.5; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+.dd-scope .promo-hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; margin-top: 4px; }
+.dd-scope .promo-block { background: rgba(15,23,42,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px 20px; }
+.dd-scope .promo-block-primary { border-color: rgba(212,168,67,0.3); background: rgba(212,168,67,0.05); }
+.dd-scope .promo-block-secondary { border-color: rgba(167,139,250,0.28); background: rgba(167,139,250,0.05); }
+.dd-scope .promo-block-label { color: #cbd5e1; font-size: 0.85em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dd-scope .promo-block-tag { font-size: 0.78em; font-weight: 600; text-transform: none; letter-spacing: 0; padding: 2px 8px; border-radius: 6px; background: rgba(212,168,67,0.16); color: #fde68a; }
+.dd-scope .promo-block-tag.structural { background: rgba(167,139,250,0.16); color: #c4b5fd; }
+.dd-scope .promo-hero .hero-value { font-size: 2.5em; margin-bottom: 8px; }
+.dd-scope .promo-comp-list { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 7px; }
+.dd-scope .promo-comp-row { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: 10px; }
+.dd-scope .promo-comp-dot { width: 9px; height: 9px; border-radius: 50%; }
+.dd-scope .promo-comp-label { color: #cbd5e1; font-size: 0.84em; }
+.dd-scope .promo-comp-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.dd-scope .promo-comp-pct { color: #94a3b8; font-size: 0.8em; font-variant-numeric: tabular-nums; text-align: right; min-width: 34px; }
+.dd-scope .promo-block-note { color: #94a3b8; font-size: 0.8em; line-height: 1.55; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); }
+
+.dd-scope .recon-note {
+    background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.28);
+    border-radius: 14px; padding: 20px 24px; margin-bottom: 24px;
+}
+.dd-scope .recon-title {
+    color: #93c5fd; font-size: 0.95em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px;
+}
+.dd-scope .recon-intro { color: #cbd5e1; font-size: 0.9em; line-height: 1.6; margin-bottom: 16px; }
+.dd-scope .recon-intro code, .dd-scope .recon-foot-note code, .dd-scope .recon-hint code {
+    background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px;
+    color: #93c5fd; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.92em;
+}
+.dd-scope .recon-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+.dd-scope .recon-table td {
+    padding: 9px 4px; font-size: 0.9em; color: #cbd5e1;
+    border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top;
+}
+.dd-scope .recon-table .recon-num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.dd-scope .recon-table .recon-sub { color: #f87171; }
+.dd-scope .recon-table .recon-add { color: #4ade80; }
+.dd-scope .recon-table .recon-head td { color: #fff; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.dd-scope .recon-table .recon-foot td { color: #93c5fd; font-weight: 700; border-top: 2px solid rgba(59,130,246,0.4); border-bottom: none; padding-top: 12px; }
+.dd-scope .recon-hint { color: #64748b; font-size: 0.85em; font-weight: 400; display: block; margin-top: 2px; }
+.dd-scope .recon-foot-note { color: #94a3b8; font-size: 0.84em; line-height: 1.55; margin: 0; }
+
+.dd-scope .ship-split-panel {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 22px 24px; margin-bottom: 24px;
+}
+.dd-scope .ship-split-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.dd-scope .ship-split-total { font-size: 1.7em; font-weight: 800; color: #10B981; letter-spacing: -0.5px; }
+.dd-scope .ship-split-total-label { color: #94a3b8; font-size: 0.88em; }
+.dd-scope .ship-split-body { display: flex; flex-direction: column; gap: 12px; }
+.dd-scope .ship-split-row { display: grid; grid-template-columns: 14px minmax(180px, 1.4fr) 2fr auto auto; align-items: center; gap: 12px; }
+.dd-scope .ship-split-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dd-scope .ship-split-label { color: #e2e8f0; font-size: 0.9em; font-weight: 600; }
+.dd-scope .ship-split-hint { color: #64748b; font-size: 0.82em; font-weight: 400; display: block; }
+.dd-scope .ship-split-bar-track { background: rgba(255,255,255,0.06); border-radius: 6px; height: 10px; overflow: hidden; }
+.dd-scope .ship-split-bar { display: block; height: 100%; border-radius: 6px; min-width: 2px; transition: width 0.3s; }
+.dd-scope .ship-split-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; min-width: 70px; }
+.dd-scope .ship-split-pct { color: #94a3b8; font-size: 0.85em; font-variant-numeric: tabular-nums; text-align: right; min-width: 38px; }
+.dd-scope .ship-split-note { color: #64748b; font-size: 0.82em; line-height: 1.55; margin: 16px 0 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+@media (max-width: 900px) {
+    .dd-scope .kpi-grid { grid-template-columns: 1fr; }
+    .dd-scope .promo-hero-grid { grid-template-columns: 1fr; }
+    .dd-scope .hero-value { font-size: 2.4em; }
+}
 
 table {
     width: 100%; border-collapse: collapse; font-size: 14px;
@@ -196,7 +253,7 @@ td { color: #ccc; }
 <div class="header">
     <h1>📅 2026 — YTD KPI Dashboard</h1>
     <div class="sub">Through 2026-06-03 (154 days) &bull; DTC Only &bull; YoY vs 2025</div>
-    <div class="updated">Updated June 04, 2026 at 12:30 PM</div>
+    <div class="updated">Updated June 04, 2026 at 12:48 PM</div>
 </div>
 
 
@@ -327,80 +384,206 @@ td { color: #ccc; }
 </div>
 
 
-<div class="section">
-    <h2>💸 Discount Breakdown &mdash; 2026</h2>
-    <div class="disc-context">
-        Six discount buckets, grouped by what the CFO P&amp;L's <strong>Sales Discounts (49000)</strong>
-        line shows vs. what's baked into the revenue line. Use this to see whether YoY discount changes are real
-        economic give-away or methodology shifts between buckets.
+<div class="dd-scope">
+    <div class="section-header"><h2>💸 Discount Breakdown &mdash; YTD 2026</h2></div>
+
+    
+    <div class="hero-card promo-hero">
+        <div class="hero-label">
+            Discount Breakdown — YTD 2026<span style="color:#94a3b8;font-size:0.78em;"> (through 2026-06-04)</span>
+            <span class="hero-mode-tag">
+                <span data-mode="excluded" style="display:none;">Free items excluded</span>
+                <span data-mode="msrp" style="display:none;">Free items at MSRP</span>
+                <span data-mode="cogs">Free items at COGS</span>
+            </span>
+        </div>
+        <div class="promo-hero-grid">
+            <div class="promo-block promo-block-primary">
+                <div class="promo-block-label">Promotional Cost <span class="promo-block-tag">marketing-driven</span></div>
+                <div class="hero-mode-block" data-mode="excluded" style="display:none;">
+            <div class="hero-value">$137,036</div>
+            <div class="hero-sub">
+                <span style="font-size:1.2em;color:#D4A843;font-weight:700;">12.3%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:6px;">+3.3 pp</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$94,149</span>
+                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 45.6% vs LY</span>
+            </div>
+        </div><div class="hero-mode-block" data-mode="msrp" style="display:none;">
+            <div class="hero-value">$186,168</div>
+            <div class="hero-sub">
+                <span style="font-size:1.2em;color:#D4A843;font-weight:700;">16.7%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge good" style="margin-left:6px;">-1.1 pp</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$185,332</span>
+                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 0.5% vs LY</span>
+            </div>
+        </div><div class="hero-mode-block" data-mode="cogs" style="display:block;">
+            <div class="hero-value">$152,407</div>
+            <div class="hero-sub">
+                <span style="font-size:1.2em;color:#D4A843;font-weight:700;">13.7%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:6px;">+2.6 pp</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$115,572</span>
+                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 31.9% vs LY</span>
+            </div>
+        </div>
+                <div class="promo-comp-list"><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#EF4444;"></span><span class="promo-comp-label">Automatic discounts</span><span class="promo-comp-val" data-static-val="81351.33">$81,351</span><span class="promo-comp-pct" data-static-share="1">53%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#F97316;"></span><span class="promo-comp-label">Discount codes</span><span class="promo-comp-val" data-static-val="12156.91">$12,157</span><span class="promo-comp-pct" data-static-share="1">8%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#F59E0B;"></span><span class="promo-comp-label">Manual discounts</span><span class="promo-comp-val" data-static-val="4601.700000000001">$4,602</span><span class="promo-comp-pct" data-static-share="1">3%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#EAB308;"></span><span class="promo-comp-label">Price reduction discounts</span><span class="promo-comp-val" data-static-val="1237.28">$1,237</span><span class="promo-comp-pct" data-static-share="1">1%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#10B981;"></span><span class="promo-comp-label">Free Shipping promos</span><span class="promo-comp-val" data-static-val="33193.9">$33,194</span><span class="promo-comp-pct" data-static-share="1">22%</span></div><div class="promo-comp-row" id="freeGiftsCompRow"><span class="promo-comp-dot" style="background:#EC4899;"></span><span class="promo-comp-label" id="freeGiftsCompLabel">Free Gifts (at COGS)</span><span class="promo-comp-val"><span data-mode="excluded" style="display:none;">$0</span><span data-mode="msrp" style="display:none;">$49,132</span><span data-mode="cogs">$15,371</span></span><span class="promo-comp-pct" data-free-share="1"><span data-mode="excluded" style="display:none;">0%</span><span data-mode="msrp" style="display:none;">26%</span><span data-mode="cogs">10%</span></span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#06B6D4;"></span><span class="promo-comp-label">First-time subscription (acquisition)</span><span class="promo-comp-val" data-static-val="4495.0599999999995">$4,495</span><span class="promo-comp-pct" data-static-share="1">3%</span></div></div>
+            </div>
+            <div class="promo-block promo-block-secondary">
+                <div class="promo-block-label">Recurring Subscription Discount <span class="promo-block-tag structural">structural</span></div>
+                <div class="hero-value" style="background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">$54,961</div>
+                <div class="hero-sub">
+                    <span style="font-size:1.2em;color:#a78bfa;font-weight:700;">4.9%</span>
+                    <span style="color:#94a3b8;">of gross</span>
+                    <span class="yoy-badge bad" style="margin-left:6px;">+0.2 pp</span>
+                </div>
+                <div class="hero-sub">
+                    <span style="color:#94a3b8;">vs LY:</span>
+                    <span>$49,450</span>
+                    <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 11.1% vs LY</span>
+                </div>
+                <div class="promo-block-note">
+                    Implied discount on <strong>repeat</strong> subscriber orders — structural pricing for
+                    existing subscribers, not a marketing promotion. Kept out of Promotional Cost so the
+                    promo number reflects only the levers you actively pull to drive sales.
+                </div>
+            </div>
+        </div>
+        <div class="hero-detail">
+            Gross: $1,112,359 &nbsp;|&nbsp; Orders: 20,372 &nbsp;|&nbsp;
+            Combined (Promotional + Recurring Sub):
+            <span data-mode="excluded" style="display:none;">$191,997</span>
+            <span data-mode="msrp" style="display:none;">$241,130</span>
+            <span data-mode="cogs">$207,368</span>
+            &nbsp;|&nbsp; Free items: $15,371 COGS / $49,132 MSRP
+        </div>
     </div>
 
-    <div class="disc-summary-grid">
-        <div class="disc-summary-card visible">
-            <div class="label">What CFO Sees (49000)</div>
-            <div class="value">$131,304</div>
-            <div class="yoy bad">↑ 298.4% YoY</div>
-            <div class="detail">Auto + Code + Manual + Shipping &bull; LY: $32,958</div>
-        </div>
-        <div class="disc-summary-card hidden">
-            <div class="label">CFO-HIDDEN</div>
-            <div class="value">$60,693</div>
-            <div class="yoy good">↓ 45.1% YoY</div>
-            <div class="detail">Subscription + Price-reductions (baked into revenue line) &bull; LY: $110,641</div>
-        </div>
-        <div class="disc-summary-card total">
-            <div class="label">Total Real Give-Away</div>
-            <div class="value">$191,997</div>
-            <div class="yoy bad">↑ 33.7% YoY</div>
-            <div class="detail">17.3% of gross &bull; LY: $143,599</div>
-        </div>
-    </div>
-
-    <h3 class="disc-subhead">Each bucket</h3>
-    <div class="disc-bucket-grid">
+    <div class="section-header"><h2>By Discount Type</h2></div>
+    <div class="kpi-grid">
         
-        <div class="disc-bucket-card">
-            <span class="chip hidden">Hidden from CFO 49000</span>
-            <div class="label">Subscription discounts</div>
-            <div class="value">$59,456</div>
-            <div class="yoy bad">↑ 7.5% YoY</div>
-            <div class="detail">Implied: (MSRP − sub price) × qty &bull; LY: $55,312</div>
+    <div class="kpi-card" style="border-top: 3px solid #EF4444;">
+        <div class="card-label">Automatic Discounts</div>
+        <div class="card-value">$81,351</div>
+        <div class="card-yoy"><span class="yoy-badge neutral">-- vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+7.3 pp</span></div>
+        <div class="card-detail">7.3% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$0</span><span style="color:#64748b;"> (0.0% of gross)</span></div>
+        <div class="card-definition">Shopify automatic discounts — FOTM auto-promos, sitewide sales, app-sourced discount functions (no code needed).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #F97316;">
+        <div class="card-label">Discount Codes</div>
+        <div class="card-value">$12,157</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 54.0% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-1.4 pp</span></div>
+        <div class="card-detail">1.1% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$26,436</span><span style="color:#64748b;"> (2.5% of gross)</span></div>
+        <div class="card-definition">Checkout discount codes — email/SMS promos, influencer codes, win-back codes.</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #F59E0B;">
+        <div class="card-label">Manual Discounts</div>
+        <div class="card-value">$4,602</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 54.5% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+0.1 pp</span></div>
+        <div class="card-detail">0.4% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$2,979</span><span style="color:#64748b;"> (0.3% of gross)</span></div>
+        <div class="card-definition">Staff-applied manual discounts / adjustments (customer service, one-off corrections).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #EAB308;">
+        <div class="card-label">Price Reduction Discounts</div>
+        <div class="card-value">$1,237</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 97.8% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-5.2 pp</span></div>
+        <div class="card-detail">0.1% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$55,330</span><span style="color:#64748b;"> (5.3% of gross)</span></div>
+        <div class="card-definition">Items listed BELOW MSRP — temporary product-level price cuts / sales (e.g. Earth Day spring sale). Shopify doesn't tag these as discount allocations because the customer just sees the lower price; computed per line as MSRP − unit_price on non-subscription items.</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #10B981;">
+        <div class="card-label">Free Shipping Promo</div>
+        <div class="card-value">$33,194</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 836.9% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+2.6 pp</span></div>
+        <div class="card-detail">3.0% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$3,543</span><span style="color:#64748b;"> (0.3% of gross)</span></div>
+        <div class="card-definition">Free-shipping waives — threshold-based free ship, free-ship promo codes, and app-sourced free-ship functions. The shipping lever.</div>
+        
+    </div>
+    <div class="kpi-card free-gifts-card" style="border-top: 3px solid #EC4899;">
+        <div class="card-label"><span data-mode="excluded" style="display:none;">Free Gifts (excluded)</span><span data-mode="msrp" style="display:none;">Free Gifts (at MSRP)</span><span data-mode="cogs">Free Gifts (at COGS)</span></div>
+        <div class="card-value"><span data-mode="excluded" style="display:none;">$0</span><span data-mode="msrp" style="display:none;">$49,132</span><span data-mode="cogs">$15,371</span></div>
+        <div class="card-yoy"><span data-mode="excluded" style="display:none;"><span class="yoy-badge neutral">-- vs LY</span><span class="yoy-badge neutral" style="margin-left:6px;">0.0 pp</span></span><span data-mode="msrp" style="display:none;"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 46.1% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-4.3 pp</span></span><span data-mode="cogs"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 28.3% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-0.7 pp</span></span></div>
+        <div class="card-detail"><span data-mode="excluded" style="display:none;">0.0%</span><span data-mode="msrp" style="display:none;">4.4%</span><span data-mode="cogs">1.4%</span> of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;"><span data-mode="excluded" style="display:none;">$0</span><span data-mode="msrp" style="display:none;">$91,183</span><span data-mode="cogs">$21,423</span></span><span style="color:#64748b;"><span data-mode="excluded" style="display:none;"> (0.0% of gross)</span><span data-mode="msrp" style="display:none;"> (8.8% of gross)</span><span data-mode="cogs"> (2.1% of gross)</span></span></div>
+        <div class="card-definition">Items given away (BOGO, FOTM samples, GWP) valued at our actual cost (COGS), not retail — what free gifts truly cost us.</div>
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #06B6D4;">
+        <div class="card-label">First-time Subscription</div>
+        <div class="card-value">$4,495</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 23.3% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-0.2 pp</span></div>
+        <div class="card-detail">0.4% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$5,862</span><span style="color:#64748b;"> (0.6% of gross)</span></div>
+        <div class="card-definition">Implied discount on first-time subscriber orders — the welcome / acquisition offer. MSRP − unit_price on first-sub line items.</div>
+        
+    </div>
+    </div>
+
+    
+    <div class="ship-split-panel">
+        <div class="ship-split-head">
+            <span class="ship-split-total">$33,194</span>
+            <span class="ship-split-total-label">free shipping given · YTD 2026</span>
         </div>
-        <div class="disc-bucket-card">
-            <span class="chip hidden">Hidden from CFO 49000</span>
-            <div class="label">Price reductions</div>
-            <div class="value">$1,237</div>
-            <div class="yoy good">↓ 97.8% YoY</div>
-            <div class="detail">Implied: temporary list-price drops &bull; LY: $55,330</div>
-        </div>
-        <div class="disc-bucket-card">
-            <span class="chip visible">Visible on CFO 49000</span>
-            <div class="label">Automatic discounts</div>
-            <div class="value">$81,351</div>
-            <div class="yoy "> YoY</div>
-            <div class="detail">Shopify automatic (BOGO, % off) &bull; LY: $0</div>
-        </div>
-        <div class="disc-bucket-card">
-            <span class="chip visible">Visible on CFO 49000</span>
-            <div class="label">Code discounts</div>
-            <div class="value">$12,157</div>
-            <div class="yoy good">↓ 54.0% YoY</div>
-            <div class="detail">Discount codes at checkout &bull; LY: $26,436</div>
-        </div>
-        <div class="disc-bucket-card">
-            <span class="chip visible">Visible on CFO 49000</span>
-            <div class="label">Manual discounts</div>
-            <div class="value">$4,602</div>
-            <div class="yoy bad">↑ 54.5% YoY</div>
-            <div class="detail">Staff-applied &bull; LY: $2,979</div>
-        </div>
-        <div class="disc-bucket-card">
-            <span class="chip visible">Visible on CFO 49000</span>
-            <div class="label">Shipping discounts</div>
-            <div class="value">$33,194</div>
-            <div class="yoy bad">↑ 836.9% YoY</div>
-            <div class="detail">Free-ship promos, UpCart Rewards &bull; LY: $3,543</div>
-        </div>
+        <div class="ship-split-body"><div class="ship-split-row"><span class="ship-split-dot" style="background:#8B5CF6;"></span><span class="ship-split-label">Recurring subscription<span class="ship-split-hint">renewal orders</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:6%;background:#8B5CF6;"></span></span><span class="ship-split-val">$1,880</span><span class="ship-split-pct">6%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#06B6D4;"></span><span class="ship-split-label">First-time subscription<span class="ship-split-hint">initial sub order</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:7%;background:#06B6D4;"></span></span><span class="ship-split-val">$2,369</span><span class="ship-split-pct">7%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#10B981;"></span><span class="ship-split-label">One-time / non-subscription<span class="ship-split-hint">non-sub orders</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:87%;background:#10B981;"></span></span><span class="ship-split-val">$28,940</span><span class="ship-split-pct">87%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#64748b;"></span><span class="ship-split-label">Unattributed<span class="ship-split-hint">pre-2025 residual, no per-order allocation rows</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:0%;background:#64748b;"></span></span><span class="ship-split-val">$5</span><span class="ship-split-pct">0%</span></div></div>
+        <p class="ship-split-note">
+            Split is by the <strong>order's subscription flag</strong>, not the discount title — Stay.ai
+            doesn't reliably tag subscription free-ship as its own discount, so title-based tracking would
+            miss it. Exact for months from ~Jun&nbsp;2025 onward (older shipping waivers have no per-order
+            allocation rows and show as <em>Unattributed</em>).
+        </p>
+    </div>
+
+    
+    <div class="recon-note">
+        <div class="recon-title">How this reconciles to the top KPI card</div>
+        <p class="recon-intro">
+            This page frames discount cost as <strong>Promotional Cost + Recurring Subscription</strong>
+            (free gifts valued at COGS). The top-of-page <em>DTC Discounts</em> card uses
+            <code>dtc_discounts</code> = True&nbsp;Gross&nbsp;&minus;&nbsp;Subtotal — a clean order-level
+            residual that is <strong>line-item only</strong> (no shipping, no free items) and can't
+            double-count. Both are correct; they measure different scopes. Here's the bridge for
+            YTD 2026:
+        </p>
+        <table class="recon-table">
+            <tr class="recon-head">
+                <td>Promotional Cost + Recurring Subscription (this page)</td>
+                <td class="recon-num">$207,368</td>
+            </tr>
+            <tr><td>Less: Free Shipping promos <span class="recon-hint">(sit below Subtotal, not in Gross&minus;Subtotal)</span></td>
+                <td class="recon-num recon-sub">&minus;$33,194</td></tr>
+            <tr><td>Less: Free Gifts at COGS <span class="recon-hint">(items given away, not a price discount)</span></td>
+                <td class="recon-num recon-sub">&minus;$15,371</td></tr>
+            <tr><td>Line-item discounts only (promotions + all subscription implied)</td>
+                <td class="recon-num">$158,803</td></tr>
+            <tr><td>Less: category overlap <span class="recon-hint">(same dollars booked twice — e.g. a Stay.ai subscription discount also tagged as a Shopify automatic discount)</span></td><td class="recon-num recon-sub">&minus;$2,042</td></tr>
+            <tr class="recon-foot">
+                <td>Top-of-page — DTC Discounts <span class="recon-hint">(<code>dtc_discounts</code>)</span></td>
+                <td class="recon-num">$156,761</td></tr>
+        </table>
+        <p class="recon-foot-note">
+            Rule of thumb: this page is the <strong>true-cost</strong> view — it counts the free-shipping
+            lever and values free gifts at what they actually cost us. The MTD card is the
+            <strong>clean line-item residual</strong>. The gap between them is shipping, free gifts, and
+            a small Stay.ai double-count.
+        </p>
     </div>
 
     <div class="chart-row" style="grid-template-columns:1fr;">
@@ -409,8 +592,6 @@ td { color: #ccc; }
             <canvas id="discMonthlyChart" height="160"></canvas>
         </div>
     </div>
-
-    <div class="disc-footnote"><strong>Reconciliation:</strong> Sum of all 6 buckets ($191,997) exceeds the canonical DTC Discounts KPI ($156,761) by $35,236. This is the Stay.ai overlap — subscription discounts applied as Shopify automatic discounts get counted in both buckets. The canonical KPI is the net economic give-away; the buckets show composition.</div>
 </div>
 
 
