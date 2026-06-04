@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-04T10:44:24.556423-07:00",
+  "lastUpdated": "2026-06-04T10:46:22.989206-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -11,16 +11,12 @@
       "emoji": "cart",
       "role": "Shopify Operations",
       "workspace": "clawd-shopkeeper",
-      "status": "working",
-      "currentTask": {
-        "summary": "Fix fotm_changeover.py SKU-lookup bug missing A&P Tea (45071)",
-        "source": "interactive",
-        "startedAt": "2026-06-04T17:35:00Z"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Done. Bundle 90014 task complete.\n\n**Result:**\n- **Status = DRAFT** ✅ — but no mutation was needed. On query the product was *already* DRAFT (`updatedAt 2026-06-03T16:16:15Z`, ~2 min before this task ",
-        "at": "2026-06-03T09:22:50.587723-07:00"
+        "summary": "Fixed fotm_changeover.py SKU-lookup bug. Added Shopify GraphQL fallback with safety guards when master CSV is stale. June dry-run now finds 4 products (was 3 — A&P Tea recovered). July + April dry-runs pass without regression. Bonus: fallback WARNs surfaced ~7 phantom calendar SKUs likely missing 'L' suffixes (separate hygiene followup). SKILL.md + memory updated.",
+        "at": "2026-06-04T17:50:00Z"
       },
       "recentActivity": [
         {
@@ -39,6 +35,12 @@
           "summary": "Applied carousel_order + Free Shipping tag to bundle 90014 (9841595941112); status unchanged (DRAFT).",
           "at": "2026-06-04T17:06:00Z",
           "source": "agentsmith",
+          "status": "success"
+        },
+        {
+          "summary": "Fixed fotm_changeover.py SKU-lookup bug. Root cause: master CSV is stale and doesn't include A&P Mushroom Herbal Tea (product 9048330469624, SKUs 45071 + 45070L), so script's CSV-first lookup silently dropped it twice (June 1 changeover + June 4 teardown). Fix: added Shopify GraphQL fallback path with safety guards (status=ACTIVE, webproduct=true, not protected, no TARGET/hidden). Verified across June/July/April dry-runs — June now finds 4 products instead of 3.",
+          "at": "2026-06-04T17:50:00Z",
+          "source": "interactive",
           "status": "success"
         },
         {
@@ -74,12 +76,6 @@
         {
           "summary": "Completed third + fourth FOTM surfaces for June (A&P): swapped SHOP-dropdown featured card fallback from Java -> Miraculous Mushrooms® A&P Herbal Coffee, AND cleared stale Mother's Day featured-slot entry on live theme. Verified ATC upsell already auto-rotated — no action needed there.",
           "at": "2026-06-01T17:15:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Executed June FOTM changeover early (per Justin). Java -> Adapt & Protect (4 products tagged FOTM, all variants at disc=20/fsd=10); Free Packet swapped May A&P -> June DMM (mutate-in-place on fixed pair); campaign-sale-badge dates bumped to June 30. PDP badges live on both A&P Coffee and A&P Tea, showing 'Flavor of the Month: 20% Off · Ends June 30 at midnight' in burgundy.",
-          "at": "2026-05-28T22:00:00Z",
           "source": "interactive",
           "status": "success"
         }
