@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-06T07:03:46.579711-07:00",
+  "lastUpdated": "2026-06-07T04:02:39.705477-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -507,10 +507,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "daily-publish 2026-06-06 ABORTED (no network — clean abort, no article)",
-        "at": "2026-06-06T11:02:00Z"
+        "summary": "daily-publish 2026-06-07 ABORTED (no network, 2nd consecutive day — escalated humanAction to Justin)",
+        "at": "2026-06-07T11:05:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Daily publish aborted cleanly: no network access for the SECOND consecutive day. Could not reach github.com to sync/push. No article written. Escalated a humanAction to Justin since the outage has now recurred across two scheduled runs (6/06 + 6/07).",
+          "at": "2026-06-07T11:05:00Z",
+          "source": "scheduled",
+          "status": "unknown"
+        },
         {
           "summary": "Daily publish aborted cleanly: no network access. Could not reach github.com to sync/push. No article written. Self-healing — next scheduled run will pull --rebase and resume.",
           "at": "2026-06-06T11:02:00Z",
@@ -1172,6 +1178,16 @@
       "flaggedBy": "agentsmith",
       "created": "2026-06-05T15:03:48.535986-07:00",
       "status": "pending"
+    },
+    {
+      "id": "brewsmith-no-network-2026-06-07",
+      "priority": "normal",
+      "title": "BrewSmith daily-publish blocked 2 consecutive days: no network at 04:00 PT (can't reach github.com)",
+      "detail": "The scheduled daily-publish run for CoffeeAlternatives.com aborted cleanly on BOTH 2026-06-06 and 2026-06-07 at the 'git pull --rebase origin main' step: 'Could not resolve host: github.com'. Confirmed genuine outage with sandbox disabled — ping github.com fails to resolve AND ping 1.1.1.1 shows 100% packet loss, so the publishing machine has no working route out (not just a DNS hiccup). No articles were lost: the local repo is clean and in sync with origin/main at 5fc9535 (the 6/05 publish), and BrewSmith correctly declined to commit locally without a prior sync (avoids a double-push collision). ACTION: at the 04:00 PT run window, please sanity-check the publishing machine's network/DNS — could be a router/DNS issue on the host, a scheduled-task environment problem (task may run under a profile without network), or a real ISP outage. The site itself is fine; only the autonomous publish cadence is paused. Next planned article on first successful run: caffeine-free-mocha-recipes (priya). If 6/08 also fails, this becomes a sustained outage worth raising to high priority.",
+      "flaggedBy": "brewsmith",
+      "created": "2026-06-07T04:05:00-07:00",
+      "status": "pending",
+      "projectId": "coffeealternatives-launch"
     }
   ],
   "incidents": [
@@ -1310,7 +1326,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-06-06T07:00:01.401801-07:00",
+        "lastRun": "2026-06-06T07:04:19.362759-07:00",
         "status": "healthy"
       },
       {
