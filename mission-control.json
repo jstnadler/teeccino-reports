@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-08T14:06:55.902652-07:00",
+  "lastUpdated": "2026-06-08T14:47:09.148560-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -158,7 +158,7 @@
           "status": "partial"
         }
       ],
-      "pendingTasks": 6,
+      "pendingTasks": 7,
       "health": "healthy"
     },
     {
@@ -167,12 +167,16 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Spin up conversion-by-source attribution project + dispatch ThemeSmith",
+        "source": "interactive",
+        "startedAt": "2026-06-08T21:30:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Added live Acquisition Headroom model tab to CEO Monthly Summary.xlsx",
-        "at": "2026-06-08T21:05:00Z"
+        "summary": "Done. Task complete.\n\n## Diagnosis: ✅ CONFIRMED real volume drop — mid-funnel storefront break\n\n**It's not a tracking artifact.** Shopify's `web` checkout channel — the exact funnel that fires Initiat",
+        "at": "2026-06-04T12:49:25.623645-07:00"
       },
       "recentActivity": [
         {
@@ -717,6 +721,26 @@
       "tasksPending": 4
     },
     {
+      "id": "conversion-by-source",
+      "name": "Conversion-by-Source Attribution (ATC → Purchase)",
+      "status": "planning",
+      "priority": "high",
+      "owner": "dataops",
+      "contributors": [
+        "themesmith",
+        "Justin"
+      ],
+      "category": "Data & KPI",
+      "started": "2026-06-08",
+      "lastActivity": "2026-06-08T21:30:00Z",
+      "description": "Extend the ATC-source attribution (live 2026-06-08, ThemeSmith atc-tracking.js -> GA4 -> DataOps raw_ga4_atc -> atc-source.html) from a top-of-funnel 'where do adds originate' view into a full-funnel 'which source converts' view. Today the atc_source signal rides only on the add_to_cart event, so we can see adds by source (pdp / collection-quickadd / upcart-upsell / cart / collection / other) but NOT which source actually drives purchases, revenue, or contribution margin. RECOMMENDED PATH (B): ThemeSmith stamps the source as a Shopify cart line-item property (_atc_source) at add-to-cart time; it persists through checkout natively and lands on the order line item; DataOps extends ingest_shopify.py to pull line-item customAttributes into raw_line_items as a first-class column; conversion-by-source becomes a clean SQL join against units sold / revenue / True Gross / margin that the pipeline already computes. This lands the source signal where the money is and joins to existing profit metrics, unlike the GA4-native alternative (Path A: item_list_name through to purchase) which is lossy and siloed in GA4 with no margin join. Live-cart instrumentation requires Justin sign-off before shipping.",
+      "dashboardUrl": null,
+      "milestoneDone": 0,
+      "milestoneTotal": 6,
+      "tasksDone": 0,
+      "tasksPending": 0
+    },
+    {
       "id": "cost-tracking",
       "name": "Cost Tracking & Profit Waterfall",
       "status": "complete",
@@ -957,6 +981,15 @@
     }
   ],
   "recentDispatches": [
+    {
+      "id": "74a0c288-6cfd-4e3c-8a09-7b1189b59a6a",
+      "from": "agentsmith",
+      "to": "themesmith",
+      "summary": "Scope conversion-by-source: can _atc_source ride as a cart line-item property through to the order?",
+      "status": "pending",
+      "dispatched": "2026-06-08T14:47:08.713652-07:00",
+      "completed": null
+    },
     {
       "id": "a19d2c62-0b13-4a56-894c-de8b5cc72c62",
       "from": "agentsmith",
