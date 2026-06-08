@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add-to-Cart by Source — Teeccino</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha512-SIMGYRUjwY8+gKg7nn9EItdD8LCADSDfJNutF9TPrvEo86sQmFMh6MyralfIyhADlajSxqc7G0gs7+MwWF/ogQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+  :root {
+    --bg:#1a1a2e; --card:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.1);
+    --text:#e2e8f0; --text-dim:#888; --accent:#D4A843; --green:#4ade80; --yellow:#fbbf24;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); color:var(--text);
+    padding:24px; padding-top:70px; line-height:1.5; min-height:100vh; }
+  header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  h1 { font-size:1.7rem; background:linear-gradient(135deg,#D4A843,#8B6914); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  h2 { font-size:1.1rem; margin:32px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h3 { font-size:.95rem; color:var(--accent); font-weight:600; }
+  .subtitle { color:var(--text-dim); font-size:.85rem; margin-bottom:18px; }
+  .badge { font-size:.7rem; padding:3px 10px; border-radius:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; display:inline-block; }
+  .badge-live { background:rgba(74,222,128,.18); color:var(--green); }
+  .badge-stub { background:rgba(251,191,36,.18); color:var(--yellow); }
+  .stats-bar { display:flex; gap:32px; margin:12px 0 28px; flex-wrap:wrap; }
+  .stat .num { font-size:2rem; font-weight:700; color:var(--accent); }
+  .stat .num.zero { color:var(--text-dim); }
+  .stat .label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:900px) { .grid-2 { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:14px; }
+  .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+  .chart-wrap canvas { width:100%!important; max-height:340px; }
+  .empty { padding:24px; text-align:center; color:var(--text-dim); font-style:italic;
+    background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; font-size:.88rem; }
+  .data-table { width:100%; border-collapse:separate; border-spacing:0; }
+  .data-table th, .data-table td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.85rem; }
+  .data-table th { background:rgba(212,168,67,.08); color:var(--accent); font-weight:600; text-transform:uppercase; font-size:.72rem; letter-spacing:.4px; }
+  .data-table td:nth-child(n+2), .data-table th:nth-child(n+2) { text-align:right; font-variant-numeric:tabular-nums; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; vertical-align:middle; }
+  .updated-stamp { color:var(--text-dim); font-size:.75rem; }
+  .arch-block { padding:14px 18px; background:rgba(96,165,250,.05); border-left:2px solid #60a5fa;
+    border-radius:0 6px 6px 0; font-size:.86rem; line-height:1.6; margin-bottom:10px; }
+  .arch-block code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; background:rgba(212,168,67,.08); color:var(--accent); padding:2px 6px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(r=>r.text()).then(html=>{
+    document.getElementById('hub-nav').innerHTML=html; document.body.classList.add('has-hub-nav');
+  }).catch(()=>{});
+</script>
+
+<header>
+  <h1>Add-to-Cart by Source</h1>
+  <div class="subtitle">
+    <span class="badge" id="status-badge">…</span>
+    &middot; Tracking live since 2026-06-08
+    &middot; <span class="updated-stamp">Updated 2026-06-08 11:25:00</span>
+  </div>
+</header>
+
+<div class="subtitle">
+  Every cart add fires a source-attributed <code>add_to_cart</code> via ThemeSmith's
+  <code>assets/atc-tracking.js</code>. This view answers: <em>where</em> are adds coming from?
+  Data is GA4 (attributed events only — the Web Pixel's unattributed adds are filtered out to avoid double-counting).
+</div>
+
+<h2>Totals</h2>
+<div class="stats-bar" id="stats-bar"></div>
+
+<div class="grid-2">
+  <div class="chart-wrap">
+    <div class="chart-hdr"><h3>Share of adds by source</h3></div>
+    <div id="donut-host"><canvas id="donut"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><h3>By Source</h3></div>
+    <table class="data-table" id="source-table"><thead><tr>
+      <th>Source</th><th>Adds</th><th>Share</th><th>Qty</th><th>Value</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<h2>Adds per Day, by Source</h2>
+<div class="chart-wrap">
+  <div class="chart-hdr"><h3>Daily add_to_cart count</h3>
+    <span class="updated-stamp">stacked by source · click legend to toggle</span></div>
+  <div id="trend-host"><canvas id="trend"></canvas></div>
+</div>
+
+<h2>Top Products</h2>
+<div class="card" style="padding:0; overflow:hidden;">
+  <table class="data-table" id="product-table"><thead><tr>
+    <th>Product</th><th>Adds</th><th>Qty</th><th>Value</th><th>Top Source</th>
+  </tr></thead><tbody></tbody></table>
+</div>
+
+<h2>Pipeline Status &amp; Schema</h2>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">Source table: raw_ga4_atc</span><br>
+  Populated by <code>ingest_ga4.py</code> from the GA4 Data API. One row per
+  (date, atc_source, item_id). <code>ingest_ga4</code> filters to attributed events
+  (atc_source / item_list_name in the source vocab) so the parallel Shopify Web Pixel
+  add_to_cart is never double-counted.
+</div>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">JSON feed: atc-source-data.json</span><br>
+  HubSmith's custom teeccino-reports page consumes the same <code>atc-source-data.json</code>
+  this builder writes (by_source / trend / by_product / by_source_product).
+</div>
+<div id="ga4-note"></div>
+
+<div style="margin-top:40px;text-align:center;">
+  <span class="updated-stamp">Built by build_atc_source_dashboard.py · 2026-06-08 11:25:00</span>
+</div>
+
+<script id="atc-payload" type="application/json">{"built_at": "2026-06-08 11:25:00", "tracking_live_date": "2026-06-08", "ga4_available": false, "source_vocab": ["collection-quickadd", "pdp", "upcart-upsell", "cart", "collection", "other"], "source_meta": {"collection-quickadd": {"label": "Collection Quick-Add", "color": "#D4A843"}, "pdp": {"label": "Product Page", "color": "#60a5fa"}, "upcart-upsell": {"label": "UpCart Upsell", "color": "#a78bfa"}, "cart": {"label": "Cart Page", "color": "#4ade80"}, "collection": {"label": "Collection Grid", "color": "#fb923c"}, "other": {"label": "Other", "color": "#94a3b8"}}, "totals": {"events": 0, "value": 0, "quantity": 0}, "by_source": [{"source": "collection-quickadd", "label": "Collection Quick-Add", "color": "#D4A843", "events": 0, "value": 0.0, "quantity": 0, "share": 0.0}, {"source": "pdp", "label": "Product Page", "color": "#60a5fa", "events": 0, "value": 0.0, "quantity": 0, "share": 0.0}, {"source": "upcart-upsell", "label": "UpCart Upsell", "color": "#a78bfa", "events": 0, "value": 0.0, "quantity": 0, "share": 0.0}, {"source": "cart", "label": "Cart Page", "color": "#4ade80", "events": 0, "value": 0.0, "quantity": 0, "share": 0.0}, {"source": "collection", "label": "Collection Grid", "color": "#fb923c", "events": 0, "value": 0.0, "quantity": 0, "share": 0.0}, {"source": "other", "label": "Other", "color": "#94a3b8", "events": 0, "value": 0.0, "quantity": 0, "share": 0.0}], "trend": [], "by_product": [], "by_source_product": []}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('atc-payload').textContent);
+  const fmtInt=(n)=>n==null?'--':n.toLocaleString('en-US');
+  const fmtMoney=(n)=>n==null?'--':'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtPct=(n)=>n==null?'--':(n*100).toFixed(1)+'%';
+  const meta=(s)=>D.source_meta[s]||{label:s,color:'#94a3b8'};
+
+  // status badge
+  const badge=document.getElementById('status-badge');
+  if (D.ga4_available) { badge.className='badge badge-live'; badge.textContent='LIVE'; }
+  else { badge.className='badge badge-stub'; badge.textContent='AWAITING DATA'; }
+
+  // stats
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="num ${D.totals.events?'':'zero'}">${fmtInt(D.totals.events)}</div><div class="label">Attributed Adds</div></div>
+    <div class="stat"><div class="num ${D.totals.quantity?'':'zero'}">${fmtInt(D.totals.quantity)}</div><div class="label">Units Added</div></div>
+    <div class="stat"><div class="num ${D.totals.value?'':'zero'}">${fmtMoney(D.totals.value)}</div><div class="label">Cart Value Added</div></div>
+    <div class="stat"><div class="num ${D.trend.length?'':'zero'}">${fmtInt(D.trend.length)}</div><div class="label">Days w/ Data</div></div>`;
+
+  // source table
+  document.querySelector('#source-table tbody').innerHTML = D.by_source.map(s=>`
+    <tr><td><span class="swatch" style="background:${s.color}"></span>${s.label}</td>
+    <td>${fmtInt(s.events)}</td><td>${fmtPct(s.share)}</td>
+    <td>${fmtInt(s.quantity)}</td><td>${fmtMoney(s.value)}</td></tr>`).join('');
+
+  // ga4 note
+  document.getElementById('ga4-note').innerHTML = D.ga4_available ? '' :
+    '<div class="empty">No attributed events yet. ThemeSmith\'s tracking went live ' +
+    D.tracking_live_date + '; GA4 ingest will populate this within a day of the GA4 Data API ' +
+    'service-account being provisioned. Structure is built and ready.</div>';
+
+  // donut
+  const nz = D.by_source.filter(s=>s.events>0);
+  const donutHost=document.getElementById('donut-host');
+  if (!nz.length) { donutHost.innerHTML='<div class="empty" style="height:300px;display:flex;align-items:center;justify-content:center;">No data yet</div>'; }
+  else {
+    new Chart(document.getElementById('donut').getContext('2d'),{
+      type:'doughnut',
+      data:{labels:nz.map(s=>s.label),datasets:[{data:nz.map(s=>s.events),backgroundColor:nz.map(s=>s.color),borderColor:'#1a1a2e',borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#e2e8f0',usePointStyle:true,padding:12,font:{size:11}}}}}
+    });
+  }
+
+  // trend (stacked bar)
+  const trendHost=document.getElementById('trend-host');
+  if (!D.trend.length) { trendHost.innerHTML='<div class="empty" style="height:300px;display:flex;align-items:center;justify-content:center;">No daily data yet</div>'; }
+  else {
+    const labels=D.trend.map(t=>t.date);
+    const sources=D.source_vocab.filter(s=>D.trend.some(t=>(t.by_source[s]||0)>0));
+    const datasets=sources.map(s=>({label:meta(s).label,backgroundColor:meta(s).color,
+      data:D.trend.map(t=>t.by_source[s]||0)}));
+    new Chart(document.getElementById('trend').getContext('2d'),{
+      type:'bar',data:{labels,datasets},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#e2e8f0',usePointStyle:true,padding:12,font:{size:11}}}},
+        scales:{x:{stacked:true,ticks:{color:'#888',maxRotation:0,autoSkip:true,maxTicksLimit:14},grid:{color:'rgba(255,255,255,.04)'}},
+          y:{stacked:true,beginAtZero:true,ticks:{color:'#888',precision:0},grid:{color:'rgba(255,255,255,.06)'}}}}
+    });
+  }
+
+  // product table
+  const pt=document.querySelector('#product-table tbody');
+  if (!D.by_product.length) { pt.innerHTML='<tr><td colspan="5" class="empty" style="border:0;">No products yet</td></tr>'; }
+  else { pt.innerHTML=D.by_product.slice(0,40).map(p=>`
+    <tr><td>${(p.item_name||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</td>
+    <td>${fmtInt(p.events)}</td><td>${fmtInt(p.quantity)}</td><td>${fmtMoney(p.value)}</td>
+    <td>${p.top_source?meta(p.top_source).label:'--'}</td></tr>`).join(''); }
+})();
+</script>
+</body>
+</html>
