@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversion by Source — Teeccino</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha512-SIMGYRUjwY8+gKg7nn9EItdD8LCADSDfJNutF9TPrvEo86sQmFMh6MyralfIyhADlajSxqc7G0gs7+MwWF/ogQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+  :root {
+    --bg:#1a1a2e; --card:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.1);
+    --text:#e2e8f0; --text-dim:#888; --accent:#D4A843; --green:#4ade80; --yellow:#fbbf24;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); color:var(--text);
+    padding:24px; padding-top:70px; line-height:1.5; min-height:100vh; }
+  header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  h1 { font-size:1.7rem; background:linear-gradient(135deg,#D4A843,#8B6914); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  h2 { font-size:1.1rem; margin:32px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h3 { font-size:.95rem; color:var(--accent); font-weight:600; }
+  .subtitle { color:var(--text-dim); font-size:.85rem; margin-bottom:18px; }
+  .badge { font-size:.7rem; padding:3px 10px; border-radius:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; display:inline-block; }
+  .badge-live { background:rgba(74,222,128,.18); color:var(--green); }
+  .badge-stub { background:rgba(251,191,36,.18); color:var(--yellow); }
+  .stats-bar { display:flex; gap:32px; margin:12px 0 28px; flex-wrap:wrap; }
+  .stat .num { font-size:2rem; font-weight:700; color:var(--accent); }
+  .stat .num.zero { color:var(--text-dim); }
+  .stat .label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:900px) { .grid-2 { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:14px; }
+  .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+  .chart-wrap canvas { width:100%!important; max-height:340px; }
+  .empty { padding:24px; text-align:center; color:var(--text-dim); font-style:italic;
+    background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; font-size:.88rem; }
+  .data-table { width:100%; border-collapse:separate; border-spacing:0; }
+  .data-table th, .data-table td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.85rem; }
+  .data-table th { background:rgba(212,168,67,.08); color:var(--accent); font-weight:600; text-transform:uppercase; font-size:.72rem; letter-spacing:.4px; }
+  .data-table td:nth-child(n+2), .data-table th:nth-child(n+2) { text-align:right; font-variant-numeric:tabular-nums; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; vertical-align:middle; }
+  .updated-stamp { color:var(--text-dim); font-size:.75rem; }
+  .arch-block { padding:14px 18px; background:rgba(96,165,250,.05); border-left:2px solid #60a5fa;
+    border-radius:0 6px 6px 0; font-size:.86rem; line-height:1.6; margin-bottom:10px; }
+  .arch-block code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; background:rgba(212,168,67,.08); color:var(--accent); padding:2px 6px; border-radius:4px; }
+  .caveat { padding:12px 16px; background:rgba(251,191,36,.06); border-left:2px solid var(--yellow);
+    border-radius:0 6px 6px 0; font-size:.82rem; line-height:1.55; margin-bottom:10px; color:#cbd5e1; }
+</style>
+</head>
+<body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(r=>r.text()).then(html=>{
+    document.getElementById('hub-nav').innerHTML=html; document.body.classList.add('has-hub-nav');
+  }).catch(()=>{});
+</script>
+
+<header>
+  <h1>Conversion by Source</h1>
+  <div class="subtitle">
+    <span class="badge" id="status-badge">…</span>
+    &middot; Tracking live since 2026-06-08
+    &middot; <span class="updated-stamp">Updated 2026-06-08 15:07:33</span>
+  </div>
+</header>
+
+<div class="subtitle">
+  The next step past <a href="/teeccino-reports/atc-source.html" style="color:var(--accent);">Add-to-Cart by Source</a>:
+  not just where adds originate, but which source actually <em>converts</em> — ranked by
+  realized <strong>units, revenue, True Gross and margin</strong>. Adds come from GA4; purchases
+  come from the <code>_atc_source</code> property that rides each cart line through to the order.
+</div>
+
+<h2>Totals (since tracking went live)</h2>
+<div class="stats-bar" id="stats-bar"></div>
+
+<div class="grid-2">
+  <div class="chart-wrap">
+    <div class="chart-hdr"><h3>Margin $ by source</h3></div>
+    <div id="margin-host"><canvas id="marginChart"></canvas></div>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-hdr"><h3>Adds &rarr; Units purchased</h3></div>
+    <div id="funnelHost"><canvas id="funnelChart"></canvas></div>
+  </div>
+</div>
+
+<h2>By Source — Full Funnel</h2>
+<div class="card" style="padding:0; overflow:hidden;">
+  <table class="data-table" id="source-table"><thead><tr>
+    <th>Source</th><th>Adds</th><th>Units</th><th>Conv %</th>
+    <th>Revenue</th><th>True Gross</th><th>Margin</th><th>Margin %</th>
+  </tr></thead><tbody></tbody></table>
+</div>
+
+<div class="caveat" id="caveat-box"></div>
+
+<h2>How this is built</h2>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">Adds:</span> <code>raw_ga4_atc</code> (GA4 add_to_cart by source).
+  <span style="color:var(--accent);font-weight:600;">Purchases:</span> <code>raw_line_items.atc_source</code> — the hidden
+  <code>_atc_source</code> line-item property ThemeSmith stamps at add time (live 2026-06-08),
+  which persists onto the Shopify order. True Gross = units &times; price-list MSRP (paid lines only); Margin = True Gross &minus; COGS.
+</div>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">Conv %</span> = units purchased / units added. The two are different grains
+  (GA4 browser events vs realized Shopify orders), so read it as a <em>directional trend by source</em>, not an exact funnel ratio.
+</div>
+
+<div style="margin-top:40px;text-align:center;">
+  <span class="updated-stamp">Built by build_conversion_by_source_dashboard.py · 2026-06-08 15:07:33</span>
+</div>
+
+<script id="cbs-payload" type="application/json">{"built_at": "2026-06-08 15:07:33", "tracking_live_date": "2026-06-08", "has_data": true, "source_vocab": ["collection-quickadd", "pdp", "upcart-upsell", "cart", "collection", "other"], "source_meta": {"collection-quickadd": {"label": "Collection Quick-Add", "color": "#D4A843"}, "pdp": {"label": "Product Page", "color": "#60a5fa"}, "upcart-upsell": {"label": "UpCart Upsell", "color": "#a78bfa"}, "cart": {"label": "Cart Page", "color": "#4ade80"}, "collection": {"label": "Collection Grid", "color": "#fb923c"}, "other": {"label": "Other", "color": "#94a3b8"}}, "totals": {"adds": 14, "units": 4, "revenue": 51.42, "true_gross": 53.97, "margin": 43.54, "conv_rate": 0.2857, "null_units": 245, "null_revenue": 3793.04}, "null_share": 0.9839, "by_source": [{"source": "collection-quickadd", "label": "Collection Quick-Add", "color": "#D4A843", "adds": 4, "units": 0, "conv_rate": 0.0, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}, {"source": "pdp", "label": "Product Page", "color": "#60a5fa", "adds": 8, "units": 4, "conv_rate": 0.5, "revenue": 51.42, "true_gross": 53.97, "cogs": 10.43, "margin": 43.54, "margin_pct": 0.8068}, {"source": "upcart-upsell", "label": "UpCart Upsell", "color": "#a78bfa", "adds": 0, "units": 0, "conv_rate": null, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}, {"source": "cart", "label": "Cart Page", "color": "#4ade80", "adds": 0, "units": 0, "conv_rate": null, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}, {"source": "collection", "label": "Collection Grid", "color": "#fb923c", "adds": 1, "units": 0, "conv_rate": 0.0, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}, {"source": "other", "label": "Other", "color": "#94a3b8", "adds": 1, "units": 0, "conv_rate": 0.0, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}]}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('cbs-payload').textContent);
+  const fmtInt=(n)=>n==null?'--':n.toLocaleString('en-US');
+  const fmtMoney=(n)=>n==null?'--':'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtPct=(n)=>n==null?'--':(n*100).toFixed(1)+'%';
+  const meta=(s)=>D.source_meta[s]||{label:s,color:'#94a3b8'};
+
+  const badge=document.getElementById('status-badge');
+  if (D.has_data) { badge.className='badge badge-live'; badge.textContent='LIVE'; }
+  else { badge.className='badge badge-stub'; badge.textContent='AWAITING DATA'; }
+
+  const t=D.totals;
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="num ${t.adds?'':'zero'}">${fmtInt(t.adds)}</div><div class="label">Units Added (GA4)</div></div>
+    <div class="stat"><div class="num ${t.units?'':'zero'}">${fmtInt(t.units)}</div><div class="label">Units Purchased</div></div>
+    <div class="stat"><div class="num ${t.conv_rate?'':'zero'}">${fmtPct(t.conv_rate)}</div><div class="label">Blended Conv</div></div>
+    <div class="stat"><div class="num ${t.revenue?'':'zero'}">${fmtMoney(t.revenue)}</div><div class="label">Attributed Revenue</div></div>
+    <div class="stat"><div class="num ${t.margin?'':'zero'}">${fmtMoney(t.margin)}</div><div class="label">Attributed Margin</div></div>`;
+
+  // source table (sorted by margin desc, then revenue)
+  const rows=[...D.by_source].sort((a,b)=>(b.margin-a.margin)||(b.revenue-a.revenue));
+  document.querySelector('#source-table tbody').innerHTML = rows.map(s=>`
+    <tr><td><span class="swatch" style="background:${s.color}"></span>${s.label}</td>
+    <td>${fmtInt(s.adds)}</td><td>${fmtInt(s.units)}</td><td>${fmtPct(s.conv_rate)}</td>
+    <td>${fmtMoney(s.revenue)}</td><td>${fmtMoney(s.true_gross)}</td>
+    <td>${fmtMoney(s.margin)}</td><td>${fmtPct(s.margin_pct)}</td></tr>`).join('');
+
+  // caveat box
+  document.getElementById('caveat-box').innerHTML =
+    'Forward-only since ' + D.tracking_live_date + '. ' +
+    fmtPct(D.null_share) + ' of recent purchased units are unattributed (NULL source) — expected: ' +
+    'Stay.ai recurring rebills carry no source (no cart add), OCU post-purchase lines are NULL by design, ' +
+    'and coverage ramps as the new tracking JS propagates to returning shoppers.';
+
+  // margin chart (paid sources only)
+  const nz=rows.filter(s=>s.margin!==0 || s.revenue!==0);
+  const mHost=document.getElementById('margin-host');
+  if (!nz.length) { mHost.innerHTML='<div class="empty" style="height:300px;display:flex;align-items:center;justify-content:center;">No purchases attributed yet</div>'; }
+  else {
+    new Chart(document.getElementById('marginChart').getContext('2d'),{
+      type:'bar',
+      data:{labels:nz.map(s=>s.label),datasets:[{label:'Margin $',data:nz.map(s=>s.margin),backgroundColor:nz.map(s=>s.color)}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{beginAtZero:true,ticks:{color:'#888',callback:v=>'$'+v},grid:{color:'rgba(255,255,255,.06)'}},
+          y:{ticks:{color:'#e2e8f0'},grid:{display:false}}}}
+    });
+  }
+
+  // funnel chart: adds vs units per source
+  const fHost=document.getElementById('funnelHost');
+  const fnz=rows.filter(s=>s.adds>0 || s.units>0);
+  if (!fnz.length) { fHost.innerHTML='<div class="empty" style="height:300px;display:flex;align-items:center;justify-content:center;">No data yet</div>'; }
+  else {
+    new Chart(document.getElementById('funnelChart').getContext('2d'),{
+      type:'bar',
+      data:{labels:fnz.map(s=>s.label),datasets:[
+        {label:'Units Added',data:fnz.map(s=>s.adds),backgroundColor:'rgba(96,165,250,.55)'},
+        {label:'Units Purchased',data:fnz.map(s=>s.units),backgroundColor:'#D4A843'}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#e2e8f0',usePointStyle:true,padding:12,font:{size:11}}}},
+        scales:{x:{ticks:{color:'#888'},grid:{display:false}},
+          y:{beginAtZero:true,ticks:{color:'#888',precision:0},grid:{color:'rgba(255,255,255,.06)'}}}}
+    });
+  }
+})();
+</script>
+</body>
+</html>
