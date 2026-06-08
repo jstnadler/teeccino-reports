@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-08T15:00:24.796196-07:00",
+  "lastUpdated": "2026-06-08T15:04:02.491231-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -171,8 +171,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Spun up conversion-by-source project + dispatched ThemeSmith feasibility",
-        "at": "2026-06-08T21:35:00Z"
+        "summary": "conversion-by-source M1-M4: confirmed _atc_source lands on orders + wired into raw_line_items",
+        "at": "2026-06-08T22:00:00Z"
       },
       "recentActivity": [
         {
@@ -184,6 +184,12 @@
         {
           "summary": "Daily pipeline completed with 1 non-critical warning",
           "at": "2026-04-13T07:01:41.810528",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "conversion-by-source M1-M4 done in one pass. ThemeSmith instrumentation was already live (commit a1405cd); DataOps confirmed _atc_source lands on real orders end-to-end + wired it into raw_line_items. Dashboard (M5) held ~1wk for data.",
+          "at": "2026-06-08T22:00:00Z",
           "source": "interactive",
           "status": "success"
         },
@@ -226,12 +232,6 @@
         {
           "summary": "Added Profit Waterfall section to YTD Dashboard: Gross Revenue down to Contribution Margin with 11 line items, 2 callout tiles (Gross Profit + Contribution Margin), and a cascade bar chart.",
           "at": "2026-06-04T20:31:16.027189Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Rebuilt YTD Dashboard Discount Breakdown to mirror the discounts deep-dive: Promotional Cost vs Recurring Subscription hero + 7 type cards + shipping split + reconciliation note. Removed CFO-visible/hidden framing per Justin feedback.",
-          "at": "2026-06-04T19:48:41.503506Z",
           "source": "interactive",
           "status": "success"
         }
@@ -719,7 +719,7 @@
     {
       "id": "conversion-by-source",
       "name": "Conversion-by-Source Attribution (ATC → Purchase)",
-      "status": "planning",
+      "status": "active",
       "priority": "high",
       "owner": "dataops",
       "contributors": [
@@ -728,10 +728,10 @@
       ],
       "category": "Data & KPI",
       "started": "2026-06-08",
-      "lastActivity": "2026-06-08T21:30:00Z",
+      "lastActivity": "2026-06-08T21:55:00Z",
       "description": "Extend the ATC-source attribution (live 2026-06-08, ThemeSmith atc-tracking.js -> GA4 -> DataOps raw_ga4_atc -> atc-source.html) from a top-of-funnel 'where do adds originate' view into a full-funnel 'which source converts' view. Today the atc_source signal rides only on the add_to_cart event, so we can see adds by source (pdp / collection-quickadd / upcart-upsell / cart / collection / other) but NOT which source actually drives purchases, revenue, or contribution margin. RECOMMENDED PATH (B): ThemeSmith stamps the source as a Shopify cart line-item property (_atc_source) at add-to-cart time; it persists through checkout natively and lands on the order line item; DataOps extends ingest_shopify.py to pull line-item customAttributes into raw_line_items as a first-class column; conversion-by-source becomes a clean SQL join against units sold / revenue / True Gross / margin that the pipeline already computes. This lands the source signal where the money is and joins to existing profit metrics, unlike the GA4-native alternative (Path A: item_list_name through to purchase) which is lossy and siloed in GA4 with no margin join. Live-cart instrumentation requires Justin sign-off before shipping.",
       "dashboardUrl": null,
-      "milestoneDone": 0,
+      "milestoneDone": 4,
       "milestoneTotal": 6,
       "tasksDone": 0,
       "tasksPending": 0
