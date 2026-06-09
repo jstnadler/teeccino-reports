@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Teeccino December 2024 KPI</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -63,6 +64,79 @@ body {
 .section-header .section-icon.shipping { background: rgba(168,85,247,0.15); color: #c4b5fd; }
 .section-header .section-icon.promos { background: rgba(236,72,153,0.15); color: #f9a8d4; }
 .section-header .section-icon.ads-creative { background: rgba(96,165,250,0.18); color: #93c5fd; }
+.section-header .section-icon.cohorts { background: rgba(45,212,191,0.15); color: #5eead4; }
+
+/* ---- NEW-CUSTOMER COHORTS ---- */
+.coh-panel { scroll-margin-top: 120px; }
+.coh-headline {
+    font-size: 1.02em; color: #e2e8f0; line-height: 1.5;
+    margin-bottom: 12px;
+}
+.coh-headline strong { color: #5eead4; }
+.coh-cac-chip {
+    display: inline-block; font-size: 0.85em; color: #cbd5e1;
+    background: rgba(45,212,191,0.08); border: 1px solid rgba(45,212,191,0.2);
+    border-radius: 8px; padding: 5px 12px; margin-bottom: 18px;
+}
+.coh-cac-chip strong { color: #5eead4; }
+.coh-cac-note { color: #64748b; font-size: 0.9em; }
+.coh-table-wrap { overflow-x: auto; margin-bottom: 14px; }
+.coh-table {
+    width: 100%; border-collapse: collapse; font-size: 0.85em;
+    color: #e2e8f0; min-width: 720px;
+}
+.coh-table th {
+    text-align: left; font-weight: 600; color: #94a3b8;
+    font-size: 0.82em; text-transform: uppercase; letter-spacing: 0.03em;
+    padding: 8px 10px; border-bottom: 1px solid rgba(148,163,184,0.2);
+    white-space: nowrap;
+}
+.coh-table td {
+    padding: 8px 10px; border-bottom: 1px solid rgba(148,163,184,0.08);
+    white-space: nowrap;
+}
+.coh-table tbody tr:hover { background: rgba(148,163,184,0.05); }
+.coh-seg-label { color: #cbd5e1; }
+.coh-total-row td {
+    font-weight: 700; color: #fff;
+    border-bottom: 1px solid rgba(148,163,184,0.28);
+    background: rgba(45,212,191,0.04);
+}
+.coh-grid-title {
+    font-size: 0.95em; color: #e2e8f0; margin: 20px 0 10px;
+    font-weight: 600;
+}
+.coh-grid-month { font-variant-numeric: tabular-nums; font-weight: 600; }
+.coh-grid-link { color: #5eead4; text-decoration: none; }
+.coh-grid-link:hover { text-decoration: underline; }
+.coh-grid-this td { background: rgba(45,212,191,0.10); }
+.coh-grid-this .coh-grid-month { color: #5eead4; }
+.coh-bar-wrap {
+    position: relative; min-width: 120px; height: 16px;
+    background: rgba(148,163,184,0.12); border-radius: 4px; overflow: hidden;
+}
+.coh-bar {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: linear-gradient(90deg, #2dd4bf, #14b8a6); border-radius: 4px;
+}
+.coh-bar-label {
+    position: absolute; right: 6px; top: 0; line-height: 16px;
+    font-size: 0.82em; color: #e2e8f0; font-variant-numeric: tabular-nums;
+}
+.coh-ltvcac {
+    display: inline-block; padding: 2px 7px; border-radius: 5px;
+    font-weight: 600; font-size: 0.92em; font-variant-numeric: tabular-nums;
+}
+.coh-ltvcac.good { background: rgba(74,222,128,0.15); color: #4ade80; }
+.coh-ltvcac.warn { background: rgba(250,204,21,0.13); color: #facc15; }
+.coh-ltvcac.bad { background: rgba(248,113,113,0.15); color: #f87171; }
+.coh-ltvcac.neutral { background: rgba(148,163,184,0.12); color: #94a3b8; }
+.coh-footnote {
+    color: #64748b; font-size: 0.78em; line-height: 1.6;
+    margin-top: 14px; max-width: 1100px;
+}
+.coh-footnote strong { color: #94a3b8; }
+.coh-footnote .coh-ltvcac { padding: 0 5px; font-size: 0.95em; }
 
 /* ---- ANCHOR JUMP BAR ---- */
 .jump-bar {
@@ -108,6 +182,15 @@ body {
 
 /* Give section headers scroll-margin so anchor-jumps don't hide under sticky bars */
 .section-header { scroll-margin-top: 120px; }
+
+/* Combo chart (Gross / Discounts / Ad Spend) daily-vs-cumulative toggle */
+.combo-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.combo-head h3 { margin: 0; }
+.combo-sub { color: #64748b; font-size: 0.8em; margin: 4px 0 10px 0; line-height: 1.5; }
+.combo-toggle { display: inline-flex; gap: 4px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 3px; }
+.combo-btn { background: transparent; border: none; color: #94a3b8; padding: 5px 14px; border-radius: 7px; font-size: 0.82em; font-family: inherit; cursor: pointer; transition: all 0.18s; }
+.combo-btn:hover { color: #fff; }
+.combo-btn.active { background: rgba(212,168,67,0.2); color: #fde68a; font-weight: 600; }
 
 /* ---- GLOBAL "vs LY" TOGGLE ---- */
 /* Lives next to the jump-bar. Toggles body.show-ly which controls
@@ -902,13 +985,14 @@ body.show-ly .donut-row { grid-template-columns: 1fr 1fr; }
 <div class="header">
     <h1>December 2024 &mdash; Monthly Report</h1>
     <div class="sub">Full Month &mdash; 31 days &bull; DTC Only (Teeccino.com)</div>
-    <div class="updated">Last updated May 21, 2026 at 01:09 PM</div>
+    <div class="updated">Last updated June 09, 2026 at 09:47 AM</div>
 </div>
 
 
     <div class="month-nav">
         <select id="monthSelect" onchange="navigateMonth(this.value)">
-            <option value="2026-05">May 2026</option>
+            <option value="2026-06">Jun 2026</option>
+<option value="2026-05">May 2026</option>
 <option value="2026-04">Apr 2026</option>
 <option value="2026-03">Mar 2026</option>
 <option value="2026-02">Feb 2026</option>
@@ -970,6 +1054,7 @@ body.show-ly .donut-row { grid-template-columns: 1fr 1fr; }
     <a href="#sec-charts"><span class="jump-bar-emoji">&#128200;</span> Charts</a>
     <a href="#sec-top-ads"><span class="jump-bar-emoji">&#127919;</span> Top Ads</a>
     <a href="#sec-promotions"><span class="jump-bar-emoji">&#127873;</span> Promotions</a>
+    <a href="#sec-cohorts"><span class="jump-bar-emoji">&#128101;</span> New-Customer Cohorts</a>
 </nav>
 
 <!-- ======== GLOBAL "vs LY" TOGGLE ======== -->
@@ -2034,6 +2119,19 @@ body.show-ly .donut-row { grid-template-columns: 1fr 1fr; }
 <div id="sec-charts"></div>
 <div class="chart-row" style="grid-template-columns: 1fr;">
     <div class="chart-box">
+        <div class="combo-head">
+            <h3>Gross Sales, Discounts &amp; Ad Spend</h3>
+            <div class="combo-toggle" role="group" aria-label="Daily or cumulative view">
+                <button class="combo-btn active" data-combo-mode="daily" onclick="setComboMode('daily')">Daily</button>
+                <button class="combo-btn" data-combo-mode="cumulative" onclick="setComboMode('cumulative')">Cumulative</button>
+            </div>
+        </div>
+        <div class="combo-sub">Gross on the left axis; discounts &amp; ad spend share the right axis. Prior-year dashed lines follow the global "vs LY" toggle in the top bar.</div>
+        <canvas id="comboChart" height="150"></canvas>
+    </div>
+</div>
+<div class="chart-row" style="grid-template-columns: 1fr;">
+    <div class="chart-box">
         <h3>Daily Gross Sales vs Daily Ad Spend</h3>
         <canvas id="salesVsSpendChart" height="120"></canvas>
     </div>
@@ -2295,6 +2393,699 @@ body.show-ly .donut-row { grid-template-columns: 1fr 1fr; }
     </div>
 </div>
 
+
+<!-- ======== NEW CUSTOMER COHORTS ======== -->
+<div class="section-header" id="sec-cohorts">
+    <div class="section-icon cohorts">&#128101;</div>
+    <h2>New Customer Cohorts &mdash; Repeat Rate &amp; Lifetime Value</h2>
+</div>
+<div class="section-panel coh-panel">
+    
+        <div class="coh-headline"><strong>1,388</strong> new DTC customers acquired in <strong>December 2024</strong>. As of 2026-06-09, <strong>388</strong> (28.0%) have come back, placing <strong>2,476</strong> lifetime orders worth <strong>$116,069</strong> net (<strong>$67,612</strong> contribution margin).</div>
+        <div class="coh-cac-chip">Acquisition CAC this month:
+            <strong>$14.09</strong> / new customer
+            <span class="coh-cac-note">(month ad spend &divide; new customers)</span>
+        </div>
+        <div class="coh-table-wrap">
+        <table class="coh-table">
+            <thead><tr>
+                <th>Segment (by first-order type)</th>
+                <th style="text-align:right">Customers</th>
+                <th style="text-align:right">Repeat&nbsp;Rate</th>
+                <th style="text-align:right">Orders/Cust</th>
+                <th style="text-align:right">True&nbsp;Gross</th>
+                <th style="text-align:right">Net&nbsp;Revenue</th>
+                <th style="text-align:right">Contrib.&nbsp;Margin</th>
+                <th style="text-align:right">Net/Cust</th>
+                <th style="text-align:right">CM/Cust</th>
+                <th style="text-align:right">LTV:CAC</th>
+            </tr></thead>
+            <tbody><tr class="coh-total-row">
+                <td class="coh-seg-label">All new customers</td>
+                <td style="text-align:right">1,388</td>
+                <td style="text-align:right">28.0%</td>
+                <td style="text-align:right">1.78</td>
+                <td style="text-align:right">$129,631</td>
+                <td style="text-align:right">$116,069</td>
+                <td style="text-align:right">$67,612</td>
+                <td style="text-align:right">$83.62</td>
+                <td style="text-align:right">$48.71</td>
+                <td style="text-align:right"><span class="coh-ltvcac good">3.46x</span></td>
+            </tr><tr>
+                <td class="coh-seg-label">&#9656; First order was a subscription</td>
+                <td style="text-align:right">59</td>
+                <td style="text-align:right">78.0%</td>
+                <td style="text-align:right">4.64</td>
+                <td style="text-align:right">$11,595</td>
+                <td style="text-align:right">$9,884</td>
+                <td style="text-align:right">$5,499</td>
+                <td style="text-align:right">$167.53</td>
+                <td style="text-align:right">$93.20</td>
+                <td style="text-align:right"><span class="coh-ltvcac good">6.61x</span></td>
+            </tr><tr>
+                <td class="coh-seg-label">&#9656; First order was one-time</td>
+                <td style="text-align:right">1,329</td>
+                <td style="text-align:right">25.7%</td>
+                <td style="text-align:right">1.66</td>
+                <td style="text-align:right">$118,036</td>
+                <td style="text-align:right">$106,185</td>
+                <td style="text-align:right">$62,114</td>
+                <td style="text-align:right">$79.90</td>
+                <td style="text-align:right">$46.74</td>
+                <td style="text-align:right"><span class="coh-ltvcac good">3.32x</span></td>
+            </tr></tbody>
+        </table>
+        </div>
+    
+    <h3 class="coh-grid-title">All acquisition cohorts &mdash; lifetime value as of 2026-06-09</h3>
+    <div class="coh-table-wrap">
+    <table class="coh-table coh-grid">
+        <thead><tr>
+            <th>Cohort</th>
+            <th style="text-align:right">New&nbsp;Cust</th>
+            <th>Repeat&nbsp;Rate</th>
+            <th style="text-align:right">Orders/Cust</th>
+            <th style="text-align:right">Net/Cust</th>
+            <th style="text-align:right">CM/Cust</th>
+            <th style="text-align:right">Total&nbsp;Net</th>
+            <th style="text-align:right">Total&nbsp;CM</th>
+            <th style="text-align:right">CAC</th>
+            <th style="text-align:right">LTV:CAC</th>
+        </tr></thead>
+        <tbody><tr>
+            <td class="coh-grid-month"><a href="../mtd.html" class="coh-grid-link">2026-06</a></td>
+            <td style="text-align:right">175</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:0%"></div>
+              <span class="coh-bar-label">0.0%</span></div>
+            </td>
+            <td style="text-align:right">1.00</td>
+            <td style="text-align:right">$47.62</td>
+            <td style="text-align:right">$30.43</td>
+            <td style="text-align:right">$8,334</td>
+            <td style="text-align:right">$5,325</td>
+            <td style="text-align:right">$16.26</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.87x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2026-05.html" class="coh-grid-link">2026-05</a></td>
+            <td style="text-align:right">796</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:12%"></div>
+              <span class="coh-bar-label">6.2%</span></div>
+            </td>
+            <td style="text-align:right">1.07</td>
+            <td style="text-align:right">$52.87</td>
+            <td style="text-align:right">$33.39</td>
+            <td style="text-align:right">$42,083</td>
+            <td style="text-align:right">$26,578</td>
+            <td style="text-align:right">$26.07</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.28x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2026-04.html" class="coh-grid-link">2026-04</a></td>
+            <td style="text-align:right">1,141</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:29%"></div>
+              <span class="coh-bar-label">14.5%</span></div>
+            </td>
+            <td style="text-align:right">1.18</td>
+            <td style="text-align:right">$51.90</td>
+            <td style="text-align:right">$31.29</td>
+            <td style="text-align:right">$59,217</td>
+            <td style="text-align:right">$35,705</td>
+            <td style="text-align:right">$26.29</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.19x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2026-03.html" class="coh-grid-link">2026-03</a></td>
+            <td style="text-align:right">1,465</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:42%"></div>
+              <span class="coh-bar-label">20.9%</span></div>
+            </td>
+            <td style="text-align:right">1.29</td>
+            <td style="text-align:right">$52.17</td>
+            <td style="text-align:right">$31.06</td>
+            <td style="text-align:right">$76,426</td>
+            <td style="text-align:right">$45,508</td>
+            <td style="text-align:right">$20.50</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.52x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2026-02.html" class="coh-grid-link">2026-02</a></td>
+            <td style="text-align:right">1,732</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:51%"></div>
+              <span class="coh-bar-label">25.3%</span></div>
+            </td>
+            <td style="text-align:right">1.41</td>
+            <td style="text-align:right">$53.84</td>
+            <td style="text-align:right">$30.57</td>
+            <td style="text-align:right">$93,249</td>
+            <td style="text-align:right">$52,953</td>
+            <td style="text-align:right">$22.01</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.39x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2026-01.html" class="coh-grid-link">2026-01</a></td>
+            <td style="text-align:right">1,659</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:54%"></div>
+              <span class="coh-bar-label">26.9%</span></div>
+            </td>
+            <td style="text-align:right">1.52</td>
+            <td style="text-align:right">$57.13</td>
+            <td style="text-align:right">$32.85</td>
+            <td style="text-align:right">$94,778</td>
+            <td style="text-align:right">$54,498</td>
+            <td style="text-align:right">$24.28</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.35x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-12.html" class="coh-grid-link">2025-12</a></td>
+            <td style="text-align:right">1,283</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:48%"></div>
+              <span class="coh-bar-label">24.2%</span></div>
+            </td>
+            <td style="text-align:right">1.50</td>
+            <td style="text-align:right">$59.82</td>
+            <td style="text-align:right">$34.52</td>
+            <td style="text-align:right">$76,743</td>
+            <td style="text-align:right">$44,283</td>
+            <td style="text-align:right">$18.64</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.85x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-11.html" class="coh-grid-link">2025-11</a></td>
+            <td style="text-align:right">2,208</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:56%"></div>
+              <span class="coh-bar-label">28.2%</span></div>
+            </td>
+            <td style="text-align:right">1.59</td>
+            <td style="text-align:right">$67.70</td>
+            <td style="text-align:right">$39.05</td>
+            <td style="text-align:right">$149,481</td>
+            <td style="text-align:right">$86,230</td>
+            <td style="text-align:right">$22.87</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.71x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-10.html" class="coh-grid-link">2025-10</a></td>
+            <td style="text-align:right">1,170</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:67%"></div>
+              <span class="coh-bar-label">33.3%</span></div>
+            </td>
+            <td style="text-align:right">1.78</td>
+            <td style="text-align:right">$73.92</td>
+            <td style="text-align:right">$42.70</td>
+            <td style="text-align:right">$86,486</td>
+            <td style="text-align:right">$49,960</td>
+            <td style="text-align:right">$24.06</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.77x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-09.html" class="coh-grid-link">2025-09</a></td>
+            <td style="text-align:right">863</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:71%"></div>
+              <span class="coh-bar-label">35.3%</span></div>
+            </td>
+            <td style="text-align:right">1.82</td>
+            <td style="text-align:right">$73.76</td>
+            <td style="text-align:right">$42.25</td>
+            <td style="text-align:right">$63,656</td>
+            <td style="text-align:right">$36,462</td>
+            <td style="text-align:right">$26.86</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">1.57x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-08.html" class="coh-grid-link">2025-08</a></td>
+            <td style="text-align:right">796</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:72%"></div>
+              <span class="coh-bar-label">36.1%</span></div>
+            </td>
+            <td style="text-align:right">2.00</td>
+            <td style="text-align:right">$84.65</td>
+            <td style="text-align:right">$48.94</td>
+            <td style="text-align:right">$67,380</td>
+            <td style="text-align:right">$38,953</td>
+            <td style="text-align:right">$23.50</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.08x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-07.html" class="coh-grid-link">2025-07</a></td>
+            <td style="text-align:right">780</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:79%"></div>
+              <span class="coh-bar-label">39.4%</span></div>
+            </td>
+            <td style="text-align:right">2.08</td>
+            <td style="text-align:right">$86.20</td>
+            <td style="text-align:right">$49.33</td>
+            <td style="text-align:right">$67,234</td>
+            <td style="text-align:right">$38,477</td>
+            <td style="text-align:right">$18.57</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.66x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-06.html" class="coh-grid-link">2025-06</a></td>
+            <td style="text-align:right">824</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:58%"></div>
+              <span class="coh-bar-label">29.1%</span></div>
+            </td>
+            <td style="text-align:right">1.79</td>
+            <td style="text-align:right">$70.45</td>
+            <td style="text-align:right">$40.10</td>
+            <td style="text-align:right">$58,049</td>
+            <td style="text-align:right">$33,042</td>
+            <td style="text-align:right">$17.63</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.27x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-05.html" class="coh-grid-link">2025-05</a></td>
+            <td style="text-align:right">1,025</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:72%"></div>
+              <span class="coh-bar-label">36.2%</span></div>
+            </td>
+            <td style="text-align:right">2.00</td>
+            <td style="text-align:right">$89.33</td>
+            <td style="text-align:right">$53.06</td>
+            <td style="text-align:right">$91,566</td>
+            <td style="text-align:right">$54,389</td>
+            <td style="text-align:right">$24.85</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.14x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-04.html" class="coh-grid-link">2025-04</a></td>
+            <td style="text-align:right">1,732</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:68%"></div>
+              <span class="coh-bar-label">34.1%</span></div>
+            </td>
+            <td style="text-align:right">1.92</td>
+            <td style="text-align:right">$87.80</td>
+            <td style="text-align:right">$51.23</td>
+            <td style="text-align:right">$152,068</td>
+            <td style="text-align:right">$88,735</td>
+            <td style="text-align:right">$24.63</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.08x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-03.html" class="coh-grid-link">2025-03</a></td>
+            <td style="text-align:right">1,566</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:77%"></div>
+              <span class="coh-bar-label">38.6%</span></div>
+            </td>
+            <td style="text-align:right">2.12</td>
+            <td style="text-align:right">$92.87</td>
+            <td style="text-align:right">$54.81</td>
+            <td style="text-align:right">$145,436</td>
+            <td style="text-align:right">$85,828</td>
+            <td style="text-align:right">$26.33</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.08x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-02.html" class="coh-grid-link">2025-02</a></td>
+            <td style="text-align:right">1,217</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:74%"></div>
+              <span class="coh-bar-label">37.2%</span></div>
+            </td>
+            <td style="text-align:right">2.24</td>
+            <td style="text-align:right">$101.35</td>
+            <td style="text-align:right">$60.11</td>
+            <td style="text-align:right">$123,341</td>
+            <td style="text-align:right">$73,159</td>
+            <td style="text-align:right">$18.70</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.21x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2025-01.html" class="coh-grid-link">2025-01</a></td>
+            <td style="text-align:right">1,285</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:74%"></div>
+              <span class="coh-bar-label">37.0%</span></div>
+            </td>
+            <td style="text-align:right">2.18</td>
+            <td style="text-align:right">$97.95</td>
+            <td style="text-align:right">$57.40</td>
+            <td style="text-align:right">$125,871</td>
+            <td style="text-align:right">$73,762</td>
+            <td style="text-align:right">$19.40</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.96x</span></td>
+        </tr><tr class="coh-grid-this">
+            <td class="coh-grid-month">2024-12</td>
+            <td style="text-align:right">1,388</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:56%"></div>
+              <span class="coh-bar-label">28.0%</span></div>
+            </td>
+            <td style="text-align:right">1.78</td>
+            <td style="text-align:right">$83.62</td>
+            <td style="text-align:right">$48.71</td>
+            <td style="text-align:right">$116,069</td>
+            <td style="text-align:right">$67,612</td>
+            <td style="text-align:right">$14.09</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.46x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-11.html" class="coh-grid-link">2024-11</a></td>
+            <td style="text-align:right">1,917</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:67%"></div>
+              <span class="coh-bar-label">33.4%</span></div>
+            </td>
+            <td style="text-align:right">1.98</td>
+            <td style="text-align:right">$93.70</td>
+            <td style="text-align:right">$53.65</td>
+            <td style="text-align:right">$179,630</td>
+            <td style="text-align:right">$102,853</td>
+            <td style="text-align:right">$19.72</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.72x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-10.html" class="coh-grid-link">2024-10</a></td>
+            <td style="text-align:right">1,276</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:73%"></div>
+              <span class="coh-bar-label">36.7%</span></div>
+            </td>
+            <td style="text-align:right">2.12</td>
+            <td style="text-align:right">$102.03</td>
+            <td style="text-align:right">$59.85</td>
+            <td style="text-align:right">$130,196</td>
+            <td style="text-align:right">$76,371</td>
+            <td style="text-align:right">$21.16</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.83x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-09.html" class="coh-grid-link">2024-09</a></td>
+            <td style="text-align:right">1,108</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:77%"></div>
+              <span class="coh-bar-label">38.4%</span></div>
+            </td>
+            <td style="text-align:right">2.14</td>
+            <td style="text-align:right">$102.54</td>
+            <td style="text-align:right">$60.48</td>
+            <td style="text-align:right">$113,615</td>
+            <td style="text-align:right">$67,012</td>
+            <td style="text-align:right">$20.57</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.94x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-08.html" class="coh-grid-link">2024-08</a></td>
+            <td style="text-align:right">1,133</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:76%"></div>
+              <span class="coh-bar-label">38.2%</span></div>
+            </td>
+            <td style="text-align:right">2.28</td>
+            <td style="text-align:right">$101.20</td>
+            <td style="text-align:right">$57.83</td>
+            <td style="text-align:right">$114,662</td>
+            <td style="text-align:right">$65,521</td>
+            <td style="text-align:right">$24.04</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.41x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-07.html" class="coh-grid-link">2024-07</a></td>
+            <td style="text-align:right">950</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:74%"></div>
+              <span class="coh-bar-label">36.9%</span></div>
+            </td>
+            <td style="text-align:right">2.17</td>
+            <td style="text-align:right">$104.48</td>
+            <td style="text-align:right">$60.51</td>
+            <td style="text-align:right">$99,258</td>
+            <td style="text-align:right">$57,480</td>
+            <td style="text-align:right">$28.83</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.10x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-06.html" class="coh-grid-link">2024-06</a></td>
+            <td style="text-align:right">1,006</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:72%"></div>
+              <span class="coh-bar-label">36.2%</span></div>
+            </td>
+            <td style="text-align:right">2.29</td>
+            <td style="text-align:right">$106.35</td>
+            <td style="text-align:right">$61.28</td>
+            <td style="text-align:right">$106,988</td>
+            <td style="text-align:right">$61,651</td>
+            <td style="text-align:right">$29.76</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.06x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-05.html" class="coh-grid-link">2024-05</a></td>
+            <td style="text-align:right">1,322</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:70%"></div>
+              <span class="coh-bar-label">35.2%</span></div>
+            </td>
+            <td style="text-align:right">2.11</td>
+            <td style="text-align:right">$99.47</td>
+            <td style="text-align:right">$57.37</td>
+            <td style="text-align:right">$131,501</td>
+            <td style="text-align:right">$75,841</td>
+            <td style="text-align:right">$22.93</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.50x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-04.html" class="coh-grid-link">2024-04</a></td>
+            <td style="text-align:right">1,705</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:68%"></div>
+              <span class="coh-bar-label">34.1%</span></div>
+            </td>
+            <td style="text-align:right">2.09</td>
+            <td style="text-align:right">$98.82</td>
+            <td style="text-align:right">$56.53</td>
+            <td style="text-align:right">$168,485</td>
+            <td style="text-align:right">$96,379</td>
+            <td style="text-align:right">$20.58</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.75x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-03.html" class="coh-grid-link">2024-03</a></td>
+            <td style="text-align:right">1,568</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:70%"></div>
+              <span class="coh-bar-label">35.1%</span></div>
+            </td>
+            <td style="text-align:right">2.27</td>
+            <td style="text-align:right">$100.69</td>
+            <td style="text-align:right">$57.00</td>
+            <td style="text-align:right">$157,880</td>
+            <td style="text-align:right">$89,384</td>
+            <td style="text-align:right">$20.43</td>
+            <td style="text-align:right"><span class="coh-ltvcac warn">2.79x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-02.html" class="coh-grid-link">2024-02</a></td>
+            <td style="text-align:right">1,439</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:68%"></div>
+              <span class="coh-bar-label">33.8%</span></div>
+            </td>
+            <td style="text-align:right">2.27</td>
+            <td style="text-align:right">$101.58</td>
+            <td style="text-align:right">$57.40</td>
+            <td style="text-align:right">$146,170</td>
+            <td style="text-align:right">$82,600</td>
+            <td style="text-align:right">$18.68</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.07x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2024-01.html" class="coh-grid-link">2024-01</a></td>
+            <td style="text-align:right">1,480</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:73%"></div>
+              <span class="coh-bar-label">36.6%</span></div>
+            </td>
+            <td style="text-align:right">2.34</td>
+            <td style="text-align:right">$111.38</td>
+            <td style="text-align:right">$64.37</td>
+            <td style="text-align:right">$164,846</td>
+            <td style="text-align:right">$95,262</td>
+            <td style="text-align:right">$9.45</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">6.81x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-12.html" class="coh-grid-link">2023-12</a></td>
+            <td style="text-align:right">1,389</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:68%"></div>
+              <span class="coh-bar-label">34.0%</span></div>
+            </td>
+            <td style="text-align:right">2.29</td>
+            <td style="text-align:right">$103.72</td>
+            <td style="text-align:right">$58.86</td>
+            <td style="text-align:right">$144,072</td>
+            <td style="text-align:right">$81,750</td>
+            <td style="text-align:right">$11.00</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">5.35x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-11.html" class="coh-grid-link">2023-11</a></td>
+            <td style="text-align:right">1,965</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:79%"></div>
+              <span class="coh-bar-label">39.6%</span></div>
+            </td>
+            <td style="text-align:right">2.34</td>
+            <td style="text-align:right">$118.12</td>
+            <td style="text-align:right">$67.45</td>
+            <td style="text-align:right">$232,106</td>
+            <td style="text-align:right">$132,539</td>
+            <td style="text-align:right">$10.90</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">6.19x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-10.html" class="coh-grid-link">2023-10</a></td>
+            <td style="text-align:right">1,344</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:79%"></div>
+              <span class="coh-bar-label">39.5%</span></div>
+            </td>
+            <td style="text-align:right">2.39</td>
+            <td style="text-align:right">$110.16</td>
+            <td style="text-align:right">$62.21</td>
+            <td style="text-align:right">$148,060</td>
+            <td style="text-align:right">$83,615</td>
+            <td style="text-align:right">$15.63</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.98x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-09.html" class="coh-grid-link">2023-09</a></td>
+            <td style="text-align:right">1,268</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:80%"></div>
+              <span class="coh-bar-label">39.8%</span></div>
+            </td>
+            <td style="text-align:right">2.44</td>
+            <td style="text-align:right">$115.45</td>
+            <td style="text-align:right">$66.61</td>
+            <td style="text-align:right">$146,394</td>
+            <td style="text-align:right">$84,457</td>
+            <td style="text-align:right">$12.42</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">5.36x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-08.html" class="coh-grid-link">2023-08</a></td>
+            <td style="text-align:right">1,167</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:75%"></div>
+              <span class="coh-bar-label">37.7%</span></div>
+            </td>
+            <td style="text-align:right">2.53</td>
+            <td style="text-align:right">$115.52</td>
+            <td style="text-align:right">$65.79</td>
+            <td style="text-align:right">$134,815</td>
+            <td style="text-align:right">$76,778</td>
+            <td style="text-align:right">$11.53</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">5.71x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-07.html" class="coh-grid-link">2023-07</a></td>
+            <td style="text-align:right">1,072</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:78%"></div>
+              <span class="coh-bar-label">39.0%</span></div>
+            </td>
+            <td style="text-align:right">2.63</td>
+            <td style="text-align:right">$123.30</td>
+            <td style="text-align:right">$70.46</td>
+            <td style="text-align:right">$132,181</td>
+            <td style="text-align:right">$75,532</td>
+            <td style="text-align:right">$14.41</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">4.89x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-06.html" class="coh-grid-link">2023-06</a></td>
+            <td style="text-align:right">1,097</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:70%"></div>
+              <span class="coh-bar-label">34.9%</span></div>
+            </td>
+            <td style="text-align:right">2.21</td>
+            <td style="text-align:right">$91.36</td>
+            <td style="text-align:right">$50.12</td>
+            <td style="text-align:right">$100,221</td>
+            <td style="text-align:right">$54,978</td>
+            <td style="text-align:right">$13.73</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.65x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-05.html" class="coh-grid-link">2023-05</a></td>
+            <td style="text-align:right">1,188</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:75%"></div>
+              <span class="coh-bar-label">37.6%</span></div>
+            </td>
+            <td style="text-align:right">3.11</td>
+            <td style="text-align:right">$120.69</td>
+            <td style="text-align:right">$64.67</td>
+            <td style="text-align:right">$143,381</td>
+            <td style="text-align:right">$76,830</td>
+            <td style="text-align:right">$20.51</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.15x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-04.html" class="coh-grid-link">2023-04</a></td>
+            <td style="text-align:right">1,263</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:79%"></div>
+              <span class="coh-bar-label">39.4%</span></div>
+            </td>
+            <td style="text-align:right">2.58</td>
+            <td style="text-align:right">$126.21</td>
+            <td style="text-align:right">$73.25</td>
+            <td style="text-align:right">$159,398</td>
+            <td style="text-align:right">$92,512</td>
+            <td style="text-align:right">$20.71</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.54x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-03.html" class="coh-grid-link">2023-03</a></td>
+            <td style="text-align:right">1,283</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:82%"></div>
+              <span class="coh-bar-label">40.9%</span></div>
+            </td>
+            <td style="text-align:right">2.86</td>
+            <td style="text-align:right">$143.65</td>
+            <td style="text-align:right">$83.14</td>
+            <td style="text-align:right">$184,302</td>
+            <td style="text-align:right">$106,675</td>
+            <td style="text-align:right">$20.39</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">4.08x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-02.html" class="coh-grid-link">2023-02</a></td>
+            <td style="text-align:right">1,418</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:76%"></div>
+              <span class="coh-bar-label">38.0%</span></div>
+            </td>
+            <td style="text-align:right">2.46</td>
+            <td style="text-align:right">$120.82</td>
+            <td style="text-align:right">$70.77</td>
+            <td style="text-align:right">$171,320</td>
+            <td style="text-align:right">$100,345</td>
+            <td style="text-align:right">$18.01</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">3.93x</span></td>
+        </tr><tr>
+            <td class="coh-grid-month"><a href="2023-01.html" class="coh-grid-link">2023-01</a></td>
+            <td style="text-align:right">2,007</td>
+            <td>
+              <div class="coh-bar-wrap"><div class="coh-bar" style="width:73%"></div>
+              <span class="coh-bar-label">36.4%</span></div>
+            </td>
+            <td style="text-align:right">2.44</td>
+            <td style="text-align:right">$116.72</td>
+            <td style="text-align:right">$68.03</td>
+            <td style="text-align:right">$234,256</td>
+            <td style="text-align:right">$136,546</td>
+            <td style="text-align:right">$6.78</td>
+            <td style="text-align:right"><span class="coh-ltvcac good">10.03x</span></td>
+        </tr></tbody>
+    </table>
+    </div>
+    
+    <p class="coh-footnote">
+      <strong>How to read this.</strong> Each cohort is the set of customers whose
+      <em>first-ever</em> Teeccino order landed in that month (DTC only; wholesale excluded).
+      Once acquired, a customer stays in their cohort forever &mdash; these figures are
+      cumulative through 2026-06-09 and refresh nightly, so an older month keeps growing
+      as those customers reorder.
+      <strong>Repeat Rate</strong> = share with 2+ lifetime orders (subscription rebills count).
+      <strong>True Gross</strong> = MSRP &times; paid units. <strong>Net Revenue</strong> =
+      cash collected (total_price, the pipeline's net convention).
+      <strong>Contribution Margin</strong> = Net &minus; sales tax &minus; COGS &minus; estimated
+      shipping cost; it <em>excludes</em> ad spend, which is shown separately as acquisition CAC.
+      <strong>LTV:CAC</strong> = CM per customer &divide; that month's CAC
+      (<span class="coh-ltvcac good">&ge;3x</span>
+       <span class="coh-ltvcac warn">1&ndash;3x</span>
+       <span class="coh-ltvcac bad">&lt;1x</span>).
+      Caveats: guest checkouts (no customer ID) are excluded; shipping cost is allocated at the
+      carrier average of $7.66/order because ShipStation rows don't join cleanly
+      to Shopify orders; CAC allocates the acquisition month's total ad spend across that month's
+      new customers (cohort-level, not per-order).
+    </p>
+</div>
+
 </div>
 
 <script>
@@ -2381,13 +3172,115 @@ function closeAdModal() {
 }
 
 // Charts
-const trendData = {"dates": ["2024-12-01", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-07", "2024-12-08", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-14", "2024-12-15", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-21", "2024-12-22", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-28", "2024-12-29", "2024-12-30", "2024-12-31"], "gross": [19967.0, 28856.0, 7827.0, 4007.0, 4616.0, 4541.0, 5244.0, 5871.0, 7220.0, 10057.0, 9043.0, 8378.0, 6980.0, 9800.0, 11099.0, 7545.0, 5149.0, 4197.0, 4619.0, 5633.0, 3759.0, 5293.0, 3307.0, 2517.0, 2769.0, 5008.0, 4260.0, 9065.0, 8606.0, 10488.0, 5490.0], "orders": [297, 452, 135, 88, 88, 97, 108, 115, 128, 151, 138, 135, 119, 141, 164, 124, 89, 80, 80, 107, 67, 103, 56, 54, 57, 86, 69, 138, 138, 168, 86], "meta_spend": [1934.0, 2096.0, 778.0, 482.0, 249.0, 240.0, 201.0, 251.0, 253.0, 249.0, 314.0, 461.0, 395.0, 386.0, 485.0, 454.0, 220.0, 147.0, 141.0, 135.0, 127.0, 161.0, 160.0, 140.0, 146.0, 138.0, 135.0, 132.0, 173.0, 426.0, 507.0], "google_spend": [921.0, 945.0, 464.0, 168.0, 113.0, 200.0, 153.0, 132.0, 190.0, 180.0, 337.0, 477.0, 419.0, 401.0, 437.0, 334.0, 144.0, 86.0, 68.0, 101.0, 68.0, 89.0, 88.0, 73.0, 72.0, 103.0, 79.0, 104.0, 87.0, 73.0, 344.0], "total_spend": [2854.0, 3041.0, 1241.0, 649.0, 362.0, 439.0, 353.0, 383.0, 442.0, 429.0, 651.0, 938.0, 814.0, 786.0, 922.0, 788.0, 364.0, 233.0, 209.0, 237.0, 195.0, 250.0, 249.0, 213.0, 219.0, 240.0, 214.0, 236.0, 259.0, 500.0, 851.0], "ly_dates": ["2023-12-01", "2023-12-02", "2023-12-03", "2023-12-04", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-09", "2023-12-10", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-16", "2023-12-17", "2023-12-18", "2023-12-19", "2023-12-20", "2023-12-21", "2023-12-22", "2023-12-23", "2023-12-24", "2023-12-25", "2023-12-26", "2023-12-27", "2023-12-28", "2023-12-29", "2023-12-30", "2023-12-31"], "ly_gross": [5518.0, 4873.0, 6361.0, 6371.0, 5165.0, 4252.0, 6342.0, 4145.0, 5737.0, 5467.0, 5136.0, 6184.0, 6925.0, 5302.0, 5540.0, 5366.0, 6166.0, 6636.0, 6194.0, 5491.0, 4395.0, 7022.0, 3372.0, 2350.0, 3202.0, 4969.0, 6063.0, 5096.0, 14015.0, 12625.0, 9096.0], "ly_orders": [112, 112, 141, 135, 125, 101, 123, 99, 129, 118, 106, 148, 142, 126, 118, 110, 133, 130, 130, 120, 99, 135, 65, 65, 71, 102, 124, 114, 245, 213, 137], "ly_meta_spend": [291.0, 600.0, 518.0, 510.0, 494.0, 482.0, 403.0, 305.0, 285.0, 323.0, 282.0, 220.0, 217.0, 213.0, 211.0, 203.0, 229.0, 253.0, 259.0, 333.0, 346.0, 348.0, 242.0, 268.0, 265.0, 258.0, 254.0, 251.0, 246.0, 242.0, 272.0], "ly_google_spend": [150.0, 136.0, 160.0, 197.0, 149.0, 157.0, 176.0, 102.0, 184.0, 226.0, 180.0, 166.0, 218.0, 187.0, 186.0, 230.0, 208.0, 184.0, 199.0, 220.0, 157.0, 207.0, 175.0, 153.0, 205.0, 237.0, 193.0, 200.0, 195.0, 159.0, 152.0], "ly_total_spend": [441.0, 736.0, 678.0, 707.0, 643.0, 639.0, 578.0, 407.0, 469.0, 549.0, 462.0, 386.0, 436.0, 400.0, 397.0, 433.0, 437.0, 437.0, 458.0, 553.0, 503.0, 555.0, 417.0, 422.0, 471.0, 495.0, 447.0, 451.0, 441.0, 401.0, 424.0]};
+const trendData = {"dates": ["2024-12-01", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-07", "2024-12-08", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-14", "2024-12-15", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-21", "2024-12-22", "2024-12-23", "2024-12-24", "2024-12-25", "2024-12-26", "2024-12-27", "2024-12-28", "2024-12-29", "2024-12-30", "2024-12-31"], "gross": [19967.0, 28856.0, 7827.0, 4007.0, 4616.0, 4541.0, 5244.0, 5871.0, 7220.0, 10057.0, 9043.0, 8378.0, 6980.0, 9800.0, 11099.0, 7545.0, 5149.0, 4197.0, 4619.0, 5633.0, 3759.0, 5293.0, 3307.0, 2517.0, 2769.0, 5008.0, 4260.0, 9065.0, 8606.0, 10488.0, 5490.0], "orders": [297, 452, 135, 88, 88, 97, 108, 115, 128, 151, 138, 135, 119, 141, 164, 124, 89, 80, 80, 107, 67, 103, 56, 54, 57, 86, 69, 138, 138, 168, 86], "discounts": [4408.0, 6480.0, 1293.0, 373.0, 457.0, 559.0, 508.0, 540.0, 696.0, 1422.0, 1150.0, 1487.0, 700.0, 859.0, 1169.0, 996.0, 631.0, 530.0, 507.0, 591.0, 444.0, 654.0, 440.0, 380.0, 259.0, 655.0, 541.0, 1699.0, 1394.0, 1904.0, 904.0], "meta_spend": [1934.0, 2096.0, 778.0, 482.0, 249.0, 240.0, 201.0, 251.0, 253.0, 249.0, 314.0, 461.0, 395.0, 386.0, 485.0, 454.0, 220.0, 147.0, 141.0, 135.0, 127.0, 161.0, 160.0, 140.0, 146.0, 138.0, 135.0, 132.0, 173.0, 426.0, 507.0], "google_spend": [921.0, 945.0, 464.0, 168.0, 113.0, 200.0, 153.0, 132.0, 190.0, 180.0, 337.0, 477.0, 419.0, 401.0, 437.0, 334.0, 144.0, 86.0, 68.0, 101.0, 68.0, 89.0, 88.0, 73.0, 72.0, 103.0, 79.0, 104.0, 87.0, 73.0, 344.0], "total_spend": [2854.0, 3041.0, 1241.0, 649.0, 362.0, 439.0, 353.0, 383.0, 442.0, 429.0, 651.0, 938.0, 814.0, 786.0, 922.0, 788.0, 364.0, 233.0, 209.0, 237.0, 195.0, 250.0, 249.0, 213.0, 219.0, 240.0, 214.0, 236.0, 259.0, 500.0, 851.0], "ly_dates": ["2023-12-01", "2023-12-02", "2023-12-03", "2023-12-04", "2023-12-05", "2023-12-06", "2023-12-07", "2023-12-08", "2023-12-09", "2023-12-10", "2023-12-11", "2023-12-12", "2023-12-13", "2023-12-14", "2023-12-15", "2023-12-16", "2023-12-17", "2023-12-18", "2023-12-19", "2023-12-20", "2023-12-21", "2023-12-22", "2023-12-23", "2023-12-24", "2023-12-25", "2023-12-26", "2023-12-27", "2023-12-28", "2023-12-29", "2023-12-30", "2023-12-31"], "ly_gross": [5518.0, 4873.0, 6361.0, 6371.0, 5165.0, 4252.0, 6342.0, 4145.0, 5737.0, 5467.0, 5136.0, 6184.0, 6925.0, 5302.0, 5540.0, 5366.0, 6166.0, 6636.0, 6194.0, 5491.0, 4395.0, 7022.0, 3372.0, 2350.0, 3202.0, 4969.0, 6063.0, 5096.0, 14015.0, 12625.0, 9096.0], "ly_orders": [112, 112, 141, 135, 125, 101, 123, 99, 129, 118, 106, 148, 142, 126, 118, 110, 133, 130, 130, 120, 99, 135, 65, 65, 71, 102, 124, 114, 245, 213, 137], "ly_discounts": [608.0, 338.0, 394.0, 472.0, 420.0, 285.0, 569.0, 318.0, 406.0, 460.0, 443.0, 514.0, 571.0, 412.0, 280.0, 358.0, 317.0, 535.0, 510.0, 503.0, 374.0, 597.0, 183.0, 215.0, 331.0, 484.0, 427.0, 470.0, 1502.0, 1495.0, 919.0], "ly_meta_spend": [291.0, 600.0, 518.0, 510.0, 494.0, 482.0, 403.0, 305.0, 285.0, 323.0, 282.0, 220.0, 217.0, 213.0, 211.0, 203.0, 229.0, 253.0, 259.0, 333.0, 346.0, 348.0, 242.0, 268.0, 265.0, 258.0, 254.0, 251.0, 246.0, 242.0, 272.0], "ly_google_spend": [150.0, 136.0, 160.0, 197.0, 149.0, 157.0, 176.0, 102.0, 184.0, 226.0, 180.0, 166.0, 218.0, 187.0, 186.0, 230.0, 208.0, 184.0, 199.0, 220.0, 157.0, 207.0, 175.0, 153.0, 205.0, 237.0, 193.0, 200.0, 195.0, 159.0, 152.0], "ly_total_spend": [441.0, 736.0, 678.0, 707.0, 643.0, 639.0, 578.0, 407.0, 469.0, 549.0, 462.0, 386.0, 436.0, 400.0, 397.0, 433.0, 437.0, 437.0, 458.0, 553.0, 503.0, 555.0, 417.0, 422.0, 471.0, 495.0, 447.0, 451.0, 441.0, 401.0, 424.0]};
 const cumData = {"days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], "cum": [19967.0, 48823.0, 56649.0, 60657.0, 65273.0, 69814.0, 75058.0, 80929.0, 88149.0, 98206.0, 107250.0, 115628.0, 122608.0, 132408.0, 143508.0, 151052.0, 156201.0, 160398.0, 165016.0, 170649.0, 174408.0, 179701.0, 183007.0, 185524.0, 188293.0, 193301.0, 197561.0, 206626.0, 215232.0, 225720.0, 231211.0], "ly_days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], "ly_cum": [5518.0, 10391.0, 16752.0, 23124.0, 28289.0, 32541.0, 38883.0, 43028.0, 48765.0, 54232.0, 59368.0, 65552.0, 72477.0, 77779.0, 83319.0, 88685.0, 94851.0, 101487.0, 107681.0, 113172.0, 117567.0, 124589.0, 127961.0, 130311.0, 133513.0, 138482.0, 144545.0, 149641.0, 163656.0, 176281.0, 185377.0]};
 const discData = {"labels": ["Subscription (implied)", "Price Reduction Discounts", "Automatic", "Discount Codes", "Manual", "Shipping Discounts"], "values": [8969.0, 15296.0, 0, 9280.0, 975.0, 110.0], "values_ly": [5295.0, 1112.0, 0, 8588.0, 378.0, 340.0], "year": 2024, "ly_year": 2023};
+const promoBands = [];
+
+// Build annotation boxes for promo windows on the daily combo chart (daily mode only).
+function _buildPromoAnnotations() {
+    const ann = {};
+    promoBands.forEach((p, i) => {
+        ann['promo' + i] = {
+            type: 'box',
+            xMin: p.start, xMax: p.end,
+            backgroundColor: p.color + '1f',   // ~12% alpha
+            borderColor: p.color + '66', borderWidth: 1,
+            label: {
+                display: true, content: p.name, position: 'start',
+                color: p.color, font: { size: 10, weight: '600' },
+                backgroundColor: 'rgba(15,23,42,0.7)', padding: 4,
+            }
+        };
+    });
+    return ann;
+}
 
 // Global chart registry so the LY toggle can sync them all
 window._mtdCharts = [];
 const _initialLyOn = document.body.classList.contains('show-ly');
+
+// Gross Sales, Discounts & Ad Spend — daily/cumulative toggle, dual-axis line chart
+const LY_YEAR = '2023';
+function _cumsum(arr) {
+    let t = 0;
+    return arr.map(v => (t += (v || 0)));
+}
+// Pre-compute cumulative variants once
+const comboCum = {
+    gross: _cumsum(trendData.gross),
+    discounts: _cumsum(trendData.discounts),
+    spend: _cumsum(trendData.total_spend),
+    ly_gross: _cumsum(trendData.ly_gross),
+    ly_discounts: _cumsum(trendData.ly_discounts),
+    ly_spend: _cumsum(trendData.ly_total_spend),
+};
+let comboMode = 'daily';
+function _comboSeries(mode) {
+    return mode === 'cumulative'
+        ? { gross: comboCum.gross, discounts: comboCum.discounts, spend: comboCum.spend,
+             ly_gross: comboCum.ly_gross, ly_discounts: comboCum.ly_discounts, ly_spend: comboCum.ly_spend }
+        : { gross: trendData.gross, discounts: trendData.discounts, spend: trendData.total_spend,
+             ly_gross: trendData.ly_gross, ly_discounts: trendData.ly_discounts, ly_spend: trendData.ly_total_spend };
+}
+const _cs0 = _comboSeries('daily');
+const comboChart = new Chart(document.getElementById('comboChart'), {
+    type: 'line',
+    data: {
+        labels: trendData.dates.map(d => d.slice(5)),
+        datasets: [
+            { label: 'Gross Sales', data: _cs0.gross, borderColor: '#D4A843',
+               backgroundColor: 'rgba(212,168,67,0.12)', yAxisID: 'ySales',
+               tension: 0.3, borderWidth: 2.5, pointRadius: 2, fill: true, order: 1 },
+            { label: 'Total Discounts', data: _cs0.discounts, borderColor: '#f87171',
+               backgroundColor: 'rgba(248,113,113,0.08)', yAxisID: 'ySide',
+               tension: 0.3, borderWidth: 2.5, pointRadius: 2, fill: false, order: 2 },
+            { label: 'Ad Spend', data: _cs0.spend, borderColor: '#58a6ff',
+               backgroundColor: 'rgba(88,166,255,0.08)', yAxisID: 'ySide',
+               tension: 0.3, borderWidth: 2.5, pointRadius: 2, fill: false, order: 3 },
+            { _ly: true, hidden: !_initialLyOn, label: 'LY Gross Sales', data: _cs0.ly_gross,
+               borderColor: 'rgba(212,168,67,0.45)', borderDash: [4, 4], yAxisID: 'ySales',
+               tension: 0.3, borderWidth: 1.5, pointRadius: 0, fill: false, order: 4 },
+            { _ly: true, hidden: !_initialLyOn, label: 'LY Discounts', data: _cs0.ly_discounts,
+               borderColor: 'rgba(248,113,113,0.45)', borderDash: [4, 4], yAxisID: 'ySide',
+               tension: 0.3, borderWidth: 1.5, pointRadius: 0, fill: false, order: 5 },
+            { _ly: true, hidden: !_initialLyOn, label: 'LY Ad Spend', data: _cs0.ly_spend,
+               borderColor: 'rgba(88,166,255,0.45)', borderDash: [4, 4], yAxisID: 'ySide',
+               tension: 0.3, borderWidth: 1.5, pointRadius: 0, fill: false, order: 6 }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { labels: { color: '#94a3b8', font: { size: 12 }, filter: (item, data) => !data.datasets[item.datasetIndex].hidden } },
+            tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } },
+            annotation: { annotations: _buildPromoAnnotations() }
+        },
+        scales: {
+            x: { ticks: { color: '#64748b', maxRotation: 45 }, grid: { display: false } },
+            ySales: { type: 'linear', position: 'left',
+                ticks: { color: '#D4A843', callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+                title: { display: true, text: 'Gross Sales', color: '#D4A843', font: { size: 11 } },
+                grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true },
+            ySide: { type: 'linear', position: 'right',
+                ticks: { color: '#9ca3af', callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+                title: { display: true, text: 'Discounts / Ad Spend', color: '#9ca3af', font: { size: 11 } },
+                grid: { display: false }, beginAtZero: true }
+        }
+    }
+});
+window._mtdCharts.push(comboChart);
+window.setComboMode = function(mode) {
+    comboMode = mode;
+    // Promo bands are day-of-month windows — only meaningful on the daily view.
+    comboChart.options.plugins.annotation.annotations = (mode === 'daily') ? _buildPromoAnnotations() : {};
+    const cs = _comboSeries(mode);
+    const map = [cs.gross, cs.discounts, cs.spend, cs.ly_gross, cs.ly_discounts, cs.ly_spend];
+    comboChart.data.datasets.forEach((ds, i) => { ds.data = map[i]; });
+    comboChart.update();
+    document.querySelectorAll('.combo-btn').forEach(b => b.classList.toggle('active', b.dataset.comboMode === mode));
+};
 
 // Daily Gross Sales vs Daily Ad Spend (dual-axis line chart)
 const salesVsSpendChart = new Chart(document.getElementById('salesVsSpendChart'), {
