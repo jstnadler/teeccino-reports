@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-09T09:41:26.809386-07:00",
+  "lastUpdated": "2026-06-09T09:41:54.093599-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -369,16 +369,12 @@
       "emoji": "loudspeaker",
       "role": "Paid Advertising Manager",
       "workspace": "clawd-adsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Diagnose Meta Pixel event match score change (CAPI/consent/identity side) for ThemeSmith collab",
-        "source": "interactive",
-        "startedAt": "2026-06-09T18:40:00Z"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Done. Task `b16c36eb` complete — diagnosis written to outbox, daily log recorded, status reset to idle, Mission Control rebuilt.\n\n## Diagnosis: Meta CAPI AddToCart coverage gap (47%)\n\n**Root cause (mo",
-        "at": "2026-06-04T12:02:31.369784-07:00"
+        "summary": "Diagnosed Meta event match score change (CAPI/consent/identity) for ThemeSmith collab",
+        "at": "2026-06-09T18:45:00Z"
       },
       "recentActivity": [
         {
@@ -392,6 +388,12 @@
           "at": "2026-06-04T12:50:06.493900-07:00",
           "source": "gateway",
           "status": "unknown"
+        },
+        {
+          "summary": "Meta 'event match score' diagnosis (CAPI/consent/identity lane). Two distinct metrics: EMQ (0-10, driven by customer-info params) and CAPI coverage/dedup (47% known). Most-likely mover in the window is the ~6/4 consent change (native Shopify consent disabled, PieEye sole gate), which changes what user-data + server events Meta receives. Theme cleared by ThemeSmith. Decisive datapoints (live event_id, per-param EMQ breakdown, coverage gradient) are Events Manager UI-bound = Justin.",
+          "at": "2026-06-09T18:45:00Z",
+          "source": "interactive",
+          "status": "success"
         },
         {
           "summary": "Reframed CAPI coverage gap as event_id dedup-key issue, not under-sending. Confirmed single Meta source (native FB&IG channel) via Shopify publications scan; no rogue Meta pixel publication. Live event_id capture + coverage gradient are Events Manager UI-bound (Justin-keyboard) — provided exact protocol + decision tree. Confidence moderate.",
