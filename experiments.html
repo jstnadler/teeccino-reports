@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experiments — Teeccino</title>
+<style>
+  :root {
+    --bg:#1a1a2e; --card:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.1);
+    --text:#e2e8f0; --text-dim:#888; --accent:#D4A843; --green:#4ade80; --yellow:#fbbf24; --blue:#60a5fa; --purple:#a78bfa;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); color:var(--text);
+    padding:24px; padding-top:70px; line-height:1.5; min-height:100vh; }
+  header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  h1 { font-size:1.7rem; background:linear-gradient(135deg,#D4A843,#8B6914); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  h2 { font-size:1.1rem; margin:32px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h3 { font-size:.95rem; color:var(--accent); font-weight:600; }
+  .subtitle { color:var(--text-dim); font-size:.85rem; margin-bottom:18px; }
+  .badge { font-size:.7rem; padding:3px 10px; border-radius:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; display:inline-block; }
+  .badge-live { background:rgba(74,222,128,.18); color:var(--green); }
+  .badge-stub { background:rgba(251,191,36,.18); color:var(--yellow); }
+  .stats-bar { display:flex; gap:32px; margin:12px 0 28px; flex-wrap:wrap; }
+  .stat .num { font-size:2rem; font-weight:700; color:var(--accent); }
+  .stat .num.zero { color:var(--text-dim); }
+  .stat .label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:14px; }
+  .empty { padding:24px; text-align:center; color:var(--text-dim); font-style:italic;
+    background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; font-size:.88rem; }
+  .data-table { width:100%; border-collapse:separate; border-spacing:0; }
+  .data-table th, .data-table td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.85rem; vertical-align:top; }
+  .data-table th { background:rgba(212,168,67,.08); color:var(--accent); font-weight:600; text-transform:uppercase; font-size:.72rem; letter-spacing:.4px; }
+  .pill { font-size:.68rem; padding:2px 8px; border-radius:10px; background:rgba(96,165,250,.15); color:var(--blue); white-space:nowrap; }
+  .pill-design { background:rgba(251,191,36,.15); color:var(--yellow); }
+  .pill-running { background:rgba(74,222,128,.15); color:var(--green); }
+  .blocker { font-size:.74rem; color:var(--yellow); display:block; }
+  .updated-stamp { color:var(--text-dim); font-size:.75rem; }
+  .arch-block { padding:14px 18px; background:rgba(96,165,250,.05); border-left:2px solid #60a5fa;
+    border-radius:0 6px 6px 0; font-size:.86rem; line-height:1.6; margin-bottom:10px; }
+  .arch-block code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; background:rgba(212,168,67,.08); color:var(--accent); padding:2px 6px; border-radius:4px; }
+  code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; }
+</style>
+</head>
+<body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(r=>r.text()).then(html=>{
+    document.getElementById('hub-nav').innerHTML=html; document.body.classList.add('has-hub-nav');
+  }).catch(()=>{});
+</script>
+
+<header>
+  <h1>Experiments</h1>
+  <div class="subtitle">
+    <span class="badge" id="status-badge">…</span>
+    &middot; <span class="updated-stamp">Built 2026-06-10 14:47:31</span>
+  </div>
+</header>
+
+<div class="subtitle">
+  LabSmith's experimentation program — Intelligems test lifecycle + the prioritized hypothesis backlog.
+  Per-test analytics (lift, CI, SRM) populate once a test is live and the analytics pull is wired.
+</div>
+
+<h2>At a glance</h2>
+<div class="stats-bar" id="stats-bar"></div>
+
+<h2>Running tests</h2>
+<div id="running-host"></div>
+
+<h2>Recent winners <span class="updated-stamp">(last 90 days)</span></h2>
+<div id="winners-host"></div>
+
+<h2>Losers &amp; inconclusives</h2>
+<div id="losers-host"></div>
+
+<h2>Backlog — top 10 by PXL</h2>
+<div id="backlog-host"></div>
+
+<h2>How this page is built</h2>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">Intelligems snapshot</span><br>
+  <code>snapshot.py</code> pulls <code>GET /experiences-list</code> into
+  <code>data/intelligems-snapshot.json</code> and diffs state changes to
+  <code>state-change-log.jsonl</code>. Running/winner/loser rows come from there.
+</div>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">Backlog</span><br>
+  Hypotheses live in <code>data/backlog.json</code>, ranked by PXL. Status flows
+  ranked → in-design → running → won/lost/inconclusive.
+</div>
+<div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">JSON feed: experiments-data.json</span><br>
+  HubSmith may consume <code>experiments-data.json</code> (counts / running / winners / losers / backlog)
+  instead of iframing this page.
+</div>
+
+<div style="margin-top:40px;text-align:center;">
+  <span class="updated-stamp">Built by build_experiments_dashboard.py · 2026-06-10 14:47:31</span>
+</div>
+
+<script id="experiments-payload" type="application/json">{"built_at": "2026-06-10 14:47:31", "built_at_iso": "2026-06-10T21:47:31Z", "ig_connected": true, "ig_snapshot_at": "2026-06-10T21:47:31Z", "experience_count": 0, "status_counts": {}, "counts": {"running": 0, "winners": 0, "losers": 0, "backlog": 1}, "running": [], "winners": [], "losers": [], "backlog": [{"id": "fotm-upsell-format-test", "title": "FOTM PDP-upsell: offer current FOTM across formats, optimize upsell take-rate", "page": "pdp-rebuild template (PDP Add-to-Cart upsell modal)", "status": "in-design", "test_type": "content/onsite", "primary_metric": "upsell take-rate (recommended; AOV-as-primary shown non-viable — years to significance)", "pxl_score": null, "estimated_days": "4-way ~37-147d / 2-way ~14-55d depending on confirmed impression volume", "implementation_owner": "themesmith", "blockers": ["GA4 creds humanAction a5651ac0 — gates exact upcart-upsell impression volume + breadth go/no-go", "No INTELLIGEMS_API_KEY at OneDrive/Apps/Intelligems/.env yet", "Justin greenlight required before IG experience creation"]}]}</script>
+<script>
+  const D = JSON.parse(document.getElementById('experiments-payload').textContent);
+
+  // status badge
+  const badge = document.getElementById('status-badge');
+  if (D.ig_connected) { badge.textContent = 'IG connected'; badge.className = 'badge badge-live'; }
+  else { badge.textContent = 'IG not connected'; badge.className = 'badge badge-stub'; }
+
+  // stats
+  const stats = [
+    ['running','Running'],['winners','Winners (90d)'],['losers','Losers/Inconcl.'],['backlog','Backlog items'],
+  ];
+  document.getElementById('stats-bar').innerHTML = stats.map(([k,label])=>{
+    const n = D.counts[k] || 0;
+    return `<div class="stat"><div class="num ${n?'':'zero'}">${n}</div><div class="label">${label}</div></div>`;
+  }).join('');
+
+  const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+  function tableOrEmpty(host, rows, headers, rowFn, emptyMsg) {
+    const el = document.getElementById(host);
+    if (!rows || !rows.length) { el.innerHTML = `<div class="empty">${emptyMsg}</div>`; return; }
+    el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr>${
+      headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${
+      rows.map(rowFn).join('')}</tbody></table></div>`;
+  }
+
+  tableOrEmpty('running-host', D.running,
+    ['Test','Type','Status','Started','Days','Arms'],
+    r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.type)}</td>
+        <td><span class="pill pill-running">${esc(r.status)}</span></td>
+        <td>${esc(r.started_at)||'—'}</td><td>${r.days_running??'—'}</td>
+        <td>${r.variant_count??'—'}</td></tr>`,
+    'No tests running. The FOTM PDP-upsell test will appear here once greenlit + launched.');
+
+  tableOrEmpty('winners-host', D.winners,
+    ['Test','Type','Status','Ended'],
+    r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.type)}</td><td>${esc(r.status)}</td><td>${esc(r.started_at)||'—'}</td></tr>`,
+    'No declared winners yet.');
+
+  tableOrEmpty('losers-host', D.losers,
+    ['Test','Type','Status'],
+    r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.type)}</td><td>${esc(r.status)}</td></tr>`,
+    'No losers or inconclusive tests yet.');
+
+  tableOrEmpty('backlog-host', D.backlog,
+    ['Hypothesis','Page','Type','Primary metric','PXL','Est. days','Owner','Status'],
+    r=>`<tr>
+        <td>${esc(r.title)}${(r.blockers&&r.blockers.length)?r.blockers.map(b=>`<span class="blocker">⚠ ${esc(b)}</span>`).join(''):''}</td>
+        <td>${esc(r.page)}</td><td>${esc(r.test_type)}</td>
+        <td>${esc(r.primary_metric)||'—'}</td>
+        <td>${r.pxl_score??'—'}</td><td>${esc(r.estimated_days)||'—'}</td>
+        <td>${esc(r.implementation_owner)||'—'}</td>
+        <td><span class="pill ${r.status==='in-design'?'pill-design':(r.status==='running'?'pill-running':'')}">${esc(r.status)}</span></td>
+      </tr>`,
+    'Backlog is empty.');
+</script>
+</body>
+</html>
