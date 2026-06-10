@@ -89,6 +89,37 @@
     #hub-nav-bar .group-label { display: none; }
     #hub-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
   }
+
+  /* ── Report ownership badge ───────────────────────────────────────────────
+     Subtle bar rendered directly under the nav on every report, telling Justin
+     which agent maintains the page (single source of truth: pages.json `owner`).
+     Tuned for LIGHT dashboard backgrounds (host pages are light; the nav is dark).
+     IN-FLOW (not fixed/sticky) so it needs no body padding-top adjustment — the
+     nav-height sync only clears the FIXED nav, and this bar simply pushes content
+     down naturally below it. Distinct class (NOT .prov-banner) to avoid colliding
+     with CatalogSmith's Data Provenance banner, which already owns .prov-banner. */
+  #report-owner-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.8rem; line-height: 1.4;
+    color: #475569;                              /* AA on light: ~7.5:1 */
+    background: rgba(212, 168, 67, 0.07);        /* faint gold wash */
+    border-bottom: 1px solid rgba(212, 168, 67, 0.30);
+    padding: 7px 18px; margin: 0;
+  }
+  #report-owner-badge .rob-icon { font-size: 0.95rem; line-height: 1; }
+  #report-owner-badge .rob-agent {
+    display: inline-block;
+    background: #1a1a2e; color: #D4A843;         /* gold-on-dark chip: ~7:1, AA */
+    font-weight: 700; padding: 1px 8px; border-radius: 5px;
+    letter-spacing: -0.01em;
+  }
+  #report-owner-badge .rob-to { font-weight: 700; color: #334155; } /* AA on light */
+  #report-owner-badge.is-legacy {
+    background: rgba(100, 116, 139, 0.08);
+    border-bottom-color: rgba(100, 116, 139, 0.25);
+    color: #64748b;
+  }
 </style>
 <nav id="hub-nav-bar" aria-label="Reports hub navigation">
   <a class="brand" href="/teeccino-reports/index.html">☕ Teeccino Reports</a>
@@ -167,6 +198,7 @@
          __s.textContent =
            '#hub-nav, #hub-nav-bar { display: none !important; }' +
            '.prov-banner { display: none !important; }' +
+           '#report-owner-badge { display: none !important; }' +
            'body.has-hub-nav { padding-top: 0 !important; }' +
            'body { padding-top: 0 !important; }' +
            '#share-footer { margin: 64px auto 24px; padding: 20px 16px; text-align: center; ' +
@@ -195,6 +227,55 @@
            a.classList.add('active');
          }
        });
+       /* 1.5) REPORT OWNERSHIP BADGE — 'Maintained by {Agent}' bar under the nav,
+          sourced from pages.json `owner` (single source of truth → auto-covers every
+          current AND future report). Edge cases: page absent from manifest → render
+          nothing (fail safe); owner 'unknown' → muted 'no active maintainer' notice
+          (more useful to Justin than a misleading owner name). Share mode returned
+          above, so this never runs there (belt-and-suspenders: also hidden via the
+          #report-owner-badge share-mode rule). In-flow insert as first body child:
+          sits just under the fixed nav (body padding-top already clears the nav). */
+       (function renderOwnerBadge() {
+         if (here === 'index.html') return;            /* the hub itself needs no badge */
+         if (document.getElementById('report-owner-badge')) return;
+         var NAMES = {
+           agentsmith: 'AgentSmith', dataops: 'DataOps', catalogsmith: 'CatalogSmith',
+           adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
+           assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
+           labsmith: 'LabSmith', searchsmith: 'SearchSmith'
+         };
+         var esc = function (s) {
+           return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+         };
+         fetch('/teeccino-reports/pages.json')
+           .then(function (r) { return r.ok ? r.json() : null; })
+           .then(function (data) {
+             if (!data || !Array.isArray(data.pages)) return;
+             var norm = function (p) { return String(p || '').replace(/^\.?\//, ''); };
+             var entry = null;
+             for (var i = 0; i < data.pages.length; i++) {
+               if (norm(data.pages[i].path) === here) { entry = data.pages[i]; break; }
+             }
+             if (!entry) return;                         /* not in manifest → no badge */
+             var owner = (entry.owner || '').toLowerCase();
+             var bar = document.createElement('div');
+             bar.id = 'report-owner-badge';
+             bar.setAttribute('role', 'region');
+             bar.setAttribute('aria-label', 'Report ownership');
+             if (!owner || owner === 'unknown') {
+               bar.className = 'is-legacy';
+               bar.innerHTML = '<span class="rob-icon" aria-hidden="true">🗄️</span>' +
+                 '<span class="rob-text">Legacy report — no active maintainer.</span>';
+             } else {
+               var name = esc(NAMES[owner] || (owner.charAt(0).toUpperCase() + owner.slice(1)));
+               bar.innerHTML = '<span class="rob-icon" aria-hidden="true">🛠️</span>' +
+                 '<span class="rob-text">Maintained by <span class="rob-agent">' + name + '</span>' +
+                 ' — route change requests to <span class="rob-to">' + name + '</span>.</span>';
+             }
+             document.body.insertBefore(bar, document.body.firstChild);
+           })
+           .catch(function () { /* network/parse failure → fail safe, no badge */ });
+       })();
        /* 2) Dynamic body padding-top sync to actual nav height + 8px clearance.
           Adapts to any nav height (wraps, future nav additions, browser zoom) — replaces the
           brittle static 60px rule that clipped H1s on viewports below ~1700px. */
