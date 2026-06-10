@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-10T14:57:34.249425-07:00",
+  "lastUpdated": "2026-06-10T14:59:00.357839-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -236,7 +236,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 1,
+      "pendingTasks": 0,
       "health": "healthy"
     },
     {
@@ -573,10 +573,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Built daily_refresh.py + published experiments.html LIVE to hub (registered, pushed a8133e4); scheduler mechanism pending Justin",
-        "at": "2026-06-10T21:50:00Z"
+        "summary": "Experiments dashboard live + nightly auto-refresh wired via DataOps pipeline; cleaned duplicate dispatches",
+        "at": "2026-06-10T22:00:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Daily refresh scheduling DONE via DataOps piggyback (Justin's pick). daily_refresh.py wired as Step 7c in run_pipeline.py AND into daily_run.py (the script the nightly TeeccinoAnalytics task actually runs — DataOps caught that run_pipeline alone wouldn't fire nightly). Verified single coherent wiring in both; self-pushes its own files. Cleaned up 2 duplicate inbox tasks I caused by triple-dispatching.",
+          "at": "2026-06-10T22:00:00Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Built daily_refresh.py (snapshot -> inbox-on-state-change -> dashboard build -> git publish). Ran it end-to-end: HubSmith had already whitelisted 'labsmith', so registration succeeded and experiments.html is now LIVE in the hub (active-projects, owner labsmith), pushed to teeccino-reports main (a8133e4). Remaining: pick the scheduler mechanism (standalone Windows task vs piggyback DataOps run_pipeline) — system change, awaiting Justin.",
           "at": "2026-06-10T21:50:00Z",
@@ -1092,7 +1098,7 @@
       "from": "agentsmith",
       "to": "dataops",
       "summary": "Add LabSmith daily_refresh.py as a non-critical step in run_pipeline.py",
-      "status": "pending",
+      "status": "cancelled",
       "dispatched": "2026-06-10T14:56:09.752908-07:00",
       "completed": null
     },
