@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-11T11:20:59.802665-07:00",
+  "lastUpdated": "2026-06-11T13:54:27.496223-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -48,18 +48,6 @@
           "at": "2026-06-04T23:02:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Renamed Size option1 value to '3.95 oz' on Instant MM A&P Coffee (30007L) and Latte (31007L). PDP chip should now render 'Instant Coffee | 3.95 oz' and 'Instant Latte | 3.95 oz'. SKUs untouched.",
-          "at": "2026-06-04T19:45:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Reverted 40010L price swap. price $24.49 -> $9.99, compareAtPrice $9.99 -> $10.99. Siblings 40011/40016 untouched. Verified via re-query.",
-          "at": "2026-06-04T19:40:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 2,
@@ -79,12 +67,6 @@
         "at": "2026-06-11T18:55:00Z"
       },
       "recentActivity": [
-        {
-          "summary": "Done. Theme audit complete — **the theme is effectively cleared as the cause.** (Note: a parallel ThemeSmith session reclaimed `status.json` for its own QuickView work, which is also why the browser w",
-          "at": "2026-06-04T12:49:28.547678-07:00",
-          "source": "gateway",
-          "status": "unknown"
-        },
         {
           "summary": "Audit complete. Outbox filed at `outbox/2026-06-05T23-30-00Z-shop-all-sidebar-post-swap-audit.json`.\n\n## POST-SWAP AUDIT — Verdict: PASS WITH FINDINGS\n\n**Playwright was locked** by a sibling session t",
           "at": "2026-06-05T15:17:35.277791-07:00",
@@ -138,6 +120,12 @@
           "at": "2026-06-10T20:45:00Z",
           "source": "interactive",
           "status": "success"
+        },
+        {
+          "summary": "SHIPPED TO LIVE: FOTM card price now applies custom.discount, matching PDP/collection ($16.00 / SAVE 27%). Merged to main (e756c25), live theme 160800145656 verified.",
+          "at": "2026-06-10T18:28:00Z",
+          "source": "interactive",
+          "status": "success"
         }
       ],
       "pendingTasks": 5,
@@ -162,12 +150,6 @@
           "at": "2026-06-10T22:05:00+00:00",
           "source": "agentsmith",
           "status": "success"
-        },
-        {
-          "summary": "Done. Task complete.\n\n## Diagnosis: ✅ CONFIRMED real volume drop — mid-funnel storefront break\n\n**It's not a tracking artifact.** Shopify's `web` checkout channel — the exact funnel that fires Initiat",
-          "at": "2026-06-04T12:49:25.623645-07:00",
-          "source": "gateway",
-          "status": "unknown"
         },
         {
           "summary": "Wired LabSmith daily_refresh.py into run_pipeline.py as Step 7c (non-critical, required=False), invoked WITHOUT --no-git so it self-commits its own files",
@@ -216,9 +198,15 @@
           "at": "2026-06-10T00:05:00Z",
           "source": "interactive",
           "status": "success"
+        },
+        {
+          "summary": "Added a forward-looking New Customer Cohort section to the MTD dashboard: locks each month's new DTC customers and tracks repeat rate + cumulative True Gross/Net/CM/LTV:CAC as of today, split sub vs one-time first order, plus an all-months overview grid. Nightly now rebuilds all MTD pages (--all, ~19s) so archive months stay daily-fresh.",
+          "at": "2026-06-09T16:48:00Z",
+          "source": "interactive",
+          "status": "success"
         }
       ],
-      "pendingTasks": 0,
+      "pendingTasks": 1,
       "health": "healthy"
     },
     {
@@ -252,24 +240,6 @@
           "at": "2026-06-05T23:55:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Dispatched ThemeSmith for post-fix funnel verification after Justin disabled Shopify native cookie consent (was accidentally running alongside PieEye, causing double-consent conflict). 4-test Playwright protocol: (1) desktop ATC->drawer->checkout with PieEye consent accepted, (2) same flow with consent declined to verify functional cookies still allow ATC, (3) mobile viewport, (4) network instrumentation to confirm fbq/gtag/upcart/stayai/klaviyo all fire on consent grant. Output: pass/fail verdict + screenshots, then can mark incident resolved if green.",
-          "at": "2026-06-04T20:06:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Parallel triple-dispatch on the Meta CAPI investigation after CSV analysis flipped the diagnosis. Justin exported InitiateCheckout coverage from Events Manager; analysis showed (a) CAPI is firing 2.3x MORE than browser (server is fine, dedup keys mismatch is the real 'coverage' issue), and (b) BOTH browser AND server IC events dropped ~45-49% in proportion starting May 26 — meaning the underlying checkout volume dropped, not the tracking. Dispatched: DataOps (confirm/deny via Shopify + spend cross-check, isolate funnel stage), ThemeSmith (git log + live-theme push audit May 22-28, smoke-test ATC->checkout), AdSmith follow-up (sample live event_ids pixel vs CAPI, correct earlier consent-gating hypothesis). All read-only.",
-          "at": "2026-06-04T19:36:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Dispatched AdSmith for read-only Meta CAPI coverage diagnostic. Justin's screenshot of Events Manager > AddToCart shows 47% CAPI coverage (goal >=75%), 951 events under-sent via CAPI vs pixel over 7 days, Meta projecting ~54% lower CPR at threshold. Routed to AdSmith (CAPI config = paid ads lane), not ThemeSmith (pixel is firing fine, server-side mirror is the gap). Brief covers: CAPI source inventory, coverage by event type, dedup key check, pattern in the 951 missing events (including ThemeSmith's new QuickView modal on preview theme as a check), and EMQ score. AdSmith will return diagnosis + recommended fix + agent owner; no changes to CAPI/theme/Shopify in this pass.",
-          "at": "2026-06-04T19:16:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
@@ -300,12 +270,6 @@
           "at": "2026-06-04T21:13:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Full live-state carousel staleness audit: only 20 of 179 active-webproduct variants are fully 2400px. 600 stale slots across 159 SKUs (383 JPEG, 217 sub-2400px webp). The 5/27 '2400px re-sync' did not take hold at scale.",
-          "at": "2026-06-04T20:16:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
@@ -326,33 +290,9 @@
       },
       "recentActivity": [
         {
-          "summary": "Done. Task `b16c36eb` complete — diagnosis written to outbox, daily log recorded, status reset to idle, Mission Control rebuilt.\n\n## Diagnosis: Meta CAPI AddToCart coverage gap (47%)\n\n**Root cause (mo",
-          "at": "2026-06-04T12:02:31.369784-07:00",
-          "source": "gateway",
-          "status": "unknown"
-        },
-        {
-          "summary": "Task complete. Mission Control rebuilt and pushed.\n\n## Summary — task 397b4ae4 (event_id pixel-vs-CAPI dedup mismatch)\n\n**Status: partial** (the two UI-bound asks need Justin's authenticated Meta sess",
-          "at": "2026-06-04T12:50:06.493900-07:00",
-          "source": "gateway",
-          "status": "unknown"
-        },
-        {
           "summary": "Meta 'event match score' diagnosis (CAPI/consent/identity lane). Two distinct metrics: EMQ (0-10, driven by customer-info params) and CAPI coverage/dedup (47% known). Most-likely mover in the window is the ~6/4 consent change (native Shopify consent disabled, PieEye sole gate), which changes what user-data + server events Meta receives. Theme cleared by ThemeSmith. Decisive datapoints (live event_id, per-param EMQ breakdown, coverage gradient) are Events Manager UI-bound = Justin.",
           "at": "2026-06-09T18:45:00Z",
           "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Reframed CAPI coverage gap as event_id dedup-key issue, not under-sending. Confirmed single Meta source (native FB&IG channel) via Shopify publications scan; no rogue Meta pixel publication. Live event_id capture + coverage gradient are Events Manager UI-bound (Justin-keyboard) — provided exact protocol + decision tree. Confidence moderate.",
-          "at": "2026-06-04T13:05:00-07:00",
-          "source": "gateway",
-          "status": "partial"
-        },
-        {
-          "summary": "CAPI AddToCart coverage gap (47%) is almost certainly consent/identity gating on Shopify's native Meta channel, NOT a broken integration or an AddToCart-specific code bug. Single CAPI source confirmed; no rogue theme pixel; standard add-to-cart is well-instrumented.",
-          "at": "2026-06-04T12:20:00-07:00",
-          "source": "gateway",
           "status": "success"
         }
       ],
@@ -539,14 +479,24 @@
       "emoji": "test_tube",
       "role": "Experimentation & CRO",
       "workspace": "clawd-labsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "FOTM upsell: pulling early traffic/analytics from Intelligems",
+        "source": "interactive",
+        "startedAt": "2026-06-11T19:30:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "FOTM upsell test LAUNCHED + verified live (getTestGroup->latte). Monitoring begins; first SRM/take-rate read in ~24-48h.",
+        "summary": "FOTM PDP-upsell A/B test is LIVE. ThemeSmith flipped enable_ab_test ON (live commit 507cf31); I STARTED IG experiment 3a623b0c (HTTP 200, status=started) and verified the live handshake — getTestGroup returns a real arm assignment (latte) on a live PDP, both arm nodes present. First experimentation-program test launched end-to-end.",
         "at": "2026-06-11T18:55:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "FOTM PDP-upsell A/B test is LIVE. ThemeSmith flipped enable_ab_test ON (live commit 507cf31); I STARTED IG experiment 3a623b0c (HTTP 200, status=started) and verified the live handshake — getTestGroup returns a real arm assignment (latte) on a live PDP, both arm nodes present. First experimentation-program test launched end-to-end.",
+          "at": "2026-06-11T18:55:00Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Justin gave START greenlight. Dispatched ThemeSmith (urgent) to flip enable_ab_test ON + paste experiment_id/arms on live pdp-rebuild (their lane — I can't edit live theme). Holding IG START until they confirm the flip, to avoid IG assigning/counting before the theme renders arms. On confirm: START IG -> verify live assignment.",
           "at": "2026-06-11T18:30:00Z",
@@ -600,16 +550,10 @@
           "at": "2026-06-10T21:45:00Z",
           "source": "interactive",
           "status": "unknown"
-        },
-        {
-          "summary": "Intelligems External API access set up and verified. Created OneDrive - teeccino.com/Apps/Intelligems/.env (key placed by Justin), built check_connectivity.py (key never printed — redacted fingerprint only). GET /experiences-list -> HTTP 200, key fingerprint len=48 ...05e6, 0 experiences (clean account). Seeded data/intelligems-snapshot.json baseline.",
-          "at": "2026-06-10T21:20:00Z",
-          "source": "interactive",
-          "status": "unknown"
         }
       ],
       "pendingTasks": 3,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "searchsmith",
@@ -1097,6 +1041,15 @@
   ],
   "recentDispatches": [
     {
+      "id": "26f8a334-da58-4db3-9a11-2325a8be4ccb",
+      "from": "agentsmith",
+      "to": "dataops",
+      "summary": "Build source-product x arm x take-rate affinity cut for the live FOTM upsell test (accepts from Shopify orders now; exposure denom via GA4 when creds land)",
+      "status": "pending",
+      "dispatched": "2026-06-11T13:54:27.076146-07:00",
+      "completed": null
+    },
+    {
       "id": "6260edd9-074d-4a70-8ca4-b8918db69156",
       "from": "agentsmith",
       "to": "themesmith",
@@ -1265,15 +1218,6 @@
       "summary": "SEO: rewrite title_tag + meta description on carob blog article (#1 CTR opportunity)",
       "status": "pending",
       "dispatched": "2026-06-10T09:28:23.785618-07:00",
-      "completed": null
-    },
-    {
-      "id": "50a3f3eb-a871-41b2-96b8-0009a835d37e",
-      "from": "agentsmith",
-      "to": "themesmith",
-      "summary": "Scope conversion-by-source: can _atc_source ride as a cart line-item property through to the order?",
-      "status": "complete",
-      "dispatched": "2026-06-08T14:56:35.942838-07:00",
       "completed": null
     }
   ],
