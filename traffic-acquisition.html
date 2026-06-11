@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traffic Acquisition — Teeccino</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha512-SIMGYRUjwY8+gKg7nn9EItdD8LCADSDfJNutF9TPrvEo86sQmFMh6MyralfIyhADlajSxqc7G0gs7+MwWF/ogQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<style>
+  :root {
+    --bg:#1a1a2e; --card:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.1);
+    --text:#e2e8f0; --text-dim:#888; --accent:#D4A843; --green:#4ade80; --red:#f87171; --yellow:#fbbf24;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); color:var(--text);
+    padding:24px; padding-top:70px; line-height:1.5; min-height:100vh; }
+  .container { max-width:1400px; margin:0 auto; }
+  header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  h1 { font-size:1.9rem; background:linear-gradient(135deg,#D4A843,#F5D784,#D4A843); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  h2 { font-size:1.1rem; margin:34px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h3 { font-size:.95rem; color:var(--accent); font-weight:600; }
+  .subtitle { color:var(--text-dim); font-size:.85rem; margin-bottom:8px; }
+  .xlink { font-size:.82rem; margin:4px 0 18px; color:var(--text-dim); }
+  .xlink a { color:#7dd3fc; text-decoration:none; } .xlink a:hover { text-decoration:underline; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin:18px 0 8px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .kpi .label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
+  .kpi .num { font-size:1.9rem; font-weight:700; color:var(--accent); margin-top:4px; }
+  .kpi .yoy { font-size:.78rem; margin-top:4px; }
+  .up { color:var(--green); } .down { color:var(--red); } .flat { color:var(--text-dim); }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:900px) { .grid-2 { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:14px; }
+  .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+  .chart-wrap canvas { width:100%!important; max-height:360px; }
+  .data-table { width:100%; border-collapse:separate; border-spacing:0; }
+  .data-table th, .data-table td { padding:9px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.84rem; }
+  .data-table th { background:rgba(212,168,67,.08); color:var(--accent); font-weight:600; text-transform:uppercase; font-size:.7rem; letter-spacing:.4px; }
+  .data-table td:nth-child(n+3), .data-table th:nth-child(n+3) { text-align:right; font-variant-numeric:tabular-nums; }
+  .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; vertical-align:middle; }
+  .updated-stamp { color:var(--text-dim); font-size:.75rem; }
+  .tabs { display:inline-flex; gap:6px; margin-bottom:10px; }
+  .tabs button { background:rgba(255,255,255,.05); border:1px solid var(--border); color:var(--text-dim);
+    padding:6px 14px; border-radius:999px; font-size:.8rem; cursor:pointer; }
+  .tabs button.active { background:rgba(212,168,67,.2); color:#fde68a; border-color:rgba(212,168,67,.4); }
+  .empty { padding:24px; text-align:center; color:var(--text-dim); font-style:italic; }
+</style>
+</head>
+<body>
+
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html.
+     The ownership badge ("Maintained by DataOps") rides this same partial via pages.json owner. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+    })
+    .catch(() => {});
+</script>
+
+<div class="container">
+<header>
+  <h1>Traffic Acquisition</h1>
+  <div class="updated-stamp">Updated 2026-06-11 16:38:24</div>
+</header>
+<div class="subtitle" id="window-label">…</div>
+<div class="xlink">
+  Top-of-funnel session volume (GA4). For the organic-search deep-dive see
+  <a href="/teeccino-reports/search-performance.html">Search Performance</a>;
+  for channel <em>revenue</em> see <a href="/teeccino-reports/analytics.html">Analytics</a>.
+</div>
+
+<div id="content"></div>
+
+<div style="margin-top:40px;text-align:center;">
+  <span class="updated-stamp">Built by build_traffic_acquisition_dashboard.py · 2026-06-11 16:38:24 · Source: GA4 (raw_ga4_traffic / raw_ga4_landing)</span>
+</div>
+</div>
+
+<script id="ta-payload" type="application/json">{"built_at": "2026-06-11 16:38:24", "ga4_available": true, "max_date": "2026-06-11", "methodology": "Headline KPIs (sessions, users, new vs returning, engagement rate) come from GA4's date-grain totals \u2014 the only additivity-correct source. Channel/source/device breakdowns use the dimensioned report; sessions, purchases and revenue are additive there, but GA4 users and engagement-rate are NOT additive across dimensions, so per-channel session SHARE and additive metrics are what's shown, not a summed user count.", "hero": {"month_label": "June 2026", "window_label": "Through 2026-06-11 \u2014 11 of 30 days", "yoy_window_label": "vs 2025-06-01\u21922025-06-11", "sessions": {"value": 18694, "prior": 59377, "abs": -40683, "pct": -0.6852}, "new_users": {"value": 13202, "prior": 51369, "abs": -38167, "pct": -0.743}, "new_session_pct": {"value": 0.769, "prior": 0.9409, "abs": -0.1719, "pct": -0.1827}, "engagement_rate": {"value": 0.5652, "prior": 0.9434, "abs": -0.3782, "pct": -0.4009}, "new_sessions": 13509, "returning_sessions": 4057, "ga4_conv_rate": {"value": 0.0138, "prior": 0.0089, "abs": 0.0049, "pct": 0.5506}, "purchase_revenue": 13565.98}, "by_channel": [{"channel": "Direct", "color": "#D4A843", "sessions": 5918, "users": 5657, "share": 0.2946, "engagement_rate": 0.4013, "purchases": 61, "revenue": 3370.8, "yoy_pct": -0.8714}, {"channel": "Organic Social", "color": "#f472b6", "sessions": 3942, "users": 3592, "share": 0.1963, "engagement_rate": 0.7405, "purchases": 7, "revenue": 359.2, "yoy_pct": 1.1366}, {"channel": "Cross-network", "color": "#f87171", "sessions": 2436, "users": 2153, "share": 0.1213, "engagement_rate": 0.7016, "purchases": 53, "revenue": 2814.34, "yoy_pct": 0.4692}, {"channel": "Unassigned", "color": "#64748b", "sessions": 2359, "users": 2218, "share": 0.1175, "engagement_rate": 0.0835, "purchases": 37, "revenue": 2143.33, "yoy_pct": -0.186}, {"channel": "Email", "color": "#fbbf24", "sessions": 1939, "users": 1720, "share": 0.0965, "engagement_rate": 0.6643, "purchases": 58, "revenue": 2798.86, "yoy_pct": 0.0238}, {"channel": "Organic Search", "color": "#4ade80", "sessions": 1918, "users": 1753, "share": 0.0955, "engagement_rate": 0.6303, "purchases": 11, "revenue": 530.84, "yoy_pct": -0.2352}, {"channel": "SMS", "color": "#facc15", "sessions": 834, "users": 718, "share": 0.0415, "engagement_rate": 0.4808, "purchases": 20, "revenue": 979.26, "yoy_pct": 0.1135}, {"channel": "Paid Search", "color": "#60a5fa", "sessions": 285, "users": 256, "share": 0.0142, "engagement_rate": 0.7404, "purchases": 4, "revenue": 134.41, "yoy_pct": -0.246}, {"channel": "Referral", "color": "#22d3ee", "sessions": 212, "users": 186, "share": 0.0106, "engagement_rate": 0.5283, "purchases": 4, "revenue": 262.97, "yoy_pct": -0.6841}, {"channel": "Paid Social", "color": "#a78bfa", "sessions": 140, "users": 126, "share": 0.007, "engagement_rate": 0.7929, "purchases": 0, "revenue": 0.0, "yoy_pct": 14.5556}, {"channel": "Organic Shopping", "color": "#34d399", "sessions": 94, "users": 79, "share": 0.0047, "engagement_rate": 0.5957, "purchases": 3, "revenue": 171.97, "yoy_pct": -0.5587}, {"channel": "AI Assistant", "color": "#7dd3fc", "sessions": 6, "users": 6, "share": 0.0003, "engagement_rate": 0.0, "purchases": 0, "revenue": 0.0, "yoy_pct": null}, {"channel": "Paid Shopping", "color": "#818cf8", "sessions": 1, "users": 1, "share": 0.0, "engagement_rate": 0.0, "purchases": 0, "revenue": 0.0, "yoy_pct": -0.9982}, {"channel": "Paid Other", "color": "#94a3b8", "sessions": 1, "users": 1, "share": 0.0, "engagement_rate": 1.0, "purchases": 0, "revenue": 0.0, "yoy_pct": -0.6667}], "by_source_medium": [{"source": "(direct)", "medium": "(none)", "channel": "Direct", "sessions": 5918, "users": 5657, "engagement_rate": 0.4013, "avg_engagement_secs": 19.2, "purchases": 61, "revenue": 3370.8}, {"source": "google", "medium": "cpc", "channel": "Cross-network", "sessions": 2620, "users": 2310, "engagement_rate": 0.7218, "avg_engagement_secs": 55.8, "purchases": 57, "revenue": 2948.75}, {"source": "(not set)", "medium": "(not set)", "channel": "Unassigned", "sessions": 2270, "users": 2136, "engagement_rate": 0.0577, "avg_engagement_secs": 25.7, "purchases": 37, "revenue": 2143.33}, {"source": "google", "medium": "organic", "channel": "Organic Search", "sessions": 1621, "users": 1488, "engagement_rate": 0.6243, "avg_engagement_secs": 38.0, "purchases": 9, "revenue": 476.3}, {"source": "attentive", "medium": "sms", "channel": "SMS", "sessions": 834, "users": 718, "engagement_rate": 0.4808, "avg_engagement_secs": 35.6, "purchases": 20, "revenue": 979.26}, {"source": "Engaged 30 Days | Teeccino Newsletter", "medium": "email", "channel": "Email", "sessions": 579, "users": 522, "engagement_rate": 0.6822, "avg_engagement_secs": 43.4, "purchases": 11, "revenue": 559.56}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | Value Video Ads", "channel": "Organic Social", "sessions": 526, "users": 480, "engagement_rate": 0.8745, "avg_engagement_secs": 0.1, "purchases": 0, "revenue": 0.0}, {"source": "Facebookads", "medium": "US | Retargeting | M+F | 18-65 | IG Post", "channel": "Organic Social", "sessions": 468, "users": 401, "engagement_rate": 0.7714, "avg_engagement_secs": 1.2, "purchases": 1, "revenue": 15.3}, {"source": "Interest: Herbal Tea", "medium": "email", "channel": "Email", "sessions": 421, "users": 373, "engagement_rate": 0.62, "avg_engagement_secs": 66.4, "purchases": 13, "revenue": 548.93}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | Herbal Tea Ads", "channel": "Organic Social", "sessions": 307, "users": 283, "engagement_rate": 0.7915, "avg_engagement_secs": 0.1, "purchases": 0, "revenue": 0.0}, {"source": "Facebookads", "medium": "Retargeting | US | M+F | 18-65 | Instant Blend Content Videos", "channel": "Organic Social", "sessions": 270, "users": 236, "engagement_rate": 0.8037, "avg_engagement_secs": 1.0, "purchases": 0, "revenue": 0.0}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | IG Posts", "channel": "Organic Social", "sessions": 268, "users": 256, "engagement_rate": 0.7052, "avg_engagement_secs": 1.0, "purchases": 0, "revenue": 0.0}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | Multiple Flavours", "channel": "Organic Social", "sessions": 221, "users": 205, "engagement_rate": 0.7014, "avg_engagement_secs": 5.9, "purchases": 0, "revenue": 0.0}, {"source": "Repeat Buyers | 2+", "medium": "email", "channel": "Email", "sessions": 166, "users": 140, "engagement_rate": 0.7108, "avg_engagement_secs": 69.3, "purchases": 8, "revenue": 430.42}, {"source": "Facebookads", "medium": "Retargeting | US | M+F | 18-65 | Value Video Ads", "channel": "Organic Social", "sessions": 158, "users": 135, "engagement_rate": 0.7722, "avg_engagement_secs": 0.3, "purchases": 0, "revenue": 0.0}, {"source": "l.facebook.com", "medium": "referral", "channel": "Organic Social", "sessions": 151, "users": 135, "engagement_rate": 0.6556, "avg_engagement_secs": 12.9, "purchases": 2, "revenue": 79.87}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | Less Is More", "channel": "Organic Social", "sessions": 140, "users": 132, "engagement_rate": 0.7286, "avg_engagement_secs": 0.0, "purchases": 0, "revenue": 0.0}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | krystalsahm Partnership Ads", "channel": "Organic Social", "sessions": 135, "users": 133, "engagement_rate": 0.6667, "avg_engagement_secs": 4.6, "purchases": 0, "revenue": 0.0}, {"source": "bing", "medium": "organic", "channel": "Organic Search", "sessions": 132, "users": 117, "engagement_rate": 0.7273, "avg_engagement_secs": 85.1, "purchases": 2, "revenue": 58.58}, {"source": "High Engaged 8+ | 60 Days", "medium": "email", "channel": "Email", "sessions": 130, "users": 117, "engagement_rate": 0.4385, "avg_engagement_secs": 16.9, "purchases": 1, "revenue": 39.98}, {"source": "Facebookads", "medium": "US | M+F | 18-65 | FOTM", "channel": "Organic Social", "sessions": 126, "users": 116, "engagement_rate": 0.754, "avg_engagement_secs": 2.0, "purchases": 0, "revenue": 0.0}, {"source": "facebook", "medium": "paid", "channel": "Paid Social", "sessions": 117, "users": 103, "engagement_rate": 0.7692, "avg_engagement_secs": 13.9, "purchases": 0, "revenue": 0.0}, {"source": "(data not available)", "medium": "(data not available)", "channel": "Cross-network", "sessions": 101, "users": 99, "engagement_rate": 0.2772, "avg_engagement_secs": 13.8, "purchases": 0, "revenue": 0.0}, {"source": "Engaged | 90 Days", "medium": "email", "channel": "Email", "sessions": 99, "users": 92, "engagement_rate": 0.7475, "avg_engagement_secs": 50.5, "purchases": 1, "revenue": 59.97}, {"source": "High Engaged 4+ | 30 Days", "medium": "email", "channel": "Email", "sessions": 98, "users": 78, "engagement_rate": 0.7143, "avg_engagement_secs": 39.1, "purchases": 3, "revenue": 143.56}], "by_device": [{"device": "mobile", "color": "#4ade80", "sessions": 12078, "share": 0.6013, "engagement_rate": 0.5762}, {"device": "desktop", "color": "#60a5fa", "sessions": 7308, "share": 0.3639, "engagement_rate": 0.432}, {"device": "tablet", "color": "#fbbf24", "sessions": 676, "share": 0.0337, "engagement_rate": 0.6997}, {"device": "smart tv", "color": "#a78bfa", "sessions": 23, "share": 0.0011, "engagement_rate": 0.0}], "daily_trend": {"dates": ["2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-06", "2026-06-07", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11"], "channels": [{"channel": "Direct", "color": "#D4A843", "data": [495, 420, 606, 504, 1470, 304, 530, 485, 417, 392, 295]}, {"channel": "Organic Social", "color": "#f472b6", "data": [334, 303, 246, 624, 456, 424, 408, 471, 407, 198, 71]}, {"channel": "Cross-network", "color": "#f87171", "data": [205, 266, 202, 249, 265, 216, 264, 209, 232, 219, 109]}, {"channel": "Unassigned", "color": "#64748b", "data": [93, 52, 46, 62, 108, 35, 61, 49, 42, 1123, 688]}, {"channel": "Email", "color": "#fbbf24", "data": [110, 69, 166, 165, 164, 64, 400, 374, 129, 147, 151]}, {"channel": "Organic Search", "color": "#4ade80", "data": [196, 197, 168, 137, 151, 205, 156, 268, 192, 166, 82]}, {"channel": "Other", "color": "#475569", "data": [233, 189, 165, 151, 65, 48, 113, 103, 94, 331, 81]}]}, "monthly_trend": {"months": ["2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"], "channels": [{"channel": "Direct", "color": "#D4A843", "data": [8735, 8997, 9972, 25728, 26716, 32928, 33392, 41031, 31488, 75661, 111032, 164797, 170678, 214762, 81372, 58024, 44698, 76469, 66834, 55927, 49423, 47713, 42732, 22459, 5918]}, {"channel": "Organic Social", "color": "#f472b6", "data": [1193, 1848, 2219, 1481, 2075, 2860, 2045, 2425, 2633, 16957, 18629, 7503, 4910, 6740, 9382, 16309, 13491, 22290, 15684, 27825, 24299, 18942, 15177, 15534, 3942]}, {"channel": "Cross-network", "color": "#f87171", "data": [3638, 3523, 4759, 7033, 7679, 9924, 7766, 11089, 9599, 9921, 7544, 6797, 4918, 2516, 2680, 4656, 6264, 8042, 7309, 11457, 10509, 10763, 8119, 8726, 2436]}, {"channel": "Unassigned", "color": "#64748b", "data": [235, 313, 419, 1156, 1653, 1956, 2263, 2534, 2199, 4044, 8195, 13346, 10527, 6265, 5152, 4952, 5472, 5927, 3746, 4370, 7349, 8462, 6001, 3286, 2359]}, {"channel": "Email", "color": "#fbbf24", "data": [8638, 8481, 7181, 6705, 10332, 12408, 9583, 7716, 8098, 9301, 13098, 7930, 5517, 6454, 8604, 8097, 8552, 15706, 6096, 7684, 7834, 6633, 6677, 7445, 1939]}, {"channel": "Organic Search", "color": "#4ade80", "data": [8206, 8478, 8809, 9716, 9780, 10328, 9811, 11639, 10302, 10739, 10463, 9151, 7658, 9395, 10215, 7870, 11864, 7623, 7688, 8036, 6957, 6677, 6128, 6208, 1918]}, {"channel": "Other", "color": "#475569", "data": [11753, 13743, 15437, 12945, 15944, 20060, 11717, 13050, 12250, 10091, 8773, 7483, 6269, 6104, 6956, 8204, 7928, 8693, 7318, 7473, 7110, 7206, 9551, 6790, 1573]}]}, "top_landing": [{"page": "(not set)", "sessions": 2131, "engagement_rate": 0.0399, "purchases": 6, "revenue": 417.83}, {"page": "/collections/all", "sessions": 1607, "engagement_rate": 0.6285, "purchases": 21, "revenue": 930.11}, {"page": "/web-pixels@a9664f44w6a62cec8p04af10e4mb91e3447/custom/web-pixel-146800888@4/sandbox/modern/collections/all", "sessions": 1134, "engagement_rate": 0.7593, "purchases": 9, "revenue": 340.48}, {"page": "/", "sessions": 885, "engagement_rate": 0.4249, "purchases": 10, "revenue": 598.0}, {"page": "/web-pixels@a9664f44w6a62cec8p04af10e4mb91e3447/custom/web-pixel-146800888@4/sandbox/modern", "sessions": 593, "engagement_rate": 0.7572, "purchases": 14, "revenue": 887.67}, {"page": "/web-pixels@14317f4cwb3641f09pe2e0735bm25c2fb3e/custom/web-pixel-146800888@4/sandbox/modern/collections/all", "sessions": 553, "engagement_rate": 0.8499, "purchases": 8, "revenue": 346.46}, {"page": "/collections/herbal-tea", "sessions": 456, "engagement_rate": 0.5088, "purchases": 1, "revenue": 63.98}, {"page": "/web-pixels@c5a2dbecw2e5701dcp16d0b08em93d9521b/custom/web-pixel-146800888@4/sandbox/modern/collections/all", "sessions": 447, "engagement_rate": 0.7942, "purchases": 2, "revenue": 118.93}, {"page": "/web-pixels@c5a2dbecw2e5701dcp16d0b08em93d9521b/custom/web-pixel-146800888@4/sandbox/modern", "sessions": 368, "engagement_rate": 0.8043, "purchases": 3, "revenue": 117.23}, {"page": "/collections/herbal-coffee", "sessions": 306, "engagement_rate": 0.4771, "purchases": 6, "revenue": 231.1}, {"page": "/web-pixels@a9664f44w6a62cec8p04af10e4mb91e3447/custom/web-pixel-146800888@4/sandbox/modern/collections/herbal-tea", "sessions": 295, "engagement_rate": 0.7831, "purchases": 1, "revenue": 50.97}, {"page": "/apps/retextion", "sessions": 226, "engagement_rate": 0.5796, "purchases": 1, "revenue": 29.98}, {"page": "/products/teeccino-insulated-french-press-pot", "sessions": 212, "engagement_rate": 0.0755, "purchases": 0, "revenue": 0.0}, {"page": "/blogs/news/5-tips-to-relieve-heartburn-and-prevent-gerd", "sessions": 203, "engagement_rate": 0.6601, "purchases": 1, "revenue": 69.27}, {"page": "/web-pixels@14317f4cwb3641f09pe2e0735bm25c2fb3e/custom/web-pixel-146800888@4/sandbox/modern", "sessions": 191, "engagement_rate": 0.8377, "purchases": 2, "revenue": 94.97}, {"page": "/products/miraculous-mushrooms-herbal-coffee", "sessions": 182, "engagement_rate": 0.6264, "purchases": 7, "revenue": 422.41}, {"page": "/web-pixels@a9664f44w6a62cec8p04af10e4mb91e3447/custom/web-pixel-146800888@4/sandbox/modern/collections/herbal-coffee", "sessions": 181, "engagement_rate": 0.8122, "purchases": 2, "revenue": 88.7}, {"page": "/web-pixels@c5a2dbecw2e5701dcp16d0b08em93d9521b/custom/web-pixel-146800888@4/sandbox/modern/collections/herbal-tea", "sessions": 174, "engagement_rate": 0.8736, "purchases": 0, "revenue": 0.0}, {"page": "/web-pixels@92a8a06fwb322a1c9p17c06dcam2ff77c86/custom/web-pixel-146800888@4/sandbox/modern/collections/all", "sessions": 172, "engagement_rate": 0.8372, "purchases": 2, "revenue": 82.71}, {"page": "/products/teeccino-stainless-steel-insulated-travel-mug-plum", "sessions": 165, "engagement_rate": 0.5091, "purchases": 2, "revenue": 143.93}, {"page": "/web-pixels@a9664f44w6a62cec8p04af10e4mb91e3447/custom/web-pixel-146800888@4/sandbox/modern/blogs/news/5-tips-to-relieve-heartburn-and-prevent-gerd", "sessions": 161, "engagement_rate": 0.6646, "purchases": 1, "revenue": 19.99}, {"page": "/blogs/news/hyaluronic-acid-acupuncture-and-the-interstitium", "sessions": 129, "engagement_rate": 0.7287, "purchases": 3, "revenue": 149.94}, {"page": "/search", "sessions": 128, "engagement_rate": 0.2812, "purchases": 2, "revenue": 68.74}, {"page": "/web-pixels@14317f4cwb3641f09pe2e0735bm25c2fb3e/custom/web-pixel-146800888@4/sandbox/modern/collections/herbal-tea", "sessions": 126, "engagement_rate": 0.8333, "purchases": 0, "revenue": 0.0}, {"page": "/web-pixels@a9664f44w6a62cec8p04af10e4mb91e3447/custom/web-pixel-146800888@4/sandbox/modern/shop", "sessions": 117, "engagement_rate": 0.8803, "purchases": 1, "revenue": 25.99}]}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('ta-payload').textContent);
+  const fmtInt=(n)=>n==null?'--':Math.round(n).toLocaleString('en-US');
+  const fmtMoney=(n)=>n==null?'--':'$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const fmtPct=(n)=>n==null?'--':(n*100).toFixed(1)+'%';
+  const fmtSec=(n)=>n==null?'--':(n>=60?(n/60).toFixed(1)+'m':Math.round(n)+'s');
+  const esc=(s)=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+  if (!D.ga4_available) {
+    document.getElementById('content').innerHTML='<div class="empty">No GA4 traffic data yet. Run ingest_ga4.py.</div>';
+    return;
+  }
+  document.getElementById('window-label').textContent =
+    D.hero.month_label + ' — ' + D.hero.window_label + '  ·  ' + D.hero.yoy_window_label + ' (YoY)';
+
+  // ---- YoY pill helper ----
+  const yoyPill=(d,invert=false,isPct=false)=>{
+    if (d.pct==null) return '<span class="yoy flat">— no prior yr</span>';
+    const good = invert ? d.pct<0 : d.pct>0;
+    const cls = d.pct===0?'flat':(good?'up':'down');
+    const arrow = d.pct>0?'▲':(d.pct<0?'▼':'■');
+    return `<span class="yoy ${cls}">${arrow} ${(Math.abs(d.pct)*100).toFixed(1)}% YoY</span>`;
+  };
+
+  // ---- Hero KPIs ----
+  const h=D.hero;
+  document.getElementById('content').insertAdjacentHTML('beforeend', `
+    <div class="kpi-grid">
+      <div class="kpi"><div class="label">Sessions (MTD)</div><div class="num">${fmtInt(h.sessions.value)}</div>${yoyPill(h.sessions)}</div>
+      <div class="kpi"><div class="label">New Users (MTD)</div><div class="num">${fmtInt(h.new_users.value)}</div>${yoyPill(h.new_users)}</div>
+      <div class="kpi"><div class="label">% New Sessions</div><div class="num">${fmtPct(h.new_session_pct.value)}</div>
+        <div class="yoy flat">${fmtInt(h.new_sessions)} new · ${fmtInt(h.returning_sessions)} ret</div></div>
+      <div class="kpi"><div class="label">Engagement Rate</div><div class="num">${fmtPct(h.engagement_rate.value)}</div>${yoyPill(h.engagement_rate)}</div>
+      <div class="kpi"><div class="label">GA4 Conv. Rate</div><div class="num">${fmtPct(h.ga4_conv_rate.value)}</div>${yoyPill(h.ga4_conv_rate)}</div>
+    </div>
+    <div class="subtitle" style="margin-top:-2px;font-size:.78rem;">${D.methodology}</div>`);
+
+  // ---- Channel donut + table ----
+  document.getElementById('content').insertAdjacentHTML('beforeend', `
+    <h2>Sessions by Channel Group</h2>
+    <div class="grid-2">
+      <div class="chart-wrap"><h3>Share of sessions (MTD)</h3><canvas id="donut"></canvas></div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="data-table" id="ch-table"><thead><tr>
+          <th>Channel</th><th>Sessions</th><th>Share</th><th>Eng. Rate</th><th>YoY</th><th>Revenue</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+    </div>`);
+  document.querySelector('#ch-table tbody').innerHTML = D.by_channel.map(c=>{
+    const yoy = c.yoy_pct==null?'<span class="flat">—</span>':
+      `<span class="${c.yoy_pct>0?'up':(c.yoy_pct<0?'down':'flat')}">${c.yoy_pct>0?'+':''}${(c.yoy_pct*100).toFixed(0)}%</span>`;
+    return `<tr><td><span class="swatch" style="background:${c.color}"></span>${esc(c.channel)}</td>
+      <td>${fmtInt(c.sessions)}</td><td>${fmtPct(c.share)}</td><td>${fmtPct(c.engagement_rate)}</td>
+      <td>${yoy}</td><td>${fmtMoney(c.revenue)}</td></tr>`;
+  }).join('');
+  const topCh=D.by_channel.slice(0,8);
+  new Chart(document.getElementById('donut'),{
+    type:'doughnut',
+    data:{labels:topCh.map(c=>c.channel),datasets:[{data:topCh.map(c=>c.sessions),
+      backgroundColor:topCh.map(c=>c.color),borderColor:'#1a1a2e',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',
+      labels:{color:'#e2e8f0',usePointStyle:true,padding:10,font:{size:11}}}}}
+  });
+
+  // ---- Sessions-by-channel trend (MTD daily + 24mo monthly tabs) ----
+  document.getElementById('content').insertAdjacentHTML('beforeend', `
+    <h2>Sessions Trend by Channel</h2>
+    <div class="tabs"><button id="tab-daily" class="active">Daily (MTD)</button><button id="tab-monthly">Monthly (24mo)</button></div>
+    <div class="chart-wrap"><canvas id="trend"></canvas></div>`);
+  let trendChart=null;
+  function drawTrend(mode){
+    const src = mode==='daily'?D.daily_trend:D.monthly_trend;
+    const labels = mode==='daily'?src.dates:src.months;
+    const datasets = src.channels.map(c=>({label:c.channel,backgroundColor:c.color+'cc',
+      borderColor:c.color,data:c.data,fill:true,tension:.25,pointRadius:0}));
+    if (trendChart) trendChart.destroy();
+    trendChart=new Chart(document.getElementById('trend'),{
+      type:'line',data:{labels,datasets},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{color:'#e2e8f0',usePointStyle:true,padding:10,font:{size:11}}}},
+        scales:{x:{stacked:true,ticks:{color:'#888',maxRotation:0,autoSkip:true,maxTicksLimit:12},grid:{color:'rgba(255,255,255,.04)'}},
+          y:{stacked:true,beginAtZero:true,ticks:{color:'#888'},grid:{color:'rgba(255,255,255,.06)'}}}}
+    });
+  }
+  drawTrend('daily');
+  document.getElementById('tab-daily').onclick=function(){this.classList.add('active');document.getElementById('tab-monthly').classList.remove('active');drawTrend('daily');};
+  document.getElementById('tab-monthly').onclick=function(){this.classList.add('active');document.getElementById('tab-daily').classList.remove('active');drawTrend('monthly');};
+
+  // ---- Source / Medium + Device ----
+  document.getElementById('content').insertAdjacentHTML('beforeend', `
+    <h2>Source / Medium &amp; Device</h2>
+    <div class="grid-2">
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="data-table" id="sm-table"><thead><tr>
+          <th>Source / Medium</th><th>Channel</th><th>Sessions</th><th>Eng. Rate</th><th>Avg Time</th><th>Revenue</th>
+        </tr></thead><tbody></tbody></table>
+      </div>
+      <div>
+        <div class="chart-wrap"><h3>Device split</h3><canvas id="device"></canvas></div>
+      </div>
+    </div>`);
+  document.querySelector('#sm-table tbody').innerHTML = D.by_source_medium.map(r=>`
+    <tr><td>${esc(r.source)} / ${esc(r.medium)}</td><td>${esc(r.channel)}</td>
+    <td>${fmtInt(r.sessions)}</td><td>${fmtPct(r.engagement_rate)}</td>
+    <td>${fmtSec(r.avg_engagement_secs)}</td><td>${fmtMoney(r.revenue)}</td></tr>`).join('');
+  new Chart(document.getElementById('device'),{
+    type:'doughnut',
+    data:{labels:D.by_device.map(d=>d.device),datasets:[{data:D.by_device.map(d=>d.sessions),
+      backgroundColor:D.by_device.map(d=>d.color),borderColor:'#1a1a2e',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',
+      labels:{color:'#e2e8f0',usePointStyle:true,padding:10,font:{size:11}}}}}
+  });
+
+  // ---- Top landing pages ----
+  document.getElementById('content').insertAdjacentHTML('beforeend', `
+    <h2>Top Landing Pages (MTD)</h2>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="data-table" id="lp-table"><thead><tr>
+        <th>Landing Page</th><th>&nbsp;</th><th>Sessions</th><th>Eng. Rate</th><th>Purchases</th><th>Revenue</th>
+      </tr></thead><tbody></tbody></table>
+    </div>`);
+  document.querySelector('#lp-table tbody').innerHTML = D.top_landing.map(p=>`
+    <tr><td colspan="2">${esc(p.page)}</td><td>${fmtInt(p.sessions)}</td>
+    <td>${fmtPct(p.engagement_rate)}</td><td>${fmtInt(p.purchases)}</td><td>${fmtMoney(p.revenue)}</td></tr>`).join('');
+})();
+</script>
+</body>
+</html>
