@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-11T10:45:09.044632-07:00",
+  "lastUpdated": "2026-06-11T10:45:53.525831-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -155,16 +155,12 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "working",
-      "currentTask": {
-        "summary": "Scope + propose traffic-acquisition.html (site traffic by acquisition channel)",
-        "source": "agentsmith",
-        "startedAt": "2026-06-11T14:05:00Z"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Wired LabSmith daily_refresh.py into BOTH orchestrators. Critical fix: run_pipeline.py alone would never fire nightly — the scheduled task runs daily_run.py, so wired it there too.",
-        "at": "2026-06-10T22:05:00+00:00"
+        "summary": "Scoped + proposed traffic-acquisition.html — GA4 auth confirmed sufficient, needs new raw_ga4_traffic table; ~1.5-2d; awaiting Justin approve-to-build",
+        "at": "2026-06-11T14:12:00Z"
       },
       "recentActivity": [
         {
@@ -204,6 +200,12 @@
           "status": "success"
         },
         {
+          "summary": "SCOPE+PROPOSE ONLY (no build). Traffic-by-channel is NOT yet in the pipeline — GA4 only holds event-level ATC/upsell data. But the GA4 Data API auth (OAuth user-delegated, analytics.readonly) already covers full session/user/channel reporting; live-tested sessions by sessionDefaultChannelGroup, source/medium, device — all return clean data back to 2023-01-01. Proposed traffic-acquisition.html needs ONE new raw_ga4_traffic table + a new pull function in ingest_ga4.py. Effort ~1.5-2 days. Awaiting Justin approve-to-build.",
+          "at": "2026-06-11T14:10:00Z",
+          "source": "agentsmith",
+          "status": "success"
+        },
+        {
           "summary": "Built a cloud heartbeat (dead-man's-switch) for the data pipeline: published a machine-readable status.json feed + a daily 9:15 AM cloud routine that alerts Justin if the morning run silently skips.",
           "at": "2026-06-10T17:00:00Z",
           "source": "interactive",
@@ -220,16 +222,10 @@
           "at": "2026-06-10T00:05:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Added a forward-looking New Customer Cohort section to the MTD dashboard: locks each month's new DTC customers and tracks repeat rate + cumulative True Gross/Net/CM/LTV:CAC as of today, split sub vs one-time first order, plus an all-months overview grid. Nightly now rebuilds all MTD pages (--all, ~19s) so archive months stay daily-fresh.",
-          "at": "2026-06-09T16:48:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "agentsmith",
