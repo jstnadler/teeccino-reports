@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-11T16:32:15.181236-07:00",
+  "lastUpdated": "2026-06-11T16:34:06.446211-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -139,7 +139,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 6,
+      "pendingTasks": 5,
       "health": "healthy"
     },
     {
@@ -302,6 +302,12 @@
         "at": "2026-06-11T16:42:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Relayed ThemeSmith's result on the keyless-ATC pixel fix to Justin. Root cause CONFIRMED: custom Customer Events pixel 146800888's AddToCart branch fires browser fbq without a shared eventID (or one not mirrored to CAPI), unlike the working Purchase/IC branches. Fix pattern agreed (one eventID per ATC event -> both fbq 4th-arg and CAPI event_id, reuse existing generator, consent untouched). BLOCKED on source: custom pixel JS is only human-readable in Shopify Admin -> Settings -> Customer events; read_pixels scope denied to both ThemeSmith and Shopkeeper MCP tokens. ThemeSmith's diff is reconstructed (correct shape, not line-matched). Asked Justin to paste the pixel source so ThemeSmith finalizes the exact diff for approval-gated ship.",
+          "at": "2026-06-11T17:00:00-07:00",
+          "source": "interactive",
+          "status": "partial"
+        },
         {
           "summary": "Dispatched ThemeSmith (task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix, pending, priority high) to fix the keyless-AddToCart half of the Meta CAPI coverage gap: audit custom Customer Events pixel web-pixel-146800888's AddToCart handler, align browser fbq eventID with the CAPI event_id (mirroring the working Purchase/IC pattern), and propose a before/after diff. Guardrails set: do NOT weaken PieEye consent gating, do NOT ship to live pixel without Justin's approval, verify via Events Manager Test Events after ship. ThemeSmith to loop in Shopkeeper if it lacks admin access to Settings -> Customer events. Report back to AdSmith for coverage verification.",
           "at": "2026-06-11T16:42:00-07:00",
