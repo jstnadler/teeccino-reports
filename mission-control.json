@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-11T16:02:55.486540-07:00",
+  "lastUpdated": "2026-06-11T16:08:26.474338-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -273,10 +273,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Diagnosed + helped fix Meta CAPI AddToCart coverage (data-sharing -> Maximum; dedup key confirmed healthy)",
-        "at": "2026-06-11T16:05:00-07:00"
+        "summary": "Traced keyless ATC events to a custom Shopify Customer Events Meta pixel (web-pixel-146800888); confirmed PieEye consent gating live",
+        "at": "2026-06-11T16:30:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Traced the ~28% keyless browser AddToCart events (the dedup gap) to a single CUSTOM Shopify Customer Events web pixel (web-pixel-146800888, /custom/ namespace) via live PDP inspection. No rogue main-window Meta pixel exists. Custom (hand-coded) pixel controls per-event eventID; the keyless ATC events are its AddToCart handler either omitting eventID or using an ID that doesn't match the CAPI event. Also confirmed live: PieEye gates Meta entirely pre-consent (zero facebook.com/tr traffic on load) - the consent-gating half of the coverage gap.",
+          "at": "2026-06-11T16:30:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Resolved the open 6/4 CAPI AddToCart coverage question with decisive Events Manager datapoints. ATC server UNDER-sends vs browser by 1,152/7d (37% coverage); InitiateCheckout server OVER-sends 2.3x = a coverage gradient = consent/identity gating, NOT a wiring break or dedup-key fault. Dedup tab confirms: Event ID key is correct (server 100% stamped, 51% coverage) - ruled OUT dedup-key mismatch. Two real limiters: (1) server volume shortfall (100 vs 281 ATC/day) - Justin flipped FB&IG data-sharing to Maximum during session to address; (2) ~28% of browser ATC events carry no event_id (fire outside Shopify Customer Events pixel) - a ThemeSmith/developer item.",
           "at": "2026-06-11T16:05:00-07:00",
