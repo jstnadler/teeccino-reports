@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-11T15:59:08.642170-07:00",
+  "lastUpdated": "2026-06-11T16:02:55.486540-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -40,12 +40,6 @@
         {
           "summary": "Final teardown of Teeccino 32nd Birthday Sale (SUB) per Justin's explicit instruction. Deactivated Birthday SUB node, zeroed sitewide fsd (273 variants), restored FOTM A&P via fotm_changeover.py --month 6. Bug fix held: script's Shopify fallback recovered A&P Tea SKU 45071 automatically — no manual handlebar needed this time. Only FOTM OTP + FOTM Subscription active.",
           "at": "2026-06-05T15:05:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Reactivated Teeccino 32nd Birthday Sale (SUB-only) after Justin reversed his earlier teardown call. June 4 is still inside the posted June 2-4 window. Reversed both teardown steps: re-set sitewide first_subscription_discount=10 (273 variants, 0 failed) and relit the Birthday SUB discount node by clearing endsAt=null (EXPIRED -> ACTIVE). FOTM OTP + FOTM Subscription untouched and still active.",
-          "at": "2026-06-04T23:02:00Z",
           "source": "interactive",
           "status": "success"
         }
@@ -275,18 +269,20 @@
       "emoji": "loudspeaker",
       "role": "Paid Advertising Manager",
       "workspace": "clawd-adsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Fix Meta Pixel/CAPI AddToCart event coverage (37% vs 75% goal)",
-        "source": "interactive",
-        "startedAt": "2026-06-11T15:58:00-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Meta 'event match score' diagnosis (CAPI/consent/identity lane). Two distinct metrics: EMQ (0-10, driven by customer-info params) and CAPI coverage/dedup (47% known). Most-likely mover in the window is the ~6/4 consent change (native Shopify consent disabled, PieEye sole gate), which changes what user-data + server events Meta receives. Theme cleared by ThemeSmith. Decisive datapoints (live event_id, per-param EMQ breakdown, coverage gradient) are Events Manager UI-bound = Justin.",
-        "at": "2026-06-09T18:45:00Z"
+        "summary": "Diagnosed + helped fix Meta CAPI AddToCart coverage (data-sharing -> Maximum; dedup key confirmed healthy)",
+        "at": "2026-06-11T16:05:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Resolved the open 6/4 CAPI AddToCart coverage question with decisive Events Manager datapoints. ATC server UNDER-sends vs browser by 1,152/7d (37% coverage); InitiateCheckout server OVER-sends 2.3x = a coverage gradient = consent/identity gating, NOT a wiring break or dedup-key fault. Dedup tab confirms: Event ID key is correct (server 100% stamped, 51% coverage) - ruled OUT dedup-key mismatch. Two real limiters: (1) server volume shortfall (100 vs 281 ATC/day) - Justin flipped FB&IG data-sharing to Maximum during session to address; (2) ~28% of browser ATC events carry no event_id (fire outside Shopify Customer Events pixel) - a ThemeSmith/developer item.",
+          "at": "2026-06-11T16:05:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Meta 'event match score' diagnosis (CAPI/consent/identity lane). Two distinct metrics: EMQ (0-10, driven by customer-info params) and CAPI coverage/dedup (47% known). Most-likely mover in the window is the ~6/4 consent change (native Shopify consent disabled, PieEye sole gate), which changes what user-data + server events Meta receives. Theme cleared by ThemeSmith. Decisive datapoints (live event_id, per-param EMQ breakdown, coverage gradient) are Events Manager UI-bound = Justin.",
           "at": "2026-06-09T18:45:00Z",
