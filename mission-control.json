@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-11T16:08:26.474338-07:00",
+  "lastUpdated": "2026-06-11T16:17:52.485207-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -122,7 +122,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 5,
+      "pendingTasks": 6,
       "health": "healthy"
     },
     {
@@ -273,10 +273,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Traced keyless ATC events to a custom Shopify Customer Events Meta pixel (web-pixel-146800888); confirmed PieEye consent gating live",
-        "at": "2026-06-11T16:30:00-07:00"
+        "summary": "Dispatched ThemeSmith to fix keyless-ATC eventID in custom Meta pixel 146800888 (CAPI coverage gap)",
+        "at": "2026-06-11T16:42:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Dispatched ThemeSmith (task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix, pending, priority high) to fix the keyless-AddToCart half of the Meta CAPI coverage gap: audit custom Customer Events pixel web-pixel-146800888's AddToCart handler, align browser fbq eventID with the CAPI event_id (mirroring the working Purchase/IC pattern), and propose a before/after diff. Guardrails set: do NOT weaken PieEye consent gating, do NOT ship to live pixel without Justin's approval, verify via Events Manager Test Events after ship. ThemeSmith to loop in Shopkeeper if it lacks admin access to Settings -> Customer events. Report back to AdSmith for coverage verification.",
+          "at": "2026-06-11T16:42:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Traced the ~28% keyless browser AddToCart events (the dedup gap) to a single CUSTOM Shopify Customer Events web pixel (web-pixel-146800888, /custom/ namespace) via live PDP inspection. No rogue main-window Meta pixel exists. Custom (hand-coded) pixel controls per-event eventID; the keyless ATC events are its AddToCart handler either omitting eventID or using an ID that doesn't match the CAPI event. Also confirmed live: PieEye gates Meta entirely pre-consent (zero facebook.com/tr traffic on load) - the consent-gating half of the coverage gap.",
           "at": "2026-06-11T16:30:00-07:00",
