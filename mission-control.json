@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-12T10:33:13.048556-07:00",
+  "lastUpdated": "2026-06-12T10:33:37.838521-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -219,18 +219,20 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Re-scope CAPI keyless-ATC fix onto GTM-PS43Q3B (PieEye pixel has no Meta code); dispatch ThemeSmith GTM audit",
-        "source": "interactive",
-        "startedAt": "2026-06-12T03:45:00Z"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Oversaw AdSmith's CAPI keyless-AddToCart eventID fix to the approval gate. Spawned ThemeSmith (background) to execute the pending high-pri inbox task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix. Root cause CONFIRMED: custom Customer Events pixel web-pixel-146800888 fires fbq('track','AddToCart') without the {eventID} 4th arg, so ~28% of browser ATC events are keyless and can't dedupe vs the 100%-stamped CAPI server event (caps coverage at 37%, goal >=75%). ThemeSmith produced a before/after diff mirroring the working Purchase/IC pattern, consent (PieEye) byte-for-byte untouched. HARD WALL hit: live custom-pixel source cannot be read by any agent (read_pixels scope denied AND custom-pixel JS is not exposed via webPixel API even with scope) - confirmed independently by ThemeSmith and Shopkeeper (Shopkeeper dispatched via ThemeSmith task 346b7ff4, filed blocked-extraction outbox). Nothing shipped, no theme code/branch changed - proposal only.",
-        "at": "2026-06-12T03:05:00Z"
+        "summary": "Drove CAPI keyless-ATC gap through full elimination; ruled out theme/PieEye-pixel/GTM; routed to AdSmith (app pixel + Events Manager) for morning",
+        "at": "2026-06-12T04:10:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Drove AdSmith's keyless-AddToCart CAPI coverage gap through a full source-level elimination tonight. Two ThemeSmith background dispatches + Justin-supplied PieEye source ruled out every agent-editable surface. RESULT: the keyless ~28% browser ATC events originate from the Shopify FB&IG APP-managed pixel itself - not the theme, not the PieEye custom pixel, not GTM. Routed the remaining diagnosis to AdSmith (Events Manager owner) and the config lever to Justin.",
+          "at": "2026-06-12T04:10:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Oversaw AdSmith's CAPI keyless-AddToCart eventID fix to the approval gate. Spawned ThemeSmith (background) to execute the pending high-pri inbox task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix. Root cause CONFIRMED: custom Customer Events pixel web-pixel-146800888 fires fbq('track','AddToCart') without the {eventID} 4th arg, so ~28% of browser ATC events are keyless and can't dedupe vs the 100%-stamped CAPI server event (caps coverage at 37%, goal >=75%). ThemeSmith produced a before/after diff mirroring the working Purchase/IC pattern, consent (PieEye) byte-for-byte untouched. HARD WALL hit: live custom-pixel source cannot be read by any agent (read_pixels scope denied AND custom-pixel JS is not exposed via webPixel API even with scope) - confirmed independently by ThemeSmith and Shopkeeper (Shopkeeper dispatched via ThemeSmith task 346b7ff4, filed blocked-extraction outbox). Nothing shipped, no theme code/branch changed - proposal only.",
           "at": "2026-06-12T03:05:00Z",
@@ -263,7 +265,7 @@
         }
       ],
       "pendingTasks": 0,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "assetsmith",
@@ -1091,7 +1093,7 @@
       "from": "agentsmith",
       "to": "adsmith",
       "summary": "Keyless ATC traced to the Shopify FB&IG app pixel (all code surfaces ruled out): confirm source in Events Manager + re-measure after 'Maximum' propagates",
-      "status": "in-progress",
+      "status": "done",
       "dispatched": "2026-06-12T10:30:16.782299-07:00",
       "completed": null
     },
