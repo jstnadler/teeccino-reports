@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-12T07:00:26.991603-07:00",
+  "lastUpdated": "2026-06-12T10:27:08.656881-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -48,12 +48,6 @@
           "at": "2026-06-05T23:05:00Z",
           "source": "dispatched",
           "status": "success"
-        },
-        {
-          "summary": "Final teardown of Teeccino 32nd Birthday Sale (SUB) per Justin's explicit instruction. Deactivated Birthday SUB node, zeroed sitewide fsd (273 variants), restored FOTM A&P via fotm_changeover.py --month 6. Bug fix held: script's Shopify fallback recovered A&P Tea SKU 45071 automatically — no manual handlebar needed this time. Only FOTM OTP + FOTM Subscription active.",
-          "at": "2026-06-05T15:05:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 2,
@@ -65,12 +59,17 @@
       "emoji": "palette",
       "role": "Shopify Theme Development",
       "workspace": "clawd-themesmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Audit GTM-PS43Q3B for keyless Meta AddToCart tag (CAPI dedup re-scope from AgentSmith)",
+        "source": "gateway",
+        "startedAt": "2026-06-12T07:30:00Z",
+        "branch": "main"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Meta CAPI ATC eventID dedup: confirmed root cause + produced reconstructed before/after diff for custom pixel 146800888 (source unreadable via API/browser - Shopkeeper confirmed same wall); awaiting Justin to paste real source + approve. Consent untouched, nothing shipped.",
-        "at": "2026-06-11T23:55:00Z"
+        "summary": "Audit complete. Outbox filed at `outbox/2026-06-05T23-30-00Z-shop-all-sidebar-post-swap-audit.json`.\n\n## POST-SWAP AUDIT — Verdict: PASS WITH FINDINGS\n\n**Playwright was locked** by a sibling session t",
+        "at": "2026-06-05T15:17:35.277791-07:00"
       },
       "recentActivity": [
         {
@@ -135,7 +134,7 @@
         }
       ],
       "pendingTasks": 5,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "dataops",
@@ -217,7 +216,7 @@
         }
       ],
       "pendingTasks": 2,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "agentsmith",
@@ -225,11 +224,15 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Re-scope CAPI keyless-ATC fix onto GTM-PS43Q3B (PieEye pixel has no Meta code); dispatch ThemeSmith GTM audit",
+        "source": "interactive",
+        "startedAt": "2026-06-12T03:45:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Oversaw AdSmith->ThemeSmith CAPI keyless-ATC eventID pixel fix to the approval gate (blocked on human source-paste + approval)",
+        "summary": "Oversaw AdSmith's CAPI keyless-AddToCart eventID fix to the approval gate. Spawned ThemeSmith (background) to execute the pending high-pri inbox task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix. Root cause CONFIRMED: custom Customer Events pixel web-pixel-146800888 fires fbq('track','AddToCart') without the {eventID} 4th arg, so ~28% of browser ATC events are keyless and can't dedupe vs the 100%-stamped CAPI server event (caps coverage at 37%, goal >=75%). ThemeSmith produced a before/after diff mirroring the working Purchase/IC pattern, consent (PieEye) byte-for-byte untouched. HARD WALL hit: live custom-pixel source cannot be read by any agent (read_pixels scope denied AND custom-pixel JS is not exposed via webPixel API even with scope) - confirmed independently by ThemeSmith and Shopkeeper (Shopkeeper dispatched via ThemeSmith task 346b7ff4, filed blocked-extraction outbox). Nothing shipped, no theme code/branch changed - proposal only.",
         "at": "2026-06-12T03:05:00Z"
       },
       "recentActivity": [
@@ -265,7 +268,7 @@
         }
       ],
       "pendingTasks": 0,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "assetsmith",
@@ -1448,7 +1451,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-06-12T07:00:01.242742-07:00",
+        "lastRun": "2026-06-12T07:11:28.374250-07:00",
         "status": "healthy"
       },
       {
