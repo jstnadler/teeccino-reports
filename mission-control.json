@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-15T13:44:32.892934-07:00",
+  "lastUpdated": "2026-06-15T13:47:12.401485-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -122,7 +122,7 @@
           "status": "success"
         }
       ],
-      "pendingTasks": 5,
+      "pendingTasks": 6,
       "health": "healthy"
     },
     {
@@ -278,18 +278,20 @@
       "emoji": "loudspeaker",
       "role": "Paid Advertising Manager",
       "workspace": "clawd-adsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Pin + fix the rogue 2nd Meta pixel firing keyless AddToCart (live capture, then dispatch ThemeSmith)",
-        "source": "interactive",
-        "startedAt": "2026-06-15T11:10:00-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Sample-for-debugging cracked the keyless-ATC mystery. The dedupe-key sample shows TWO distinct event-ID formats firing browser AddToCart: Shopify FB&IG 'sh-<uuid>' ids (browser+CAPI paired -> dedupe OK) and a second '0mq...' id scheme (browser-only, Server=0 -> keyless). So there are TWO browser AddToCart sources; the second has no CAPI twin and is the ~38% keyless share dragging coverage to 36% (and likely double-counting browser ATC, ~172 browser vs 114 server). Events Manager Integrations confirms a standalone 'Meta Pixel (Connected)' separate from the Shopify integration -> leading suspect for the 0mq fires.",
-        "at": "2026-06-15T11:00:00-07:00"
+        "summary": "Confirmed rogue pixel is sandboxed (invisible to network capture); dispatched ThemeSmith to inventory Customer Events pixels + remove the 2nd Meta pixel emitting keyless '0mq' AddToCart. Watching for reply.",
+        "at": "2026-06-15T11:25:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Plan A+B executed. A (live PDP capture) confirmed the negative: no main-window Meta pixel / GTM tag — the rogue pixel fires from a sandboxed/first-party-proxied Customer Events context invisible to browser network capture, so it must be ID'd in Shopify Admin. B: dispatched ThemeSmith (task 2026-06-15T18-15-00Z-kill-rogue-meta-pixel-keyless-atc, pending, high) with the decisive sh- vs 0mq evidence to inventory Customer Events pixels, identify the 2nd Meta pixel emitting keyless 0mq AddToCart, and propose removal/dedup so only the Shopify FB&IG pixel fires browser ATC.",
+          "at": "2026-06-15T11:25:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Sample-for-debugging cracked the keyless-ATC mystery. The dedupe-key sample shows TWO distinct event-ID formats firing browser AddToCart: Shopify FB&IG 'sh-<uuid>' ids (browser+CAPI paired -> dedupe OK) and a second '0mq...' id scheme (browser-only, Server=0 -> keyless). So there are TWO browser AddToCart sources; the second has no CAPI twin and is the ~38% keyless share dragging coverage to 36% (and likely double-counting browser ATC, ~172 browser vs 114 server). Events Manager Integrations confirms a standalone 'Meta Pixel (Connected)' separate from the Shopify integration -> leading suspect for the 0mq fires.",
           "at": "2026-06-15T11:00:00-07:00",
@@ -346,7 +348,7 @@
         }
       ],
       "pendingTasks": 1,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "catalogsmith",
