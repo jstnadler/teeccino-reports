@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-15T14:28:30.937650-07:00",
+  "lastUpdated": "2026-06-15T14:32:01.321106-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -53,17 +53,12 @@
       "emoji": "palette",
       "role": "Shopify Theme Development",
       "workspace": "clawd-themesmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Check if ATC upsell modal fires the rogue 0mq Meta AddToCart (dispatched by AdSmith, Justin's hypothesis)",
-        "source": "adsmith-dispatch",
-        "startedAt": "2026-06-15T12:35:00-07:00",
-        "branch": "main"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Done. Task `50a3f3eb` complete, proposal delivered to outbox, Mission Control rebuilt.\n\n## What I found\n\nThis was a read-only feasibility task — but the headline is that **the feature is already built",
-        "at": "2026-06-08T15:00:24.392259-07:00"
+        "summary": "Investigated rogue 0mq keyless Meta AddToCart hypothesis (read-only); confirmed source = atc-tracking.js keyless fbq fire, replied to adsmith with diff",
+        "at": "2026-06-15T20:15:00Z"
       },
       "recentActivity": [
         {
@@ -71,6 +66,12 @@
           "at": "2026-06-08T15:00:24.392259-07:00",
           "source": "gateway",
           "status": "unknown"
+        },
+        {
+          "summary": "CONFIRMED: theme fires keyless fbq('track','AddToCart') with NO eventID. Primary source is assets/atc-tracking.js (site-wide fetch/XHR wrapper, shipped 2026-06-08, commit 14fadf1), NOT the upsell modal JS itself. The upsell modals add a 2nd item via /cart/add.js which atc-tracking intercepts -> a 2nd keyless fire, which is why keyless share grows with upsell volume. Proposed fix: remove the theme-side fbq AddToCart fires (Option A) so only the Shopify FB&IG channel's browser+CAPI-paired event remains.",
+          "at": "2026-06-15T20:15:00Z",
+          "source": "dispatch",
+          "status": "success"
         },
         {
           "summary": "Identified rogue keyless 0mq AddToCart as UpCart Cart Drawer's built-in Meta Pixel integration; proposed clearing UpCart's Meta Pixel ID so only the Shopify FB&IG (sh-, CAPI-paired) pixel fires ATC. Inventory + proposal only; no live change.",
@@ -119,16 +120,10 @@
           "at": "2026-06-10T18:28:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "FOTM card price now applies custom.discount to match PDP/collection ($16.00 / SAVE 27% instead of $19.99 / SAVE 9%). Verified on preview; awaiting ship-to-live.",
-          "at": "2026-06-10T18:25:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 5,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "dataops",
