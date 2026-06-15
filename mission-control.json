@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-15T13:34:08.107340-07:00",
+  "lastUpdated": "2026-06-15T13:41:51.023436-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -282,10 +282,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Re-measured ATC coverage in live Events Manager: Maximum fix has NOT worked (36%, flat; keyless browser share grew to ~38%). Next: Sample for debugging.",
-        "at": "2026-06-15T10:20:00-07:00"
+        "summary": "Cracked keyless-ATC: a 2nd Meta browser pixel fires AddToCart with '0mq' event_ids and no CAPI twin (vs Shopify 'sh-' ids that dedupe). Fix = remove/dedupe the redundant pixel.",
+        "at": "2026-06-15T11:00:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Sample-for-debugging cracked the keyless-ATC mystery. The dedupe-key sample shows TWO distinct event-ID formats firing browser AddToCart: Shopify FB&IG 'sh-<uuid>' ids (browser+CAPI paired -> dedupe OK) and a second '0mq...' id scheme (browser-only, Server=0 -> keyless). So there are TWO browser AddToCart sources; the second has no CAPI twin and is the ~38% keyless share dragging coverage to 36% (and likely double-counting browser ATC, ~172 browser vs 114 server). Events Manager Integrations confirms a standalone 'Meta Pixel (Connected)' separate from the Shopify integration -> leading suspect for the 0mq fires.",
+          "at": "2026-06-15T11:00:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Re-measured Meta AddToCart event coverage in LIVE Events Manager (first time reachable; dataset 'Teeccino's Pixel' 1753918421376482, acct 559530661221525). VERDICT: the 6/11 data-sharing->Maximum fix has NOT worked after 4 days. Coverage flat at 36% (was 37%), server under-send GREW to 1,982 fewer events/7d (was 1,152), dedup Event-ID coverage fell to 42.67% (was 51.06%), and the keyless browser-ATC share GREW from ~28% to ~38.5%. Dedup-key warning ('contact your developer') still present. Lands on decision-tree branch 2/3: not a self-resolving volume artifact.",
           "at": "2026-06-15T10:20:00-07:00",
