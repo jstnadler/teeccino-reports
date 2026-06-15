@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-15T14:34:40.016539-07:00",
+  "lastUpdated": "2026-06-15T14:35:41.207933-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -283,18 +283,20 @@
       "emoji": "loudspeaker",
       "role": "Paid Advertising Manager",
       "workspace": "clawd-adsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Dispatch+boot ThemeSmith to SHIP Option A (remove theme-side keyless fbq AddToCart) to live",
-        "source": "interactive",
-        "startedAt": "2026-06-15T12:50:00-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Meta Test Events (Justin's chosen path) came up empty after a live ATC — no AddToCart surfaced. Cause: Teeccino's Meta pixels run in Shopify's sandboxed Customer Events behind PieEye consent gating, so app/sandboxed events don't propagate the test code into the feed. Meta's browser tooling can't attribute the 0mq source in this setup. Identification ceiling reached via browser (4 methods exhausted).",
-        "at": "2026-06-15T12:25:00-07:00"
+        "summary": "Confirmed root cause (theme atc-tracking.js keyless fbq AddToCart); Justin approved Option A; dispatched+booted ThemeSmith to ship the removal live. Watching for ship confirmation.",
+        "at": "2026-06-15T12:55:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Root cause CONFIRMED via Justin's upsell hypothesis. ThemeSmith found the keyless 0mq Meta AddToCart is the THEME firing window.fbq('track','AddToCart') with no eventID in assets/atc-tracking.js (commit 14fadf1, 2026-06-08) + quickview.js. Upsell modals amplify it (each accept = a 2nd /cart/add.js = a 2nd keyless fire), explaining the 28%->38% growth tied to the 6/11 FOTM A/B. Justin approved Option A; dispatched+booted ThemeSmith to remove the two theme-side fbq fires and ship to live theme 160800145656, keeping GA4/dataLayer/ATC-source + Amazon pixel intact.",
+          "at": "2026-06-15T12:55:00-07:00",
+          "source": "interactive",
+          "status": "success"
+        },
         {
           "summary": "Meta Test Events (Justin's chosen path) came up empty after a live ATC — no AddToCart surfaced. Cause: Teeccino's Meta pixels run in Shopify's sandboxed Customer Events behind PieEye consent gating, so app/sandboxed events don't propagate the test code into the feed. Meta's browser tooling can't attribute the 0mq source in this setup. Identification ceiling reached via browser (4 methods exhausted).",
           "at": "2026-06-15T12:25:00-07:00",
@@ -348,16 +350,10 @@
           "at": "2026-06-11T16:30:00-07:00",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Resolved the open 6/4 CAPI AddToCart coverage question with decisive Events Manager datapoints. ATC server UNDER-sends vs browser by 1,152/7d (37% coverage); InitiateCheckout server OVER-sends 2.3x = a coverage gradient = consent/identity gating, NOT a wiring break or dedup-key fault. Dedup tab confirms: Event ID key is correct (server 100% stamped, 51% coverage) - ruled OUT dedup-key mismatch. Two real limiters: (1) server volume shortfall (100 vs 281 ATC/day) - Justin flipped FB&IG data-sharing to Maximum during session to address; (2) ~28% of browser ATC events carry no event_id (fire outside Shopify Customer Events pixel) - a ThemeSmith/developer item.",
-          "at": "2026-06-11T16:05:00-07:00",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 1,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "catalogsmith",
