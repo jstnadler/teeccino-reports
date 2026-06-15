@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-15T14:18:30.486070-07:00",
+  "lastUpdated": "2026-06-15T14:24:56.123288-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -282,10 +282,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Verified UpCart has NO Meta Pixel field (proposed fix not actionable, nothing changed). Re-scoping 0mq culprit -> TripleWhale top suspect; recommend Test Events source check.",
-        "at": "2026-06-15T12:10:00-07:00"
+        "summary": "Test Events inconclusive (sandbox+PieEye gating hide app events). Hit identification ceiling via browser; recommend TripleWhale settings check + vendor support to name 0mq source. No live changes.",
+        "at": "2026-06-15T12:25:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Meta Test Events (Justin's chosen path) came up empty after a live ATC — no AddToCart surfaced. Cause: Teeccino's Meta pixels run in Shopify's sandboxed Customer Events behind PieEye consent gating, so app/sandboxed events don't propagate the test code into the feed. Meta's browser tooling can't attribute the 0mq source in this setup. Identification ceiling reached via browser (4 methods exhausted).",
+          "at": "2026-06-15T12:25:00-07:00",
+          "source": "interactive",
+          "status": "partial"
+        },
         {
           "summary": "Verify-before-clear caught a false lead. Drove live Shopify Admin to verify ThemeSmith's proposed fix (clear UpCart's Meta Pixel ID). Finding: UpCart has NO Meta Pixel ID field anywhere (checked Customer events registry — UpCart not listed; UpCart cart-editor Cart settings + all Advanced Settings + Custom HTML — all clean). The proposed fix is NOT actionable; nothing to clear. No changes made.",
           "at": "2026-06-15T12:10:00-07:00",
@@ -337,12 +343,6 @@
         {
           "summary": "Resolved the open 6/4 CAPI AddToCart coverage question with decisive Events Manager datapoints. ATC server UNDER-sends vs browser by 1,152/7d (37% coverage); InitiateCheckout server OVER-sends 2.3x = a coverage gradient = consent/identity gating, NOT a wiring break or dedup-key fault. Dedup tab confirms: Event ID key is correct (server 100% stamped, 51% coverage) - ruled OUT dedup-key mismatch. Two real limiters: (1) server volume shortfall (100 vs 281 ATC/day) - Justin flipped FB&IG data-sharing to Maximum during session to address; (2) ~28% of browser ATC events carry no event_id (fire outside Shopify Customer Events pixel) - a ThemeSmith/developer item.",
           "at": "2026-06-11T16:05:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Meta 'event match score' diagnosis (CAPI/consent/identity lane). Two distinct metrics: EMQ (0-10, driven by customer-info params) and CAPI coverage/dedup (47% known). Most-likely mover in the window is the ~6/4 consent change (native Shopify consent disabled, PieEye sole gate), which changes what user-data + server events Meta receives. Theme cleared by ThemeSmith. Decisive datapoints (live event_id, per-param EMQ breakdown, coverage gradient) are Events Manager UI-bound = Justin.",
-          "at": "2026-06-09T18:45:00Z",
           "source": "interactive",
           "status": "success"
         }
