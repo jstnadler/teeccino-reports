@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-16T07:00:37.930943-07:00",
+  "lastUpdated": "2026-06-16T10:57:03.624271-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -143,16 +143,12 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "working",
-      "currentTask": {
-        "summary": "Run daily analytics pipeline",
-        "source": "interactive",
-        "startedAt": "2026-06-16T12:00:00Z"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Wired LabSmith daily_refresh.py into BOTH orchestrators. Critical fix: run_pipeline.py alone would never fire nightly — the scheduled task runs daily_run.py, so wired it there too.",
-        "at": "2026-06-10T22:05:00+00:00"
+        "summary": "Un-froze reports site: filled 6/15 transform gap + rebuilt/pushed all core dashboards (nightly publish phase silently dead since 6/13 on Klaviyo rate-limit)",
+        "at": "2026-06-16T18:00:00Z"
       },
       "recentActivity": [
         {
@@ -186,6 +182,12 @@
           "status": "success"
         },
         {
+          "summary": "Un-froze the teeccino-reports site: filled 6/15 transform gap and rebuilt+pushed all core dashboards. Root cause: nightly run reports exit 0 but the dashboard publish phase has been silently failing since 2026-06-13 (Klaviyo rate-limit backoff stalls the runner).",
+          "at": "2026-06-16T18:00:00Z",
+          "source": "interactive",
+          "status": "partial"
+        },
+        {
           "summary": "Daily analytics pipeline ran clean: ingestion + transforms + all dashboards built and pushed; 0 date gaps, 0 quality issues, freshness Healthy.",
           "at": "2026-06-13T14:15:30Z",
           "source": "interactive",
@@ -208,16 +210,10 @@
           "at": "2026-06-11T16:40:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "SCOPE+PROPOSE ONLY (no build). Traffic-by-channel is NOT yet in the pipeline — GA4 only holds event-level ATC/upsell data. But the GA4 Data API auth (OAuth user-delegated, analytics.readonly) already covers full session/user/channel reporting; live-tested sessions by sessionDefaultChannelGroup, source/medium, device — all return clean data back to 2023-01-01. Proposed traffic-acquisition.html needs ONE new raw_ga4_traffic table + a new pull function in ingest_ga4.py. Effort ~1.5-2 days. Awaiting Justin approve-to-build.",
-          "at": "2026-06-11T14:10:00Z",
-          "source": "agentsmith",
-          "status": "success"
         }
       ],
       "pendingTasks": 2,
-      "health": "interrupted"
+      "health": "healthy"
     },
     {
       "id": "agentsmith",
@@ -1439,7 +1435,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-06-16T07:00:01.998234-07:00",
+        "lastRun": "2026-06-16T07:11:44.043782-07:00",
         "status": "healthy"
       },
       {
