@@ -29,6 +29,44 @@
         .top-nav a:hover { color: #D4A843; }
         .top-nav .meta { margin-left: auto; color: #64748b; font-size: 0.78em; }
 
+        /* Hub page search — same widget as the shared nav chrome (nav-boot.js
+           drives it). On the index it sits between the section links and the
+           page-count meta. Logic lives in _partials/nav-boot.js, never inline. */
+        #hub-search { position: relative; display: inline-flex; align-items: center; margin-left: 16px; }
+        #hub-search input {
+            width: 180px; max-width: 38vw;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; color: #e2e8f0; font-size: 0.95em;
+            padding: 5px 10px 5px 28px; font-family: inherit;
+            transition: border-color 0.15s, background 0.15s, width 0.15s;
+        }
+        #hub-search input::placeholder { color: #64748b; }
+        #hub-search input:focus {
+            outline: none; width: 240px;
+            border-color: rgba(212,168,67,0.5); background: rgba(255,255,255,0.09);
+        }
+        #hub-search .search-icon {
+            position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+            font-size: 0.85em; color: #64748b; pointer-events: none;
+        }
+        #hub-search-results {
+            position: absolute; top: calc(100% + 6px); left: 0;
+            width: 340px; max-width: 80vw; max-height: 60vh; overflow-y: auto;
+            background: rgba(22,22,38,0.98);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212,168,67,0.25); border-radius: 10px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+            padding: 6px; z-index: 1001; display: none;
+        }
+        #hub-search-results.open { display: block; }
+        #hub-search-results a.sr-item { display: block; text-decoration: none; padding: 8px 10px; border-radius: 7px; color: #e2e8f0; }
+        #hub-search-results a.sr-item:hover,
+        #hub-search-results a.sr-item.sr-active { background: rgba(212,168,67,0.14); }
+        #hub-search-results .sr-title { font-size: 0.92em; font-weight: 600; color: #D4A843; display: flex; align-items: center; gap: 7px; }
+        #hub-search-results .sr-meta { font-size: 0.76em; color: #94a3b8; margin-top: 2px; }
+        #hub-search-results .sr-cat { color: #64748b; text-transform: capitalize; }
+        #hub-search-results .sr-empty { padding: 12px 10px; color: #94a3b8; font-size: 0.86em; text-align: center; }
+
         .container { max-width: 1200px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 32px; }
         .header h1 {
@@ -131,14 +169,26 @@
     <a href="#cat-catalog-data">Data</a>
     <a href="#cat-active-projects">Projects</a>
     <a href="#cat-archive">Archive</a>
-    <span class="meta">32 live · 137 total</span>
+    <div id="hub-search" role="search">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="hub-search-input" autocomplete="off"
+               placeholder="Search reports…" aria-label="Search reports"
+               aria-controls="hub-search-results" aria-expanded="false">
+        <div id="hub-search-results" role="listbox" aria-label="Search results"></div>
+    </div>
+    <span class="meta">33 live · 138 total</span>
 </nav>
+<!-- Load the shared nav bootstrap purely for its page-search logic. On the index
+     the active-link / owner-badge / padding-sync jobs are no-ops (they look for
+     #hub-nav-bar, which the index doesn't have, and bail safely); only initSearch()
+     activates, binding to #hub-search-input above. Keeps ONE search implementation. -->
+<script src="_partials/nav-boot.js"></script>
 
 <div class="container">
     <div class="header">
         <h1>📊 Teeccino Reports</h1>
         <p class="sub">Internal hub — every dashboard, manifest-driven, ≤2 clicks from home.</p>
-        <p class="stats">Manifest: 32 live pages across 7 categories · Last build 2026-06-15T12:11:08-07:00</p>
+        <p class="stats">Manifest: 33 live pages across 7 categories · Last build 2026-06-19T12:25:00-07:00</p>
     </div>
 
     <div id="provenance-mount"></div>
@@ -221,7 +271,7 @@
       <summary class="category-header">
         <span class="cat-icon">📣</span>
         <span class="cat-title">Marketing &amp; Ads</span>
-        <span class="cat-count">(15, +1 nested)</span>
+        <span class="cat-count">(16, +1 nested)</span>
         <span class="cat-desc">Ad performance, creatives, attribution, customer LTV, campaign analytics.</span>
       </summary>
       <div class="report-grid">
@@ -264,6 +314,11 @@
             <div class="card-icon">🛒</div>
             <div class="card-title">Add-to-Cart by Source</div>
             <div class="card-desc">Where every add-to-cart comes from (quick-add / PDP / UpCart / cart / collection). GA4-sourced, attributed-only.</div>
+        </a>
+        <a class="report-card" href="loox-referrals.html">
+            <div class="card-icon">🎁</div>
+            <div class="card-title">Loox Referrals</div>
+            <div class="card-desc">Referral program ROI, new-customer acquisition, and referred-customer quality. Dual-mode reward tracking (discount-code + store-credit).</div>
         </a>
         <a class="report-card" href="meta-funnel-yoy.html">
             <div class="card-icon">📄</div>
@@ -414,7 +469,7 @@
     </details>
 
     <footer>
-        Built by HubSmith · build_hub.py · 2026-06-15T12:11:08-07:00<br>
+        Built by HubSmith · build_hub.py · 2026-06-19T12:25:00-07:00<br>
         Manifest: <a href="pages.json" style="color:#D4A843;">pages.json</a> · Source: <a href="https://github.com/jstnadler/teeccino-reports" style="color:#D4A843;">teeccino-reports</a>
     </footer>
 </div>

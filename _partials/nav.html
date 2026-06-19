@@ -61,6 +61,73 @@
     font-weight: 600;
   }
   #hub-nav-bar .spacer { flex: 1; }
+
+  /* ── Hub page search ───────────────────────────────────────────────────────
+     Live client-side search over pages.json (single source → always in sync with
+     the manifest). Logic lives in nav-boot.js (NEVER inline in an event-handler
+     attribute — see the 2026-06-10 SyntaxError incident). Reachable from every
+     page because the nav chrome is on every page. */
+  #hub-search {
+    position: relative; display: inline-flex; align-items: center;
+  }
+  #hub-search input {
+    width: 180px; max-width: 38vw;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: #e2e8f0; font-size: 0.85em;
+    padding: 5px 10px 5px 28px;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s, width 0.15s;
+  }
+  #hub-search input::placeholder { color: #64748b; }
+  #hub-search input:focus {
+    outline: none; width: 240px;
+    border-color: rgba(212, 168, 67, 0.5);
+    background: rgba(255, 255, 255, 0.09);
+  }
+  #hub-search .search-icon {
+    position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+    font-size: 0.8em; color: #64748b; pointer-events: none;
+  }
+  #hub-search-results {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    width: 340px; max-width: 80vw; max-height: 60vh; overflow-y: auto;
+    background: rgba(22, 22, 38, 0.98);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 168, 67, 0.25); border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    padding: 6px; z-index: 1001; display: none;
+  }
+  #hub-search-results.open { display: block; }
+  #hub-search-results a.sr-item {
+    display: block; text-decoration: none;
+    padding: 8px 10px; border-radius: 7px;
+    color: #e2e8f0;
+  }
+  #hub-search-results a.sr-item:hover,
+  #hub-search-results a.sr-item.sr-active {
+    background: rgba(212, 168, 67, 0.14);
+  }
+  #hub-search-results .sr-title {
+    font-size: 0.88em; font-weight: 600; color: #D4A843;
+    display: flex; align-items: center; gap: 7px;
+  }
+  #hub-search-results .sr-meta {
+    font-size: 0.72em; color: #94a3b8; margin-top: 2px;
+  }
+  #hub-search-results .sr-cat {
+    color: #64748b; text-transform: capitalize;
+  }
+  #hub-search-results .sr-empty {
+    padding: 12px 10px; color: #94a3b8; font-size: 0.82em; text-align: center;
+  }
+  @media (max-width: 880px) {
+    #hub-search input { width: 130px; }
+    #hub-search input:focus { width: 160px; }
+    #hub-search-results { width: 280px; }
+  }
+
   #hub-nav-bar .home-link {
     color: #D4A843; font-size: 0.85em; text-decoration: none;
     border: 1px solid rgba(212, 168, 67, 0.3); padding: 4px 12px; border-radius: 6px;
@@ -141,6 +208,7 @@
     <a class="nav-link" href="/teeccino-reports/ad-spend-yoy.html">Ad Spend</a>
     <a class="nav-link" href="/teeccino-reports/ltv.html">LTV</a>
     <a class="nav-link" href="/teeccino-reports/atc-source.html">ATC Source</a>
+    <a class="nav-link" href="/teeccino-reports/loox-referrals.html">Loox Referrals</a>
   </div>
   <div class="group" data-cat="catalog-data">
     <span class="group-label">Data</span>
@@ -149,6 +217,13 @@
     <a class="nav-link" href="/teeccino-reports/discounts.html">Discounts</a>
   </div>
   <span class="spacer"></span>
+  <div id="hub-search" role="search">
+    <span class="search-icon" aria-hidden="true">🔍</span>
+    <input type="search" id="hub-search-input" autocomplete="off"
+           placeholder="Search reports…" aria-label="Search reports"
+           aria-controls="hub-search-results" aria-expanded="false">
+    <div id="hub-search-results" role="listbox" aria-label="Search results"></div>
+  </div>
   <a class="home-link" href="/teeccino-reports/index.html">All Reports →</a>
 </nav>
 <!--

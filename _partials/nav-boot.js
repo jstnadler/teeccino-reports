@@ -77,6 +77,18 @@
     return;
   }
 
+  /* Shared manifest fetch — the owner badge AND the page search both need
+     pages.json. Fetch it at most once per page and hand both consumers the same
+     promise (single source of truth = the manifest, so search auto-syncs). */
+  var _manifestPromise = null;
+  function getManifest() {
+    if (_manifestPromise) return _manifestPromise;
+    _manifestPromise = fetch('/teeccino-reports/pages.json')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+    return _manifestPromise;
+  }
+
   /* 1) Active-link highlight */
   var here = window.location.pathname.replace(/^.*\/teeccino-reports\//, '').replace(/^\//, '');
   if (!here) here = 'index.html';
@@ -104,8 +116,7 @@
     var esc = function (str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     };
-    fetch('/teeccino-reports/pages.json')
-      .then(function (r) { return r.ok ? r.json() : null; })
+    getManifest()
       .then(function (data) {
         if (!data || !Array.isArray(data.pages)) return;
         var norm = function (p) { return String(p || '').replace(/^\.?\//, ''); };
@@ -132,6 +143,137 @@
         document.body.insertBefore(bar, document.body.firstChild);
       })
       .catch(function () { /* network/parse failure → fail safe, no badge */ });
+  })();
+
+  /* 1.75) HUB PAGE SEARCH — live client-side filter over pages.json.
+     Reachable from every page (the search box ships in the nav chrome). Matches
+     title, category, owner, and tags. Keyboard: ↑/↓ move, Enter opens highlighted
+     (or first) result, Esc closes/clears. Click opens. Graceful "no results".
+     Data = the shared manifest fetch, so results always track the manifest. */
+  (function initSearch() {
+    var input = document.getElementById('hub-search-input');
+    var panel = document.getElementById('hub-search-results');
+    if (!input || !panel) return;                 /* nav variant without search */
+
+    var OWNER_NAMES = {
+      agentsmith: 'AgentSmith', dataops: 'DataOps', catalogsmith: 'CatalogSmith',
+      adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
+      assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
+      labsmith: 'LabSmith', searchsmith: 'SearchSmith'
+    };
+    var esc = function (str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+    var rel = function (p) { return String(p || '').replace(/^\.?\//, ''); };
+
+    var pages = [];      /* searchable records */
+    var results = [];    /* current filtered list */
+    var activeIdx = -1;  /* keyboard-highlighted result */
+    var loaded = false;
+
+    getManifest().then(function (data) {
+      if (!data || !Array.isArray(data.pages)) return;
+      pages = data.pages.map(function (p) {
+        var owner = (p.owner || '').toLowerCase();
+        var ownerName = OWNER_NAMES[owner] || owner;
+        var tags = Array.isArray(p.tags) ? p.tags.join(' ') : '';
+        return {
+          path: rel(p.path),
+          title: p.title || rel(p.path),
+          icon: p.icon || '📄',
+          category: p.category || '',
+          owner: owner,
+          ownerName: ownerName,
+          archived: !!p.archived,
+          /* precomputed lowercase haystack: title + category + owner(+name) + tags */
+          hay: ((p.title || '') + ' ' + (p.category || '') + ' ' +
+                owner + ' ' + ownerName + ' ' + tags).toLowerCase()
+        };
+      });
+      loaded = true;
+      if (document.activeElement === input && input.value.trim()) filter(input.value);
+    });
+
+    function setOpen(open) {
+      panel.classList.toggle('open', open);
+      input.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function render() {
+      if (!results.length) {
+        panel.innerHTML = '<div class="sr-empty">' +
+          (loaded ? 'No reports match.' : 'Loading…') + '</div>';
+        setOpen(true);
+        return;
+      }
+      var html = results.map(function (r, i) {
+        var metaBits = [];
+        if (r.category) metaBits.push('<span class="sr-cat">' + esc(r.category.replace(/-/g, ' ')) + '</span>');
+        if (r.ownerName) metaBits.push(esc(r.ownerName));
+        if (r.archived) metaBits.push('archived');
+        return '<a class="sr-item' + (i === activeIdx ? ' sr-active' : '') +
+          '" role="option" href="/teeccino-reports/' + esc(r.path) + '">' +
+          '<span class="sr-title"><span aria-hidden="true">' + esc(r.icon) + '</span>' +
+          esc(r.title) + '</span>' +
+          '<span class="sr-meta">' + metaBits.join(' · ') + '</span></a>';
+      }).join('');
+      panel.innerHTML = html;
+      setOpen(true);
+    }
+
+    function filter(qRaw) {
+      var q = qRaw.trim().toLowerCase();
+      activeIdx = -1;
+      if (!q) { results = []; setOpen(false); panel.innerHTML = ''; return; }
+      /* AND across whitespace-separated terms; each term is a substring match */
+      var terms = q.split(/\s+/);
+      results = pages.filter(function (p) {
+        for (var i = 0; i < terms.length; i++) {
+          if (p.hay.indexOf(terms[i]) === -1) return false;
+        }
+        return true;
+      }).sort(function (a, b) {
+        /* prefix-of-title matches rank first, then alphabetical */
+        var ap = a.title.toLowerCase().indexOf(q) === 0 ? 0 : 1;
+        var bp = b.title.toLowerCase().indexOf(q) === 0 ? 0 : 1;
+        if (ap !== bp) return ap - bp;
+        return a.title.localeCompare(b.title);
+      }).slice(0, 8);
+      render();
+    }
+
+    function go(idx) {
+      var r = results[idx];
+      if (r) window.location.href = '/teeccino-reports/' + r.path;
+    }
+
+    input.addEventListener('input', function () { filter(input.value); });
+    input.addEventListener('focus', function () {
+      if (input.value.trim() && results.length) setOpen(true);
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!results.length) return;
+        activeIdx = (activeIdx + 1) % results.length; render();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!results.length) return;
+        activeIdx = (activeIdx - 1 + results.length) % results.length; render();
+      } else if (e.key === 'Enter') {
+        if (results.length) { e.preventDefault(); go(activeIdx >= 0 ? activeIdx : 0); }
+      } else if (e.key === 'Escape') {
+        if (input.value) { input.value = ''; filter(''); }
+        else { setOpen(false); input.blur(); }
+      }
+    });
+    /* Close when focus/click leaves the search widget */
+    document.addEventListener('click', function (e) {
+      var wrap = document.getElementById('hub-search');
+      if (wrap && !wrap.contains(e.target)) setOpen(false);
+    });
   })();
 
   /* 2) Dynamic body padding-top sync to actual nav height + 8px clearance. Adapts
