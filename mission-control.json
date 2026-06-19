@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-18T16:41:23.623525-07:00",
+  "lastUpdated": "2026-06-19T04:00:53.494361-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -72,12 +72,6 @@
           "at": "2026-06-15T23:50:00Z",
           "source": "dispatched",
           "status": "success"
-        },
-        {
-          "summary": "Cannot extract custom pixel web-pixel-146800888 source: Claude-in-Chrome MCP not connected this session, and GraphQL read_pixels confirmed denied (and webPixel returns app-pixel settings only, never custom-pixel JS). Replied 'blocked' to ThemeSmith inbox with exact manual-extraction path for Justin.",
-          "at": "2026-06-11T23:50:00Z",
-          "source": "gateway",
-          "status": "partial"
         }
       ],
       "pendingTasks": 4,
@@ -150,12 +144,6 @@
           "at": "2026-06-15T19:00:00Z",
           "source": "adsmith-dispatch",
           "status": "success"
-        },
-        {
-          "summary": "GTM-PS43Q3B re-scope audit complete. ACCESS CONFIRMED (no wall). Container contains NO Meta/Facebook tag — only 7 Google/GA4 tags (live Version 38). FB Pixel was removed from this container in 2023 (versions 28-29). The keyless ~28% browser AddToCart is NOT a GTM tag; neither re-scope fix (disable redundant tag / align eventID) is actionable because no GTM Meta tag exists. Real source = Shopify FB&IG app pixel — kicked back to AdSmith as a Meta Events Manager / app-pixel investigation. Read-only, zero GTM changes, consent untouched.",
-          "at": "2026-06-12T07:45:00Z",
-          "source": "gateway",
-          "status": "success"
         }
       ],
       "pendingTasks": 6,
@@ -214,12 +202,6 @@
           "at": "2026-06-12T12:14:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Built + shipped traffic-acquisition.html end-to-end (GA4 sessions/channels/landing pages). Live HTTP 200. New ingest tables + nightly wiring + hub-registered (owner=dataops) + HubSmith registration filed. QA vs GA4 UI: New Users + Revenue EXACT, all other headline KPIs <1%.",
-          "at": "2026-06-11T23:42:00Z",
-          "source": "agentsmith",
-          "status": "success"
         }
       ],
       "pendingTasks": 2,
@@ -238,26 +220,7 @@
         "summary": "Drove CAPI keyless-ATC gap through full elimination; ruled out theme/PieEye-pixel/GTM; routed to AdSmith (app pixel + Events Manager) for morning",
         "at": "2026-06-12T04:10:00Z"
       },
-      "recentActivity": [
-        {
-          "summary": "Drove AdSmith's keyless-AddToCart CAPI coverage gap through a full source-level elimination tonight. Two ThemeSmith background dispatches + Justin-supplied PieEye source ruled out every agent-editable surface. RESULT: the keyless ~28% browser ATC events originate from the Shopify FB&IG APP-managed pixel itself - not the theme, not the PieEye custom pixel, not GTM. Routed the remaining diagnosis to AdSmith (Events Manager owner) and the config lever to Justin.",
-          "at": "2026-06-12T04:10:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Oversaw AdSmith's CAPI keyless-AddToCart eventID fix to the approval gate. Spawned ThemeSmith (background) to execute the pending high-pri inbox task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix. Root cause CONFIRMED: custom Customer Events pixel web-pixel-146800888 fires fbq('track','AddToCart') without the {eventID} 4th arg, so ~28% of browser ATC events are keyless and can't dedupe vs the 100%-stamped CAPI server event (caps coverage at 37%, goal >=75%). ThemeSmith produced a before/after diff mirroring the working Purchase/IC pattern, consent (PieEye) byte-for-byte untouched. HARD WALL hit: live custom-pixel source cannot be read by any agent (read_pixels scope denied AND custom-pixel JS is not exposed via webPixel API even with scope) - confirmed independently by ThemeSmith and Shopkeeper (Shopkeeper dispatched via ThemeSmith task 346b7ff4, filed blocked-extraction outbox). Nothing shipped, no theme code/branch changed - proposal only.",
-          "at": "2026-06-12T03:05:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Orchestrated a new Traffic Acquisition dashboard end-to-end in response to Justin's 'do we have a dashboard showing website traffic and where it's coming from?' Confirmed the gap, scoped via DataOps, got Justin's approve-to-build, dispatched the build, and drove the HubSmith nav handoff to done. Live at /traffic-acquisition.html.",
-          "at": "2026-06-11T17:10:00-07:00",
-          "source": "interactive",
-          "status": "success"
-        }
-      ],
+      "recentActivity": [],
       "pendingTasks": 0,
       "health": "healthy"
     },
@@ -402,16 +365,10 @@
           "status": "partial"
         },
         {
-          "summary": "Relayed ThemeSmith's result on the keyless-ATC pixel fix to Justin. Root cause CONFIRMED: custom Customer Events pixel 146800888's AddToCart branch fires browser fbq without a shared eventID (or one not mirrored to CAPI), unlike the working Purchase/IC branches. Fix pattern agreed (one eventID per ATC event -> both fbq 4th-arg and CAPI event_id, reuse existing generator, consent untouched). BLOCKED on source: custom pixel JS is only human-readable in Shopify Admin -> Settings -> Customer events; read_pixels scope denied to both ThemeSmith and Shopkeeper MCP tokens. ThemeSmith's diff is reconstructed (correct shape, not line-matched). Asked Justin to paste the pixel source so ThemeSmith finalizes the exact diff for approval-gated ship.",
-          "at": "2026-06-11T17:00:00-07:00",
-          "source": "interactive",
-          "status": "partial"
-        },
-        {
-          "summary": "Dispatched ThemeSmith (task 2026-06-11T16-40-00Z-capi-atc-eventid-dedup-fix, pending, priority high) to fix the keyless-AddToCart half of the Meta CAPI coverage gap: audit custom Customer Events pixel web-pixel-146800888's AddToCart handler, align browser fbq eventID with the CAPI event_id (mirroring the working Purchase/IC pattern), and propose a before/after diff. Guardrails set: do NOT weaken PieEye consent gating, do NOT ship to live pixel without Justin's approval, verify via Events Manager Test Events after ship. ThemeSmith to loop in Shopkeeper if it lacks admin access to Settings -> Customer events. Report back to AdSmith for coverage verification.",
-          "at": "2026-06-11T16:42:00-07:00",
-          "source": "interactive",
-          "status": "success"
+          "summary": "Task processed. Here's the diagnosis.\n\n## Keyless ATC → Shopify FB&IG app pixel — diagnosis & recommendation\n\n**⚠️ The elimination overturns my 6/11 root cause.** I had pinned the keyless ~28% on cust",
+          "at": "2026-06-12T10:33:37.923629-07:00",
+          "source": "gateway",
+          "status": "unknown"
         }
       ],
       "pendingTasks": 1,
@@ -440,11 +397,15 @@
       "emoji": "newspaper",
       "role": "CoffeeAlternatives.com Webmaster",
       "workspace": "clawd-brewsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "daily-publish 2026-06-19",
+        "source": "scheduled",
+        "startedAt": "2026-06-19T11:00:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Published: Quitting caffeine when everyone around you drinks coffee (sam-reyes, getting-started) — live + verified",
+        "summary": "Published 'Quitting caffeine when everyone around you drinks coffee' (sam-reyes, getting-started) — live + verified.",
         "at": "2026-06-18T11:30:00Z"
       },
       "recentActivity": [
@@ -506,12 +467,6 @@
           "summary": "DONE — 'experimentation' (Experimentation & CRO, 🧪) is a locked category at order 4. Re-register experiments.html into it whenever you're ready; the section goes live as soon as it has a page.",
           "at": "2026-06-15T12:10:00-07:00",
           "source": "gateway",
-          "status": "unknown"
-        },
-        {
-          "summary": "Registered DataOps' Traffic Acquisition dashboard into the hub: added 'Traffic' nav link (leading the Marketing group), rebuilt index.html, ran hygiene (validate OK, orphans none), deployed, live-verified.",
-          "at": "2026-06-11T17:05:00-07:00",
-          "source": "dispatch",
           "status": "unknown"
         }
       ],
