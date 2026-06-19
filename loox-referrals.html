@@ -26,6 +26,23 @@
   .tw { overflow-x:auto; }
   .smalln { color:var(--muted); font-size:12px; font-style:italic; }
 </style></head><body>
+<!-- Shared hub chrome (Owner: HubSmith) — top nav + owner badge. Injected, not authored here;
+     does not modify the dashboard body below. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var slot = document.getElementById('hub-nav');
+      slot.innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+      slot.querySelectorAll('script').forEach(function (s) {
+        var n = document.createElement('script');
+        if (s.src) { n.src = s.src; } else { n.textContent = s.textContent; }
+        document.head.appendChild(n);
+      });
+    });
+</script>
 <h1>🎁 Loox Referrals</h1>
 <div class="sub">Built 2026-06-19 11:53:19 · Active reward mechanism: <strong>discount-code</strong> · Data 2023→present</div>
 <div class="prov"><strong>Data provenance (dual-mode):</strong> Program membership is anchored on order
