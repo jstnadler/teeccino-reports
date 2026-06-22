@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-22T13:37:11.402116-07:00",
+  "lastUpdated": "2026-06-22T14:13:28.319931-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -165,8 +165,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Inbox sweep (2 task(s))",
-        "at": "2026-06-22T11:54:28.748924-07:00"
+        "summary": "report current data freshness",
+        "at": "2026-06-22T14:09:29.735437-07:00"
       },
       "recentActivity": [
         {
@@ -243,10 +243,28 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Built Phase-2 two-way dispatch into Switchboard (any-message->thread->spawn->live stream); awaiting Message Content Intent + service restart to go live",
-        "at": "2026-06-22T13:40:00-07:00"
+        "summary": "Phase 2 two-way Discord dispatch WORKING (live #dataops test); fixed auth + stream-reader hang + dedup. Surfaced 3-day stale-pipeline 401 incident.",
+        "at": "2026-06-22T14:10:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Phase 2 two-way Discord dispatch is WORKING end-to-end (live #dataops test). Fixed the dedup (double-posted answer). Separately, that test surfaced a real incident: the daily analytics pipeline has been failing 401 for 3 days.",
+          "at": "2026-06-22T14:10:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
+        {
+          "summary": "Fixed Phase-2 dispatch reader silently dying mid-stream (no result, no completion). Auth was already fixed (LocalSystem + USERPROFILE injection works -- token is plaintext). Awaiting one service restart to load the fix.",
+          "at": "2026-06-22T14:05:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
+        {
+          "summary": "First Phase-2 dispatch fired correctly but the agent failed 'Not logged in': the NSSM service runs as LocalSystem and can't see Justin's Claude OAuth creds (~/.claude/.credentials.json; no ANTHROPIC_API_KEY). Fix: run the service as AzureAD\\JustinAdler.",
+          "at": "2026-06-22T13:48:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Built Phase-2 two-way dispatch into the Switchboard. Also deleted the 3 legacy channels + the empty leftover category (server now 13 channels, 1 category). Awaiting Justin: enable Message Content Intent + restart the service.",
           "at": "2026-06-22T13:40:00-07:00",
@@ -286,24 +304,6 @@
         {
           "summary": "Recon to reuse Crowley's Discord for the Switchboard. Recovered guild ID (1466925435316076567) from the 2026-03-30 deployment log and wired it into switchboard_config.json. Flagged a plaintext bot token leaked in that memory log (rotate).",
           "at": "2026-06-22T12:55:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Live-task drain complete. Backlog fully cleared 21 -> 0. All 7 live tasks shipped successfully (incl. both CatalogSmith SEO rewrites live today). CatalogSmith's sweep 'FAILED' was a false timeout -- work succeeded.",
-          "at": "2026-06-22T12:35:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Built + console-validated the Phase-1 Switchboard daemon (read-only Discord mirror). Detection brain works; live posting just needs the Phase-0 bot token.",
-          "at": "2026-06-22T12:25:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Triaged the agent inbox backlog (Justin-approved): cleared 13 provably-stale tasks to complete, marked 1 blocked, and kicked off a background sweep to drain the 7 remaining live tasks. Backlog 21 -> 8 -> draining.",
-          "at": "2026-06-22T12:15:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
@@ -1069,6 +1069,15 @@
       "detail": "The 6/11 FB&IG data-sharing -> Maximum change needs the 7-day rolling window to incorporate it (visible ~2026-06-18). ACTION (~60s, Events Manager UI only -- not in any API): pull current ATC dedup numbers and compare to the 6/11 baseline [browser 71.97%% w/ Event ID, server 100, total coverage 51.06%%, ~28%% keyless]. DECISION TREE: (a) coverage 51%%->65%%+ and keyless <15%% => confirmed self-resolved, close thread; (b) stalls low-50s => limiter is consent rate, open a separate PieEye-safe thread; (c) keyless %% unchanged => escalate to find another source. Full context: clawd-adsmith outbox 2026-06-12T10-55-00-keyless-atc-fbig-pixel-diagnosis.json + AgentSmith memory reference_teeccino_meta_tracking_architecture.md. To run the comparison once you have the numbers: dispatch AdSmith (task already framed). Dismiss this reminder when done.",
       "flaggedBy": "agentsmith",
       "created": "2026-06-12T10:40:54.005242-07:00",
+      "status": "pending"
+    },
+    {
+      "id": "incident-pipeline-401-20260622",
+      "priority": "urgent",
+      "title": "Daily analytics pipeline down 3 days (401 on scheduled run)",
+      "detail": "TeeccinoAnalytics 6AM run failing exit1/HTTP401 on 06-20/21/22 -- the Claude harness credential the scheduled task uses (NOT .env tokens). Analytics stale since 06-18. Fix: refresh the scheduled-task Claude login. Catch-up: DataOps can backfill 06-19->06-22.",
+      "flaggedBy": "agentsmith",
+      "created": "2026-06-22T14:10:00-07:00",
       "status": "pending"
     }
   ],
