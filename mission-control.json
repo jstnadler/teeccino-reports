@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-22T13:05:46.068864-07:00",
+  "lastUpdated": "2026-06-22T13:13:47.278826-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -243,10 +243,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Switchboard Phase 1 LIVE on Discord (reused Crowley bot/server); 13 channels created, all 11 agent statuses pinned, continuous mirror running",
-        "at": "2026-06-22T13:05:00-07:00"
+        "summary": "Built + validated NSSM service installer for the Switchboard (install_switchboard_service.ps1); awaiting Justin's elevated run",
+        "at": "2026-06-22T13:15:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Built + parse-validated the NSSM service installer for the Switchboard. Needs Justin to run it elevated (service creation requires admin).",
+          "at": "2026-06-22T13:15:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Switchboard Phase 1 is LIVE on Discord. Reused Crowley's existing bot + server; created 13 channels, seeded all 11 agent pinned statuses, continuous read-only mirror running.",
           "at": "2026-06-22T13:05:00-07:00",
@@ -298,12 +304,6 @@
         {
           "summary": "Dispatched HubSmith to (1) wire the new loox-referrals.html into the hub and (2) build a hub-wide page-search feature. Both shipped live + verified console-clean. Loox page added to Marketing nav group + index card; HubSmith caught & fixed that DataOps shipped the page BARE (no shared #hub-nav/owner badge) and wrapped it (body untouched) — now shows nav + 'Maintained by DataOps' badge. Page search is GLOBAL (shared nav chrome + index), live-filter over pages.json matching title+category+owner+tags, keyboard nav, capped 8 results; all logic in _partials/nav-boot.js (no inline handlers, honoring the 2026-06-10 SyntaxError incident).",
           "at": "2026-06-19T15:17:37-07:00",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Orchestrated the full Loox Referrals effectiveness dashboard end-to-end (scope -> approve -> build) for Justin. DataOps shipped loox-referrals.html (live, hub-registered owner=dataops): 3 sections — ROI/cost (240 friend orders, $1,847.23 reward cost, $7,477.65 net margin after reward, 4.05x margin-per-reward-$), new-customer acquisition (90.8% brand-new), referred-customer quality (2.49 lifetime orders vs 1.77 baseline +41%; $80.13 LTV365 vs $75.64 +6%). Built DUAL-MODE per Justin's planned switch to store-credit rewards: tag-anchored (Loox - Referral Friend/Advocate tags survive the switch), money-out = union of discount-code (LXZ/LXR) + store-credit ORDER_PAYMENT debits. Store-credit path query-valid against live API (0 rows today, creds confirmed), marked unvalidated-pending-switch. Wired into daily_run.py (required=False).",
-          "at": "2026-06-19T11:56:29-07:00",
           "source": "interactive",
           "status": "success"
         }
@@ -794,25 +794,6 @@
       "milestoneTotal": 5,
       "tasksDone": 0,
       "tasksPending": 0
-    },
-    {
-      "id": "discord-migration",
-      "name": "Discord Migration (Switchboard)",
-      "status": "active",
-      "priority": "high",
-      "owner": "agentsmith",
-      "contributors": [
-        "Justin"
-      ],
-      "category": "Infrastructure",
-      "started": "2026-06-22",
-      "lastActivity": "2026-06-22",
-      "description": "Re-front the CC agent guild on Discord. A persistent 'Switchboard' daemon on the Windows box becomes the real control plane: per-agent channels, thread-per-task, two-way dispatch (spawn claude -p and stream output), per-agent concurrency policy, reaction-based approval gates, and a peer broker for cross-agent consult/delegate. Direct-to-agent is the DEFAULT; AgentSmith orchestration is opt-in (#gateway); cross-agent pulls can be initiated by Justin OR by agents, with delegation auto-running under the sibling's own lane safety. Built ADDITIVELY in parallel to the current PS-launcher + gateway.py + GH Pages system, which keeps working untouched and is never decommissioned without sign-off. Existing rails (status.json / outbox / mission-control.json / dashboard) are written-through, so Discord is the live stream view and the dashboard stays the durable board view. Fast-track item: the inbox-watcher (always-on file-based consumer loop = the daemon's core, minus Discord) ships first to kill the dead-letter latency on the CURRENT system.",
-      "dashboardUrl": null,
-      "milestoneDone": 2,
-      "milestoneTotal": 7,
-      "tasksDone": 1,
-      "tasksPending": 7
     },
     {
       "id": "influencer-gifting",
