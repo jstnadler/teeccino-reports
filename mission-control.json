@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-22T14:47:00.431026-07:00",
+  "lastUpdated": "2026-06-22T15:03:13.248019-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -159,8 +159,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Diagnosed scheduler 401 (OAuth expired, now refreshed+verified) & Google Ads (expired token, needs interactive reauth)",
-        "at": "2026-06-22T21:46:59Z"
+        "summary": "Diagnosed Google Ads OAuth expiry + scheduler 401 root cause; both blocked on Justin",
+        "at": "2026-06-22T22:02:57Z"
       },
       "recentActivity": [
         {
@@ -180,6 +180,12 @@
           "at": "2026-04-13T07:01:41.810528",
           "source": "interactive",
           "status": "success"
+        },
+        {
+          "summary": "Diagnosed two freshness blockers; both require Justin. Google Ads OAuth expired (backfill blocked on browser re-auth); scheduled task 'TeeccinoAnalytics' failing 401 since ~06-20 because Claude Code CLI credential expired.",
+          "at": "2026-06-22T22:02:57Z",
+          "source": "interactive",
+          "status": "partial"
         },
         {
           "summary": "Refreshed stale ltv.html (last built 2026-05-20) and wired build_ltv_dashboard.py into nightly daily_run.py so it stays current going forward.",
@@ -216,12 +222,6 @@
           "at": "2026-06-22T17:30:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Caught up stalled pipeline through 06-22 (orders, transforms, sku, attribution, shipstation, MTD HTML); GitHub push BLOCKED by SYSTEM-account credential failure.",
-          "at": "2026-06-22T15:40:00Z",
-          "source": "interactive",
-          "status": "partial"
         }
       ],
       "pendingTasks": 0,
@@ -237,10 +237,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Added live 'typing…' running-indicator + elapsed-time to Switchboard dispatch threads; stacked with dispatch-directive fix awaiting one restart",
-        "at": "2026-06-22T14:35:00-07:00"
+        "summary": "Switchboard: added animated spinner+timer status line; directive now makes agents run scripts themselves and only hand off browser/human steps. Awaiting restart.",
+        "at": "2026-06-22T14:45:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Two Switchboard UX upgrades per Justin: (1) explicit animated status line (spinner + live timer + current action) that deletes on finish; (2) dispatch directive now makes agents RUN scripts themselves and only hand off genuinely-human steps (browser OAuth/approval/decision) via reply-to-continue.",
+          "at": "2026-06-22T14:45:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Added a live 'is it running' animation to dispatch threads: the bot holds Discord's typing indicator active for the whole run, plus elapsed time on the finish line. Stacks with the dispatch-directive fix; one restart loads both.",
           "at": "2026-06-22T14:35:00-07:00",
@@ -292,12 +298,6 @@
         {
           "summary": "Diagnosed + fixed the mixed channel grouping in Discord. 3 agent channels (shopkeeper/dataops/adsmith) were pre-existing Crowley-era channels the daemon adopted-but-didn't-relocate. Moved them into Teeccino Agents; patched ensure_channels to self-heal.",
           "at": "2026-06-22T13:30:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Switchboard Phase 1 is now a durable, always-on Windows service. TeeccinoSwitchboard (NSSM) Running, Automatic start, auto-restart, verified mirroring.",
-          "at": "2026-06-22T13:18:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
