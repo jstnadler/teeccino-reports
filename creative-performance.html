@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creative Performance — Teeccino</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         background:#0f172a; color:#e2e8f0; padding:20px; }
+  .container { max-width:1500px; margin:0 auto; }
+  h1 { color:#f8fafc; font-size:1.7rem; letter-spacing:-0.02em; }
+  .sub { color:#94a3b8; margin:6px 0 18px; font-size:0.92rem; }
+  .glossary { background:#1e293b; border:1px solid #334155; border-radius:10px;
+              padding:14px 16px; font-size:0.84rem; color:#cbd5e1; margin-bottom:20px; line-height:1.55; }
+  .glossary code { background:#0f172a; padding:1px 6px; border-radius:4px; color:#fbbf24; }
+  .glossary b { color:#f8fafc; }
+
+  .controls { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
+              background:#1e293b; border:1px solid #334155; border-radius:10px; padding:16px; margin-bottom:16px; }
+  .ctl { display:flex; flex-direction:column; gap:4px; }
+  .ctl label { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em; color:#94a3b8; }
+  .ctl input, .ctl select { padding:8px 10px; border-radius:7px; border:1px solid #334155;
+              background:#0f172a; color:#e2e8f0; font-size:0.9rem; min-width:120px; }
+  .presets { display:flex; gap:6px; flex-wrap:wrap; }
+  .presets button { padding:7px 11px; border-radius:7px; border:1px solid #334155;
+              background:#0f172a; color:#cbd5e1; cursor:pointer; font-size:0.82rem; }
+  .presets button:hover { background:#334155; }
+  .presets button.active { background:#D4A843; color:#1a1a1a; border-color:#D4A843; font-weight:600; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+           gap:12px; margin-bottom:20px; }
+  .stat { background:#1e293b; border:1px solid #334155; padding:16px; border-radius:10px; text-align:center; }
+  .stat .val { font-size:1.5rem; font-weight:700; color:#f8fafc; font-variant-numeric:tabular-nums; }
+  .stat .lbl { color:#94a3b8; font-size:0.78rem; margin-top:3px; }
+
+  .meta-row { display:flex; justify-content:space-between; align-items:center;
+              flex-wrap:wrap; gap:8px; margin-bottom:12px; color:#94a3b8; font-size:0.84rem; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:20px; }
+  .card { background:#1e293b; border:1px solid #334155; border-radius:12px; overflow:hidden;
+          display:flex; flex-direction:column; transition:transform .15s, border-color .15s; cursor:pointer; }
+  .card:hover { transform:translateY(-3px); border-color:#D4A843; }
+  .card .imgwrap { position:relative; height:230px; background:#0f172a; }
+  .card .imgwrap img { width:100%; height:100%; object-fit:contain; background:#0b1220; }
+  .card .imgwrap .ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+                       color:#475569; font-size:0.8rem; }
+  .badge { position:absolute; top:8px; left:8px; font-size:0.66rem; text-transform:uppercase;
+           letter-spacing:0.05em; padding:3px 8px; border-radius:20px; font-weight:700; }
+  .badge.video { background:rgba(96,165,250,0.22); color:#93c5fd; }
+  .badge.image { background:rgba(52,211,153,0.2); color:#6ee7b7; }
+  .badge.unknown { background:rgba(148,163,184,0.2); color:#cbd5e1; }
+  .rank { position:absolute; top:8px; right:8px; background:rgba(212,168,67,0.9); color:#1a1a1a;
+          font-weight:800; font-size:0.78rem; padding:3px 9px; border-radius:20px; }
+  .card-body { padding:13px 14px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .card-title { font-weight:600; font-size:0.86rem; color:#f8fafc; line-height:1.3;
+                display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .card-camp { font-size:0.73rem; color:#94a3b8; line-height:1.35;
+               display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .kpis { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:auto; }
+  .kpi { background:#0f172a; border-radius:7px; padding:7px 6px; text-align:center; }
+  .kpi .k { font-size:0.62rem; color:#64748b; text-transform:uppercase; letter-spacing:0.03em; }
+  .kpi .v { font-size:0.86rem; font-weight:700; color:#e2e8f0; font-variant-numeric:tabular-nums; }
+  .kpi.hl .v { color:#D4A843; }
+  .pos { color:#3fb950 !important; } .neg { color:#f85149 !important; }
+
+  /* modal */
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000;
+           align-items:center; justify-content:center; padding:20px; }
+  .modal.open { display:flex; }
+  .modal-inner { background:#1e293b; border:1px solid #334155; border-radius:14px; max-width:760px;
+                 width:100%; max-height:90vh; overflow:auto; }
+  .modal-inner img { width:100%; max-height:380px; object-fit:contain; background:#0b1220;
+                     border-radius:14px 14px 0 0; }
+  .modal-pad { padding:20px 22px; }
+  .modal-pad h2 { font-size:1.1rem; color:#f8fafc; margin-bottom:4px; }
+  .modal-pad .mc { color:#94a3b8; font-size:0.84rem; margin-bottom:12px; }
+  .modal-pad .body { background:#0f172a; border-radius:8px; padding:12px 14px; font-size:0.86rem;
+                     color:#cbd5e1; white-space:pre-wrap; line-height:1.5; margin-bottom:14px; }
+  .mgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; }
+  .mgrid .stat { padding:12px; }
+  .close { float:right; cursor:pointer; color:#94a3b8; font-size:1.4rem; line-height:1; }
+  .empty { text-align:center; color:#64748b; padding:60px 20px; }
+</style>
+</head>
+<body>
+
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => { document.getElementById('hub-nav').innerHTML = html;
+                    document.body.classList.add('has-hub-nav'); });
+</script>
+
+<div class="container">
+  <h1>🎨 Creative Performance — Meta</h1>
+  <p class="sub" id="subline">Top-performing ad creatives for any date range — see the visual, where it runs, and how it performs. Loading…</p>
+
+  <div class="glossary">
+    <b>What this is:</b> every Meta creative ranked by the KPI you choose, over the date range you pick. Each card shows the creative visual, its campaign · ad set, and core metrics.
+    &nbsp;·&nbsp; <code>ROAS</code> = revenue ÷ spend &nbsp;·&nbsp; <code>CPA</code> = spend ÷ purchases &nbsp;·&nbsp; <code>CTR</code> = clicks ÷ impressions &nbsp;·&nbsp; <code>CPC</code> = spend ÷ clicks
+    <br><br>
+    <b>Meta-only (v1):</b> Google has no ad-level creative data in the pipeline yet — Google creatives are a planned fast-follow. Thumbnails come from the Meta CDN and can occasionally expire (a placeholder shows if so).
+  </div>
+
+  <div id="provenance-mount"></div>
+  <script>
+  window.PROVENANCE_CONFIG = {
+    pageTitle: "Creative Performance (Meta)",
+    owner: "AdSmith",
+    master: { label: "Analytics DB", path: "C:\\temp\\analytics\\teeccino_analytics.db",
+              rowGrain: "daily per-ad Meta metrics + creative thumbnail/body" },
+    sources: [
+      { name: "raw_meta_ad_insights_daily", flow: "Meta Ads API → ingest_meta.py → SQLite (+ creative thumbnails)" }
+    ],
+    pipeline: [ "ingest_meta.py --api → daily per-ad rows",
+                "build_creative_performance_report.py → creative-performance-data.json",
+                "creative-performance.html → client-side date-range aggregation + ranking" ],
+    feedsInto: [ { target: "Creative strategy", role: "spot winning creatives, retire fatigued ones" } ]
+  };
+  </script>
+  <script src="provenance-banner.js"></script>
+
+  <div class="controls">
+    <div class="ctl">
+      <label for="start">Start date</label>
+      <input type="date" id="start">
+    </div>
+    <div class="ctl">
+      <label for="end">End date</label>
+      <input type="date" id="end">
+    </div>
+    <div class="ctl">
+      <label>Quick range</label>
+      <div class="presets" id="presets">
+        <button data-days="7">7d</button>
+        <button data-days="30" class="active">30d</button>
+        <button data-days="90">90d</button>
+        <button data-ytd="1">YTD</button>
+        <button data-all="1">All</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label for="kpi">Rank by</label>
+      <select id="kpi">
+        <option value="roas" selected>ROAS</option>
+        <option value="purchases">Purchases</option>
+        <option value="revenue">Revenue</option>
+        <option value="spend">Spend</option>
+        <option value="ctr">CTR</option>
+        <option value="cpc">CPC (low→high)</option>
+        <option value="cpa">CPA (low→high)</option>
+        <option value="impressions">Impressions</option>
+        <option value="clicks">Clicks</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="campaign">Campaign</label>
+      <select id="campaign"><option value="">All campaigns</option></select>
+    </div>
+    <div class="ctl">
+      <label for="ctype">Creative type</label>
+      <select id="ctype">
+        <option value="">All types</option>
+        <option value="video">Video</option>
+        <option value="image">Image</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="minspend">Min spend ($)</label>
+      <input type="number" id="minspend" value="50" min="0" step="10" style="min-width:90px">
+    </div>
+    <div class="ctl">
+      <label for="search">Search name</label>
+      <input type="text" id="search" placeholder="e.g. dandelion">
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div class="meta-row">
+    <span id="rangeline"></span>
+    <span id="countline"></span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none">No creatives match these filters in this date range.</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-inner" id="modal-inner"></div>
+</div>
+
+<script>
+let DATA = null;
+
+const $ = id => document.getElementById(id);
+const fmtUSD = n => '$' + (n||0).toLocaleString('en-US',{maximumFractionDigits:0});
+const fmtUSD2 = n => '$' + (n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtNum = n => (n||0).toLocaleString('en-US');
+const fmtX = n => (n||0).toFixed(2)+'×';
+const fmtPct = n => (n||0).toFixed(2)+'%';
+
+const KPI_LABEL = {roas:'ROAS',purchases:'Purchases',revenue:'Revenue',spend:'Spend',
+                   ctr:'CTR',cpc:'CPC',cpa:'CPA',impressions:'Impr',clicks:'Clicks'};
+// KPIs where lower is better (sort ascending)
+const KPI_ASC = new Set(['cpc','cpa']);
+
+function isoDaysAgo(maxDate, days){
+  const d = new Date(maxDate + 'T00:00:00');
+  d.setDate(d.getDate() - (days-1));
+  return d.toISOString().slice(0,10);
+}
+
+function aggregate(){
+  const start = $('start').value, end = $('end').value;
+  const campFilter = $('campaign').value;
+  const typeFilter = $('ctype').value;
+  const minSpend = parseFloat($('minspend').value) || 0;
+  const search = $('search').value.trim().toLowerCase();
+
+  const agg = {}; // ad_id -> totals
+  for (const row of DATA.daily){
+    const [aid, date, spend, impr, clicks, lclicks, purch, rev] = row;
+    if (date < start || date > end) continue;
+    let a = agg[aid];
+    if (!a){ a = agg[aid] = {spend:0,impr:0,clicks:0,lclicks:0,purch:0,rev:0}; }
+    a.spend+=spend; a.impr+=impr; a.clicks+=clicks; a.lclicks+=lclicks; a.purch+=purch; a.rev+=rev;
+  }
+
+  const out = [];
+  for (const aid in agg){
+    const meta = DATA.ads[aid]; if (!meta) continue;
+    if (campFilter && meta.campaign !== campFilter) continue;
+    if (typeFilter && meta.type !== typeFilter) continue;
+    if (search && !(meta.name.toLowerCase().includes(search))) continue;
+    const a = agg[aid];
+    if (a.spend < minSpend) continue;
+    out.push({
+      aid, ...meta,
+      spend:a.spend, impr:a.impr, clicks:a.clicks, lclicks:a.lclicks, purch:a.purch, rev:a.rev,
+      roas: a.spend>0 ? a.rev/a.spend : 0,
+      ctr: a.impr>0 ? a.clicks/a.impr*100 : 0,
+      cpc: a.clicks>0 ? a.spend/a.clicks : 0,
+      cpa: a.purch>0 ? a.spend/a.purch : 0,
+    });
+  }
+  return out;
+}
+
+function render(){
+  if (!DATA) return;
+  const kpi = $('kpi').value;
+  let rows = aggregate();
+  const asc = KPI_ASC.has(kpi);
+  rows.sort((x,y)=>{
+    let xv=x[kpi], yv=y[kpi];
+    // push zero-denominator entries to the bottom for low-is-better KPIs
+    if (asc){ if(xv===0)xv=Infinity; if(yv===0)yv=Infinity; return xv-yv; }
+    return yv-xv;
+  });
+
+  // summary over the filtered set
+  const tot = rows.reduce((s,r)=>{s.spend+=r.spend;s.rev+=r.rev;s.purch+=r.purch;s.impr+=r.impr;s.clicks+=r.clicks;return s;},
+                          {spend:0,rev:0,purch:0,impr:0,clicks:0});
+  $('stats').innerHTML = [
+    ['Creatives', fmtNum(rows.length)],
+    ['Spend', fmtUSD(tot.spend)],
+    ['Revenue', fmtUSD(tot.rev)],
+    ['ROAS', tot.spend>0?fmtX(tot.rev/tot.spend):'—'],
+    ['Purchases', fmtNum(tot.purch)],
+    ['CTR', tot.impr>0?fmtPct(tot.clicks/tot.impr*100):'—'],
+  ].map(([l,v])=>`<div class="stat"><div class="val">${v}</div><div class="lbl">${l}</div></div>`).join('');
+
+  const LIMIT = 120;
+  const shown = rows.slice(0, LIMIT);
+  $('rangeline').textContent = `${$('start').value} → ${$('end').value} · ranked by ${KPI_LABEL[kpi]}${asc?' (low→high)':''}`;
+  $('countline').textContent = rows.length > LIMIT
+    ? `Showing top ${LIMIT} of ${rows.length} creatives` : `${rows.length} creatives`;
+
+  $('empty').style.display = rows.length ? 'none' : 'block';
+
+  $('grid').innerHTML = shown.map((r,i)=>{
+    const roasCls = r.roas>=1 ? 'pos' : (r.roas>0?'neg':'');
+    const img = imgHtml(r, 'loading="lazy"');
+    const t = (r.type==='video'||r.type==='image')?r.type:'unknown';
+    return `<div class="card" onclick='openModal(${JSON.stringify(r.aid)})'>
+      <div class="imgwrap">
+        ${img}
+        <span class="badge ${t}">${t}</span>
+        <span class="rank">#${i+1}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${esc(r.name)}</div>
+        <div class="card-camp">${esc(r.campaign)}<br>${esc(r.adset)}</div>
+        <div class="kpis">
+          <div class="kpi ${kpi==='roas'?'hl':''}"><div class="k">ROAS</div><div class="v ${roasCls}">${fmtX(r.roas)}</div></div>
+          <div class="kpi ${kpi==='spend'?'hl':''}"><div class="k">Spend</div><div class="v">${fmtUSD(r.spend)}</div></div>
+          <div class="kpi ${kpi==='purchases'?'hl':''}"><div class="k">Purch</div><div class="v">${fmtNum(r.purch)}</div></div>
+          <div class="kpi ${kpi==='cpa'?'hl':''}"><div class="k">CPA</div><div class="v">${r.purch>0?fmtUSD2(r.cpa):'—'}</div></div>
+          <div class="kpi ${kpi==='ctr'?'hl':''}"><div class="k">CTR</div><div class="v">${fmtPct(r.ctr)}</div></div>
+          <div class="kpi ${kpi==='cpc'?'hl':''}"><div class="k">CPC</div><div class="v">${r.clicks>0?fmtUSD2(r.cpc):'—'}</div></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.__rows_cache = {};
+function openModal(aid){
+  const kpi=$('kpi').value;
+  const rows = aggregate();
+  const r = rows.find(x=>x.aid===aid); if(!r) return;
+  const img = imgHtml(r, '');
+  $('modal-inner').innerHTML = `
+    ${img}
+    <div class="modal-pad">
+      <span class="close" onclick="closeModal()">×</span>
+      <h2>${esc(r.name)}</h2>
+      <div class="mc">${esc(r.campaign)} · ${esc(r.adset)} · ${r.type}</div>
+      ${r.body?`<div class="body">${esc(r.body)}</div>`:''}
+      <div class="mgrid">
+        <div class="stat"><div class="val ${r.roas>=1?'pos':'neg'}">${fmtX(r.roas)}</div><div class="lbl">ROAS</div></div>
+        <div class="stat"><div class="val">${fmtUSD(r.spend)}</div><div class="lbl">Spend</div></div>
+        <div class="stat"><div class="val">${fmtUSD(r.rev)}</div><div class="lbl">Revenue</div></div>
+        <div class="stat"><div class="val">${fmtNum(r.purch)}</div><div class="lbl">Purchases</div></div>
+        <div class="stat"><div class="val">${r.purch>0?fmtUSD2(r.cpa):'—'}</div><div class="lbl">CPA</div></div>
+        <div class="stat"><div class="val">${fmtNum(r.impr)}</div><div class="lbl">Impressions</div></div>
+        <div class="stat"><div class="val">${fmtNum(r.clicks)}</div><div class="lbl">Clicks</div></div>
+        <div class="stat"><div class="val">${fmtPct(r.ctr)}</div><div class="lbl">CTR</div></div>
+        <div class="stat"><div class="val">${r.clicks>0?fmtUSD2(r.cpc):'—'}</div><div class="lbl">CPC</div></div>
+      </div>
+    </div>`;
+  $('modal').classList.add('open');
+}
+function closeModal(){ $('modal').classList.remove('open'); }
+$('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+// Image resolution: local mirror (images/<ad_id>.jpg, reliable) → fbcdn URL → placeholder.
+function imgHtml(r, attrs){
+  const local = 'images/' + r.aid + '.jpg';
+  const fb = r.thumb || '';
+  return `<img ${attrs} src="${local}" data-fb="${esc(fb)}"
+      onerror="if(this.dataset.fb && this.src.indexOf('fbcdn')<0){this.src=this.dataset.fb;}
+               else{this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='flex';}">
+    <div class="ph" style="display:none">image unavailable</div>`;
+}
+
+function setPreset(btn){
+  document.querySelectorAll('#presets button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function bind(){
+  ['kpi','campaign','ctype','minspend','search','start','end'].forEach(id=>{
+    $(id).addEventListener('input', ()=>{ if(id==='start'||id==='end') setPreset(null); render(); });
+    $(id).addEventListener('change', render);
+  });
+  document.querySelectorAll('#presets button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      setPreset(b);
+      const max = DATA.date_max;
+      if(b.dataset.all){ $('start').value = DATA.date_min; $('end').value = max; }
+      else if(b.dataset.ytd){ $('start').value = max.slice(0,4)+'-01-01'; $('end').value = max; }
+      else { $('start').value = isoDaysAgo(max, +b.dataset.days); $('end').value = max; }
+      render();
+    });
+  });
+}
+
+fetch('creative-performance-data.json')
+  .then(r=>r.json())
+  .then(d=>{
+    DATA = d;
+    // default range: last 30 days ending at latest data date
+    $('end').value = d.date_max;
+    $('start').value = isoDaysAgo(d.date_max, 30);
+    $('start').min = d.date_min; $('start').max = d.date_max;
+    $('end').min = d.date_min; $('end').max = d.date_max;
+    // populate campaign filter
+    const camps = [...new Set(Object.values(d.ads).map(a=>a.campaign))].sort();
+    $('campaign').innerHTML = '<option value="">All campaigns</option>' +
+      camps.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    $('subline').textContent =
+      `${d.ad_count.toLocaleString()} Meta creatives · data ${d.date_min} → ${d.date_max} · generated ${d.generated.slice(0,10)}`;
+    bind();
+    render();
+  })
+  .catch(e=>{ $('subline').textContent = 'Failed to load data: '+e; });
+</script>
+</body>
+</html>
