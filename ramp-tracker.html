@@ -67,15 +67,28 @@
 
 <h2>Projected Payback by nCPA</h2>
 <div class="explain">
-  <b>What this shows.</b> How many months until an acquired customer's cumulative gross profit recoups what you paid
-  to get them. Payback rises gently as nCPA climbs &mdash; then goes near-vertical around <b>$55</b>,
-  the most a customer is worth over their life. Past that, they <b>never</b> pay back. The marker is where your current
-  cost sits.
+  <b>What this shows.</b> Read it as: <em>"if a customer cost me $X to acquire, how long until they've earned that $X
+  back in profit?"</em> The X-axis is your acquisition cost (nCPA); the Y-axis is months until that customer's
+  <b>cumulative gross profit</b> climbs back up to what you paid. The marker is where your current cost sits.
   <br><br>
-  <b>New vs. returning.</b> The acquisition order is the lowest-margin one — a new customer's first order yields
-  ~$21 gross profit vs ~$31 for a returning order (mostly smaller baskets, not margin
-  rate). So early payback leans on the repeat tail: nCPA below the <b>$21 first-order line</b> is
-  cash-positive on order one; above it, you're floating the cost until they reorder.
+  <b>Where the curve comes from.</b> A customer's profit piles up fast early, then flattens as their lifetime value
+  tops out at <b>~$55</b> (built from mature cohorts &times; 55% margin):
+  <table style="width:auto;margin:10px 0;display:inline-block;vertical-align:top;">
+    <thead><tr><th>By</th><th class="r">Cumulative GP</th></tr></thead>
+    <tbody><tr><td>~30 days</td><td class='r'>$27</td></tr><tr><td>~90 days</td><td class='r'>$32</td></tr><tr><td>1 year</td><td class='r'>$46</td></tr><tr><td>Lifetime</td><td class='r'>$55</td></tr></tbody>
+  </table>
+  <div style="margin-top:8px;">To find payback for any nCPA, you ask "when does cumulative profit cross that dollar
+  amount?" &mdash; e.g. nCPA <b>$20 &rarr; &lt;1 mo</b>, <b>$35 &rarr; ~5 mo</b>, <b>$46 &rarr; ~12 mo</b>,
+  <b>$55 &rarr; never</b>. As cost creeps toward the <b>~$55</b> ceiling you need almost their whole
+  lifetime to break even, so the line goes near-vertical &mdash; and <b>past ~$55 they never pay back</b> (the line
+  just stops).</div>
+  <br>
+  <b>New vs. returning &mdash; why early payback is slow.</b> A customer's <em>first order is their least profitable one</em>:
+  a new customer's first order yields only ~$21 gross profit vs ~$31 for a returning
+  order (mostly smaller starter baskets, not a different margin rate). So the profit that pays back your nCPA leans on
+  the <b>repeat tail</b>, not order one. That sets the reading line: nCPA below the <b>$21 first-order
+  line</b> is cash-positive on order one (recouped before they ever reorder); above it, you're floating the cost until
+  they come back &mdash; the further above, the more reorders you're banking on.
 </div>
 <div class="chart-wrap"><canvas id="paybackChart"></canvas></div>
 
@@ -122,7 +135,7 @@
   which is directional. Confirm a big call with a lift test before betting the full budget.
 </div>
 
-<p class="updated-stamp">Generated 2026-06-23 15:20:05 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-06-23 15:32:10 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["02-02", "02-09", "02-16", "02-23", "03-02", "03-09", "03-16", "03-23", "03-30", "04-06", "04-13", "04-20", "04-27", "05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15"];
