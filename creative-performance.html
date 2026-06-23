@@ -353,7 +353,10 @@ function openModal(aid){
   const kpi=$('kpi').value;
   const rows = aggregate();
   const r = rows.find(x=>x.aid===aid); if(!r) return;
-  const img = imgHtml(r, '');
+  // Modal: show the full-res master if matched, else the standard image chain.
+  const img = r.master
+    ? `<img src="${esc(r.master)}" onerror="this.onerror=null;this.src='images/${r.aid}.jpg'">`
+    : imgHtml(r, '');
   $('modal-inner').innerHTML = `
     ${img}
     <div class="modal-pad">
@@ -449,14 +452,23 @@ function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,
 // High-quality "open original" link. hqtype: image=direct full-res file,
 // instagram/facebook=native post permalink (durable, covers video too).
 const HQ_LABEL = {image:'Open full image ↗', instagram:'Open on Instagram ↗', facebook:'Open on Facebook ↗'};
+// Prefer a matched full-res MASTER image; else the API permalink/image.
+function hqPrimary(r){
+  if(r.master) return {url:r.master, label:'Open full-res image ↗'};
+  if(r.hq) return {url:r.hq, label:HQ_LABEL[r.hqtype]||'Open original ↗'};
+  return null;
+}
 function hqBadge(r){
-  if(!r.hq) return '';
-  return `<a class="hd" href="${esc(r.hq)}" target="_blank" rel="noopener"
-            title="${HQ_LABEL[r.hqtype]||'Open original ↗'}" onclick="event.stopPropagation()">HD ↗</a>`;
+  const p=hqPrimary(r); if(!p) return '';
+  return `<a class="hd" href="${esc(p.url)}" target="_blank" rel="noopener"
+            title="${p.label}" onclick="event.stopPropagation()">HD ↗</a>`;
 }
 function hqButton(r){
-  if(!r.hq) return '';
-  return `<a class="hqbtn" href="${esc(r.hq)}" target="_blank" rel="noopener">${HQ_LABEL[r.hqtype]||'Open original ↗'}</a>`;
+  const p=hqPrimary(r); if(!p) return '';
+  let html = `<a class="hqbtn" href="${esc(p.url)}" target="_blank" rel="noopener">${p.label}</a>`;
+  // If we're showing a master image but also have the native post, offer it too.
+  if(r.master && r.hq) html += ` <a class="hqbtn" style="background:#334155;color:#e2e8f0" href="${esc(r.hq)}" target="_blank" rel="noopener">${HQ_LABEL[r.hqtype]||'View post ↗'}</a>`;
+  return html;
 }
 
 // Launch date: prefer Meta created_time; fall back to first delivery we have.
@@ -514,8 +526,19 @@ fetch('creative-performance-data.json')
     // to list only campaigns with spend in the selected range.
     $('subline').textContent =
       `${d.ad_count.toLocaleString()} Meta creatives · data ${d.date_min} → ${d.date_max} · generated ${d.generated.slice(0,10)}`;
-    bind();
-    render();
+    // Merge high-quality MASTER images (full-res agency originals), if present.
+    return fetch('creative-masters.json').then(r=>r.ok?r.json():null).catch(()=>null)
+      .then(mm=>{
+        let n=0;
+        if(mm && mm.masters){
+          for(const aid in mm.masters){
+            if(DATA.ads[aid]){ DATA.ads[aid].master = mm.masters[aid].file; n++; }
+          }
+        }
+        if(n) $('subline').textContent += ` · ${n} full-res masters`;
+        bind();
+        render();
+      });
   })
   .catch(e=>{ $('subline').textContent = 'Failed to load data: '+e; });
 </script>
