@@ -116,7 +116,7 @@
     <b>What this is:</b> every Meta creative ranked by the KPI you choose, over the date range you pick. Each card shows the creative visual, its campaign · ad set, and core metrics.
     &nbsp;·&nbsp; <code>ROAS</code> = revenue ÷ spend &nbsp;·&nbsp; <code>CPA</code> = spend ÷ purchases &nbsp;·&nbsp; <code>CTR</code> = clicks ÷ impressions &nbsp;·&nbsp; <code>CPC</code> = spend ÷ clicks
     <br><br>
-    <b>Open high-quality:</b> grid thumbnails are low-res previews — click <b>HD ↗</b> on any card (or the button in the detail view) to open the full-quality creative: a full-res image, or the native Instagram/Facebook post (covers video too).
+    <b>Open high-quality:</b> click <b>HD ↗</b> on any card (or the button in the detail view) to open the best available image — a matched full-res master, the full ad image, or the largest thumbnail (video creatives open a still frame). A secondary <b>View on Instagram/Facebook ↗</b> link opens the live post (best when you're logged into IG/FB; ad "dark post" links may not load logged-out).
     &nbsp;·&nbsp; <b>🚀 Launched</b> = the creative's Meta launch date. <b>Click any card</b> to open its detail view with daily trend graphs (spend/revenue, ROAS, purchases/impressions) over the selected range.
     <br><br>
     <b>Meta-only (v1):</b> Google has no ad-level creative data in the pipeline yet — Google creatives are a planned fast-follow.
@@ -451,23 +451,33 @@ function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,
 
 // High-quality "open original" link. hqtype: image=direct full-res file,
 // instagram/facebook=native post permalink (durable, covers video too).
-const HQ_LABEL = {image:'Open full image ↗', instagram:'Open on Instagram ↗', facebook:'Open on Facebook ↗'};
-// Prefer a matched full-res MASTER image; else the API permalink/image.
-function hqPrimary(r){
-  if(r.master) return {url:r.master, label:'Open full-res image ↗'};
-  if(r.hq) return {url:r.hq, label:HQ_LABEL[r.hqtype]||'Open original ↗'};
+// PRIMARY "Open" = an image that reliably opens in any browser (no login),
+// best quality first: matched full-res master → direct full fbcdn image →
+// fbcdn thumbnail → our local thumbnail. (fbcdn image URLs are a public CDN and
+// open fine; instagram.com/p/ post links hit a login wall, so they are NOT used
+// as the primary action — they're a clearly-labeled secondary link below.)
+function openableImg(r){
+  if(r.master)              return {url:r.master, label:'Open full-res image ↗'};
+  if(r.hqtype==='image' && r.hq) return {url:r.hq, label:'Open full image ↗'};
+  if(r.thumb)               return {url:r.thumb, label:(r.type==='video'?'Open still frame ↗':'Open image ↗')};
+  return {url:`images/${r.aid}.jpg`, label:'Open image ↗'};
+}
+// The native social post — works best when logged into IG/FB.
+function postLink(r){
+  if(r.hqtype==='instagram') return {url:r.hq, label:'View on Instagram ↗'};
+  if(r.hqtype==='facebook')  return {url:r.hq, label:'View on Facebook ↗'};
   return null;
 }
 function hqBadge(r){
-  const p=hqPrimary(r); if(!p) return '';
+  const p=openableImg(r);
   return `<a class="hd" href="${esc(p.url)}" target="_blank" rel="noopener"
             title="${p.label}" onclick="event.stopPropagation()">HD ↗</a>`;
 }
 function hqButton(r){
-  const p=hqPrimary(r); if(!p) return '';
+  const p=openableImg(r);
   let html = `<a class="hqbtn" href="${esc(p.url)}" target="_blank" rel="noopener">${p.label}</a>`;
-  // If we're showing a master image but also have the native post, offer it too.
-  if(r.master && r.hq) html += ` <a class="hqbtn" style="background:#334155;color:#e2e8f0" href="${esc(r.hq)}" target="_blank" rel="noopener">${HQ_LABEL[r.hqtype]||'View post ↗'}</a>`;
+  const post=postLink(r);
+  if(post) html += ` <a class="hqbtn" style="background:#334155;color:#e2e8f0" href="${esc(post.url)}" target="_blank" rel="noopener" title="May require being logged into Instagram/Facebook">${post.label}</a>`;
   return html;
 }
 
