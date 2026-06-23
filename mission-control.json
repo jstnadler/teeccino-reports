@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-23T10:21:42.880008-07:00",
+  "lastUpdated": "2026-06-23T10:40:59.513351-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -135,8 +135,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Ok do it",
-        "at": "2026-06-23T10:21:16.636825-07:00"
+        "summary": "Yea, this has never been a problem before.",
+        "at": "2026-06-23T10:26:22.656837-07:00"
       },
       "recentActivity": [
         {
@@ -218,6 +218,12 @@
       },
       "recentActivity": [
         {
+          "summary": "Diagnosed + half-fixed why agents can't publish to GH Pages when dispatched via Discord. Cause: teeccino-reports clone used credential.helper=manager (Windows Credential Manager, DPAPI per-user) which the LocalSystem service can't decrypt. Switched the clone to file-based 'store'; Justin to add a PAT to ~/.git-credentials.",
+          "at": "2026-06-23T00:45:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
+        {
           "summary": "Built Phase 4: the cross-agent broker. Agents can pull in siblings mid-task via @@CONSULT (inline answer) or @@DELEGATE (sibling runs in its own channel thread under its own gate), then the caller is resumed. Deadlock-safe. Awaiting one restart + test.",
           "at": "2026-06-23T00:35:00-07:00",
           "source": "interactive",
@@ -268,12 +274,6 @@
         {
           "summary": "Fixed Phase-2 dispatch reader silently dying mid-stream (no result, no completion). Auth was already fixed (LocalSystem + USERPROFILE injection works -- token is plaintext). Awaiting one service restart to load the fix.",
           "at": "2026-06-22T14:05:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "First Phase-2 dispatch fired correctly but the agent failed 'Not logged in': the NSSM service runs as LocalSystem and can't see Justin's Claude OAuth creds (~/.claude/.credentials.json; no ANTHROPIC_API_KEY). Fix: run the service as AzureAD\\JustinAdler.",
-          "at": "2026-06-22T13:48:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
