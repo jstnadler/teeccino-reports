@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Creative Performance — Teeccino</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -86,6 +87,13 @@
                      color:#cbd5e1; white-space:pre-wrap; line-height:1.5; margin-bottom:14px; }
   .mgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:10px; }
   .mgrid .stat { padding:12px; }
+  .launch { display:inline-block; font-size:0.72rem; color:#cbd5e1; background:#0f172a;
+            border:1px solid #334155; border-radius:20px; padding:2px 9px; }
+  .card-launch { font-size:0.7rem; color:#64748b; }
+  .charts { margin-top:16px; }
+  .charts h3 { font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:#94a3b8; margin:14px 0 6px; }
+  .chartbox { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:10px 12px; height:200px; }
+  .chartnote { font-size:0.72rem; color:#64748b; margin-top:6px; }
   .close { float:right; cursor:pointer; color:#94a3b8; font-size:1.4rem; line-height:1; }
   .empty { text-align:center; color:#64748b; padding:60px 20px; }
 </style>
@@ -109,6 +117,7 @@
     &nbsp;·&nbsp; <code>ROAS</code> = revenue ÷ spend &nbsp;·&nbsp; <code>CPA</code> = spend ÷ purchases &nbsp;·&nbsp; <code>CTR</code> = clicks ÷ impressions &nbsp;·&nbsp; <code>CPC</code> = spend ÷ clicks
     <br><br>
     <b>Open high-quality:</b> grid thumbnails are low-res previews — click <b>HD ↗</b> on any card (or the button in the detail view) to open the full-quality creative: a full-res image, or the native Instagram/Facebook post (covers video too).
+    &nbsp;·&nbsp; <b>🚀 Launched</b> = the creative's Meta launch date. <b>Click any card</b> to open its detail view with daily trend graphs (spend/revenue, ROAS, purchases/impressions) over the selected range.
     <br><br>
     <b>Meta-only (v1):</b> Google has no ad-level creative data in the pipeline yet — Google creatives are a planned fast-follow.
   </div>
@@ -303,6 +312,7 @@ function render(){
       <div class="card-body">
         <div class="card-title">${esc(r.name)}</div>
         <div class="card-camp">${esc(r.campaign)}<br>${esc(r.adset)}</div>
+        ${launchDate(r)?`<div class="card-launch">🚀 Launched ${launchStr(r)}</div>`:''}
         <div class="kpis">
           <div class="kpi ${kpi==='roas'?'hl':''}"><div class="k">ROAS</div><div class="v ${roasCls}">${fmtX(r.roas)}</div></div>
           <div class="kpi ${kpi==='spend'?'hl':''}"><div class="k">Spend</div><div class="v">${fmtUSD(r.spend)}</div></div>
@@ -328,6 +338,7 @@ function openModal(aid){
       <span class="close" onclick="closeModal()">×</span>
       <h2>${esc(r.name)}</h2>
       <div class="mc">${esc(r.campaign)} · ${esc(r.adset)} · ${r.type}</div>
+      ${launchDate(r)?`<div style="margin-bottom:12px"><span class="launch">🚀 Launched ${launchStr(r)}</span></div>`:''}
       ${hqButton(r)}
       ${r.body?`<div class="body">${esc(r.body)}</div>`:''}
       <div class="mgrid">
@@ -341,10 +352,73 @@ function openModal(aid){
         <div class="stat"><div class="val">${fmtPct(r.ctr)}</div><div class="lbl">CTR</div></div>
         <div class="stat"><div class="val">${r.clicks>0?fmtUSD2(r.cpc):'—'}</div><div class="lbl">CPC</div></div>
       </div>
+      <div class="charts">
+        <h3>Daily spend &amp; revenue</h3>
+        <div class="chartbox"><canvas id="ch-money"></canvas></div>
+        <h3>Daily ROAS</h3>
+        <div class="chartbox"><canvas id="ch-roas"></canvas></div>
+        <h3>Daily purchases &amp; impressions</h3>
+        <div class="chartbox"><canvas id="ch-vol"></canvas></div>
+        <div class="chartnote" id="chartnote"></div>
+      </div>
     </div>`;
   $('modal').classList.add('open');
+  renderCharts(aid);
 }
-function closeModal(){ $('modal').classList.remove('open'); }
+
+let MODAL_CHARTS = [];
+function destroyCharts(){ MODAL_CHARTS.forEach(c=>{try{c.destroy()}catch(e){}}); MODAL_CHARTS=[]; }
+
+function renderCharts(aid){
+  destroyCharts();
+  const start=$('start').value, end=$('end').value;
+  // collect this ad's daily rows within the selected range, sorted by date
+  const series = DATA.daily
+    .filter(row=>row[0]===aid && row[1]>=start && row[1]<=end)
+    .sort((a,b)=>a[1]<b[1]?-1:1);
+  const labels = series.map(s=>s[1]);
+  const spend  = series.map(s=>s[2]);
+  const impr   = series.map(s=>s[3]);
+  const clicks = series.map(s=>s[4]);
+  const purch  = series.map(s=>s[6]);
+  const rev    = series.map(s=>s[7]);
+  const roas   = series.map(s=>s[2]>0 ? +(s[7]/s[2]).toFixed(2) : 0);
+  $('chartnote').textContent = series.length
+    ? `${series.length} active day(s) in range · ${start} → ${end}`
+    : 'No delivery for this creative in the selected date range — widen the range to see history.';
+  if(!series.length || typeof Chart==='undefined') return;
+
+  const GRID='#1e293b', TICK='#94a3b8';
+  const base = (extra)=>({
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:TICK,boxWidth:12,font:{size:11}}}},
+    scales:Object.assign({
+      x:{ticks:{color:TICK,maxTicksLimit:8,font:{size:10}},grid:{color:GRID}}
+    },extra)
+  });
+  const ds=(label,data,color,axis)=>({label,data,borderColor:color,backgroundColor:color+'33',
+    borderWidth:2,pointRadius:0,tension:0.25,yAxisID:axis||'y'});
+
+  MODAL_CHARTS.push(new Chart($('ch-money'),{type:'line',
+    data:{labels,datasets:[ds('Spend',spend,'#f59e0b'),ds('Revenue',rev,'#3fb950')]},
+    options:base({y:{ticks:{color:TICK,font:{size:10},callback:v=>'$'+v},grid:{color:GRID},beginAtZero:true}})}));
+
+  MODAL_CHARTS.push(new Chart($('ch-roas'),{type:'line',
+    data:{labels,datasets:[ds('ROAS',roas,'#60a5fa')]},
+    options:base({y:{ticks:{color:TICK,font:{size:10},callback:v=>v+'×'},grid:{color:GRID},beginAtZero:true}})}));
+
+  MODAL_CHARTS.push(new Chart($('ch-vol'),{type:'bar',
+    data:{labels,datasets:[
+      {label:'Purchases',data:purch,backgroundColor:'#a78bfa',yAxisID:'y'},
+      Object.assign(ds('Impressions',impr,'#64748b','y1'),{type:'line'})]},
+    options:base({
+      y:{position:'left',ticks:{color:TICK,font:{size:10}},grid:{color:GRID},beginAtZero:true,title:{display:true,text:'Purchases',color:TICK,font:{size:10}}},
+      y1:{position:'right',ticks:{color:TICK,font:{size:10}},grid:{drawOnChartArea:false},beginAtZero:true,title:{display:true,text:'Impressions',color:TICK,font:{size:10}}}
+    })}));
+}
+
+function closeModal(){ destroyCharts(); $('modal').classList.remove('open'); }
 $('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
@@ -361,6 +435,16 @@ function hqBadge(r){
 function hqButton(r){
   if(!r.hq) return '';
   return `<a class="hqbtn" href="${esc(r.hq)}" target="_blank" rel="noopener">${HQ_LABEL[r.hqtype]||'Open original ↗'}</a>`;
+}
+
+// Launch date: prefer Meta created_time; fall back to first delivery we have.
+function launchDate(r){ return r.created || r.first_seen || null; }
+function launchStr(r){
+  const d = launchDate(r);
+  if(!d) return '';
+  const dt = new Date(d+'T00:00:00');
+  const s = dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  return (!r.created && r.first_seen) ? s+' (first seen)' : s;
 }
 
 // Image resolution: local mirror (images/<ad_id>.jpg, reliable) → fbcdn URL → placeholder.
