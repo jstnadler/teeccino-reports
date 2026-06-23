@@ -266,8 +266,30 @@ function aggregate(){
   return out;
 }
 
+// Rebuild the campaign dropdown to list ONLY campaigns with spend in the selected
+// date range. Preserves the current selection if it's still in range, else resets
+// to "All campaigns" (and signals the caller that the filter changed).
+function refreshCampaignOptions(){
+  const start=$('start').value, end=$('end').value;
+  const sel=$('campaign');
+  const prev=sel.value;
+  const camps=new Set();
+  for (const row of DATA.daily){
+    if (row[1]<start || row[1]>end) continue;
+    if (row[2]<=0) continue;                // spend in the period
+    const meta=DATA.ads[row[0]]; if(meta) camps.add(meta.campaign);
+  }
+  const list=[...camps].sort();
+  const keep = prev && camps.has(prev);
+  sel.innerHTML='<option value="">All campaigns ('+list.length+')</option>' +
+    list.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  sel.value = keep ? prev : '';
+  return keep || !prev;                     // false => selection was dropped
+}
+
 function render(){
   if (!DATA) return;
+  refreshCampaignOptions();
   const kpi = $('kpi').value;
   let rows = aggregate();
   const asc = KPI_ASC.has(kpi);
@@ -488,10 +510,8 @@ fetch('creative-performance-data.json')
     $('start').value = isoDaysAgo(d.date_max, 30);
     $('start').min = d.date_min; $('start').max = d.date_max;
     $('end').min = d.date_min; $('end').max = d.date_max;
-    // populate campaign filter
-    const camps = [...new Set(Object.values(d.ads).map(a=>a.campaign))].sort();
-    $('campaign').innerHTML = '<option value="">All campaigns</option>' +
-      camps.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    // campaign filter is populated dynamically by render()/refreshCampaignOptions()
+    // to list only campaigns with spend in the selected range.
     $('subline').textContent =
       `${d.ad_count.toLocaleString()} Meta creatives · data ${d.date_min} → ${d.date_max} · generated ${d.generated.slice(0,10)}`;
     bind();
