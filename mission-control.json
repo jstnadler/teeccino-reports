@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-23T10:45:30.147079-07:00",
+  "lastUpdated": "2026-06-23T12:22:25.507091-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -11,11 +11,15 @@
       "emoji": "cart",
       "role": "Shopify Operations",
       "workspace": "clawd-shopkeeper",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Tear down Summer Solstice Sale (deactivate discounts, zero metafields, re-stage FOTM, restore badge)",
+        "source": "interactive",
+        "startedAt": "2026-06-23T00:00:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Bumped Summer Solstice badge end date to June 25 (live theme); discounts unchanged",
+        "summary": "Extended Summer Solstice campaign badge end date to June 25 (Justin extended sale past posted 6/22 close). Live theme 160800145656: campaign_sale_end_date 2026-06-22 -> 2026-06-25, end_text -> 'Ends June 25 at midnight'. enabled/label/sitewide untouched, verified. Discounts already open-ended, unaffected.",
         "at": "2026-06-22T18:05:00Z"
       },
       "recentActivity": [
@@ -63,7 +67,7 @@
         }
       ],
       "pendingTasks": 0,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "themesmith",
@@ -135,8 +139,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "MTD dashboard: same-period (MTD) YoY extended to all cumulative cards + waterfall recap — deployed live (commit 0306a13)",
-        "at": "2026-06-23T17:50:30Z"
+        "summary": "i restarted switchboard, you should have access to gh now",
+        "at": "2026-06-23T10:45:41.038688-07:00"
       },
       "recentActivity": [
         {
@@ -213,10 +217,22 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Built Phase 4 cross-agent broker (consult inline + delegate to sibling thread, deadlock-safe). Phases 1-4 + rich UI complete. Awaiting restart + test.",
-        "at": "2026-06-23T00:35:00-07:00"
+        "summary": "Run-as-you switch LIVE + stable: Switchboard now runs in Justin's session via logon task (PID stable, single Discord login); LocalSystem service stopped+disabled. Agents now inherit full user auth (browser/MCP/keyring/OneDrive).",
+        "at": "2026-06-23T02:20:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Built the run-as-you launcher: moves the Switchboard from the LocalSystem service to a logon scheduled task running in Justin's session, so dispatched agents inherit ALL his auth (browser, claude.ai MCP/Canva, keyring, OneDrive, gcloud) -- closing the user-bound gap from the access audit. Plus sb-* PS profile commands. Awaiting Justin's elevated install.",
+          "at": "2026-06-23T02:10:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
+        {
+          "summary": "Built 3 robustness fixes: (c) Switchboard resume-fallback when an old thread session is expired/pruned; (b) Claude-401 alert on the analytics cron; (a) prepped the durable GitHub-auth fix (GH_TOKEN) after verifying DataOps was right that gh-CLI/keyring is the active helper, not my .git-credentials.",
+          "at": "2026-06-23T01:15:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Diagnosed + half-fixed why agents can't publish to GH Pages when dispatched via Discord. Cause: teeccino-reports clone used credential.helper=manager (Windows Credential Manager, DPAPI per-user) which the LocalSystem service can't decrypt. Switched the clone to file-based 'store'; Justin to add a PAT to ~/.git-credentials.",
           "at": "2026-06-23T00:45:00-07:00",
@@ -262,18 +278,6 @@
         {
           "summary": "Built reply-to-continue for Switchboard task threads: a reply in a thread re-engages that agent and RESUMES its session (full context). Verified --resume carries context. Awaiting one service restart.",
           "at": "2026-06-22T14:20:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Phase 2 two-way Discord dispatch is WORKING end-to-end (live #dataops test). Fixed the dedup (double-posted answer). Separately, that test surfaced a real incident: the daily analytics pipeline has been failing 401 for 3 days.",
-          "at": "2026-06-22T14:10:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Fixed Phase-2 dispatch reader silently dying mid-stream (no result, no completion). Auth was already fixed (LocalSystem + USERPROFILE injection works -- token is plaintext). Awaiting one service restart to load the fix.",
-          "at": "2026-06-22T14:05:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
