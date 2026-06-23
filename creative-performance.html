@@ -52,6 +52,13 @@
   .badge.unknown { background:rgba(148,163,184,0.2); color:#cbd5e1; }
   .rank { position:absolute; top:8px; right:8px; background:rgba(212,168,67,0.9); color:#1a1a1a;
           font-weight:800; font-size:0.78rem; padding:3px 9px; border-radius:20px; }
+  .hd { position:absolute; bottom:8px; right:8px; background:rgba(15,23,42,0.85); color:#e2e8f0;
+        font-size:0.68rem; font-weight:700; text-decoration:none; padding:4px 9px; border-radius:20px;
+        border:1px solid #475569; backdrop-filter:blur(2px); }
+  .hd:hover { background:#D4A843; color:#1a1a1a; border-color:#D4A843; }
+  .hqbtn { display:inline-block; margin-bottom:14px; background:#D4A843; color:#1a1a1a; font-weight:700;
+           text-decoration:none; padding:9px 16px; border-radius:8px; font-size:0.9rem; }
+  .hqbtn:hover { filter:brightness(1.08); }
   .card-body { padding:13px 14px; display:flex; flex-direction:column; gap:8px; flex:1; }
   .card-title { font-weight:600; font-size:0.86rem; color:#f8fafc; line-height:1.3;
                 display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -101,7 +108,9 @@
     <b>What this is:</b> every Meta creative ranked by the KPI you choose, over the date range you pick. Each card shows the creative visual, its campaign · ad set, and core metrics.
     &nbsp;·&nbsp; <code>ROAS</code> = revenue ÷ spend &nbsp;·&nbsp; <code>CPA</code> = spend ÷ purchases &nbsp;·&nbsp; <code>CTR</code> = clicks ÷ impressions &nbsp;·&nbsp; <code>CPC</code> = spend ÷ clicks
     <br><br>
-    <b>Meta-only (v1):</b> Google has no ad-level creative data in the pipeline yet — Google creatives are a planned fast-follow. Thumbnails come from the Meta CDN and can occasionally expire (a placeholder shows if so).
+    <b>Open high-quality:</b> grid thumbnails are low-res previews — click <b>HD ↗</b> on any card (or the button in the detail view) to open the full-quality creative: a full-res image, or the native Instagram/Facebook post (covers video too).
+    <br><br>
+    <b>Meta-only (v1):</b> Google has no ad-level creative data in the pipeline yet — Google creatives are a planned fast-follow.
   </div>
 
   <div id="provenance-mount"></div>
@@ -289,6 +298,7 @@ function render(){
         ${img}
         <span class="badge ${t}">${t}</span>
         <span class="rank">#${i+1}</span>
+        ${hqBadge(r)}
       </div>
       <div class="card-body">
         <div class="card-title">${esc(r.name)}</div>
@@ -318,6 +328,7 @@ function openModal(aid){
       <span class="close" onclick="closeModal()">×</span>
       <h2>${esc(r.name)}</h2>
       <div class="mc">${esc(r.campaign)} · ${esc(r.adset)} · ${r.type}</div>
+      ${hqButton(r)}
       ${r.body?`<div class="body">${esc(r.body)}</div>`:''}
       <div class="mgrid">
         <div class="stat"><div class="val ${r.roas>=1?'pos':'neg'}">${fmtX(r.roas)}</div><div class="lbl">ROAS</div></div>
@@ -338,6 +349,19 @@ $('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal()
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+// High-quality "open original" link. hqtype: image=direct full-res file,
+// instagram/facebook=native post permalink (durable, covers video too).
+const HQ_LABEL = {image:'Open full image ↗', instagram:'Open on Instagram ↗', facebook:'Open on Facebook ↗'};
+function hqBadge(r){
+  if(!r.hq) return '';
+  return `<a class="hd" href="${esc(r.hq)}" target="_blank" rel="noopener"
+            title="${HQ_LABEL[r.hqtype]||'Open original ↗'}" onclick="event.stopPropagation()">HD ↗</a>`;
+}
+function hqButton(r){
+  if(!r.hq) return '';
+  return `<a class="hqbtn" href="${esc(r.hq)}" target="_blank" rel="noopener">${HQ_LABEL[r.hqtype]||'Open original ↗'}</a>`;
+}
 
 // Image resolution: local mirror (images/<ad_id>.jpg, reliable) → fbcdn URL → placeholder.
 function imgHtml(r, attrs){
