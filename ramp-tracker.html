@@ -36,6 +36,12 @@
     border-radius:8px; margin:14px 0; font-size:.84rem; color:#d4d4d4; }
   .updated-stamp { color:var(--text-dim); font-size:.75rem; margin-top:24px; }
   code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; background:rgba(212,168,67,.08); color:var(--accent); padding:2px 6px; border-radius:4px; }
+  th[data-tip] { cursor:help; text-decoration:underline dotted rgba(255,255,255,.35); text-underline-offset:3px; }
+  th[data-tip]:hover::after { content:attr(data-tip); position:absolute; left:8px; top:100%; margin-top:4px; z-index:20;
+    background:#0f1525; color:#e2e8f0; border:1px solid var(--border); border-radius:6px; padding:8px 11px;
+    font-size:.72rem; font-weight:400; text-transform:none; letter-spacing:0; white-space:normal; width:230px;
+    box-shadow:0 6px 18px rgba(0,0,0,.45); line-height:1.45; }
+  thead th { position:relative; }
 </style></head><body>
 
 <h1>New-Customer Cost &amp; Spend Plan</h1>
@@ -111,9 +117,15 @@
   <b>Right now: New-customer cost is HEALTHY &mdash; lean toward the <b>high</b> end (+25%).</b> <b>Heads-up:</b> the live trailing-8wk avg nCPA ($29) is running hotter than the $23 12-mo planning rate &mdash; if it holds, lean to the <b>low</b> end of the bands until efficiency recovers.
 </div>
 <table>
-  <thead><tr><th>Month</th><th class="r">Base spend</th><th class="r">Flex band (&plusmn;25%)</th>
-  <th class="r">Alloc idx (e&middot;r)</th><th class="r">Exp. new</th><th class="r">Cost/cust (nCPA)</th>
-  <th class="r">Payback</th><th class="r">Proj. net rev<br><span style="font-weight:400;text-transform:none">base &middot; lo&ndash;hi</span></th><th class="r">MER</th></tr></thead>
+  <thead><tr><th data-tip="Calendar month of the plan.">Month</th>
+  <th class="r" data-tip="Recommended ad spend for the month: your trailing-12mo run-rate anchor scaled by this month's allocation index.">Base spend</th>
+  <th class="r" data-tip="Acceptable spend range (base &plusmn;25%). Lean to the high end when new-customer cost is healthy, the low end when it's running hot.">Flex band (&plusmn;25%)</th>
+  <th class="r" data-tip="How much of the budget this month gets vs an average month. Geometric mean of acquisition efficiency (e, = 1/nCPA &mdash; where customers are cheapest) and revenue volume (r). 1.00 = average.">Alloc idx (e&middot;r)</th>
+  <th class="r" data-tip="Expected new customers acquired = base spend divided by expected cost per new customer.">Exp. new</th>
+  <th class="r" data-tip="Expected cost to acquire one new customer (ad spend divided by new customers), at the trailing-12mo blended rate.">Cost/cust (nCPA)</th>
+  <th class="r" data-tip="Months until a new customer's cumulative gross profit repays what we paid to acquire them.">Payback</th>
+  <th class="r" data-tip="Projected DTC net revenue: new-customer revenue (scales with spend) + returning-customer base (prior cohorts, +4% YoY). Top number is at base spend; below is the range across the flex band.">Proj. net rev<br><span style="font-weight:400;text-transform:none">base &middot; lo&ndash;hi</span></th>
+  <th class="r" data-tip="Marketing Efficiency Ratio = projected net revenue divided by ad spend. A sanity check, not a target.">MER</th></tr></thead>
   <tbody>
 <tr><td>Jul 2026</td><td class='r'>$23,698</td><td class='r' style='color:var(--text-dim)'>$17,774&ndash;$29,623</td><td class='r'>0.85&times;<span style='color:var(--text-dim);font-size:.72rem'> (e0.93&middot;r0.77)</span></td><td class='r'>1,047</td><td class='r'>$22.64</td><td class='r'>&lt;1 mo</td><td class='r'>$157,439<span style='color:var(--text-dim);font-size:.72rem'><br>$147,147&ndash;$167,731</span></td><td class='r'>6.6&times;</td></tr>
 <tr><td>Aug 2026</td><td class='r'>$25,047</td><td class='r' style='color:var(--text-dim)'>$18,785&ndash;$31,309</td><td class='r'>0.90&times;<span style='color:var(--text-dim);font-size:.72rem'> (e0.94&middot;r0.85)</span></td><td class='r'>1,107</td><td class='r'>$22.64</td><td class='r'>&lt;1 mo</td><td class='r'>$171,692<span style='color:var(--text-dim);font-size:.72rem'><br>$160,815&ndash;$182,570</span></td><td class='r'>6.9&times;</td></tr>
@@ -146,8 +158,12 @@
 
 <h2>Weekly Detail</h2>
 <table>
-  <thead><tr><th>Week (Mon)</th><th class="r">Ad Spend</th><th class="r">New Cust</th>
-  <th class="r">Cost/cust (nCPA)</th><th class="r">Profit/Order</th><th class="r">Proj. Payback</th></tr></thead>
+  <thead><tr><th data-tip="Week starting that Monday.">Week (Mon)</th>
+  <th class="r" data-tip="Meta + Google ad spend that week (DTC).">Ad Spend</th>
+  <th class="r" data-tip="First-time DTC customers acquired that week.">New Cust</th>
+  <th class="r" data-tip="Cost to acquire a new customer that week = ad spend divided by new customers.">Cost/cust (nCPA)</th>
+  <th class="r" data-tip="Lean contribution margin per order: gross minus discounts, shipping, product cost (COGS) and ad spend, divided by orders.">Profit/Order</th>
+  <th class="r" data-tip="Months until that week's new customers repay their acquisition cost, from the lifetime-value profit curve.">Proj. Payback</th></tr></thead>
   <tbody>
 <tr><td>2026-06-15</td><td class='r'>$4,964</td><td class='r'>151</td><td class='r pos'>$32.87</td><td class='r'>$25.62</td><td class='r'>3.7 mo</td></tr>
 <tr><td>2026-06-08</td><td class='r'>$4,211</td><td class='r'>117</td><td class='r pos'>$36.00</td><td class='r'>$19.35</td><td class='r'>5.6 mo</td></tr>
@@ -181,7 +197,7 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-06-24 16:35:12 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-06-24 16:46:47 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["02-02", "02-09", "02-16", "02-23", "03-02", "03-09", "03-16", "03-23", "03-30", "04-06", "04-13", "04-20", "04-27", "05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15"];
