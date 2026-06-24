@@ -24,8 +24,10 @@
   .gatebox .msg { font-size:.95rem; }
   .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
   .chart-wrap canvas { width:100%!important; max-height:360px; }
-  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-  th, td { padding:9px 12px; text-align:left; border-bottom:1px solid var(--border); font-size:.84rem; }
+  .tscroll { overflow-x:auto; border:1px solid var(--border); border-radius:10px; margin-bottom:14px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); }
+  .tscroll table { border:none; }
+  th, td { padding:8px 9px; text-align:left; border-bottom:1px solid var(--border); font-size:.82rem; white-space:nowrap; }
   th { background:rgba(212,168,67,.08); color:var(--accent); font-weight:600; text-transform:uppercase; font-size:.7rem; letter-spacing:.4px; }
   td.r, th.r { text-align:right; font-variant-numeric:tabular-nums; }
   td.pos { color:var(--green); } td.warn { color:var(--yellow); } td.neg { color:#f87171; }
@@ -41,6 +43,7 @@
     background:#0f1525; color:#e2e8f0; border:1px solid var(--border); border-radius:6px; padding:8px 11px;
     font-size:.72rem; font-weight:400; text-transform:none; letter-spacing:0; white-space:normal; width:230px;
     box-shadow:0 6px 18px rgba(0,0,0,.45); line-height:1.45; }
+  th.r[data-tip]:hover::after { left:auto; right:8px; }   /* numeric cols open leftward, stay in view */
   thead th { position:relative; }
   .ncpa-ctl { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin:6px 0 12px; }
   .ncpa-ctl label { font-size:.9rem; }
@@ -132,7 +135,7 @@
   <span id="ncpaLive" class="ncpa-live" data-live="29.17">live 8-wk: $29.17</span>
   <div class="ncpa-hint">What-if: change the acquisition cost and the customers, revenue, payback &amp; MER columns update. <b>Spend stays fixed</b> &mdash; this tests efficiency, not budget.</div>
 </div>
-<table>
+<div class="tscroll"><table>
   <thead><tr><th data-tip="Calendar month of the plan.">Month</th>
   <th class="r" data-tip="Recommended ad spend for the month: your trailing-12mo run-rate anchor scaled by this month's allocation index.">Base spend</th>
   <th class="r" data-tip="Acceptable spend range (base &plusmn;25%). Lean to the high end when new-customer cost is healthy, the low end when it's running hot.">Flex band (&plusmn;25%)</th>
@@ -151,7 +154,7 @@
 <tr><td>Dec 2026</td><td class='r'>$32,424</td><td class='r' style='color:var(--text-dim)'>$24,318&ndash;$40,529</td><td class='r'>1.17&times;<span style='color:var(--text-dim);font-size:.72rem'> (e1.38&middot;r0.97)</span></td><td class='r'>1,432</td><td class='r'>$22.64</td><td class='r'>&lt;1 mo</td><td class='r'>$174,805<span style='color:var(--text-dim);font-size:.72rem'><br>$160,723&ndash;$188,886</span></td><td class='r'>5.4&times;</td></tr>
 <tr style='font-weight:700;border-top:2px solid var(--border)'><td>H2 total</td><td class='r'>$172,631</td><td class='r' style='color:var(--text-dim)'>$129,473&ndash;$215,788</td><td></td><td class='r'>7,626</td><td class='r'>$22.64</td><td></td><td class='r'>$1,206,862<span style='color:var(--text-dim);font-size:.72rem'><br>$1,131,890&ndash;$1,281,834</span></td><td class='r'>7.0&times;</td></tr>
   </tbody>
-</table>
+</table></div>
 <div class="caveat" style="margin-top:10px;">
   <b>Plan caveats.</b> Spend <em>level</em> is anchored to known-profitable history, not a fitted response curve
   (a monthly spend&harr;new regression is too noisy &mdash; spend &amp; demand co-move with promos/season). The
@@ -173,7 +176,7 @@
 <div class="chart-wrap"><canvas id="ppoChart"></canvas></div>
 
 <h2>Weekly Detail</h2>
-<table>
+<div class="tscroll"><table>
   <thead><tr><th data-tip="Week starting that Monday.">Week (Mon)</th>
   <th class="r" data-tip="Meta + Google ad spend that week (DTC).">Ad Spend</th>
   <th class="r" data-tip="First-time DTC customers acquired that week.">New Cust</th>
@@ -202,7 +205,7 @@
 <tr><td>2026-02-09</td><td class='r'>$10,676</td><td class='r'>501</td><td class='r pos'>$21.31</td><td class='r'>$22.33</td><td class='r'>&lt;1 mo</td></tr>
 <tr><td>2026-02-02</td><td class='r'>$8,834</td><td class='r'>420</td><td class='r pos'>$21.03</td><td class='r'>$14.14</td><td class='r'>&lt;1 mo</td></tr>
   </tbody>
-</table>
+</table></div>
 
 <div class="caveat">
   <b>Honesty notes.</b> (1) Weekly nCPA is <em>noisy</em> (promo timing, seasonality, day-mix) &mdash; read the
@@ -213,7 +216,7 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-06-24 16:51:54 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-06-24 16:59:22 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["02-02", "02-09", "02-16", "02-23", "03-02", "03-09", "03-16", "03-23", "03-30", "04-06", "04-13", "04-20", "04-27", "05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15"];
