@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-24T04:07:53.586102-07:00",
+  "lastUpdated": "2026-06-24T15:11:23.955728-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -42,30 +42,6 @@
           "at": "2026-06-18T18:56:49Z",
           "source": "interactive",
           "status": "partial"
-        },
-        {
-          "summary": "Fixed missing Summer Solstice badge on Shop All collection pages (via ThemeSmith). Root cause: Shop All renders a third card snippet (shop-all-card.liquid) whose built-in ribbon was gated to sitewide=false, so the sitewide promo showed nothing. ThemeSmith included the same badge snippet + CSS; live commit c3a719b, verified on /collections/all.",
-          "at": "2026-06-17T19:20:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Campaign-sale badge now renders on collection pages (live). Routed to ThemeSmith (Liquid lane), launched as sub-agent to build + ship. Per-product-card strip reusing the same campaign_sale_* settings + custom.discount gate. Live on theme 160800145656 commit fd1ef44, verified on /collections/instant (16/16 cards).",
-          "at": "2026-06-17T18:50:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Routed Justin's request to render the campaign-sale badge on collection pages to ThemeSmith (theme/Liquid lane). Dispatched inbox task with full context: Summer Solstice settings are live, badge is PDP-only today, reuse the same campaign_sale_* settings (single-source) so teardown stays clean.",
-          "at": "2026-06-17T18:20:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Launched Summer Solstice Sale 1 day early (per Justin). Sitewide 18% OTP + 10% first-sub (advertised 25%/30%). 273 variants set to disc=18/fsd=10; FOTM A&P targeted-restored to 20 so it isn't clobbered; OTP+SUB automatic discounts created open-ended; PDP campaign badge flipped to Summer Solstice sitewide (ends 6/22). All verified.",
-          "at": "2026-06-17T18:05:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
@@ -114,18 +90,6 @@
           "at": "2026-06-18T18:16:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Fixed missing campaign-sale badge on Shop All pages. Root cause: Shop All renders shop-all-card.liquid (3rd card path), which fd1ef44 missed; its built-in ribbon is also gated to non-sitewide months so the sitewide Summer Solstice Sale showed nothing. Rendered the same card-campaign-badge snippet inside .shopall-card__media + duplicated its CSS into component-shop-all.css. Shipped LIVE (c3a719b), verified on teeccino.com/collections/all, 0 console errors.",
-          "at": "2026-06-17T20:50:00Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Campaign-sale badge now renders on collection product cards (built + verified + merged to dev). LIVE ship gated on Justin's explicit go-ahead.",
-          "at": "2026-06-17T19:05:00Z",
-          "source": "interactive",
-          "status": "partial"
         }
       ],
       "pendingTasks": 0,
@@ -141,8 +105,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Propose the amount we spend on ads monthly for the next 6 months \nBased on NCPA ",
-        "at": "2026-06-23T16:44:19.908310-07:00"
+        "summary": "Wired nCPA-gated forward spend plan panel into ramp-tracker dashboard (live, commit bd26060)",
+        "at": "2026-06-24T00:15:30Z"
       },
       "recentActivity": [
         {
@@ -182,6 +146,12 @@
           "status": "success"
         },
         {
+          "summary": "Wired the H2-2026 ad-spend proposal into the ramp-tracker as a live 'Forward Spend Plan (next 6 months, nCPA-gated)' panel. Pushed live (commit bd26060).",
+          "at": "2026-06-24T00:15:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Built H2-2026 (Jul-Dec) ad-spend proposal from nCPA + payback model: $161k base (flex $121k-$201k), seasonally allocated, with a marginal-nCPA-gated +/-25% flex band per month.",
           "at": "2026-06-23T23:59:00Z",
           "source": "interactive",
@@ -198,12 +168,6 @@
           "at": "2026-06-23T22:05:00Z",
           "source": "discord",
           "status": "success"
-        },
-        {
-          "summary": "Same-period (MTD) YoY now LIVE for all cumulative-total cards on the MTD current-month dashboard (commit 0306a13 on origin/main; mtd.html has 22 LY MTD lines).",
-          "at": "2026-06-23T17:50:00Z",
-          "source": "interactive",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
@@ -219,10 +183,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Built live Discord #dashboard: auto-updating pinned embed (working agents, active projects, cross-agent collaboration edges + project teams), refreshed every 15s by the Switchboard poll; broker edges logged to state. Loads on sb-restart.",
-        "at": "2026-06-23T15:20:00-07:00"
+        "summary": "Fixed Discord table rendering: Switchboard now auto-converts agents' markdown tables into aligned monospace tables in code blocks (Discord renders those properly). reformat_tables() in render path; unit-tested. Loads on sb-restart.",
+        "at": "2026-06-24T09:30:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Fixed the markdown-table rendering pain: Discord doesn't render | col | tables, so the Switchboard now auto-converts any markdown table in agent output into an aligned monospace table inside a code block (which Discord renders readably). No agent-side changes needed.",
+          "at": "2026-06-24T09:30:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Built a live in-Discord dashboard: a pinned auto-updating embed in a new #dashboard channel showing who's working, active projects, and who's collaborating with who (delegate/consult handoffs + project teams).",
           "at": "2026-06-23T15:20:00-07:00",
@@ -274,12 +244,6 @@
         {
           "summary": "Built 3 of Justin's 4 requested rich-Discord features into the Switchboard: embed status card with a native live timestamp (the real fix for 'not real-time'), a Stop button to kill a running dispatch, and bot presence showing running-task count. Approve/Reject gate = Phase 3, next.",
           "at": "2026-06-22T15:15:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Two Switchboard UX upgrades per Justin: (1) explicit animated status line (spinner + live timer + current action) that deletes on finish; (2) dispatch directive now makes agents RUN scripts themselves and only hand off genuinely-human steps (browser OAuth/approval/decision) via reply-to-continue.",
-          "at": "2026-06-22T14:45:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
@@ -348,18 +312,6 @@
           "at": "2026-06-18T17:49:12Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "5/13 instant full carousels pushed + verified (30005L,30007L,30008L,30009L,30010L). 8 instants remaining, then 35 teas/APGs.",
-          "at": "2026-06-17T21:12:53Z",
-          "source": "interactive",
-          "status": "partial"
-        },
-        {
-          "summary": "Started 48-SKU push-ready rollout (instants first). 2/13 instants pushed + verified (30005L, 30007L); pipeline validated, config-generator built. 11 instants remaining.",
-          "at": "2026-06-17T21:02:15Z",
-          "source": "interactive",
-          "status": "partial"
         }
       ],
       "pendingTasks": 0,
@@ -375,8 +327,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Justin wants to confirm the Meta pixel is working properly — there were issues l",
-        "at": "2026-06-23T15:05:43.801729-07:00"
+        "summary": "USER CHOSE (for \"How do you want to get the Events Manager numbers?\"): Re-launch",
+        "at": "2026-06-24T15:06:53.260805-07:00"
       },
       "recentActivity": [
         {
@@ -520,12 +472,6 @@
         {
           "summary": "Published 'Quitting caffeine when everyone around you drinks coffee' (sam-reyes, getting-started) — live + verified.",
           "at": "2026-06-18T11:30:00Z",
-          "source": "scheduled",
-          "status": "success"
-        },
-        {
-          "summary": "Published 'What is lupin coffee?' (maya-ellington, ingredients) — live + verified, HTTP 200.",
-          "at": "2026-06-17T11:10:00Z",
           "source": "scheduled",
           "status": "success"
         }
@@ -1104,6 +1050,15 @@
       "flaggedBy": "brewsmith",
       "created": "2026-06-24T04:10:00-07:00",
       "status": "pending"
+    },
+    {
+      "id": "pipeline-fail-2026-06-24",
+      "priority": "normal",
+      "title": "Daily analytics pipeline FAILED (2026-06-24)",
+      "detail": "daily_run.bat exit 1. exit 1. Check the log: C:\\temp\\analytics\\logs\\pipeline_20260624.log",
+      "flaggedBy": "dataops-cron",
+      "created": "2026-06-24T07:03:27.653453-07:00",
+      "status": "pending"
     }
   ],
   "incidents": [
@@ -1242,7 +1197,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-06-23T07:11:50.569287-07:00",
+        "lastRun": "2026-06-24T07:03:27.654300-07:00",
         "status": "healthy"
       },
       {
