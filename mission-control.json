@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-24T04:07:17.566984-07:00",
+  "lastUpdated": "2026-06-24T04:07:53.586102-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -1079,16 +1079,6 @@
       "status": "pending"
     },
     {
-      "id": "brewsmith-no-network-2026-06-07",
-      "priority": "normal",
-      "title": "BrewSmith daily-publish blocked 2 consecutive days: no network at 04:00 PT (can't reach github.com)",
-      "detail": "The scheduled daily-publish run for CoffeeAlternatives.com aborted cleanly on BOTH 2026-06-06 and 2026-06-07 at the 'git pull --rebase origin main' step: 'Could not resolve host: github.com'. Confirmed genuine outage with sandbox disabled — ping github.com fails to resolve AND ping 1.1.1.1 shows 100% packet loss, so the publishing machine has no working route out (not just a DNS hiccup). No articles were lost: the local repo is clean and in sync with origin/main at 5fc9535 (the 6/05 publish), and BrewSmith correctly declined to commit locally without a prior sync (avoids a double-push collision). ACTION: at the 04:00 PT run window, please sanity-check the publishing machine's network/DNS — could be a router/DNS issue on the host, a scheduled-task environment problem (task may run under a profile without network), or a real ISP outage. The site itself is fine; only the autonomous publish cadence is paused. Next planned article on first successful run: caffeine-free-mocha-recipes (priya). If 6/08 also fails, this becomes a sustained outage worth raising to high priority.",
-      "flaggedBy": "brewsmith",
-      "created": "2026-06-07T04:05:00-07:00",
-      "status": "pending",
-      "projectId": "coffeealternatives-launch"
-    },
-    {
       "id": "remind-atc-coverage-remeasure-2026-06-18",
       "priority": "normal",
       "title": "~6/18: Re-measure Meta AddToCart event-ID coverage (after FB&IG \"Maximum\" propagates)",
@@ -1109,7 +1099,7 @@
     {
       "id": "c77c26e1-29e0-4aed-bd3d-8f88b96f7d50",
       "priority": "high",
-      "title": "GitHub 403 blocks coffeealternatives.com deploys — credential needs refresh",
+      "title": "GitHub 403 blocks coffeealternatives.com deploys - credential needs refresh",
       "detail": "BrewSmith daily-publish 2026-06-24: git fetch AND push to https://github.com/jstnadler/coffee-alternatives-website both return HTTP 403 \"Write access to repository not granted.\" This is a repo-wide auth failure (expired/revoked token or wrong credential helper), not a conflict or network issue, so retrying on the next scheduled run will NOT self-heal. The article is written and committed locally (commit 4f43c2b, branch main, 1 ahead of origin) and is safe. ACTION: refresh the GitHub credential for this repo (PAT/credential-manager) with write scope, then run: cd C:/Users/JustinAdler/dev/repos/coffee-alternatives-website && git push origin main. Once pushed, GH Actions deploys and the new post goes live; publish-log lastPublished still points at the 6/23 article until then.",
       "flaggedBy": "brewsmith",
       "created": "2026-06-24T04:10:00-07:00",
