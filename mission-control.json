@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-24T15:24:35.771331-07:00",
+  "lastUpdated": "2026-06-24T15:30:40.631623-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -101,16 +101,12 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "working",
-      "currentTask": {
-        "summary": "Compute actual Shopify blended processing rate from billing CSV vs modeled 2.9%+$0.30",
-        "source": "interactive",
-        "startedAt": "2026-06-24T22:24:35.264949+00:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Relabeled the $54 LTV ceiling on ramp-tracker as blended 2024-cohort lifetime-to-date value and added a data-driven derivation footnote ($99 net rev x 55% margin).",
-        "at": "2026-06-23T22:43:46.576259+00:00"
+        "summary": "Switched ramp-tracker spend plan to acquisition-efficiency allocation (commit 19b3b4e)",
+        "at": "2026-06-24T00:46:00Z"
       },
       "recentActivity": [
         {
@@ -150,6 +146,12 @@
           "status": "success"
         },
         {
+          "summary": "Switched ramp-tracker spend-plan allocation from raw new-customer counts to an acquisition-efficiency index (new customers per ad dollar, = 1/nCPA), per Justin's choice. Pushed live (commit 19b3b4e).",
+          "at": "2026-06-24T00:45:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Wired the H2-2026 ad-spend proposal into the ramp-tracker as a live 'Forward Spend Plan (next 6 months, nCPA-gated)' panel. Pushed live (commit bd26060).",
           "at": "2026-06-24T00:15:00Z",
           "source": "interactive",
@@ -164,12 +166,6 @@
         {
           "summary": "Wired AdSmith's verify_creative_perf_nightly.py (--local) into daily_run.py as the final post-publish assertion; folds pass/fail into the quality-check summary.",
           "at": "2026-06-23T22:20:00Z",
-          "source": "discord",
-          "status": "success"
-        },
-        {
-          "summary": "Wired AdSmith's two Creative Performance builders into nightly daily_run.py (after Meta ingest) + added publish step for their outputs.",
-          "at": "2026-06-23T22:05:00Z",
           "source": "discord",
           "status": "success"
         }
@@ -187,10 +183,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Fixed Discord table rendering: Switchboard now auto-converts agents' markdown tables into aligned monospace tables in code blocks (Discord renders those properly). reformat_tables() in render path; unit-tested. Loads on sb-restart.",
-        "at": "2026-06-24T09:30:00-07:00"
+        "summary": "Made per-agent concurrency configurable (switchboard_config.json 'concurrency'): replaced blanket single-flight lock with per-agent semaphores. DataOps/LabSmith/SearchSmith/AgentSmith=3, AdSmith=2, write-lane agents=1. DataOps can now run parallel threads. Loads on sb-restart.",
+        "at": "2026-06-24T09:45:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Made per-agent dispatch concurrency configurable so DataOps (and other read/analysis agents) can run multiple threads in parallel, while write-lane agents stay single-flight. Fixes the 'second DataOps thread gets queued' complaint.",
+          "at": "2026-06-24T09:45:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Fixed the markdown-table rendering pain: Discord doesn't render | col | tables, so the Switchboard now auto-converts any markdown table in agent output into an aligned monospace table inside a code block (which Discord renders readably). No agent-side changes needed.",
           "at": "2026-06-24T09:30:00-07:00",
@@ -242,12 +244,6 @@
         {
           "summary": "Built Phase 3: the Approve/Reject approval gate. Agents emit @@APPROVAL_REQUEST + stop before risky/irreversible actions; the Switchboard posts Approve/Reject buttons; on click it resumes the session to proceed or abort. Cooperative gate (not a hard tool lock). Awaiting one restart + live test.",
           "at": "2026-06-22T15:30:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Built 3 of Justin's 4 requested rich-Discord features into the Switchboard: embed status card with a native live timestamp (the real fix for 'not real-time'), a Stop button to kill a running dispatch, and bot presence showing running-task count. Approve/Reject gate = Phase 3, next.",
-          "at": "2026-06-22T15:15:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
