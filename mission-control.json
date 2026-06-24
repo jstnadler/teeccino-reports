@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-24T15:30:40.631623-07:00",
+  "lastUpdated": "2026-06-24T15:36:11.133159-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -101,12 +101,16 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Blend efficiency x revenue index for ramp-tracker spend allocation",
+        "source": "interactive",
+        "startedAt": "2026-06-24T01:00:00Z"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Switched ramp-tracker spend plan to acquisition-efficiency allocation (commit 19b3b4e)",
-        "at": "2026-06-24T00:46:00Z"
+        "summary": "Relabeled the $54 LTV ceiling on ramp-tracker as blended 2024-cohort lifetime-to-date value and added a data-driven derivation footnote ($99 net rev x 55% margin).",
+        "at": "2026-06-23T22:43:46.576259+00:00"
       },
       "recentActivity": [
         {
@@ -146,6 +150,12 @@
           "status": "success"
         },
         {
+          "summary": "Switched ramp-tracker spend-plan allocation to a geometric-mean blend of acquisition efficiency (1/nCPA) x revenue volume, per Justin's choice. Pushed live (commit 7122885).",
+          "at": "2026-06-24T01:05:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Switched ramp-tracker spend-plan allocation from raw new-customer counts to an acquisition-efficiency index (new customers per ad dollar, = 1/nCPA), per Justin's choice. Pushed live (commit 19b3b4e).",
           "at": "2026-06-24T00:45:00Z",
           "source": "interactive",
@@ -162,16 +172,10 @@
           "at": "2026-06-23T23:59:00Z",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Wired AdSmith's verify_creative_perf_nightly.py (--local) into daily_run.py as the final post-publish assertion; folds pass/fail into the quality-check summary.",
-          "at": "2026-06-23T22:20:00Z",
-          "source": "discord",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "agentsmith",
@@ -179,11 +183,15 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Build Switchboard crash watchdog (self-healing launch loop + sentinel) + stale-project cleanup",
+        "source": "interactive",
+        "startedAt": "2026-06-24T10:00:00-07:00"
+      },
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Made per-agent concurrency configurable (switchboard_config.json 'concurrency'): replaced blanket single-flight lock with per-agent semaphores. DataOps/LabSmith/SearchSmith/AgentSmith=3, AdSmith=2, write-lane agents=1. DataOps can now run parallel threads. Loads on sb-restart.",
+        "summary": "Made per-agent dispatch concurrency configurable so DataOps (and other read/analysis agents) can run multiple threads in parallel, while write-lane agents stay single-flight. Fixes the 'second DataOps thread gets queued' complaint.",
         "at": "2026-06-24T09:45:00-07:00"
       },
       "recentActivity": [
@@ -249,7 +257,7 @@
         }
       ],
       "pendingTasks": 0,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "assetsmith",
@@ -584,7 +592,7 @@
     {
       "id": "ada-compliance",
       "name": "ADA Compliance / Replo",
-      "status": "active",
+      "status": "archived",
       "priority": "medium",
       "owner": "main",
       "contributors": [
@@ -604,7 +612,7 @@
     {
       "id": "agent-team",
       "name": "Agent Team Deployment",
-      "status": "active",
+      "status": "archived",
       "priority": "high",
       "owner": "main",
       "contributors": [
@@ -623,7 +631,7 @@
     {
       "id": "amazon-video",
       "name": "Amazon Sponsored Brand Video",
-      "status": "active",
+      "status": "archived",
       "priority": "medium",
       "owner": "main",
       "contributors": [
@@ -762,9 +770,28 @@
       "tasksPending": 0
     },
     {
+      "id": "discord-migration",
+      "name": "Discord Migration (Switchboard)",
+      "status": "active",
+      "priority": "high",
+      "owner": "agentsmith",
+      "contributors": [
+        "Justin"
+      ],
+      "category": "Infrastructure",
+      "started": "2026-06-22",
+      "lastActivity": "2026-06-22",
+      "description": "Re-front the CC agent guild on Discord. A persistent 'Switchboard' daemon on the Windows box becomes the real control plane: per-agent channels, thread-per-task, two-way dispatch (spawn claude -p and stream output), per-agent concurrency policy, reaction-based approval gates, and a peer broker for cross-agent consult/delegate. Direct-to-agent is the DEFAULT; AgentSmith orchestration is opt-in (#gateway); cross-agent pulls can be initiated by Justin OR by agents, with delegation auto-running under the sibling's own lane safety. Built ADDITIVELY in parallel to the current PS-launcher + gateway.py + GH Pages system, which keeps working untouched and is never decommissioned without sign-off. Existing rails (status.json / outbox / mission-control.json / dashboard) are written-through, so Discord is the live stream view and the dashboard stays the durable board view. Fast-track item: the inbox-watcher (always-on file-based consumer loop = the daemon's core, minus Discord) ships first to kill the dead-letter latency on the CURRENT system.",
+      "dashboardUrl": null,
+      "milestoneDone": 5,
+      "milestoneTotal": 7,
+      "tasksDone": 3,
+      "tasksPending": 6
+    },
+    {
       "id": "influencer-gifting",
       "name": "Influencer Gifting Program",
-      "status": "active",
+      "status": "archived",
       "priority": "medium",
       "owner": "main",
       "contributors": [
@@ -967,7 +994,7 @@
     {
       "id": "worldwide-botanicals",
       "name": "Worldwide Botanicals Amazon",
-      "status": "planning",
+      "status": "archived",
       "priority": "low",
       "owner": "main",
       "contributors": [
