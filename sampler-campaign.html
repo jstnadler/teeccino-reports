@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Sampler Campaign — Teeccino</title>
+<style>
+  :root { --bg:#0f1115; --card:#1a1d24; --ink:#e8eaed; --muted:#9aa0a6;
+           --gold:#D4A843; --green:#4ade80; --blue:#60a5fa; --line:#2a2e37; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+          font:15px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; padding:24px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:20px; }
+  .prov { background:#241f12; border:1px solid var(--gold); border-radius:8px;
+           padding:12px 16px; font-size:13px; color:#f0e6cf; margin-bottom:24px; }
+  h2 { font-size:16px; border-bottom:1px solid var(--line); padding-bottom:6px; margin:28px 0 14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .k { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .v { font-size:26px; font-weight:600; margin-top:4px; }
+  .v small { font-size:13px; color:var(--muted); font-weight:400; }
+  .pos { color:var(--green); } .gold { color:var(--gold); } .muted { color:var(--muted); }
+  table { width:100%; border-collapse:collapse; margin-top:8px; }
+  th,td { text-align:right; padding:8px 10px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  th:first-child,td:first-child { text-align:left; }
+  th { color:var(--muted); font-size:12px; text-transform:uppercase; }
+  tr.peak td { background:#1d2417; }
+  .tw { overflow-x:auto; }
+  .chart-wrap { background:var(--card); border:1px solid var(--line); border-radius:10px;
+                 padding:14px 14px 8px; margin-top:14px; }
+  .chart-hdr { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .chart-hdr h3 { font-size:14px; margin:0; font-weight:600; }
+  .chart-hdr select { background:#11141a; color:var(--ink); border:1px solid var(--line);
+                       border-radius:6px; padding:3px 6px; font:inherit; font-size:12px; }
+  canvas { width:100%; height:260px; display:block; }
+  .legend { display:flex; gap:16px; font-size:11px; color:var(--muted); margin:6px 2px 2px; }
+  .legend span::before { content:''; display:inline-block; width:10px; height:10px; border-radius:2px;
+                          margin-right:5px; vertical-align:middle; }
+  .note { color:var(--muted); font-size:12px; font-style:italic; margin-top:6px; }
+</style></head><body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(function(r){return r.text();}).then(function(html){
+    var slot=document.getElementById('hub-nav'); slot.innerHTML=html;
+    document.body.classList.add('has-hub-nav');
+    slot.querySelectorAll('script').forEach(function(s){
+      var n=document.createElement('script');
+      if(s.src){n.src=s.src;}else{n.textContent=s.textContent;}
+      document.head.appendChild(n);
+    });
+  }).catch(function(){});
+</script>
+<h1>🎁 Free Sampler Campaign</h1>
+<div class="sub">Built 2026-06-25 12:44 · Cohort = customers whose <strong>first order</strong> contained a free
+<strong>SKU 40092</strong> (Herbal Tea Sampler) or <strong>50098</strong> (Herbal Coffee Share Pack) · Lifetime data through 2026-06-25</div>
+
+<div class="prov"><strong>Definition &amp; provenance:</strong> A customer joins a monthly cohort when their <em>very first</em> DTC
+order (<code>customer_order_index=1</code>, non-wholesale) included a <strong>free</strong> unit (<code>original_unit_price=0</code>)
+of 40092 or 50098 — exactly the two SKUs requested, nothing else. Lifetime revenue = sum of order <em>subtotals</em> across all of that
+customer's DTC orders to date. <strong>Marketing caveat:</strong> platform <em>campaign-level</em> spend only exists from 2024-04 onward, so
+sampler-specific ad cost for the 2022–2023 push cannot be isolated. The channel mix below is derived from per-order UTM tags
+(<code>order_journey</code>); the blended Meta+Google column is total account spend that month (context, not sampler-attributed).</div>
+
+<h2>1 · Program totals <span class="note">— all cohorts, lifetime</span></h2>
+<div class="grid">
+  <div class="card"><div class="k">New customers acquired</div><div class="v">1,893</div></div>
+  <div class="card"><div class="k">Repeat customers</div><div class="v">459 <small>/ 24%</small></div></div>
+  <div class="card"><div class="k">Became subscribers</div><div class="v gold">72 <small>/ 4%</small></div></div>
+  <div class="card"><div class="k">Lifetime DTC orders</div><div class="v">3,436</div></div>
+  <div class="card"><div class="k">Lifetime revenue</div><div class="v pos">$85,090</div></div>
+  <div class="card"><div class="k">Avg LTV / customer</div><div class="v">$45</div></div>
+  <div class="card"><div class="k">Peak acquisition month</div><div class="v">2023-08 <small>/ 278 new</small></div></div>
+</div>
+
+<h2>2 · Cohort trend</h2>
+<div class="chart-wrap">
+  <div class="chart-hdr">
+    <h3 id="ct">New customers acquired per month</h3>
+    <span>Metric
+      <select id="pick">
+        <option value="new">New customers acquired</option>
+        <option value="rep">Repurchase rate (%)</option>
+        <option value="ltv">Avg LTV / customer ($)</option>
+      </select>
+    </span>
+  </div>
+  <canvas id="chart"></canvas>
+  <div class="legend"><span style="color:var(--gold)">▮ metric</span></div>
+</div>
+
+<h2>3 · Cohorts by acquisition month</h2>
+<div class="tw"><table>
+<thead><tr><th>Cohort</th><th>New custs</th><th>Repeat custs</th><th>Repurchase %</th>
+<th>Avg orders</th><th>Sub %</th><th>Avg LTV</th><th>Lifetime rev</th><th>Blended ad spend*</th></tr></thead>
+<tbody><tr><td>2022-07</td><td>1</td><td>1</td><td>100%</td><td>2.00</td><td>0%</td><td>$99</td><td>$99</td><td class='muted'>$0</td></tr><tr><td>2022-08</td><td>1</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$7</td><td>$7</td><td class='muted'>$0</td></tr><tr><td>2022-09</td><td>11</td><td>3</td><td>27%</td><td>1.45</td><td>9%</td><td>$23</td><td>$248</td><td class='muted'>$0</td></tr><tr><td>2022-10</td><td>56</td><td>19</td><td>34%</td><td>2.32</td><td>7%</td><td>$83</td><td>$4,654</td><td class='muted'>$0</td></tr><tr><td>2022-11</td><td>46</td><td>19</td><td>41%</td><td>1.89</td><td>0%</td><td>$30</td><td>$1,378</td><td class='muted'>$0</td></tr><tr><td>2022-12</td><td>5</td><td>3</td><td>60%</td><td>5.80</td><td>20%</td><td>$97</td><td>$487</td><td class='muted'>$0</td></tr><tr><td>2023-01</td><td>48</td><td>17</td><td>35%</td><td>1.92</td><td>2%</td><td>$48</td><td>$2,318</td><td class='muted'>$13,616</td></tr><tr><td>2023-02</td><td>57</td><td>15</td><td>26%</td><td>2.04</td><td>5%</td><td>$100</td><td>$5,701</td><td class='muted'>$25,538</td></tr><tr><td>2023-03</td><td>69</td><td>31</td><td>45%</td><td>4.12</td><td>13%</td><td>$181</td><td>$12,481</td><td class='muted'>$26,158</td></tr><tr><td>2023-04</td><td>159</td><td>37</td><td>23%</td><td>1.90</td><td>4%</td><td>$46</td><td>$7,371</td><td class='muted'>$26,154</td></tr><tr><td>2023-05</td><td>155</td><td>38</td><td>25%</td><td>1.80</td><td>4%</td><td>$38</td><td>$5,950</td><td class='muted'>$24,368</td></tr><tr><td>2023-06</td><td>214</td><td>37</td><td>17%</td><td>1.35</td><td>2%</td><td>$13</td><td>$2,758</td><td class='muted'>$15,066</td></tr><tr><td>2023-07</td><td>177</td><td>33</td><td>19%</td><td>1.49</td><td>2%</td><td>$21</td><td>$3,644</td><td class='muted'>$15,452</td></tr><tr><td>2023-08</td><td>278</td><td>44</td><td>16%</td><td>1.50</td><td>3%</td><td>$20</td><td>$5,676</td><td class='muted'>$13,451</td></tr><tr><td>2023-09</td><td>176</td><td>29</td><td>16%</td><td>1.47</td><td>1%</td><td>$25</td><td>$4,396</td><td class='muted'>$15,743</td></tr><tr><td>2023-10</td><td>69</td><td>15</td><td>22%</td><td>1.64</td><td>7%</td><td>$44</td><td>$3,043</td><td class='muted'>$21,002</td></tr><tr><td>2023-11</td><td>36</td><td>16</td><td>44%</td><td>2.31</td><td>8%</td><td>$111</td><td>$4,003</td><td class='muted'>$21,411</td></tr><tr><td>2023-12</td><td>18</td><td>4</td><td>22%</td><td>2.28</td><td>11%</td><td>$125</td><td>$2,249</td><td class='muted'>$15,273</td></tr><tr><td>2024-01</td><td>16</td><td>5</td><td>31%</td><td>1.44</td><td>0%</td><td>$17</td><td>$269</td><td class='muted'>$13,982</td></tr><tr><td>2024-02</td><td>19</td><td>5</td><td>26%</td><td>1.74</td><td>0%</td><td>$25</td><td>$473</td><td class='muted'>$26,880</td></tr><tr><td>2024-03</td><td>6</td><td>2</td><td>33%</td><td>1.33</td><td>0%</td><td>$37</td><td>$221</td><td class='muted'>$32,040</td></tr><tr><td>2024-04</td><td>44</td><td>19</td><td>43%</td><td>2.61</td><td>14%</td><td>$100</td><td>$4,409</td><td class='muted'>$35,094</td></tr><tr><td>2024-05</td><td>49</td><td>21</td><td>43%</td><td>2.78</td><td>10%</td><td>$127</td><td>$6,212</td><td class='muted'>$30,316</td></tr><tr><td>2024-06</td><td>31</td><td>12</td><td>39%</td><td>1.68</td><td>0%</td><td>$49</td><td>$1,519</td><td class='muted'>$29,937</td></tr><tr><td>2024-07</td><td>18</td><td>6</td><td>33%</td><td>2.11</td><td>6%</td><td>$72</td><td>$1,299</td><td class='muted'>$27,390</td></tr><tr><td>2024-08</td><td>11</td><td>5</td><td>45%</td><td>2.18</td><td>0%</td><td>$108</td><td>$1,188</td><td class='muted'>$27,232</td></tr><tr><td>2024-09</td><td>8</td><td>2</td><td>25%</td><td>1.38</td><td>0%</td><td>$13</td><td>$104</td><td class='muted'>$22,788</td></tr><tr><td>2024-10</td><td>6</td><td>4</td><td>67%</td><td>1.67</td><td>0%</td><td>$43</td><td>$257</td><td class='muted'>$27,003</td></tr><tr><td>2024-11</td><td>12</td><td>6</td><td>50%</td><td>3.92</td><td>17%</td><td>$120</td><td>$1,445</td><td class='muted'>$37,811</td></tr><tr><td>2024-12</td><td>4</td><td>1</td><td>25%</td><td>1.25</td><td>0%</td><td>$33</td><td>$132</td><td class='muted'>$19,563</td></tr><tr><td>2025-01</td><td>4</td><td>1</td><td>25%</td><td>1.25</td><td>0%</td><td>$13</td><td>$52</td><td class='muted'>$24,925</td></tr><tr><td>2025-02</td><td>6</td><td>1</td><td>17%</td><td>1.33</td><td>0%</td><td>$13</td><td>$81</td><td class='muted'>$22,764</td></tr><tr><td>2025-03</td><td>4</td><td>1</td><td>25%</td><td>1.25</td><td>0%</td><td>$19</td><td>$75</td><td class='muted'>$41,227</td></tr><tr><td>2025-04</td><td>51</td><td>2</td><td>4%</td><td>1.29</td><td>0%</td><td>$1</td><td>$54</td><td class='muted'>$42,665</td></tr><tr><td>2025-05</td><td>1</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$0</td><td>$0</td><td class='muted'>$25,469</td></tr><tr><td>2025-06</td><td>2</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$19</td><td>$39</td><td class='muted'>$14,530</td></tr><tr><td>2025-07</td><td>3</td><td>1</td><td>33%</td><td>3.33</td><td>0%</td><td>$9</td><td>$26</td><td class='muted'>$14,488</td></tr><tr><td>2025-08</td><td>2</td><td>1</td><td>50%</td><td>2.50</td><td>50%</td><td>$85</td><td>$171</td><td class='muted'>$18,703</td></tr><tr><td>2025-09</td><td>3</td><td>1</td><td>33%</td><td>2.33</td><td>0%</td><td>$129</td><td>$386</td><td class='muted'>$23,184</td></tr><tr><td>2025-10</td><td>2</td><td>1</td><td>50%</td><td>3.50</td><td>0%</td><td>$15</td><td>$30</td><td class='muted'>$28,151</td></tr><tr><td>2025-11</td><td>2</td><td>1</td><td>50%</td><td>1.50</td><td>0%</td><td>$32</td><td>$64</td><td class='muted'>$50,497</td></tr><tr><td>2026-01</td><td>1</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$0</td><td>$0</td><td class='muted'>$40,287</td></tr><tr><td>2026-02</td><td>2</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$12</td><td>$24</td><td class='muted'>$38,130</td></tr><tr><td>2026-05</td><td>4</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$15</td><td>$61</td><td class='muted'>$21,228</td></tr><tr><td>2026-06</td><td>6</td><td>0</td><td>0%</td><td>1.00</td><td>0%</td><td>$6</td><td>$38</td><td class='muted'>$16,573</td></tr></tbody>
+</table></div>
+<div class="note">*Blended ad spend = total Meta+Google account spend that month (all products), shown for context only — not sampler-attributed. Empty before 2023-02 (Meta) / 2023-01 (Google).</div>
+
+<h2>4 · Acquisition channel mix <span class="note">— first-touch UTM on the acquisition order</span></h2>
+<div class="tw"><table>
+<thead><tr><th>Channel</th><th>New-customer orders</th><th>Share</th></tr></thead>
+<tbody><tr><td>Paid Social</td><td>964</td><td>51%</td></tr><tr><td>Direct / Untracked</td><td>477</td><td>25%</td></tr><tr><td>Email</td><td>386</td><td>20%</td></tr><tr><td>Paid Search / Shopping</td><td>38</td><td>2%</td></tr><tr><td>SMS</td><td>27</td><td>1%</td></tr><tr><td>Other / Organic</td><td>1</td><td>0%</td></tr></tbody>
+</table></div>
+<div class="note">First-visit UTM source/medium grouped into channels. "Direct / Untracked" = no UTM captured (direct, app, or pre-tracking).</div>
+
+<script>
+var DATA = {
+  labels: ["2022-07", "2022-08", "2022-09", "2022-10", "2022-11", "2022-12", "2023-01", "2023-02", "2023-03", "2023-04", "2023-05", "2023-06", "2023-07", "2023-08", "2023-09", "2023-10", "2023-11", "2023-12", "2024-01", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2024-12", "2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2026-01", "2026-02", "2026-05", "2026-06"],
+  new: [1, 1, 11, 56, 46, 5, 48, 57, 69, 159, 155, 214, 177, 278, 176, 69, 36, 18, 16, 19, 6, 44, 49, 31, 18, 11, 8, 6, 12, 4, 4, 6, 4, 51, 1, 2, 3, 2, 3, 2, 2, 1, 2, 4, 6],
+  rep: [100.0, 0.0, 27.3, 33.9, 41.3, 60.0, 35.4, 26.3, 44.9, 23.3, 24.5, 17.3, 18.6, 15.8, 16.5, 21.7, 44.4, 22.2, 31.2, 26.3, 33.3, 43.2, 42.9, 38.7, 33.3, 45.5, 25.0, 66.7, 50.0, 25.0, 25.0, 16.7, 25.0, 3.9, 0.0, 0.0, 33.3, 50.0, 33.3, 50.0, 50.0, 0.0, 0.0, 0.0, 0.0],
+  ltv: [99.12, 7.49, 22.51, 83.1, 29.96, 97.41, 48.28, 100.01, 180.89, 46.36, 38.39, 12.89, 20.59, 20.42, 24.97, 44.1, 111.2, 124.97, 16.84, 24.9, 36.88, 100.21, 126.77, 49.0, 72.15, 108.02, 12.96, 42.82, 120.38, 32.98, 12.99, 13.48, 18.81, 1.07, 0.0, 19.35, 8.66, 85.27, 128.53, 15.0, 31.79, 0.0, 12.0, 15.17, 6.33]
+};
+var TITLES = {new:'New customers acquired per month', rep:'Repurchase rate (%) by cohort', ltv:'Avg LTV / customer ($) by cohort'};
+var cv=document.getElementById('chart'), ctx=cv.getContext('2d');
+function draw(metric){
+  var dpr=window.devicePixelRatio||1, W=cv.clientWidth, H=260;
+  cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  var d=DATA[metric], n=d.length, max=Math.max.apply(null,d)*1.1||1;
+  var padL=46,padB=42,padT=10,padR=10, cw=(W-padL-padR)/n, gw=cw*0.62;
+  ctx.strokeStyle='#2a2e37'; ctx.fillStyle='#9aa0a6'; ctx.font='10px sans-serif';
+  for(var g=0; g<=4; g++){
+    var y=padT+(H-padT-padB)*g/4, val=max*(1-g/4);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.textAlign='right'; ctx.fillText(metric==='ltv'?'$'+Math.round(val):Math.round(val), padL-6, y+3);
+  }
+  for(var i=0;i<n;i++){
+    var v=d[i], bh=(H-padT-padB)*(v/max), x=padL+cw*i+(cw-gw)/2, y=H-padB-bh;
+    ctx.fillStyle='#D4A843'; ctx.fillRect(x,y,gw,bh);
+    if(i%2===0 || n<=24){ ctx.fillStyle='#9aa0a6'; ctx.save(); ctx.translate(x+gw/2,H-padB+4);
+      ctx.rotate(-Math.PI/4); ctx.textAlign='right'; ctx.fillText(DATA.labels[i],0,0); ctx.restore(); }
+  }
+}
+document.getElementById('pick').addEventListener('change',function(e){
+  document.getElementById('ct').textContent=TITLES[e.target.value]; draw(e.target.value);
+});
+draw('new'); window.addEventListener('resize',function(){draw(document.getElementById('pick').value);});
+</script>
+</body></html>
