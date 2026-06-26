@@ -119,19 +119,15 @@
 
 <h2>Forward Spend Plan &mdash; next 6 months (nCPA-gated)</h2>
 <div class="explain">
-  <b>How this is built.</b> Three moves: (1) <b>anchor the level</b> to your proven-profitable run-rate
-  (trailing-12mo avg <b>$27,762/mo</b>, ~$333,138/yr) &mdash; avg nCPA there sits well under the
-  $48 break-even; (2) <b>allocate by a blended index</b> = geometric mean of <b>acquisition
-  efficiency</b> (new-customers-per-ad-dollar, = 1/nCPA &mdash; where a customer is cheapest) <b>&times; revenue
-  volume</b> (prior-year DTC net &mdash; where the demand actually is). The blend (shown per row as
-  <code>e&middot;r</code>) rewards months strong on <em>both</em>; a month cheap-but-dead (Dec) or busy-but-pricey
-  is pulled toward the middle. Raw new-customer counts are deliberately <em>not</em> used &mdash; they move ~1:1 with
-  spend, so allocating on them just re-spends where we spent; (3) <b>add an optional +25% upside</b> based on the
-  new-customer-cost light at the top of the page (HEALTHY &rarr; take the upside, WATCH/ALERT &rarr; hold at base).
-  The band only goes <em>up</em> from base &mdash; base is the floor.
-  <b>Right now: New-customer cost is HEALTHY &mdash; take the <b>+25% upside</b>.</b> <b>Heads-up:</b> the live trailing-8wk avg nCPA ($29) is running hotter than the $23 12-mo planning rate &mdash; if it holds, stay at <b>base</b> and hold the upside until efficiency recovers.
+  <b>How this is built.</b> The spend <b>floor is the budgeted figure</b> for each month (from the 2026 marketing
+  forecast). On top of that sits an <b>optional +25% upside</b>, gated by the new-customer-cost light at the
+  top of the page (HEALTHY &rarr; take the upside, WATCH/ALERT &rarr; hold at budget) &mdash; the band only goes
+  <em>up</em> from budget. Everything to the right (customers, payback, revenue) is computed at the budgeted floor;
+  the upside shows what the extra 25% would add. Avg nCPA across this plan (<b>$23</b>)
+  sits well under the $48 a customer is worth, so there's room to take the upside.
+  <b>Right now: New-customer cost is HEALTHY &mdash; take the <b>+25% upside</b> above budget.</b> <b>Heads-up:</b> the live trailing-8wk avg nCPA ($29) is running hotter than the $23 12-mo planning rate &mdash; if it holds, stay at <b>budget</b> and hold the upside until efficiency recovers.
 </div>
-<div class="explain" style="border-left-color:var(--green);background:rgba(74,222,128,.07);"><b style="color:var(--green)">The upside, in plain dollars.</b> Spending <b>+25%</b> more than the base plan (about <b>$43,158</b> more over the next 6 months) is projected to bring in <b>$74,972</b> more in DTC net revenue from roughly <b>1,907</b> additional new customers &mdash; while keeping ad spend at ~17% of revenue. That's the green-light scenario; it holds as long as a new customer keeps costing less than the $48 they're worth.</div>
+<div class="explain" style="border-left-color:var(--green);background:rgba(74,222,128,.07);"><b style="color:var(--green)">The upside, in plain dollars.</b> Spending the <b>+25% upside</b> above budget (about <b>$36,250</b> more over the next 6 months) is projected to bring in <b>$62,972</b> more in DTC net revenue from roughly <b>1,601</b> additional new customers &mdash; while keeping ad spend at ~15% of revenue. That's the green-light scenario; it holds as long as a new customer keeps costing less than the $48 they're worth.</div>
 <div class="ncpa-ctl">
   <label for="ncpaInput"><b>Cost per new customer (nCPA):</b> $</label><input id="ncpaInput" type="number" min="1" max="120" step="0.5" value="22.64">
   <button id="ncpaReset" type="button">Reset to 12-mo avg ($22.64)</button>
@@ -140,33 +136,29 @@
 </div>
 <div class="tscroll"><table>
   <thead><tr><th data-tip="Calendar month of the plan.">Month</th>
-  <th class="r" data-tip="Recommended ad spend for the month: your trailing-12mo run-rate anchor scaled by this month's allocation index.">Base spend</th>
-  <th class="r" data-tip="Spend range from base up to +25%. Base is the floor (no downside); take the upside when new-customer cost is healthy, hold at base when it's running hot.">Upside (base&ndash;+25%)</th>
-  <th class="r" data-tip="How much of the budget this month gets vs an average month. Geometric mean of acquisition efficiency (e, = 1/nCPA &mdash; where customers are cheapest) and revenue volume (r). The revenue half (r) is driven largely by returning-customer orders that month (prior-year DTC net revenue), so months with a strong returning-customer base get weighted up. 1.00 = average.">Alloc idx (e&middot;r)</th>
-  <th class="r" data-tip="Expected new customers acquired = base spend divided by expected cost per new customer.">Exp. new</th>
+  <th class="r" data-tip="Monthly ad spend: the budgeted figure (the floor) up to a +25% upside. Take the upside when new-customer cost is healthy; hold at budget when it's running hot.">Ad spend<br><span style="font-weight:400;text-transform:none">budget &ndash; +25%</span></th>
+  <th class="r" data-tip="Expected new customers acquired = budgeted spend divided by expected cost per new customer.">Exp. new</th>
   <th class="r" data-tip="Expected cost to acquire one new customer (ad spend divided by new customers), at the trailing-12mo blended rate.">Cost/cust (nCPA)</th>
   <th class="r" data-tip="Months until a new customer's cumulative contribution margin repays what we paid to acquire them.">Payback</th>
   <th class="r" data-tip="Projected DTC net revenue: new-customer revenue (scales with spend) + returning-customer base (prior cohorts, +4% YoY). Top number is at base spend; below is base up to the +25% upside.">Proj. net rev<br><span style="font-weight:400;text-transform:none">base &middot; base&ndash;+25%</span></th>
   <th class="r" data-tip="Ad spend as a percent of projected net revenue that month (ad spend divided by net revenue). Lower is more efficient; our trailing-12-month average is shown in the stat at the top. This is just MER inverted.">Ad % of rev</th>
   <th class="r" data-tip="Marketing Efficiency Ratio = projected net revenue divided by ad spend. A sanity check, not a target.">MER</th></tr></thead>
   <tbody id="planBody">
-<tr><td>Jul 2026</td><td class='r'>$23,698</td><td class='r' style='color:var(--text-dim)'>$23,698&ndash;$29,623</td><td class='r'>0.85&times;<span style='color:var(--text-dim);font-size:.72rem'> (e0.93&middot;r0.77)</span></td><td class='r'>1,047</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$157,439<span style='color:var(--text-dim);font-size:.72rem'><br>$157,439&ndash;$167,731</span></td><td class='r'>15.1%</td><td class='r'>6.6&times;</td></tr>
-<tr><td>Aug 2026</td><td class='r'>$25,047</td><td class='r' style='color:var(--text-dim)'>$25,047&ndash;$31,309</td><td class='r'>0.90&times;<span style='color:var(--text-dim);font-size:.72rem'> (e0.94&middot;r0.85)</span></td><td class='r'>1,107</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$171,692<span style='color:var(--text-dim);font-size:.72rem'><br>$171,692&ndash;$182,570</span></td><td class='r'>14.6%</td><td class='r'>6.9&times;</td></tr>
-<tr><td>Sep 2026</td><td class='r'>$26,027</td><td class='r' style='color:var(--text-dim)'>$26,027&ndash;$32,534</td><td class='r'>0.94&times;<span style='color:var(--text-dim);font-size:.72rem'> (e0.96&middot;r0.90)</span></td><td class='r'>1,150</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$184,679<span style='color:var(--text-dim);font-size:.72rem'><br>$184,679&ndash;$195,983</span></td><td class='r'>14.1%</td><td class='r'>7.1&times;</td></tr>
-<tr><td>Oct 2026</td><td class='r'>$28,100</td><td class='r' style='color:var(--text-dim)'>$28,100&ndash;$35,125</td><td class='r'>1.01&times;<span style='color:var(--text-dim);font-size:.72rem'> (e1.00&middot;r1.01)</span></td><td class='r'>1,241</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$197,835<span style='color:var(--text-dim);font-size:.72rem'><br>$197,835&ndash;$210,039</span></td><td class='r'>14.2%</td><td class='r'>7.0&times;</td></tr>
-<tr><td>Nov 2026</td><td class='r'>$37,334</td><td class='r' style='color:var(--text-dim)'>$37,334&ndash;$46,668</td><td class='r'>1.34&times;<span style='color:var(--text-dim);font-size:.72rem'> (e1.05&middot;r1.70)</span></td><td class='r'>1,649</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$320,411<span style='color:var(--text-dim);font-size:.72rem'><br>$320,411&ndash;$336,625</span></td><td class='r'>11.7%</td><td class='r'>8.6&times;</td></tr>
-<tr><td>Dec 2026</td><td class='r'>$32,424</td><td class='r' style='color:var(--text-dim)'>$32,424&ndash;$40,529</td><td class='r'>1.17&times;<span style='color:var(--text-dim);font-size:.72rem'> (e1.38&middot;r0.97)</span></td><td class='r'>1,432</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$174,805<span style='color:var(--text-dim);font-size:.72rem'><br>$174,805&ndash;$188,886</span></td><td class='r'>18.5%</td><td class='r'>5.4&times;</td></tr>
-<tr style='font-weight:700;border-top:2px solid var(--border)'><td>6-month total</td><td class='r'>$172,631</td><td class='r' style='color:var(--text-dim)'>$172,631&ndash;$215,788</td><td></td><td class='r'>7,626</td><td class='r'>$22.64</td><td></td><td class='r'>$1,206,862<span style='color:var(--text-dim);font-size:.72rem'><br>$1,206,862&ndash;$1,281,834</span></td><td class='r'>14.3%</td><td class='r'>7.0&times;</td></tr>
+<tr><td>Jul 2026</td><td class='r'>$15,000<span style='color:var(--text-dim)'>&ndash;$18,750</span></td><td class='r'>663</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$142,329<span style='color:var(--text-dim);font-size:.72rem'><br>$142,329&ndash;$148,843</span></td><td class='r'>10.5%</td><td class='r'>9.5&times;</td></tr>
+<tr><td>Aug 2026</td><td class='r'>$15,000<span style='color:var(--text-dim)'>&ndash;$18,750</span></td><td class='r'>663</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$154,239<span style='color:var(--text-dim);font-size:.72rem'><br>$154,239&ndash;$160,753</span></td><td class='r'>9.7%</td><td class='r'>10.3&times;</td></tr>
+<tr><td>Sep 2026</td><td class='r'>$20,000<span style='color:var(--text-dim)'>&ndash;$25,000</span></td><td class='r'>884</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$174,209<span style='color:var(--text-dim);font-size:.72rem'><br>$174,209&ndash;$182,894</span></td><td class='r'>11.5%</td><td class='r'>8.7&times;</td></tr>
+<tr><td>Oct 2026</td><td class='r'>$30,000<span style='color:var(--text-dim)'>&ndash;$37,500</span></td><td class='r'>1,325</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$201,136<span style='color:var(--text-dim);font-size:.72rem'><br>$201,136&ndash;$214,165</span></td><td class='r'>14.9%</td><td class='r'>6.7&times;</td></tr>
+<tr><td>Nov 2026</td><td class='r'>$35,000<span style='color:var(--text-dim)'>&ndash;$43,750</span></td><td class='r'>1,546</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$316,356<span style='color:var(--text-dim);font-size:.72rem'><br>$316,356&ndash;$331,556</span></td><td class='r'>11.1%</td><td class='r'>9.0&times;</td></tr>
+<tr><td>Dec 2026</td><td class='r'>$30,000<span style='color:var(--text-dim)'>&ndash;$37,500</span></td><td class='r'>1,325</td><td class='r'>$22.64</td><td class='r'>2.3 mo</td><td class='r'>$170,594<span style='color:var(--text-dim);font-size:.72rem'><br>$170,594&ndash;$183,623</span></td><td class='r'>17.6%</td><td class='r'>5.7&times;</td></tr>
+<tr style='font-weight:700;border-top:2px solid var(--border)'><td>6-month total</td><td class='r'>$145,000<span style='color:var(--text-dim)'>&ndash;$181,250</span></td><td class='r'>6,406</td><td class='r'>$22.64</td><td></td><td class='r'>$1,158,863<span style='color:var(--text-dim);font-size:.72rem'><br>$1,158,863&ndash;$1,221,835</span></td><td class='r'>12.5%</td><td class='r'>8.0&times;</td></tr>
   </tbody>
 </table></div>
 <div class="caveat" style="margin-top:10px;">
-  <b>Plan caveats.</b> Spend <em>level</em> is anchored to known-profitable history, not a fitted response curve
-  (a monthly spend&harr;new regression is too noisy &mdash; spend &amp; demand co-move with promos/season). The
-  <b>efficiency</b> half of the blend is still <em>partly</em> contaminated by diminishing returns &mdash;
-  historically low-spend months (e.g. Dec) look extra-efficient partly because we under-spent them and were on the
-  steep part of the curve. The <b>revenue</b> half deliberately tempers that (Dec is a low-revenue month, so the
-  geo-mean pulls it back). Treat the blended index as directional, not a guarantee. Payback comes from the
-  LTV&rarr;GP curve at the expected cost/customer. <b>Proj. net rev is spend-responsive</b>: new-customer revenue
+  <b>Plan caveats.</b> The spend floor is the <b>budgeted</b> monthly figure from the 2026 forecast; the +25%
+  upside is a deliberate lean-in, gated by the live new-customer-cost light, not a fitted response curve (a monthly
+  spend&harr;new regression is too noisy &mdash; spend &amp; demand co-move with promos/season). Expected new
+  customers and payback assume efficiency holds as spend rises toward the upside; if nCPA climbs, take less of it.
+  Payback comes from the LTV&rarr;GP curve at the expected cost/customer. <b>Proj. net rev is spend-responsive</b>: new-customer revenue
   (the new customers this spend buys &times; ~$39 net per first order) + a seasonal returning-customer
   base (prior-year same-month repeat revenue &times; 4% YoY). So flexing spend up lifts the
   new-revenue half; the returning base is locked in from prior cohorts. MER = proj net &divide; spend. Execution
@@ -220,7 +212,7 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-06-26 14:30:48 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-06-26 15:52:30 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["02-02", "02-09", "02-16", "02-23", "03-02", "03-09", "03-16", "03-23", "03-30", "04-06", "04-13", "04-20", "04-27", "05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15"];
@@ -271,7 +263,7 @@ mkLine('ppoChart', [
 ], dollar);
 
 // ---- interactive nCPA recompute on the spend plan ----
-const PLAN = {"months": [{"label": "Jul", "year": 2026, "base": 23698.347168708173, "lo": 23698.347168708173, "hi": 29622.933960885217, "ret": 116271.2928, "season": 0.85, "eff": 0.93, "rev": 0.77}, {"label": "Aug", "year": 2026, "base": 25047.168255284338, "lo": 25047.168255284338, "hi": 31308.960319105423, "ret": 128181.3936, "season": 0.9, "eff": 0.94, "rev": 0.85}, {"label": "Sep", "year": 2026, "base": 26027.49606209039, "lo": 26027.49606209039, "hi": 32534.370077612988, "ret": 139465.57040000003, "season": 0.94, "eff": 0.96, "rev": 0.9}, {"label": "Oct", "year": 2026, "base": 28099.807042990884, "lo": 28099.807042990884, "hi": 35124.7588037386, "ret": 149021.41280000002, "season": 1.01, "eff": 1.0, "rev": 1.01}, {"label": "Nov", "year": 2026, "base": 37334.39034219787, "lo": 37334.39034219787, "hi": 46667.98792774734, "ret": 255555.7472, "season": 1.34, "eff": 1.05, "rev": 1.7}, {"label": "Dec", "year": 2026, "base": 32423.57299793711, "lo": 32423.57299793711, "hi": 40529.466247421384, "ret": 118479.71200000001, "season": 1.17, "eff": 1.38, "rev": 0.97}], "new_aov": 39.32280559896718, "ltv": [[0.0, 0.0], [1.0, 19.63], [3.0, 24.17], [12.0, 37.1], [24.0, 47.36]], "flex": 0.25, "def": 22.636296995855133, "gateGreen": 48, "gateRed": 54};
+const PLAN = {"months": [{"label": "Jul", "year": 2026, "base": 15000.0, "lo": 15000.0, "hi": 18750.0, "ret": 116271.2928, "season": 0.85, "eff": 0.93, "rev": 0.77}, {"label": "Aug", "year": 2026, "base": 15000.0, "lo": 15000.0, "hi": 18750.0, "ret": 128181.3936, "season": 0.9, "eff": 0.94, "rev": 0.85}, {"label": "Sep", "year": 2026, "base": 20000.0, "lo": 20000.0, "hi": 25000.0, "ret": 139465.57040000003, "season": 0.94, "eff": 0.96, "rev": 0.9}, {"label": "Oct", "year": 2026, "base": 30000.0, "lo": 30000.0, "hi": 37500.0, "ret": 149021.41280000002, "season": 1.01, "eff": 1.0, "rev": 1.01}, {"label": "Nov", "year": 2026, "base": 35000.0, "lo": 35000.0, "hi": 43750.0, "ret": 255555.7472, "season": 1.34, "eff": 1.05, "rev": 1.7}, {"label": "Dec", "year": 2026, "base": 30000.0, "lo": 30000.0, "hi": 37500.0, "ret": 118479.71200000001, "season": 1.17, "eff": 1.38, "rev": 0.97}], "new_aov": 39.32280559896718, "ltv": [[0.0, 0.0], [1.0, 19.63], [3.0, 24.17], [12.0, 37.1], [24.0, 47.36]], "flex": 0.25, "def": 22.636296995855133, "gateGreen": 48, "gateRed": 54};
 if (PLAN) {
   const inp = document.getElementById('ncpaInput');
   const body = document.getElementById('planBody');
@@ -296,9 +288,7 @@ if (PLAN) {
             netLo=(m.lo/n)*PLAN.new_aov+m.ret, netHi=(m.hi/n)*PLAN.new_aov+m.ret, mer=net/m.base;
       tBase+=m.base; tLo+=m.lo; tHi+=m.hi; tNew+=nw; tNet+=net; tNetLo+=netLo; tNetHi+=netHi;
       tb += `<tr><td>${m.label} ${m.year}</td>`
-        + `<td class="r">${money(m.base)}</td>`
-        + `<td class="r" style="color:var(--text-dim)">${money(m.lo)}&ndash;${money(m.hi)}</td>`
-        + `<td class="r">${m.season.toFixed(2)}&times;<span style="color:var(--text-dim);font-size:.72rem"> (e${m.eff.toFixed(2)}&middot;r${m.rev.toFixed(2)})</span></td>`
+        + `<td class="r">${money(m.base)}<span style="color:var(--text-dim)">&ndash;${money(m.hi)}</span></td>`
         + `<td class="r">${Math.round(nw).toLocaleString()}</td>`
         + `<td class="r">$${n.toFixed(2)}</td>`
         + `<td class="r">${pb}</td>`
@@ -307,9 +297,9 @@ if (PLAN) {
         + `<td class="r">${mer.toFixed(1)}&times;</td></tr>`;
     });
     tb += `<tr style="font-weight:700;border-top:2px solid var(--border)">`
-      + `<td>6-month total</td><td class="r">${money(tBase)}</td>`
-      + `<td class="r" style="color:var(--text-dim)">${money(tLo)}&ndash;${money(tHi)}</td>`
-      + `<td></td><td class="r">${Math.round(tNew).toLocaleString()}</td>`
+      + `<td>6-month total</td>`
+      + `<td class="r">${money(tBase)}<span style="color:var(--text-dim)">&ndash;${money(tHi)}</span></td>`
+      + `<td class="r">${Math.round(tNew).toLocaleString()}</td>`
       + `<td class="r">$${n.toFixed(2)}</td><td></td>`
       + `<td class="r">${money(tNet)}<span style="color:var(--text-dim);font-size:.72rem"><br>${money(tNetLo)}&ndash;${money(tNetHi)}</span></td>`
       + `<td class="r">${(100*tBase/tNet).toFixed(1)}%</td>`
