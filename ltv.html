@@ -19,6 +19,17 @@
   .definitions { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
                   border-radius:8px; padding:14px 16px; margin-bottom:24px; font-size:0.86em; color:#aaa; line-height:1.6; }
   .definitions code { color:#D4A843; }
+  .metric-index { background:rgba(255,255,255,0.04); border:1px solid rgba(212,168,67,0.25);
+                   border-radius:10px; padding:14px 18px; margin:18px 0; }
+  .metric-index > summary { cursor:pointer; font-size:1.05em; font-weight:600; color:#D4A843; list-style:revert; }
+  .metric-index[open] > summary { margin-bottom:12px; }
+  .mi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:8px 28px; }
+  .mi-group h4 { font-size:0.82em; text-transform:uppercase; letter-spacing:1px; color:#9aa3b0;
+                  margin:10px 0 6px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:4px; }
+  .mi-group dl { margin:0; }
+  .mi-group dt { font-weight:700; color:#e2e8f0; font-size:0.9em; margin-top:9px; }
+  .mi-group dd { margin:2px 0 0; font-size:0.84em; color:#aab2bd; line-height:1.5; }
+  .mi-group dd code { color:#D4A843; font-size:0.92em; }
   .section { margin:32px 0; }
   .section-title { font-size:1.2em; color:#D4A843; margin-bottom:12px; font-weight:600;
                     border-bottom:1px solid rgba(212,168,67,0.3); padding-bottom:6px; }
@@ -89,17 +100,54 @@
 
 <div class="container">
   <h1>👥 2-Year Customer LTV</h1>
-  <p class="sub">DTC cohort analysis — net revenue per acquired customer over 24 months. Generated 2026-06-29 08:37.</p>
+  <p class="sub">DTC cohort analysis — net revenue per acquired customer over 24 months. Generated 2026-06-29 08:51.</p>
 
-  <div class="definitions">
-    <strong>Definitions:</strong><br>
-    <code>Cohort</code> = month of customer's first DTC order. <code>Wholesale orders excluded</code>.<br>
-    <code>LTV at day N</code> = average net revenue per customer in the cohort within N days of their first order.
-    Net revenue = <code>subtotal − total_discounts</code> (excludes shipping + tax).<br>
-    <code>Complete cohorts</code> = cohorts where ≥730 days have elapsed since the cohort end-of-month — only these can show a real 2-year number. Cells marked <span class="partial-marker" style="color:#D4A843">value*</span> are partial.<br>
-    <code>Repeat rate</code> = % of customers placing ≥2 orders within 24 months. <code>Loyal rate</code> = ≥3 orders within 24 months.<br>
-    <code>Channel</code> = <code>order_journey.first_visit_source</code> on the customer's first order, normalized.
-  </div>
+  <details class="metric-index" open>
+    <summary>📖 Metric Index — every metric on this page, defined</summary>
+    <div class="mi-grid">
+      <div class="mi-group">
+        <h4>Revenue &amp; profit</h4>
+        <dl>
+          <dt>Net revenue</dt><dd><code>subtotal &minus; discounts</code> (excludes shipping &amp; tax). The realized sales value the customer paid for product.</dd>
+          <dt>COGS</dt><dd>Product cost: <code>&Sigma;(line qty &times; cost/unit)</code> per order, from the COGS table (~99% coverage; scaled to 100% when partial).</dd>
+          <dt>Shipping cost</dt><dd><b>Actual per-order ShipStation carrier cost</b> for 2024-onward orders (~100% matched by order number). 2023 orders predate ShipStation, so they use a <b>$7.50 flat estimate</b> &mdash; within ~2% of the $7.67 carrier average. So shipping is precise for recent cohorts, a calibrated estimate for the 2023 tail.</dd>
+          <dt>Gross profit</dt><dd><code>Net &minus; COGS</code> (before shipping). The "Profit basis" toggle switches the profit columns to this.</dd>
+          <dt>Contribution margin (CM)</dt><dd><code>Net &minus; COGS &minus; shipping cost</code> &mdash; the <b>same lean definition as the Monthly KPI dashboard</b>. Ad spend is <em>not</em> subtracted here (it's the separate CAC). Card processing and the shipping-revenue credit are excluded to match the KPI walk. <code>CM &minus; CAC</code> = the after-ad figure the KPI shows.</dd>
+          <dt>Card processing</dt><dd>Shopify Payments fees (~2.42% + $0.33/order). Tracked elsewhere; <em>excluded</em> from this page's CM so it matches the KPI.</dd>
+        </dl>
+      </div>
+      <div class="mi-group">
+        <h4>Customers &amp; cohorts</h4>
+        <dl>
+          <dt>Cohort</dt><dd>The month of a customer's <b>first-ever DTC order</b>. They stay in that cohort forever; rows are cumulative through the as-of date. Wholesale excluded.</dd>
+          <dt>New customer</dt><dd>First-ever Teeccino order (Shopify lifetime order index = 1). Guest checkouts (no customer ID) and wholesale excluded.</dd>
+          <dt>Sub-First %</dt><dd>Share of the cohort whose <b>first order was a subscription</b>. A cohort property &mdash; constant across the segment toggle.</dd>
+          <dt>Subscriber vs one-time</dt><dd>Split by whether the customer's <b>first</b> order was a subscription (not whether they ever subscribed).</dd>
+          <dt>Orders / customer</dt><dd>Lifetime orders &divide; customers in the cohort (subscription rebills count as orders).</dd>
+        </dl>
+      </div>
+      <div class="mi-group">
+        <h4>LTV &amp; retention</h4>
+        <dl>
+          <dt>2-year (24-mo) LTV</dt><dd>Cumulative <b>net revenue per customer</b> within 730 days of their first order.</dd>
+          <dt>Complete vs partial cohort</dt><dd><b>Complete</b> = &ge;730 days elapsed since the cohort's month-end (only these show a real 2-yr number). Partial values are marked <span class="partial-marker" style="color:#D4A843">value*</span>.</dd>
+          <dt>Projected 2-yr LTV</dt><dd>For partial cohorts: actual LTV at current age &divide; the % of 2-yr value historically captured by that age (the velocity curve). Scales a young cohort to a 2-year estimate.</dd>
+          <dt>Velocity curve</dt><dd>% of the eventual 2-yr LTV that complete cohorts had already captured by month K. Drives the projection above.</dd>
+          <dt>Repeat rate / Loyal rate</dt><dd>Share of the cohort with <b>&ge;2</b> lifetime orders (repeat) / <b>&ge;3</b> (loyal). Rebills count.</dd>
+          <dt>Windowed repurchase rate</dt><dd>Share placing a <b>2nd order within N days</b> of the first &mdash; an apples-to-apples retention read across cohorts of different ages.</dd>
+        </dl>
+      </div>
+      <div class="mi-group">
+        <h4>Acquisition</h4>
+        <dl>
+          <dt>CAC</dt><dd>Cost to acquire a customer = <code>(Meta + Google spend in the acquisition month) &divide; new customers that month</code>. Cohort-level &mdash; paid spend can't be cleanly split by first-order type.</dd>
+          <dt>LTV:CAC</dt><dd>Profit per customer (CM or Gross per the toggle) &divide; CAC. <span class="coh-ltvcac good">&ge;3&times;</span> healthy, <span class="coh-ltvcac warn">1&ndash;3&times;</span> watch, <span class="coh-ltvcac bad">&lt;1&times;</span> unprofitable.</dd>
+          <dt>Monthly revenue</dt><dd>The <b>whole month's total DTC net revenue</b> (all orders, new + returning) &mdash; NOT cohort-lifetime revenue. Pair with Ad Spend for that month's TACOS (<code>Ad Spend &divide; Monthly Rev</code>).</dd>
+          <dt>Channel</dt><dd>First-touch acquisition source (<code>order_journey.first_visit_source</code>) on the customer's first order, normalized.</dd>
+        </dl>
+      </div>
+    </div>
+  </details>
 
   <div id="provenance-mount"></div>
   <script>
