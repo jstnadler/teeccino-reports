@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-29T09:30:11.746499-07:00",
+  "lastUpdated": "2026-06-29T09:32:28.089388-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -123,8 +123,8 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Filled ramp tracker index gaps (COGS, shipping cost, DTC)",
-        "at": "2026-06-29T16:35:00Z"
+        "summary": "Any other definitions we're missing that get referenced?",
+        "at": "2026-06-29T09:30:23.887443-07:00"
       },
       "recentActivity": [
         {
@@ -299,18 +299,20 @@
       "emoji": "loudspeaker",
       "role": "Paid Advertising Manager",
       "workspace": "clawd-adsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "OK done",
-        "source": "discord",
-        "startedAt": "2026-06-29T09:28:16.214073-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Prepped the measurement-fix path (Justin chose Tasks 2+3 first). Built read-only inspect_gtm_ga4_after_auth.py (does both OAuth consents then lists GTM workspaces+tags and GA4 custom dims; syntax-checked, libs import; NO writes/publish) and docs/pieeye-gtm-allowlist-action.md (Option A admin steps + Option B paste-ready support ticket). Both Task 2 (PieEye login) and Task 3 (OAuth consent) require Justin at a browser -> cannot complete from dispatch. Surfaced the critical dependency: Task 2 (PieEye gtm.js allowlist) is THE fix that restores GA4; Task 3 OAuth only verifies + caches tokens, does not restore GA4 on its own.",
-        "at": "2026-06-29T10:25:00-07:00"
+        "summary": "Verified live: GA4 NOT dark (corrected earlier claim) — only GTM upsell_modal_* events stopped ~5/15 (narrow); GTM ws=49; GA4 Admin API needs GCP enable; real issue = ECH COLD acquisition",
+        "at": "2026-06-29T10:51:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Verified live state after Justin's OAuth. CORRECTION: GA4 is NOT dark (my earlier claim was wrong) — realtime + 40-day GA4 Data API show full funnel flowing continuously across May+June via Shopify's native GA4 path, independent of the GTM container. The ONLY real measurement gap is narrow: GTM-container custom events (upsell_modal_*) stopped ~5/15 (0 in last 45d), affecting just the PDP upsell A/B take-rate. GTM container read OK (live workspace = 49, not the script's 46). GA4 Admin API read 403 = not enabled in GCP. Full decomposition: Meta pixel healthy (EMQ 9.3), GA4 healthy, 'ads hurting' = ECH COLD/TOF acquisition collapse.",
+          "at": "2026-06-29T10:50:00-07:00",
+          "source": "discord",
+          "status": "success"
+        },
         {
           "summary": "Prepped the measurement-fix path (Justin chose Tasks 2+3 first). Built read-only inspect_gtm_ga4_after_auth.py (does both OAuth consents then lists GTM workspaces+tags and GA4 custom dims; syntax-checked, libs import; NO writes/publish) and docs/pieeye-gtm-allowlist-action.md (Option A admin steps + Option B paste-ready support ticket). Both Task 2 (PieEye login) and Task 3 (OAuth consent) require Justin at a browser -> cannot complete from dispatch. Surfaced the critical dependency: Task 2 (PieEye gtm.js allowlist) is THE fix that restores GA4; Task 3 OAuth only verifies + caches tokens, does not restore GA4 on its own.",
           "at": "2026-06-29T10:25:00-07:00",
@@ -362,12 +364,6 @@
         {
           "summary": "Fixed non-working 'Open on Instagram' links: IG dark-post permalinks gate logged-out, so the primary Open now uses a reliable fbcdn image (master/full image/thumb/local) and the IG/FB post is a labeled secondary link.",
           "at": "2026-06-23T01:00:00Z",
-          "source": "gateway",
-          "status": "success"
-        },
-        {
-          "summary": "Built option A: mirror full-res master statics + match to ads (phash), dashboard now opens the local full-res master image for matched creatives. 48 masters, 30 ads matched. Video stays on permalink (1.6GB too large for GH Pages).",
-          "at": "2026-06-23T00:50:00Z",
           "source": "gateway",
           "status": "success"
         }
