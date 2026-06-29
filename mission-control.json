@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-29T14:59:44.578435-07:00",
+  "lastUpdated": "2026-06-29T15:03:23.403513-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -199,10 +199,16 @@
       "currentTask": null,
       "activeBranches": [],
       "lastActivity": {
-        "summary": "Built delegate completion callback — caller auto-resumed with the result when a delegated task finishes",
-        "at": "2026-06-29T11:15:00-07:00"
+        "summary": "Added 'read:' parallel read lane so read-only tasks don't queue behind write-agent builds",
+        "at": "2026-06-29T11:45:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Added a parallel read lane: prefix a task with 'read:' and it runs alongside a busy write agent instead of queuing. Write agents (ThemeSmith etc.) stay single-flight for writes.",
+          "at": "2026-06-29T11:45:00-07:00",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Closed the broker delegate blind-spot: a delegating agent is now auto-resumed with the result when the sibling actually finishes, instead of being told 'don't wait' and never learning the outcome.",
           "at": "2026-06-29T11:15:00-07:00",
@@ -254,12 +260,6 @@
         {
           "summary": "Built the Switchboard crash watchdog and ran a stale-project cleanup. Watchdog = self-healing launch loop + sentinel (relaunches on crash, respects sb-stop). Cleanup = archived 5 clearly-stale legacy projects (active 15->12) + recency-sorted the dashboard; also repaired a corrupted discord-migration.json.",
           "at": "2026-06-24T10:20:00-07:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Made per-agent dispatch concurrency configurable so DataOps (and other read/analysis agents) can run multiple threads in parallel, while write-lane agents stay single-flight. Fixes the 'second DataOps thread gets queued' complaint.",
-          "at": "2026-06-24T09:45:00-07:00",
           "source": "interactive",
           "status": "unknown"
         }
