@@ -196,9 +196,27 @@
       if (document.activeElement === input && input.value.trim()) filter(input.value);
     });
 
+    /* Keep the results panel on-screen. The panel is a fixed-width box anchored to
+       ONE side of the search input (right:0 in the nav chrome, left:0 on the hub),
+       so wherever the input lands near a viewport edge — the hub at narrower desktop
+       widths, or any dashboard when the nav wraps to a second row — the panel used to
+       run off the screen. Measure after it's visible and nudge it horizontally so it
+       always fits, clamping to the left edge if the viewport is too narrow for both. */
+    function positionPanel() {
+      panel.style.transform = '';                 /* reset before measuring */
+      var rect = panel.getBoundingClientRect();
+      var vw = document.documentElement.clientWidth;
+      var M = 8;                                   /* min gap from each viewport edge */
+      var dx = 0;
+      if (rect.right > vw - M) dx = (vw - M) - rect.right;   /* overflows right → move left */
+      if (rect.left + dx < M) dx = M - rect.left;            /* don't shove past left edge */
+      if (dx) panel.style.transform = 'translateX(' + Math.round(dx) + 'px)';
+    }
+
     function setOpen(open) {
       panel.classList.toggle('open', open);
       input.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) positionPanel();                   /* panel is display:block now → measurable */
     }
 
     function render() {
@@ -273,6 +291,10 @@
     document.addEventListener('click', function (e) {
       var wrap = document.getElementById('hub-search');
       if (wrap && !wrap.contains(e.target)) setOpen(false);
+    });
+    /* Re-clamp to the viewport if the window resizes while the panel is open */
+    window.addEventListener('resize', function () {
+      if (panel.classList.contains('open')) positionPanel();
     });
   })();
 
