@@ -38,6 +38,15 @@
     border-radius:8px; margin:14px 0; font-size:.84rem; color:#d4d4d4; }
   .updated-stamp { color:var(--text-dim); font-size:.75rem; margin-top:24px; }
   code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; background:rgba(212,168,67,.08); color:var(--accent); padding:2px 6px; border-radius:4px; }
+  .metric-index { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 18px; margin:14px 0; }
+  .metric-index > summary { cursor:pointer; font-size:1rem; font-weight:700; color:var(--accent); }
+  .metric-index[open] > summary { margin-bottom:12px; }
+  .mi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:4px 28px; }
+  .mi-group h4 { font-size:.72rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim);
+    margin:10px 0 5px; border-bottom:1px solid var(--border); padding-bottom:4px; }
+  .mi-group dl { margin:0; }
+  .mi-group dt { font-weight:700; color:var(--text); font-size:.86rem; margin-top:8px; }
+  .mi-group dd { margin:2px 0 0; font-size:.8rem; color:var(--text-dim); line-height:1.5; }
   th[data-tip] { cursor:help; text-decoration:underline dotted rgba(255,255,255,.35); text-underline-offset:3px; }
   th[data-tip]:hover::after { content:attr(data-tip); position:absolute; left:8px; top:100%; margin-top:4px; z-index:20;
     background:#0f1525; color:#e2e8f0; border:1px solid var(--border); border-radius:6px; padding:8px 11px;
@@ -81,6 +90,42 @@
   lifetime, acquisition is profitable and there's room to spend more. The light above is green while the cost stays
   under that line, and the chart below tracks it week to week.
 </div>
+
+<details class="metric-index">
+  <summary>📖 Metric Index — every metric on this page, defined</summary>
+  <div class="mi-grid">
+    <div class="mi-group">
+      <h4>Cost &amp; value of a customer</h4>
+      <dl>
+        <dt>nCPA (cost per new customer)</dt><dd>What we pay in ads to win one new customer: <code>total ad spend &divide; new customers</code>. The headline light tracks this vs what a customer is worth.</dd>
+        <dt>A new customer is worth ($42)</dt><dd>Blended 2-year <b>contribution margin</b> per new customer &mdash; the break-even line. Below it, acquisition adds profit.</dd>
+        <dt>A subscriber is worth ($107)</dt><dd>2-year CM when the <b>first order is a subscription</b> (~2.5&times; the blend) &mdash; 6 orders / 82% repeat. Shows the prize for converting first orders to subscription.</dd>
+        <dt>First-order break-even ($14)</dt><dd>CM on a new customer's <em>first order alone</em>. nCPA below this = cash-positive on order one; above it, you recoup over the repeat tail.</dd>
+        <dt>Contribution margin (CM)</dt><dd><code>Net revenue &minus; COGS &minus; shipping cost</code> &mdash; the <b>same lean definition as the Monthly KPI</b>. Ad spend is the separate CAC, not subtracted here.</dd>
+      </dl>
+    </div>
+    <div class="mi-group">
+      <h4>Payback &amp; efficiency</h4>
+      <dl>
+        <dt>Payback</dt><dd>Months until a new customer's <b>cumulative CM</b> recoups the nCPA we paid, read off the LTV&rarr;CM curve. Past the $42 2-yr ceiling it never pays back.</dd>
+        <dt>Profit / order</dt><dd>Lean CM per order after product, shipping &amp; ad cost &mdash; the weekly per-order contribution.</dd>
+        <dt>MER</dt><dd>Marketing Efficiency Ratio = <code>projected net revenue &divide; ad spend</code>. A sanity check, not a target.</dd>
+        <dt>Ad % of revenue (TACOS)</dt><dd>Ad spend as a percent of revenue. Lower = more efficient; it's just MER inverted. Trailing-12-mo actual is in the stat at top.</dd>
+        <dt>HEALTHY / WATCH / ALERT</dt><dd>The gate light: nCPA under $42 = healthy, $42&ndash;$47 = watch, above $47 = pull back.</dd>
+      </dl>
+    </div>
+    <div class="mi-group">
+      <h4>Forward spend plan</h4>
+      <dl>
+        <dt>Ad spend (budget &rarr; reco)</dt><dd>A range: the <b>budgeted</b> spend (floor, from the 2026 forecast) up to the <b>recommended 20% of revenue</b> (the upside ceiling).</dd>
+        <dt>Exp. new (budget &rarr; reco)</dt><dd>Expected new customers = <code>spend &divide; cost-per-customer</code>, shown at budget and at the recommended spend.</dd>
+        <dt>Cost/cust (nCPA)</dt><dd>Expected cost to acquire one customer, at the trailing-12-month blended rate. Same at budget or reco (per-customer, volume-independent).</dd>
+        <dt>Proj. net rev</dt><dd>Projected DTC net revenue: new-customer revenue (scales with spend) + a returning-customer base (prior cohorts, +4% YoY). Top = at budget; range = up to reco.</dd>
+        <dt>Recommended = 20% of revenue</dt><dd>The target ad-spend level (TACOS), aligned with the CEO recommendation; the upside end of every plan column.</dd>
+      </dl>
+    </div>
+  </div>
+</details>
 
 <h2>Cost per New Customer (nCPA), by week</h2>
 <div class="chart-wrap"><canvas id="ncpaChart"></canvas></div>
@@ -217,7 +262,7 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-06-29 08:37:51 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-06-29 09:13:54 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["02-09", "02-16", "02-23", "03-02", "03-09", "03-16", "03-23", "03-30", "04-06", "04-13", "04-20", "04-27", "05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15", "06-22"];
