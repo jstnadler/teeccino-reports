@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-30T09:07:01.587028-07:00",
+  "lastUpdated": "2026-06-30T09:15:34.665443-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -110,24 +110,14 @@
       "emoji": "bar_chart",
       "role": "Data Pipeline & Analytics",
       "workspace": "Automations/analytics",
-      "status": "working",
-      "currentTask": {
-        "summary": "Your nightly dashboard publish in Automations/analytics/daily_run.py has been pa",
-        "source": "discord",
-        "startedAt": "2026-06-30T09:04:21.021746-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
-      "activeSessions": [
-        {
-          "task": "Your nightly dashboard publish in Automations/analytics/daily_run.py has been pa",
-          "lane": "write",
-          "startedAt": "2026-06-30T09:04:21-07:00"
-        }
-      ],
-      "concurrentTasks": 1,
+      "activeSessions": [],
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Aligned MTD cohort LTV:CAC to the 2-Year LTV page CM definition, resolving the same-cohort contradiction (Feb-2026 was 1.42x on MTD vs 0.86x on LTV page; now 0.83x vs 0.87x).",
-        "at": "2026-06-24T22:53:20.013323+00:00"
+        "summary": "Your nightly dashboard publish in Automations/analytics/daily_run.py has been pa",
+        "at": "2026-06-30T09:11:38.938529-07:00"
       },
       "recentActivity": [
         {
@@ -200,14 +190,24 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "DELEGATE RESULT from DataOps (you delegated: \"Your nightly dashboard publish in ",
+        "source": "discord",
+        "startedAt": "2026-06-30T09:11:39.547938-07:00"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "DELEGATE RESULT from DataOps (you delegated: \"Your nightly dashboard publish in ",
+          "lane": "write",
+          "startedAt": "2026-06-30T09:11:39-07:00"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "DELEGATE to SearchSmith is now RUNNING in its own thread (it may pause there for",
-        "at": "2026-06-30T09:05:22.739181-07:00"
+        "summary": "Mission Control now shows concurrent per-agent work from the Switchboard running registry instead of the single-slot status.json — so an agent with N parallel sessions reads as 'working (N tasks)' and the don't-clobber-status.json dance no longer hides work.",
+        "at": "2026-06-29T13:45:00-07:00"
       },
       "recentActivity": [
         {
@@ -548,7 +548,7 @@
       "currentTask": {
         "summary": "Your \"SearchSmith Dashboard Refresh\" Windows scheduled task (runs C:\\Users\\Justi",
         "source": "discord",
-        "startedAt": "2026-06-30T09:04:37.157136-07:00"
+        "startedAt": "2026-06-30T09:04:37-07:00"
       },
       "activeBranches": [],
       "activeSessions": [
@@ -560,10 +560,16 @@
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Weekly SEO digest 2026-06-21->2026-06-27: 1,033 clicks (+12.0% WoW), 79,471 impr, 1.30% CTR, pos 7.9. 4 fixes in flight, 2 CTR anomalies, 0 position drops.",
-        "at": "2026-06-30"
+        "summary": "Fixed both failing SearchSmith scheduled tasks (Dashboard Refresh + Weekly Digest). Root cause: task Execute path was version-pinned to pwsh 7.6.2.0, which auto-updated to 7.6.3.0, so the interpreter exe no longer existed -> Task Scheduler returned 0x80070002 (file-not-found) before the script ran. Repointed both tasks to the stable WindowsApps pwsh alias and added a WorkingDirectory. Both now exit 0x0 when fired by the scheduler. Ran both scripts; data feed regenerated and pushed to origin (built_at 2026-06-30, window through 2026-06-27).",
+        "at": "2026-06-30T16:18:00Z"
       },
       "recentActivity": [
+        {
+          "summary": "Fixed both failing SearchSmith scheduled tasks (Dashboard Refresh + Weekly Digest). Root cause: task Execute path was version-pinned to pwsh 7.6.2.0, which auto-updated to 7.6.3.0, so the interpreter exe no longer existed -> Task Scheduler returned 0x80070002 (file-not-found) before the script ran. Repointed both tasks to the stable WindowsApps pwsh alias and added a WorkingDirectory. Both now exit 0x0 when fired by the scheduler. Ran both scripts; data feed regenerated and pushed to origin (built_at 2026-06-30, window through 2026-06-27).",
+          "at": "2026-06-30T16:18:00Z",
+          "source": "discord",
+          "status": "unknown"
+        },
         {
           "summary": "Weekly SEO digest 2026-06-21->2026-06-27: 1,033 clicks (+12.0% WoW), 79,471 impr, 1.30% CTR, pos 7.9. 4 fixes in flight, 2 CTR anomalies, 0 position drops.",
           "at": "2026-06-30",
@@ -615,12 +621,6 @@
         {
           "summary": "Confirmed Search Performance dashboard is the tracking page (live, HTTP 200). Found + fixed the nightly refresh script: em-dash chars in PS string literals broke parsing under ANSI codepage, so the feed had been stale since Jun 16. Replaced with ASCII '--', re-ran: feed now current (Jun 25), committed 0faadd8 + pushed live.",
           "at": "2026-06-25T16:46:00-07:00",
-          "source": "discord",
-          "status": "unknown"
-        },
-        {
-          "summary": "Progress check: ran fresh weekly digest. Organic momentum turned positive — 956 clicks/wk (+10.9% WoW), CTR 1.15% (+0.07pp), pos 7.5. Ledger proof-of-model: 'coffee alternative' CTR 0.55%@dispatch -> 1.60% now (~3x, +7 clicks, top mover). carob 0.03%->0.05% (suppressed, as predicted). 2 new CTR anomalies surfaced (bulletproof coffee nutrition facts, java tea).",
-          "at": "2026-06-25T16:42:00-07:00",
           "source": "discord",
           "status": "unknown"
         }
