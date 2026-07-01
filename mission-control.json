@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-01T04:07:29.294876-07:00",
+  "lastUpdated": "2026-07-01T10:26:37.682451-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -60,6 +60,12 @@
           "status": "success"
         },
         {
+          "summary": "Built data-driven blog FAQ in sections/main-article.liquid: renders visible FAQ + one FAQPage JSON-LD from article.metafields.custom.faq (JSON array of {q,a}); removed hardcoded handle-gated dehydration FAQPage block. Merged to dev.",
+          "at": "2026-07-01T00:00:00Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Shipped FAQPage article.handle fix to LIVE (commit 91a428d, main->theme 160800145656). Live page now renders FAQPage with 5 valid Questions. SEO ticket unblocked.",
           "at": "2026-06-30T19:45:33Z",
           "source": "dispatch",
@@ -104,12 +110,6 @@
         {
           "summary": "Built per-recipe mobile hero support in main-recipe.liquid: reads optional article metafield content.hero_mobile_image and swaps it in under 750px (sibling <img> + breakpoint toggle, same pattern as the banner). Backward-compatible: recipes with no mobile hero render the single Featured image as before. Verified swap both directions on dev (set+deleted a temp test value on the pancakes article). Merged to dev (7ea7b70). NOT on live. Needs CatalogSmith to create the metafield DEFINITION so Bella can set it in admin.",
           "at": "2026-06-29T22:45:00Z",
-          "source": "discord",
-          "status": "success"
-        },
-        {
-          "summary": "SHIPPED LIVE: optional 'Mobile image' field on image-banner (art-directed desktop/mobile hero swap at 750px). Single-file FF push of sections/image-banner.liquid to main (7237838..df16efd). Additive/backward-compatible (64 existing banners unchanged). Also wrote Bella's recipe-posting guide (references/bella-recipe-posting-guide.md).",
-          "at": "2026-06-29T22:30:00Z",
           "source": "discord",
           "status": "success"
         }
@@ -203,14 +203,18 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Fix shared-resource contention: per-task dev port + resource/awaiting panel + Playwright isolation investigation",
+        "source": "interactive",
+        "startedAt": "2026-07-01T10:30:00-07:00"
+      },
       "activeBranches": [],
       "activeSessions": [],
-      "concurrentTasks": 0,
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Is there a way to make the agents all different colors?",
-        "at": "2026-06-30T16:06:01.391516-07:00"
+        "summary": "The delegating agent's thread now shows a LIVE mirrored status card of the delegated agent working — same spinner/Now/elapsed card as a self-run — instead of only discrete handoff/result events.",
+        "at": "2026-06-30T10:15:00-07:00"
       },
       "recentActivity": [
         {
@@ -472,12 +476,6 @@
           "at": "2026-06-25T04:05:00-07:00",
           "source": "scheduled",
           "status": "unknown"
-        },
-        {
-          "summary": "Wrote + locally committed 'Caffeine-free hot chocolate that isn't a sugar bomb' (priya, recipes, commit 4f43c2b) — but deploy is BLOCKED: GitHub returns 403 on fetch AND push (write access lost). Article is NOT live. High-priority humanAction filed for Justin to refresh the credential.",
-          "at": "2026-06-24T04:10:00-07:00",
-          "source": "scheduled",
-          "status": "unknown"
         }
       ],
       "pendingTasks": 0,
@@ -571,14 +569,24 @@
       "emoji": "mag",
       "role": "Organic Search & SEO",
       "workspace": "clawd-searchsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "DELEGATE RESULT from ThemeSmith (you delegated: \"Build a data-driven FAQ for blo",
+        "source": "discord",
+        "startedAt": "2026-07-01T10:25:59.700707-07:00"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "DELEGATE RESULT from ThemeSmith (you delegated: \"Build a data-driven FAQ for blo",
+          "lane": "write",
+          "startedAt": "2026-07-01T10:25:59-07:00"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "I think we just learned a lot about fixing up the blogs from the dehydration blo",
-        "at": "2026-06-30T16:43:03.207497-07:00"
+        "summary": "ThemeSmith synced blog-article schema hardening to dev (dev/main now byte-identical on main-article.liquid). Dehydration blog SEO project fully complete. Backlog item themesmith-dev-cherrypick-article-schema marked done.",
+        "at": "2026-06-30T23:08:22Z"
       },
       "recentActivity": [
         {
@@ -1135,6 +1143,24 @@
       "flaggedBy": "dataops-cron",
       "created": "2026-06-24T07:03:27.653453-07:00",
       "status": "pending"
+    },
+    {
+      "id": "dataops-publish-stale",
+      "priority": "urgent",
+      "title": "DataOps dashboards stale — 1 not published (2026-07-01)",
+      "detail": "PUBLISH_CRITICAL pages have not been pushed to teeccino-reports within the freshness window. The nightly publish phase is aborting before these builders run. Stale: mtd.html: last published 2026-06-24 (7d ago)",
+      "flaggedBy": "dataops-cron",
+      "created": "2026-07-01T07:16:53.558710-07:00",
+      "status": "pending"
+    },
+    {
+      "id": "pipeline-fail-2026-07-01",
+      "priority": "normal",
+      "title": "Daily analytics pipeline FAILED (2026-07-01)",
+      "detail": "daily_run.bat exit 1. exit 1. Check the log: C:\\temp\\analytics\\logs\\pipeline_20260701.log",
+      "flaggedBy": "dataops-cron",
+      "created": "2026-07-01T07:19:14.033436-07:00",
+      "status": "pending"
     }
   ],
   "incidents": [
@@ -1273,7 +1299,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-06-30T07:11:22.128467-07:00",
+        "lastRun": "2026-07-01T07:19:14.034115-07:00",
         "status": "healthy"
       },
       {
