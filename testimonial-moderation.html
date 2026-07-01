@@ -1,0 +1,118 @@
+<!doctype html><html><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<meta name='robots' content='noindex,nofollow'>
+<title>Teeccino Testimonials — Moderation</title>
+<style>
+body{font:15px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#222;max-width:920px;margin:32px auto;padding:0 20px}
+h1{font-size:25px;margin-bottom:4px}
+.meta{color:#666;font-size:13px}
+.lead{background:#faf6ef;border:1px solid #e8ddca;border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px}
+#bar{position:sticky;top:0;z-index:50;background:#2d2a26;color:#fff;padding:11px 18px;border-radius:0 0 8px 8px;margin:-32px -20px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#bar b{font-size:15px}#bar .prog{font-size:13px;opacity:.85}
+#bar input,#bar select{font:inherit;padding:5px 9px;border:0;border-radius:6px}
+#bar button{font:600 13px inherit;padding:7px 14px;border:0;border-radius:6px;cursor:pointer;background:#e8a531;color:#2d2a26}
+#bar button.sec{background:#56524c;color:#fff}#bar button:hover{opacity:.9}
+.saved{font-size:12px;color:#9fe0a0;margin-left:auto}
+.card{border:1px solid #e2e2e2;border-left:5px solid #b8860b;border-radius:8px;padding:14px 18px;margin:14px 0}
+.card.marked-approve{border-left-color:#5a9e5a;background:#f6fbf6}
+.card.marked-deny{border-left-color:#b03030;background:#fcf5f5}
+.card.marked-edit{border-left-color:#c8801f;background:#fffaf2}
+.who{font-weight:600;font-size:15px}.loc{color:#666;font-weight:400;font-size:13px}
+.priv{font-size:12px;color:#8a6d3b;background:#fcf8e3;border:1px solid #f3e6c0;border-radius:5px;padding:2px 8px;display:inline-block;margin-top:4px}
+.body{white-space:pre-wrap;background:#f7f7f7;border-radius:6px;padding:10px 12px;margin:10px 0;font-size:14px}
+.chips{margin:6px 0}
+.chip{display:inline-block;font-size:12px;background:#eef3f8;border:1px solid #d6e4ef;color:#2f6fb0;border-radius:10px;padding:2px 9px;margin:2px 4px 2px 0}
+.small{font-size:12px;color:#888;margin-top:6px}
+.decbox{margin-top:12px;padding:10px 12px;background:#f4f8fb;border:1px solid #d6e4ef;border-radius:6px}
+.decbox label{font-size:14px;font-weight:600;margin-right:16px;cursor:pointer;user-select:none}
+.decbox input[type=radio]{vertical-align:middle;margin-right:4px;cursor:pointer}
+.decbox textarea{width:100%;box-sizing:border-box;margin-top:8px;font:13px/1.5 inherit;padding:8px 10px;border:1px solid #cdd6df;border-radius:5px;min-height:80px;display:none}
+.warn{background:#fdf3f3;border:1px solid #f0c8c8;color:#a33;border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px}
+</style></head><body>
+<div id='bar'><b>Testimonials — moderation</b><input id='rname' placeholder='Your name' oninput='setReviewer()' style='width:120px'><select id='filter' onchange='render()'><option value='pending'>Pending only</option><option value='all'>All</option></select><span class='prog' id='prog'>loading…</span><button onclick='load()'>Refresh</button><span class='saved' id='saved'></span></div>
+<h1>Inbound Customer Testimonials</h1>
+<div class='meta'>Moderation console · setId <code>testimonials-inbound</code> · one card per public submission</div>
+<div class='lead'><b>How this works:</b> each card is a testimonial a customer submitted via the site (<i>“How has Teeccino helped you?”</i>). Click <b>Approve</b> to publish as-is, <b>Deny</b> to reject, or <b>Edit</b> to tweak the wording before it publishes (type your version in the box — that text is what gets published). Approved testimonials flow to the catalog team to go live in the matching condition section. The email address is shown for your spam check only — it is <b>private and never published</b>.</div>
+<div id='cards'></div>
+<script>
+const API="https://teeccino-review-api.teeccino.workers.dev";
+const SETID="testimonials-inbound";
+const TAG_LABELS={"caffeine-free": "Caffeine-free", "acid-reflux": "Acid reflux", "anxiety-stress": "Anxiety / stress", "gut-digestion": "Gut / digestion", "heart-health": "Heart health", "migraines-headaches": "Migraines / headaches", "pregnancy": "Pregnancy", "quitting-coffee": "Quitting coffee", "weight-loss": "Weight loss", "flavor": "Flavor", "family-use": "Family use", "gluten-free": "Gluten-free", "better-than-decaf": "Better than decaf", "health-professionals": "Health professionals", "blending-with-coffee": "Blending with coffee", "interstitial-cystitis": "Interstitial cystitis", "appreciations": "Appreciations", "general": "General"};
+
+const RKEY=((location.hash+'&'+location.search).match(/[#?&]k=([^&]+)/)||[])[1]||'';
+let ITEMS=[];
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function reviewerName(){const el=document.getElementById('rname');return (el&&el.value)||localStorage.getItem('tm-reviewer')||'';}
+function setReviewer(){localStorage.setItem('tm-reviewer',document.getElementById('rname').value);}
+function flash(t,ok){const s=document.getElementById('saved');s.textContent=(ok===false?'⚠ ':'✓ ')+t;s.style.color=ok===false?'#f0b0b0':'#9fe0a0';clearTimeout(window._ft);window._ft=setTimeout(()=>s.textContent='',2500);}
+
+function load(){
+  if(!RKEY){document.getElementById('cards').innerHTML="<div class='warn'>No moderation key in the link. Open the capability link that ends in <code>#k=…</code>.</div>";document.getElementById('prog').textContent='';return;}
+  document.getElementById('prog').textContent='loading…';
+  fetch(API+'/api/decisions?setId='+SETID,{headers:{'x-review-key':RKEY}})
+    .then(r=>r.ok?r.json():Promise.reject(r.status))
+    .then(j=>{ITEMS=(j.decisions||[]).sort((a,b)=>(b.ts||'').localeCompare(a.ts||''));render();})
+    .catch(e=>{document.getElementById('cards').innerHTML="<div class='warn'>Couldn't load submissions (error "+esc(e)+"). Check the moderation key.</div>";document.getElementById('prog').textContent='';});
+}
+
+function decide(itemId,decision,note){
+  fetch(API+'/api/decision',{method:'POST',headers:{'content-type':'application/json','x-review-key':RKEY},
+    body:JSON.stringify({setId:SETID,itemId:itemId,decision:decision||null,note:note||'',reviewer:reviewerName()})})
+    .then(r=>{if(r.ok){flash('saved');const it=ITEMS.find(x=>x.itemId===itemId);if(it){it.decision=decision;it.note=note||'';}applyCard(itemId,decision);}else{flash('save failed',false);}})
+    .catch(()=>flash('offline — not saved',false));
+}
+function onDec(itemId){
+  const d=document.querySelector('input[name=dec_'+cssid(itemId)+']:checked');if(!d)return;
+  const ta=document.getElementById('note_'+cssid(itemId));
+  const note=(d.value==='Edit'&&ta)?ta.value:'';
+  decide(itemId,d.value,note);
+}
+function onNote(itemId){
+  const d=document.querySelector('input[name=dec_'+cssid(itemId)+']:checked');
+  if(d&&d.value==='Edit'){const ta=document.getElementById('note_'+cssid(itemId));decide(itemId,'Edit',ta.value);}
+}
+function cssid(s){return String(s).replace(/[^a-zA-Z0-9]/g,'');}
+function applyCard(itemId,v){
+  const c=document.getElementById('card_'+cssid(itemId));if(!c)return;
+  c.classList.remove('marked-approve','marked-deny','marked-edit');
+  if(v)c.classList.add('marked-'+v.toLowerCase());
+  const ta=document.getElementById('note_'+cssid(itemId));
+  if(ta)ta.style.display=(v==='Edit')?'block':(ta.value?'block':'none');
+  prog();
+}
+function prog(){
+  const total=ITEMS.length,decided=ITEMS.filter(i=>i.decision).length;
+  document.getElementById('prog').textContent=decided+' of '+total+' decided';
+}
+function render(){
+  const filter=document.getElementById('filter').value;
+  const list=ITEMS.filter(i=>filter==='all'?true:!i.decision);
+  const box=document.getElementById('cards');
+  if(!ITEMS.length){box.innerHTML="<p style='color:#666'>No submissions yet.</p>";prog();return;}
+  if(!list.length){box.innerHTML="<p style='color:#666'>Nothing pending — switch to “All” to see decided items.</p>";prog();return;}
+  box.innerHTML=list.map(cardHTML).join('');
+  list.forEach(i=>applyCard(i.itemId,i.decision));
+}
+function cardHTML(i){
+  const id=cssid(i.itemId);
+  const chips=(i.conditionTags||[]).map(t=>"<span class='chip'>"+esc(TAG_LABELS[t]||t)+"</span>").join('');
+  const editVal=(i.decision==='Edit'&&i.note)?i.note:(i.body||'');
+  const when=i.ts?new Date(i.ts).toLocaleString():'';
+  return "<div class='card' id='card_"+id+"'>"
+    +"<div class='who'>"+esc(i.author_name||'(no name)')+(i.author_location?" <span class='loc'>· "+esc(i.author_location)+"</span>":'')+"</div>"
+    +"<div class='priv'>✉ "+esc(i.email||'(no email)')+" — private, for spam check only, never published</div>"
+    +"<div class='body'>"+esc(i.body||'')+"</div>"
+    +(chips?"<div class='chips'>"+chips+"</div>":"")
+    +(i.product?"<div class='small'>Product: "+esc(i.product)+"</div>":"")
+    +"<div class='small'>Submitted "+esc(when)+" · consent: "+(i.consent?'yes':'NO')+" · ua: "+esc((i.ua||'').slice(0,60))+" · ip# "+esc((i.ip_hash||'').slice(0,10))+"</div>"
+    +"<div class='decbox'>"
+      +"<label><input type='radio' name='dec_"+id+"' value='Approve' "+(i.decision==='Approve'?'checked':'')+" onchange=\"onDec('"+jsq(i.itemId)+"')\">Approve</label>"
+      +"<label><input type='radio' name='dec_"+id+"' value='Deny' "+(i.decision==='Deny'?'checked':'')+" onchange=\"onDec('"+jsq(i.itemId)+"')\">Deny</label>"
+      +"<label><input type='radio' name='dec_"+id+"' value='Edit' "+(i.decision==='Edit'?'checked':'')+" onchange=\"onDec('"+jsq(i.itemId)+"')\">Edit</label>"
+      +"<textarea id='note_"+id+"' placeholder='Edited testimonial text to publish…' oninput=\"onNote('"+jsq(i.itemId)+"')\">"+esc(editVal)+"</textarea>"
+    +"</div></div>";
+}
+function jsq(s){return String(s).replace(/'/g,"\\'");}
+document.addEventListener('DOMContentLoaded',()=>{const rn=document.getElementById('rname');if(rn)rn.value=localStorage.getItem('tm-reviewer')||'';load();});
+
+</script></body></html>
