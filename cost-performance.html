@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Production Cost — Unit Labor Cost & Variance</title>
+<style>
+  :root {
+    --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+    --series:#2a78d6; --series-100:#cde2fb; --series-250:#86b6ef;
+    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+      --series:#3987e5; --series-100:#184f95; --series-250:#1c5cab; --good:#0ca30c;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--plane); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.5; }
+  .wrap { max-width:1160px; margin:0 auto; padding:24px 20px 64px; }
+  h1 { font-size:24px; margin:8px 0 2px; }
+  .sub { color:var(--ink2); margin:0 0 20px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:18px 20px; margin-bottom:20px; }
+  .card h2 { font-size:15px; margin:0 0 4px; letter-spacing:.01em; }
+  .card .hint { color:var(--muted); font-size:12px; margin:0 0 14px; }
+  /* honesty banner */
+  .banner { display:flex; align-items:flex-start; gap:10px; border-radius:12px; padding:12px 16px;
+    margin-bottom:20px; font-size:13px; border:1px solid var(--border); }
+  .banner.warn { background:color-mix(in srgb,var(--warning) 14%,var(--surface)); }
+  .banner.ok { background:color-mix(in srgb,var(--good) 12%,var(--surface)); }
+  .banner .ico { font-size:18px; line-height:1.2; }
+  .banner b { color:var(--ink); }
+  /* kpi tiles */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  .kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
+  .kpi .v { font-size:26px; font-weight:600; letter-spacing:-.01em; }
+  .kpi .l { color:var(--ink2); font-size:12px; margin-top:2px; }
+  .kpi .l small { color:var(--muted); }
+  /* tables */
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  th,td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--grid); white-space:nowrap; }
+  th:first-child,td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+  td.desc { color:var(--ink2); max-width:230px; overflow:hidden; text-overflow:ellipsis; }
+  .neg { color:var(--critical); font-weight:600; }
+  .barcell { position:relative; }
+  .bar { display:inline-block; height:9px; border-radius:4px; background:var(--series); vertical-align:middle; }
+  /* trend chart */
+  svg { width:100%; height:240px; display:block; }
+  .axis-lbl { fill:var(--muted); font-size:11px; }
+  .dot { fill:var(--series); stroke:var(--surface); stroke-width:2; }
+  .tip { position:fixed; pointer-events:none; background:var(--ink); color:var(--surface);
+    padding:6px 9px; border-radius:7px; font-size:12px; opacity:0; transition:opacity .08s;
+    font-variant-numeric:tabular-nums; z-index:20; }
+  .foot { color:var(--muted); font-size:12px; margin-top:8px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:760px){ .cols{ grid-template-columns:1fr; } }
+  .illus { color:var(--muted); font-style:italic; }
+</style>
+</head>
+<body data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
+
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => { document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav'); })
+    .catch(()=>{});
+</script>
+
+<div class="wrap">
+  <h1>Production Cost 🧮</h1>
+  <p class="sub">Unit labor cost, standard-vs-actual variance, throughput, yield &amp; batch economics — from the production schedule. <b>Labor only (v1)</b>: excludes materials, packaging &amp; overhead.</p>
+
+  <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card" style="margin-top:20px">
+    <h2>Labor cost per unit over time</h2>
+    <p class="hint">Quantity-weighted, plant-wide, by month. Trend <b>shape</b> is valid regardless of wage; absolute dollars scale with the rate.</p>
+    <svg id="trend" viewBox="0 0 900 240" preserveAspectRatio="none" role="img" aria-label="Labor cost per unit by month"></svg>
+    <div class="foot" id="trend-foot"></div>
+  </div>
+
+  <div class="card">
+    <h2>Where labor money leaks — efficiency variance</h2>
+    <p class="hint">Items whose <em>actual</em> labor cost most exceeds the <em>standard</em> (× units produced YTD). Bar = total $ over standard.</p>
+    <table id="variance"><thead><tr>
+      <th>Item</th><th>Description</th><th>std $/u</th><th>act $/u</th><th>var %</th><th>$ over std (YTD)</th><th></th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="cols">
+    <div class="card">
+      <h2>Throughput &amp; downtime</h2>
+      <p class="hint">Ranked by downtime labor cost. u/op-hr = units per operator-hour.</p>
+      <table id="throughput"><thead><tr><th>Item</th><th>u/op-hr</th><th>DT %</th><th>DT $</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <h2>Batch economics</h2>
+      <p class="hint">Setup-cost amortization — candidates to consolidate into bigger runs.</p>
+      <table id="batch"><thead><tr><th>Item</th><th>setup h</th><th>avg→max</th><th>est. $/yr</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Yield / scrap</h2>
+    <p class="hint"><b>Finished-unit scrap</b> is rate-able &amp; labor-costed. <b>Component scrap</b> (tea bags/envelopes) is a different unit of measure — shown as raw counts only, never a finished-good %. Material cost of scrap not included.</p>
+    <table id="yield"><thead><tr>
+      <th>Item</th><th>Description</th><th>bad (finished)</th><th>fin. scrap %</th><th>fin. scrap $</th><th>bad (component ct)</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>Data quality &amp; freshness</h2>
+    <div id="dq" class="foot"></div>
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const money = n => n==null ? "–" : "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
+const money4 = n => n==null ? "–" : "$"+Number(n).toFixed(4);
+const num = n => n==null ? "–" : Number(n).toLocaleString();
+
+fetch('cost-performance-data.json?_='+Date.now()).then(r=>r.json()).then(render).catch(e=>{
+  $('#banner-txt').innerHTML = "Could not load cost-performance-data.json — "+e;
+});
+
+function render(d){
+  const illus = !d.wage_confirmed;
+  // banner
+  const b = $('#banner'); const bt = $('#banner-txt');
+  if (illus){
+    b.className = "banner warn";
+    b.querySelector('.ico').textContent = "⚠️";
+    bt.innerHTML = `<b>Wage rate is a placeholder ($${d.wage_rate}/hr) — dollar figures are ILLUSTRATIVE.</b> `
+      + `Ratios, %, hours, trend shape and counts are valid. Confirm the loaded labor rate to make dollars real.`;
+  } else {
+    b.className = "banner ok";
+    b.querySelector('.ico').textContent = "✅";
+    bt.innerHTML = `<b>Wage rate confirmed: $${d.wage_rate}/hr.</b> Dollar figures are live. ${d.scope}`;
+  }
+
+  // kpis
+  const k = d.kpis;
+  const tiles = [
+    ["Items costed", num(k.items_costed), "finished goods"],
+    ["Avg labor $/unit", money4(k.avg_labor_cost_unit), illus?"illustrative":""],
+    ["Items over standard", num(k.items_over_std)+" / "+num(k.items_costed), "actual &gt; standard"],
+    ["Labor $ over standard", money(k.total_over_std), (illus?"illustrative · ":"")+"YTD"],
+    ["Downtime labor cost", money(k.downtime_labor_cost), illus?"illustrative":"YTD"],
+    ["Batch-consolidation upside", money(k.batch_upside), (illus?"illustrative · ":"")+"est./yr"],
+    ["Scrap — finished units", num(k.scrap_finished_units), "rate-able"],
+    ["Scrap — components", num(k.scrap_component_units), "bags/envelopes (ct)"],
+  ];
+  $('#kpis').innerHTML = tiles.map(t=>`<div class="kpi"><div class="v">${t[1]}</div>`
+    +`<div class="l">${t[0]}${t[2]?` <small>· ${t[2]}</small>`:''}</div></div>`).join('');
+
+  // variance table
+  const vmax = Math.max(...d.variance_top.map(v=>v.variance_total||0), 1);
+  $('#variance tbody').innerHTML = d.variance_top.map(v=>{
+    const w = Math.max(2, Math.round((v.variance_total||0)/vmax*120));
+    return `<tr><td>${v.item}</td><td class="desc" title="${v.desc||''}">${v.desc||''}</td>`
+      +`<td>${money4(v.std_cost_unit)}</td><td>${money4(v.actual_cost_unit)}</td>`
+      +`<td class="${v.variance_pct>0?'neg':''}">${v.variance_pct==null?'–':v.variance_pct+'%'}</td>`
+      +`<td class="neg">${money(v.variance_total)}</td>`
+      +`<td class="barcell"><span class="bar" style="width:${w}px"></span></td></tr>`;
+  }).join('');
+
+  // throughput
+  $('#throughput tbody').innerHTML = d.throughput_top.map(t=>
+    `<tr><td>${t.item}</td><td>${t.units_per_op_hour==null?'–':Math.round(t.units_per_op_hour)}</td>`
+    +`<td>${t.downtime_pct==null?'–':t.downtime_pct+'%'}</td><td>${money(t.downtime_cost)}</td></tr>`).join('');
+
+  // batch
+  $('#batch tbody').innerHTML = d.batch_top.map(bb=>
+    `<tr><td>${bb.item}</td><td>${bb.setup_hours}</td><td>${num(bb.avg_batch)}→${num(bb.max_batch)}</td>`
+    +`<td>${money(bb.est_annual_saving)}</td></tr>`).join('');
+
+  // yield
+  $('#yield tbody').innerHTML = d.yield_top.map(y=>
+    `<tr><td>${y.item}</td><td class="desc" title="${y.desc||''}">${y.desc||''}</td>`
+    +`<td>${num(y.bad_finished)}</td><td>${y.finished_scrap_rate==null?'–':y.finished_scrap_rate+'%'}</td>`
+    +`<td>${y.finished_scrap_labor==null?'–':money(y.finished_scrap_labor)}</td>`
+    +`<td>${num(y.bad_component)}</td></tr>`).join('');
+
+  // data quality
+  const dq = d.data_quality;
+  const mis = dq.misdated_years && dq.misdated_years.length
+    ? `<span class="neg">⚑ mis-dated year(s) in source: ${dq.misdated_years.join(', ')}</span> (excluded from trend)` : "no date anomalies";
+  $('#dq').innerHTML = `Workbook: <b>${d.workbook}</b> · updated ${(d.workbook_mtime||'').slice(0,10)} · `
+    +`built ${(d.built_at||'').slice(0,10)}<br>`
+    +`Finished-good rows parsed: ${num(dq.rows_finished)} · items costed: ${num(dq.items_finished)} · `
+    +`blending rows (base-level, excluded): ${num(dq.rows_blending)}<br>${mis}<br><span class="illus">${dq.scope_note}</span>`;
+
+  drawTrend(d.trend, illus);
+}
+
+function drawTrend(trend, illus){
+  const svg = $('#trend'); const W=900,H=240,padL=64,padR=16,padT=16,padB=32;
+  const pts = trend.filter(p=>p.labor_cost_unit!=null);
+  if (pts.length<2){ $('#trend-foot').textContent="Not enough periods to plot."; return; }
+  const xs = pts.map((_,i)=>i), ys = pts.map(p=>p.labor_cost_unit);
+  const ymax = Math.max(...ys)*1.15, ymin=0;
+  const X = i => padL + (W-padL-padR)*(i/(pts.length-1));
+  const Y = v => padT + (H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
+  let g="";
+  // gridlines + y labels (4)
+  for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
+    g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+    g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(3)}</text>`; }
+  // x labels
+  pts.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.period.replace('2026-','')}</text>`; });
+  // line
+  const dpath = pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.labor_cost_unit).toFixed(1)}`).join(' ');
+  g+=`<path d="${dpath}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
+  // dots + hover
+  pts.forEach((p,i)=>{ g+=`<circle class="dot" cx="${X(i)}" cy="${Y(p.labor_cost_unit)}" r="4.5"
+     data-p="${p.period}" data-v="${p.labor_cost_unit}" data-u="${p.units}"/>`; });
+  svg.innerHTML = g;
+  const tip=$('#tip');
+  svg.querySelectorAll('.dot').forEach(c=>{
+    c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px';
+      tip.style.top=(e.clientY-10)+'px';
+      tip.innerHTML=`<b>${c.dataset.p}</b><br>${money4(+c.dataset.v)}/unit${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
+    c.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  });
+  $('#trend-foot').innerHTML = illus ? '<span class="illus">* dollar level illustrative until wage confirmed</span>' : '';
+}
+</script>
+</body>
+</html>
