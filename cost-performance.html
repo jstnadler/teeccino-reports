@@ -84,6 +84,14 @@
   <div class="kpis" id="kpis"></div>
 
   <div class="card" style="margin-top:20px">
+    <h2>By production machine / stage</h2>
+    <p class="hint">Each stage is a machine. Bar = share of total labor cost. Blending splits by blender (LB/SB). <span class="illus">[std]/[n/a] = labor costed from the standard rate (stage lacks operator counts).</span></p>
+    <table id="machines"><thead><tr>
+      <th>Machine</th><th>runs</th><th>items</th><th>units</th><th>run hrs</th><th>op hrs</th><th>labor $/unit</th><th>labor $ total</th><th>DT %</th><th></th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+
+  <div class="card">
     <h2>Labor cost per unit over time</h2>
     <p class="hint">Quantity-weighted, plant-wide, by month. Trend <b>shape</b> is valid regardless of wage; absolute dollars scale with the rate.</p>
     <svg id="trend" viewBox="0 0 900 240" preserveAspectRatio="none" role="img" aria-label="Labor cost per unit by month"></svg>
@@ -166,6 +174,25 @@ function render(d){
   ];
   $('#kpis').innerHTML = tiles.map(t=>`<div class="kpi"><div class="v">${t[1]}</div>`
     +`<div class="l">${t[0]}${t[2]?` <small>· ${t[2]}</small>`:''}</div></div>`).join('');
+
+  // machine / stage breakdown (parent rows + Blending children)
+  const mmax = Math.max(...d.machines.map(m=>m.labor_cost_total||0), 1);
+  const mrow = (m, child) => {
+    const w = Math.max(2, Math.round((m.labor_cost_total||0)/mmax*110));
+    const basis = m.labor_basis && m.labor_basis!=='actual' ? ` <small class="illus">[${m.labor_basis}]</small>` : '';
+    const nm = child ? `<span style="color:var(--muted)">↳ </span>${m.machine.replace('Blending · ','')}` : `<b>${m.machine}</b>`;
+    return `<tr${child?' style="background:color-mix(in srgb,var(--muted) 6%,transparent)"':''}>`
+      +`<td>${nm}${basis}</td><td>${num(m.runs)}</td><td>${num(m.items)}</td><td>${num(m.units)}</td>`
+      +`<td>${num(Math.round(m.run_hours))}</td><td>${num(Math.round(m.operator_hours))}</td>`
+      +`<td>${money4(m.labor_cost_per_unit)}</td><td>${money(m.labor_cost_total)}</td>`
+      +`<td>${m.downtime_pct==null?'–':m.downtime_pct+'%'}</td>`
+      +`<td class="barcell">${child?'':`<span class="bar" style="width:${w}px"></span>`}</td></tr>`;
+  };
+  $('#machines tbody').innerHTML = d.machines.map(m=>{
+    let html = mrow(m, false);
+    (m.children||[]).forEach(c=>{ html += mrow(c, true); });
+    return html;
+  }).join('');
 
   // variance table
   const vmax = Math.max(...d.variance_top.map(v=>v.variance_total||0), 1);
