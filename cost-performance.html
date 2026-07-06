@@ -294,6 +294,11 @@
   <div class="card" id="blend-card">
     <h2>🌀 Blending — cost to make each bulk blend (BBP)</h2>
     <p class="hint">Cost to blend one <b>pound</b> of each bulk blend = labor (time × operators × wage) + blending machine overhead (<span id="blend-oh"></span>/hr placeholder). LB = large blender (~2,000 lb batches), SB = small batch. <b>Base-level</b>: <span class="illus">not yet added to finished-SKU cost — that needs a recipe map (which blend feeds which finished good + pounds per finished unit).</span></p>
+    <div class="ctrls">
+      <input id="blend-search" placeholder="Search blend # or description… (e.g. 80110, French Roast)" autocomplete="off">
+      <select id="blend-blender" title="Filter by blender"></select>
+      <span class="mtag" id="blend-count"></span>
+    </div>
     <div class="ex-scroll">
       <table id="blend"><thead><tr>
         <th>Blend</th><th>Description</th><th>Blender</th><th>batches</th><th>total lbs</th><th>labor $/lb</th><th>oh $/lb</th><th>blend $/lb</th><th>$ / 2,000-lb batch</th>
@@ -451,16 +456,36 @@ function render(d){
 }
 
 /* ---------- Blending: cost per bulk blend (BBP) ---------- */
+let BLENDS=[];
 function renderBlend(d){
   const bc = d.blend_cost;
   if(!bc || !bc.blends || !bc.blends.length){ const c=$('#blend-card'); if(c) c.style.display='none'; return; }
+  BLENDS = bc.blends;
   $('#blend-oh').textContent = money2(bc.blend_overhead_per_hour);
-  $('#blend tbody').innerHTML = bc.blends.map(b=>
+  $('#blend-foot').innerHTML = bc.batches_note;
+  const blenders = [...new Set(BLENDS.map(b=>b.blender).filter(Boolean))].sort();
+  $('#blend-blender').innerHTML = '<option value="__all">All blenders</option>'
+    + blenders.map(x=>`<option value="${x}">${x}</option>`).join('');
+  $('#blend-search').addEventListener('input', filterBlend);
+  $('#blend-blender').addEventListener('change', filterBlend);
+  filterBlend();
+}
+function filterBlend(){
+  const q = $('#blend-search').value.trim().toLowerCase();
+  const bl = $('#blend-blender').value;
+  const rows = BLENDS.filter(b=>{
+    if(bl!=='__all' && b.blender!==bl) return false;
+    if(q && !(b.blend.toLowerCase().includes(q) || (b.desc||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  $('#blend-count').textContent = `${rows.length} blend${rows.length===1?'':'s'}`;
+  const body = $('#blend tbody');
+  if(!rows.length){ body.innerHTML=`<tr><td colspan="9" class="ex-empty">No blends match.</td></tr>`; return; }
+  body.innerHTML = rows.map(b=>
     `<tr><td>${b.blend}</td><td class="desc" title="${b.desc||''}">${b.desc||''}</td>`
     +`<td class="mtag">${b.blender||'–'}</td><td>${num(b.runs)}</td><td>${num(b.total_lbs)}</td>`
     +`<td>${money4(b.labor_per_lb)}</td><td>${money4(b.overhead_per_lb)}</td>`
     +`<td><b>${money4(b.cost_per_lb)}</b></td><td>${money2(b.cost_per_2000lb)}</td></tr>`).join('');
-  $('#blend-foot').innerHTML = bc.batches_note;
 }
 
 /* ---------- Cost model (how it's calculated) ---------- */
