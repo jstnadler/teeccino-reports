@@ -85,6 +85,25 @@
   .fx { display:inline-block; margin-top:3px; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
     font-size:12px; background:color-mix(in srgb,var(--muted) 12%,transparent); color:var(--ink);
     padding:1px 6px; border-radius:5px; }
+  /* sku explorer */
+  .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+  .ctrls input, .ctrls select { font:inherit; padding:7px 10px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface); color:var(--ink); }
+  .ctrls input { flex:1; min-width:220px; }
+  .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .seg button { font:inherit; padding:7px 13px; border:0; background:var(--surface); color:var(--ink2); cursor:pointer; }
+  .seg button.on { background:var(--series); color:#fff; }
+  tr.pick { cursor:pointer; }
+  tr.pick:hover td { background:color-mix(in srgb,var(--series) 8%,transparent); }
+  tr.sel td { background:color-mix(in srgb,var(--series) 15%,transparent); }
+  .ex-scroll { max-height:440px; overflow:auto; border:1px solid var(--grid); border-radius:8px; }
+  .ex-scroll table thead th { position:sticky; top:0; background:var(--surface); z-index:1; }
+  .mtag { color:var(--muted); font-size:11px; }
+  .ex-empty { color:var(--muted); padding:16px 8px; }
+  .legend { display:flex; gap:18px; font-size:12px; color:var(--ink2); margin:10px 0 0; }
+  .legend i { display:inline-block; width:20px; height:0; border-top:2px solid var(--series);
+    vertical-align:middle; margin-right:6px; }
+  .legend i.std { border-top:2px dashed var(--muted); }
 </style>
 </head>
 <body data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
@@ -106,6 +125,31 @@
   <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
 
   <div class="kpis" id="kpis"></div>
+
+  <div class="card" id="explorer-card">
+    <h2>🔎 SKU Cost Explorer</h2>
+    <p class="hint">Search any item to see its labor cost <b>per individual unit</b> and <b>per case</b>, filter by the <b>machine</b> it ran on, then click a row to chart how that cost has changed <b>over time</b> (standard vs actual). <span class="illus" id="ex-note"></span></p>
+    <div class="ctrls">
+      <input id="ex-search" placeholder="Search item # or description… (e.g. 85070, French Roast)" autocomplete="off">
+      <select id="ex-machine" title="Filter by machine"></select>
+      <div class="seg" id="ex-basis">
+        <button data-b="unit" class="on">Per unit</button>
+        <button data-b="case">Per case</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:0 0 8px"><span id="ex-count"></span> · click a row for its cost-over-time chart</p>
+    <div class="ex-scroll">
+      <table id="ex-table"><thead><tr>
+        <th>Item</th><th>Description</th><th>Machine(s)</th><th>Case size</th><th>std $</th><th>act $</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+    <div id="ex-chartwrap" hidden style="margin-top:18px">
+      <h3 id="ex-chart-title" style="font-size:14px;margin:0 0 4px"></h3>
+      <svg id="ex-chart" viewBox="0 0 900 260" preserveAspectRatio="none" role="img" aria-label="SKU cost over time"></svg>
+      <div class="legend"><span><i class="std"></i>standard $</span><span><i></i>actual $</span></div>
+      <div class="foot" id="ex-chart-foot"></div>
+    </div>
+  </div>
 
   <details class="gloss">
     <summary>📖 Glossary — what each term means &amp; how it's calculated <span class="hint">(new here? start with this)</span></summary>
@@ -377,6 +421,104 @@ function render(d){
     +`blending rows (base-level, excluded): ${num(dq.rows_blending)}<br>${mis}<br><span class="illus">${dq.scope_note}</span>`;
 
   drawTrend(d.trend, illus);
+  EX_illus = illus;
+  initExplorer(d);
+}
+
+/* ---------- SKU Cost Explorer ---------- */
+let EX=null, EXsel=null, EX_illus=false;
+function initExplorer(d){
+  EX = d.sku_explorer;
+  if(!EX){ $('#explorer-card').style.display='none'; return; }
+  $('#ex-note').textContent = EX.note || '';
+  $('#ex-machine').innerHTML = '<option value="__all">All machines (pooled)</option>'
+    + EX.machine_list.map(m=>`<option value="${m}">${m}</option>`).join('');
+  $('#ex-search').addEventListener('input', renderExTable);
+  $('#ex-machine').addEventListener('change', ()=>{ renderExTable(); if(EXsel) drawSku(); });
+  $('#ex-basis').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    $('#ex-basis').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+    renderExTable(); if(EXsel) drawSku();
+  });
+  renderExTable();
+}
+const exBasis = () => $('#ex-basis button.on').dataset.b;      // 'unit' | 'case'
+const exMachine = () => $('#ex-machine').value;
+function exRow(it){
+  const m = exMachine();
+  if(m==='__all') return {...it.combined, machines: it.machines.join(' + ')};
+  const bm = it.by_machine[m];
+  return bm ? {...bm, machines:m} : null;
+}
+function renderExTable(){
+  const q = $('#ex-search').value.trim().toLowerCase();
+  const basis = exBasis();
+  const rows=[];
+  EX.items.forEach(it=>{
+    const r = exRow(it); if(!r) return;
+    if(q && !(it.item.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q))) return;
+    const cs = it.case_size||1, mult = basis==='case'?cs:1;
+    rows.push({it, r, cs,
+      std: r.std_unit==null?null:r.std_unit*mult,
+      act: r.act_unit==null?null:r.act_unit*mult});
+  });
+  rows.sort((x,y)=>((y.act??y.std??-1)-(x.act??x.std??-1)));
+  const body = $('#ex-table tbody');
+  $('#ex-count').textContent = `${rows.length} SKU${rows.length===1?'':'s'}` + (rows.length>400?' (showing first 400)':'');
+  if(!rows.length){ body.innerHTML=`<tr><td colspan="6" class="ex-empty">No items match your search / machine filter.</td></tr>`; return; }
+  body.innerHTML = rows.slice(0,400).map(({it,r,cs,std,act})=>
+    `<tr class="pick ${EXsel===it.item?'sel':''}" data-item="${it.item}">`
+    +`<td>${it.item}</td><td class="desc" title="${it.desc||''}">${it.desc||''}</td>`
+    +`<td class="mtag">${r.machines}</td><td>${num(cs)}</td>`
+    +`<td>${money4(std)}</td><td>${money4(act)}</td></tr>`).join('');
+  body.querySelectorAll('tr.pick').forEach(tr=>tr.addEventListener('click',()=>{
+    EXsel = tr.dataset.item; renderExTable(); drawSku();
+    $('#ex-chartwrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }));
+}
+function drawSku(){
+  const it = EX.items.find(x=>x.item===EXsel); if(!it) return;
+  const m = exMachine();
+  const src = (m==='__all') ? it.combined : (it.by_machine[m] || {series:[]});
+  const basis = exBasis(), cs = it.case_size||1, mult = basis==='case'?cs:1;
+  $('#ex-chartwrap').hidden = false;
+  $('#ex-chart-title').innerHTML = `${it.item} — ${it.desc||''} `
+    + `<span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · case size ${num(cs)}</span>`;
+  const series = (src.series||[]).map(p=>({period:p.period, units:p.units,
+    std: p.std_unit==null?null:p.std_unit*mult, act: p.act_unit==null?null:p.act_unit*mult}));
+  drawLines($('#ex-chart'), series, EX_illus);
+}
+function drawLines(svg, series, illus){
+  const W=900,H=260,padL=64,padR=16,padT=16,padB=34;
+  const foot = $('#ex-chart-foot');
+  if(!series.length){ svg.innerHTML=''; foot.textContent='No production periods recorded for this selection.'; return; }
+  const allv = series.flatMap(p=>[p.act,p.std]).filter(v=>v!=null);
+  const ymax = (Math.max(...allv, 0.0001))*1.15, ymin=0, n=series.length;
+  const X = i => n===1 ? padL+(W-padL-padR)/2 : padL+(W-padL-padR)*(i/(n-1));
+  const Y = v => padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
+  let g='';
+  for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
+    g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+    g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(v<1?3:2)}</text>`; }
+  series.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.period.replace('2026-','')}</text>`; });
+  const line = (key,color,dash)=>{
+    const pts = series.map((p,i)=>({i,v:p[key]})).filter(o=>o.v!=null);
+    if(pts.length>1){ const dp=pts.map((o,j)=>`${j?'L':'M'}${X(o.i).toFixed(1)},${Y(o.v).toFixed(1)}`).join(' ');
+      g+=`<path d="${dp}" fill="none" stroke="${color}" stroke-width="2" ${dash?'stroke-dasharray="5 4"':''}/>`; }
+    pts.forEach(o=>{ g+=`<circle cx="${X(o.i)}" cy="${Y(o.v)}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2" `
+      +`data-p="${series[o.i].period}" data-v="${o.v}" data-k="${key}" data-u="${series[o.i].units}"/>`; });
+  };
+  line('std','var(--muted)',true);
+  line('act','var(--series)',false);
+  svg.innerHTML = g;
+  const tip=$('#tip');
+  svg.querySelectorAll('circle').forEach(c=>{
+    c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-10)+'px';
+      tip.innerHTML=`<b>${c.dataset.p}</b><br>${c.dataset.k==='std'?'standard':'actual'}: ${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
+    c.addEventListener('mouseleave',()=>tip.style.opacity=0);
+  });
+  foot.innerHTML = illus ? '<span class="illus">* dollars illustrative until wage confirmed · dashed = standard, solid = actual</span>'
+                         : 'Dashed = standard, solid = actual.';
 }
 
 function drawTrend(trend, illus){
