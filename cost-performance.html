@@ -291,6 +291,17 @@
     </tr></thead><tbody></tbody></table>
   </div>
 
+  <div class="card" id="blend-card">
+    <h2>🌀 Blending — cost to make each bulk blend (BBP)</h2>
+    <p class="hint">Cost to blend one <b>pound</b> of each bulk blend = labor (time × operators × wage) + blending machine overhead (<span id="blend-oh"></span>/hr placeholder). LB = large blender (~2,000 lb batches), SB = small batch. <b>Base-level</b>: <span class="illus">not yet added to finished-SKU cost — that needs a recipe map (which blend feeds which finished good + pounds per finished unit).</span></p>
+    <div class="ex-scroll">
+      <table id="blend"><thead><tr>
+        <th>Blend</th><th>Description</th><th>Blender</th><th>batches</th><th>total lbs</th><th>labor $/lb</th><th>oh $/lb</th><th>blend $/lb</th><th>$ / 2,000-lb batch</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+    <p class="foot" id="blend-foot"></p>
+  </div>
+
   <div class="card">
     <h2>Labor cost per unit over time</h2>
     <p class="hint">Quantity-weighted, plant-wide, by month. Trend <b>shape</b> is valid regardless of wage; absolute dollars scale with the rate.</p>
@@ -434,8 +445,22 @@ function render(d){
 
   drawTrend(d.trend, illus);
   renderCostModel(d);
+  renderBlend(d);
   EX_illus = illus;
   initExplorer(d);
+}
+
+/* ---------- Blending: cost per bulk blend (BBP) ---------- */
+function renderBlend(d){
+  const bc = d.blend_cost;
+  if(!bc || !bc.blends || !bc.blends.length){ const c=$('#blend-card'); if(c) c.style.display='none'; return; }
+  $('#blend-oh').textContent = money2(bc.blend_overhead_per_hour);
+  $('#blend tbody').innerHTML = bc.blends.map(b=>
+    `<tr><td>${b.blend}</td><td class="desc" title="${b.desc||''}">${b.desc||''}</td>`
+    +`<td class="mtag">${b.blender||'–'}</td><td>${num(b.runs)}</td><td>${num(b.total_lbs)}</td>`
+    +`<td>${money4(b.labor_per_lb)}</td><td>${money4(b.overhead_per_lb)}</td>`
+    +`<td><b>${money4(b.cost_per_lb)}</b></td><td>${money2(b.cost_per_2000lb)}</td></tr>`).join('');
+  $('#blend-foot').innerHTML = bc.batches_note;
 }
 
 /* ---------- Cost model (how it's calculated) ---------- */
