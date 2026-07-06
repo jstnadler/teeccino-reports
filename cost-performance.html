@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost — Unit Labor Cost & Variance</title>
 <style>
   :root {
@@ -86,7 +88,11 @@
     font-size:12px; background:color-mix(in srgb,var(--muted) 12%,transparent); color:var(--ink);
     padding:1px 6px; border-radius:5px; }
   /* sku explorer */
-  .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+  .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;
+    background:color-mix(in srgb,var(--series) 6%,var(--surface)); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px; }
+  .ctrl-lbl { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase;
+    letter-spacing:.04em; display:inline-flex; align-items:center; gap:5px; }
   .ctrls input, .ctrls select { font:inherit; padding:7px 10px; border:1px solid var(--border);
     border-radius:8px; background:var(--surface); color:var(--ink); }
   .ctrls input { flex:1; min-width:220px; }
@@ -141,6 +147,7 @@
     <h2>🔎 SKU Cost Explorer</h2>
     <p class="hint">Search any item to see its labor cost <b>per individual unit</b> and <b>per case</b>, filter by the <b>machine</b> it ran on, then click a row to chart how that cost has changed <b>over time</b> (standard vs actual). <span class="illus" id="ex-note"></span></p>
     <div class="ctrls">
+      <span class="ctrl-lbl">🔎 Filter</span>
       <input id="ex-search" placeholder="Search item # or description… (e.g. 85070, French Roast)" autocomplete="off">
       <select id="ex-machine" title="Filter by machine"></select>
       <div class="seg" id="ex-basis">
@@ -295,6 +302,7 @@
     <h2>🌀 Blending — cost to make each bulk blend (BBP)</h2>
     <p class="hint">Cost to blend one <b>pound</b> of each bulk blend = labor (time × operators × wage) + blending machine overhead (<span id="blend-oh"></span>/hr placeholder). LB = large blender (~2,000 lb batches), SB = small batch. <b>Base-level</b>: <span class="illus">not yet added to finished-SKU cost — that needs a recipe map (which blend feeds which finished good + pounds per finished unit).</span></p>
     <div class="ctrls">
+      <span class="ctrl-lbl">🔎 Filter</span>
       <input id="blend-search" placeholder="Search blend # or description… (e.g. 80110, French Roast)" autocomplete="off">
       <select id="blend-blender" title="Filter by blender"></select>
       <span class="mtag" id="blend-count"></span>
