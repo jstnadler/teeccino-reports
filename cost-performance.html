@@ -61,6 +61,30 @@
   .cols { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   @media (max-width:760px){ .cols{ grid-template-columns:1fr; } }
   .illus { color:var(--muted); font-style:italic; }
+  /* glossary */
+  details.gloss { background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:0; margin-bottom:20px; overflow:hidden; }
+  details.gloss > summary { cursor:pointer; list-style:none; padding:18px 20px; font-size:15px;
+    font-weight:600; letter-spacing:.01em; display:flex; align-items:center; gap:8px; }
+  details.gloss > summary::-webkit-details-marker { display:none; }
+  details.gloss > summary::after { content:"▸"; color:var(--muted); margin-left:auto; font-size:13px;
+    transition:transform .12s; }
+  details.gloss[open] > summary::after { transform:rotate(90deg); }
+  details.gloss > summary .hint { font-weight:400; color:var(--muted); font-size:12px; }
+  .gloss-body { padding:0 20px 18px; }
+  .gloss-group { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em;
+    font-weight:600; margin:16px 0 8px; padding-top:12px; border-top:1px solid var(--grid); }
+  .gloss-group:first-child { border-top:none; padding-top:0; margin-top:4px; }
+  dl.terms { margin:0; display:grid; grid-template-columns:200px 1fr; gap:2px 20px; }
+  @media (max-width:640px){ dl.terms{ grid-template-columns:1fr; gap:2px; } dl.terms dd{ margin:0 0 12px; } }
+  dl.terms dt { font-weight:600; color:var(--ink); padding:7px 0; }
+  dl.terms dd { margin:0; padding:7px 0; color:var(--ink2); border-bottom:1px solid var(--grid); }
+  dl.terms dt { border-bottom:1px solid var(--grid); }
+  @media (max-width:640px){ dl.terms dt{ border-bottom:none; padding-bottom:0; } }
+  dl.terms dd:last-child, dl.terms dt:last-child { border-bottom:none; }
+  .fx { display:inline-block; margin-top:3px; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    font-size:12px; background:color-mix(in srgb,var(--muted) 12%,transparent); color:var(--ink);
+    padding:1px 6px; border-radius:5px; }
 </style>
 </head>
 <body data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
@@ -82,6 +106,127 @@
   <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
 
   <div class="kpis" id="kpis"></div>
+
+  <details class="gloss">
+    <summary>📖 Glossary — what each term means &amp; how it's calculated <span class="hint">(new here? start with this)</span></summary>
+    <div class="gloss-body">
+
+      <div class="gloss-group">The foundation</div>
+      <dl class="terms">
+        <dt>Unit</dt>
+        <dd>One finished sellable item (e.g. one bag or one box), as defined by the item's case size in the production schedule. Every "$/unit" figure is the cost to produce <em>one</em> of these.</dd>
+
+        <dt>Wage rate</dt>
+        <dd>The labor cost of one operator-hour, in dollars. Read from a single config value — <b>currently a $20/hr placeholder</b>, so all dollar figures are <span class="illus">illustrative</span> until Finance confirms the real loaded rate. Every dollar on this page = hours × this rate.</dd>
+
+        <dt>Standard (std)</dt>
+        <dd>The <em>planned</em> expectation — how long a job <em>should</em> take, from the schedule's planned figures. The benchmark we measure reality against.</dd>
+
+        <dt>Actual</dt>
+        <dd>What <em>really</em> happened on the floor — measured from actual run time, actual operator count and actual quantity produced.</dd>
+
+        <dt>Scope: labor only (v1)</dt>
+        <dd>Every number here is the <b>labor</b> cost of running the machines. It does <b>not</b> include ingredients, packaging, or facility overhead — those come in later phases once we have a validated cost source.</dd>
+      </dl>
+
+      <div class="gloss-group">Cost &amp; variance</div>
+      <dl class="terms">
+        <dt>Standard labor-hours / unit</dt>
+        <dd>The person-hours a unit <em>should</em> take. Comes straight from the schedule's "Labor Rate" column.
+          <span class="fx">operators ÷ planned units-per-hour</span></dd>
+
+        <dt>Actual labor-hours / unit</dt>
+        <dd>The person-hours a unit <em>actually</em> took.
+          <span class="fx">actual run time × operators ÷ actual units produced</span></dd>
+
+        <dt>Labor $ / unit (std $/u, act $/u)</dt>
+        <dd>Those hours turned into dollars.
+          <span class="fx">labor-hours per unit × wage rate</span></dd>
+
+        <dt>Efficiency variance (var %)</dt>
+        <dd>How far actual ran <em>over</em> (or under) standard, as a percentage. Positive = took longer than planned = money leaking.
+          <span class="fx">(actual − standard) ÷ standard × 100</span></dd>
+
+        <dt>$ over std (YTD)</dt>
+        <dd>The total dollars that variance cost across everything produced this year — the size of the leak, not just the rate.
+          <span class="fx">(actual $/u − std $/u) × units produced</span></dd>
+
+        <dt>Items over standard</dt>
+        <dd>How many finished goods ran costlier than their standard (actual &gt; standard). The count worth investigating.</dd>
+
+        <dt>Quantity-weighted</dt>
+        <dd>When averaging across many runs, big runs count more than small ones — so the average reflects where the volume (and money) actually is.
+          <span class="fx">Σ labor-hours ÷ Σ units</span></dd>
+      </dl>
+
+      <div class="gloss-group">Throughput &amp; downtime</div>
+      <dl class="terms">
+        <dt>Run hours</dt>
+        <dd>Clock-hours the machine was running a job.</dd>
+
+        <dt>Operator hours (op hrs)</dt>
+        <dd>Total person-hours worked — run hours multiplied by how many operators were on the line. Two people for 3 hours = 6 operator-hours.</dd>
+
+        <dt>Units per operator-hour (u/op-hr)</dt>
+        <dd>Productivity: how many units one person produces in an hour. Higher = more efficient.
+          <span class="fx">units produced ÷ operator hours</span></dd>
+
+        <dt>Downtime % (DT %)</dt>
+        <dd>Share of running time lost to stoppages (changeovers, jams, breaks).
+          <span class="fx">downtime minutes ÷ total minutes × 100</span></dd>
+
+        <dt>Downtime labor cost (DT $)</dt>
+        <dd>The wages paid to operators while the line was <em>not</em> producing — idle-but-staffed time turned into dollars.
+          <span class="fx">downtime hours × operators × wage rate</span></dd>
+      </dl>
+
+      <div class="gloss-group">Batch economics</div>
+      <dl class="terms">
+        <dt>Setup hours</dt>
+        <dd>The fixed labor to prepare a run <em>before</em> any units come off — estimated from the pattern of many runs (the part of the time that doesn't grow with quantity).</dd>
+
+        <dt>avg → max</dt>
+        <dd>The item's average batch size today vs. the largest batch it has been run at — the headroom for consolidating into fewer, bigger runs.</dd>
+
+        <dt>Batch-consolidation upside (est. $/yr)</dt>
+        <dd>Estimated yearly labor saving if the item ran at its larger batch size, because the fixed setup cost gets spread over more units.
+          <span class="fx">setup cost saved per unit × yearly volume</span></dd>
+      </dl>
+
+      <div class="gloss-group">Yield &amp; scrap</div>
+      <dl class="terms">
+        <dt>Finished-unit scrap</dt>
+        <dd>Whole sellable units thrown away. Rate-able because we know the good-vs-bad count for the same unit of measure.</dd>
+
+        <dt>Finished scrap %</dt>
+        <dd>Share of finished production that was scrapped.
+          <span class="fx">bad finished units ÷ (good + bad) × 100</span></dd>
+
+        <dt>Finished scrap $</dt>
+        <dd>The <em>labor</em> already spent making units that were then thrown away (material cost of the scrap is <b>not</b> included yet).
+          <span class="fx">bad units × labor $/unit</span></dd>
+
+        <dt>Component scrap (count)</dt>
+        <dd>Wasted <em>components</em> — individual tea bags or envelopes, not finished packages. A different unit of measure, so it's shown as a raw count only and <b>never</b> mixed into a finished-good scrap %.</dd>
+      </dl>
+
+      <div class="gloss-group">Machines &amp; data notes</div>
+      <dl class="terms">
+        <dt>Machine / stage</dt>
+        <dd>Each production stage is treated as a machine (WeighRight, AMS, Maisa 1, Maisa 2+3, Assembly, Blending). Costs roll up per machine.</dd>
+
+        <dt>Blending · LB / SB</dt>
+        <dd>The blending stage split by blender (large-batch / small-batch). Blending is <b>base-level</b> (raw blend codes), so it's reported separately and <em>not</em> added into finished-good costs — we don't yet have the recipe map linking a blend to a finished product.</dd>
+
+        <dt>Labor basis [std] / [n/a]</dt>
+        <dd>A tag meaning that stage's cost was estimated from the <em>standard</em> rate because it lacked operator counts to compute an actual. A transparency flag, not an error.</dd>
+
+        <dt>Mis-dated year(s)</dt>
+        <dd>Rows with a date typo (e.g. a "2029") in the source. Flagged and excluded from the trend rather than silently dropped.</dd>
+      </dl>
+
+    </div>
+  </details>
 
   <div class="card" style="margin-top:20px">
     <h2>By production machine / stage</h2>
