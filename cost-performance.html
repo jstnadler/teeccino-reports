@@ -48,6 +48,12 @@
   th,td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--grid); white-space:nowrap; }
   th:first-child,td:first-child { text-align:left; }
   th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
+  th.sortable { cursor:pointer; user-select:none; white-space:nowrap; }
+  th.sortable:hover { color:var(--ink2); }
+  th.sortable::after { content:"↕"; opacity:.35; margin-left:3px; font-size:10px; }
+  th.sort-asc, th.sort-desc { color:var(--series); }
+  th.sort-asc::after { content:"▲"; opacity:1; }
+  th.sort-desc::after { content:"▼"; opacity:1; }
   td.desc { color:var(--ink2); max-width:230px; overflow:hidden; text-overflow:ellipsis; }
   .neg { color:var(--critical); font-weight:600; }
   .barcell { position:relative; }
@@ -361,6 +367,52 @@
 
 <script>
 const $ = s => document.querySelector(s);
+
+/* ---------- Generic click-to-sort for any data table ---------- */
+const SORT_STATE = {};
+function _cellVal(td){
+  const raw = (td.textContent||'').trim();
+  if(raw===''||raw==='–'||raw==='—') return {n:null, s:''};
+  const cleaned = raw.replace(/[$,%]/g,'').replace(/,/g,'');
+  const n = parseFloat(cleaned);
+  return {n: (isNaN(n)||!/[0-9]/.test(cleaned)) ? null : n, s: raw.toLowerCase()};
+}
+function sortTable(tableId, col, forceDir){
+  const table = document.getElementById(tableId);
+  if(!table || !table.tBodies[0]) return;
+  const tb = table.tBodies[0];
+  const rows = [...tb.rows].filter(r => !r.querySelector('.ex-empty') && !r.querySelector('[colspan]'));
+  if(rows.length < 2 && !forceDir) return;
+  const st = SORT_STATE[tableId] || {};
+  const dir = forceDir || (st.col===col && st.dir==='desc' ? 'asc' : 'desc'); // first click = desc, then toggle
+  SORT_STATE[tableId] = {col, dir};
+  rows.sort((a,b)=>{
+    const A=_cellVal(a.cells[col]), B=_cellVal(b.cells[col]);
+    if(A.n==null && B.n==null){ const c=A.s.localeCompare(B.s); return dir==='asc'?c:-c; }
+    if(A.n==null) return 1;        // blanks always last
+    if(B.n==null) return -1;
+    return dir==='asc' ? A.n-B.n : B.n-A.n;
+  });
+  rows.forEach(r=>tb.appendChild(r));
+  [...table.tHead.rows[0].cells].forEach((th,i)=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if(i===col) th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
+  });
+}
+function makeSortable(tableId){
+  const table = document.getElementById(tableId);
+  if(!table || !table.tHead) return;
+  [...table.tHead.rows[0].cells].forEach((th,idx)=>{
+    if(!th.textContent.trim()) return;   // skip blank/bar columns
+    th.classList.add('sortable');
+    th.title = 'Click to sort';
+    th.addEventListener('click', ()=>sortTable(tableId, idx));
+  });
+}
+function reapplySort(tableId){
+  const st = SORT_STATE[tableId];
+  if(st) sortTable(tableId, st.col, st.dir);
+}
 const money = n => n==null ? "–" : "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
 const money2 = n => n==null ? "–" : "$"+Number(n).toFixed(2);
 const money4 = n => n==null ? "–" : "$"+Number(n).toFixed(4);
@@ -461,6 +513,7 @@ function render(d){
   renderBlend(d);
   EX_illus = illus;
   initExplorer(d);
+  ['blend','ex-table','costmodel','variance','throughput','batch','yield'].forEach(makeSortable);
 }
 
 /* ---------- Blending: cost per bulk blend (BBP) ---------- */
@@ -494,6 +547,7 @@ function filterBlend(){
     +`<td class="mtag">${b.blender||'–'}</td><td>${num(b.runs)}</td><td>${num(b.total_lbs)}</td>`
     +`<td>${money4(b.labor_per_lb)}</td><td>${money4(b.overhead_per_lb)}</td>`
     +`<td><b>${money4(b.cost_per_lb)}</b></td><td>${money2(b.cost_per_2000lb)}</td></tr>`).join('');
+  reapplySort('blend');
 }
 
 /* ---------- Cost model (how it's calculated) ---------- */
@@ -571,6 +625,7 @@ function renderExTable(){
     EXsel = tr.dataset.item; renderExTable(); drawSku();
     $('#ex-chartwrap').scrollIntoView({behavior:'smooth', block:'nearest'});
   }));
+  reapplySort('ex-table');
 }
 function drawSku(){
   const it = EX.items.find(x=>x.item===EXsel); if(!it) return;
