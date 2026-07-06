@@ -120,7 +120,7 @@
 
 <div class="wrap">
   <h1>Production Cost 🧮</h1>
-  <p class="sub">Cost to operate each machine per hour → unit cost, plus variance, throughput, yield &amp; batch economics — from the production schedule. <b>Labor is live</b>; machine overhead (electricity/equipment) is scaffolded and $0 until costs are supplied. Materials/packaging not yet included.</p>
+  <p class="sub">Cost to operate each machine per hour → unit cost, plus variance, throughput, yield &amp; batch economics — from the production schedule. <b>Labor is live</b>; machine overhead (electricity/equipment) uses <b>realistic placeholder estimates</b> until Justin supplies actuals. Materials/packaging not yet included.</p>
 
   <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
 
@@ -445,7 +445,9 @@ function renderCostModel(d){
   const noOh = !cm.any_overhead_set;
   $('#cm-note').innerHTML = noOh
     ? `Machine overhead is <b>$0 (not yet set)</b>, so “operating $/hr” currently equals labor only. Drop electricity/maintenance/equipment costs into <code>cost-rates.json</code> and every figure below (and in the explorer) fills in automatically.`
-    : `Machine overhead is set — “operating $/hr” includes electricity/equipment.`;
+    : (cm.overhead_confirmed
+        ? `Machine overhead is <b>confirmed</b> — “operating $/hr” includes electricity/maintenance/equipment.`
+        : `Machine overhead shown is a <b>realistic placeholder estimate</b> (electricity/maintenance/equipment), not yet confirmed — replace with actuals to finalize.`);
   $('#costmodel tbody').innerHTML = cm.machines.map(m=>
     `<tr><td><b>${m.machine}</b></td><td>${m.avg_operators}</td>`
     +`<td>${money2(m.labor_per_hour)}</td>`
