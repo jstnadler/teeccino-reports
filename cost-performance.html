@@ -120,11 +120,22 @@
 
 <div class="wrap">
   <h1>Production Cost 🧮</h1>
-  <p class="sub">Unit labor cost, standard-vs-actual variance, throughput, yield &amp; batch economics — from the production schedule. <b>Labor only (v1)</b>: excludes materials, packaging &amp; overhead.</p>
+  <p class="sub">Cost to operate each machine per hour → unit cost, plus variance, throughput, yield &amp; batch economics — from the production schedule. <b>Labor is live</b>; machine overhead (electricity/equipment) is scaffolded and $0 until costs are supplied. Materials/packaging not yet included.</p>
 
   <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
 
   <div class="kpis" id="kpis"></div>
+
+  <div class="card" id="costmodel-card">
+    <h2>🧮 How cost is calculated — cost to operate each machine per hour</h2>
+    <p class="hint">Unit cost = <b>machine-hours per unit</b> × <b>cost to operate per hour</b>. Operating cost/hr = <b>operators × wage</b> (human labor) <b>+ machine overhead/hr</b> (electricity, maintenance, equipment). Because each machine runs a different crew size, its hourly labor already differs — the buildup below shows exactly how. <span id="cm-note" class="illus"></span></p>
+    <div class="ex-scroll">
+      <table id="costmodel"><thead><tr>
+        <th>Machine</th><th>avg ops</th><th>labor $/hr</th><th>+ machine oh $/hr</th><th>= operating $/hr</th><th>mach-hrs / unit</th><th>labor $/u</th><th>oh $/u</th><th>total $/u</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+    <p class="foot">“avg ops” = average operators per run on that machine (from the schedule). “mach-hrs/unit” = machine run-time per unit produced. Overhead $/hr and its unit share stay $0 until utility/equipment costs are supplied in config.</p>
+  </div>
 
   <div class="card" id="explorer-card">
     <h2>🔎 SKU Cost Explorer</h2>
@@ -140,13 +151,13 @@
     <p class="hint" style="margin:0 0 8px"><span id="ex-count"></span> · click a row for its cost-over-time chart</p>
     <div class="ex-scroll">
       <table id="ex-table"><thead><tr>
-        <th>Item</th><th>Description</th><th>Machine(s)</th><th>Case size</th><th>std $</th><th>act $</th>
+        <th>Item</th><th>Description</th><th>Machine(s)</th><th>Case</th><th>std labor $</th><th>act labor $</th><th>mach oh $</th><th>total $</th>
       </tr></thead><tbody></tbody></table>
     </div>
     <div id="ex-chartwrap" hidden style="margin-top:18px">
       <h3 id="ex-chart-title" style="font-size:14px;margin:0 0 4px"></h3>
       <svg id="ex-chart" viewBox="0 0 900 260" preserveAspectRatio="none" role="img" aria-label="SKU cost over time"></svg>
-      <div class="legend"><span><i class="std"></i>standard $</span><span><i></i>actual $</span></div>
+      <div class="legend"><span><i class="std"></i>standard labor $</span><span><i></i>actual total $ (labor + machine oh)</span></div>
       <div class="foot" id="ex-chart-foot"></div>
     </div>
   </div>
@@ -327,6 +338,7 @@
 <script>
 const $ = s => document.querySelector(s);
 const money = n => n==null ? "–" : "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
+const money2 = n => n==null ? "–" : "$"+Number(n).toFixed(2);
 const money4 = n => n==null ? "–" : "$"+Number(n).toFixed(4);
 const num = n => n==null ? "–" : Number(n).toLocaleString();
 
@@ -421,8 +433,28 @@ function render(d){
     +`blending rows (base-level, excluded): ${num(dq.rows_blending)}<br>${mis}<br><span class="illus">${dq.scope_note}</span>`;
 
   drawTrend(d.trend, illus);
+  renderCostModel(d);
   EX_illus = illus;
   initExplorer(d);
+}
+
+/* ---------- Cost model (how it's calculated) ---------- */
+function renderCostModel(d){
+  const cm = d.cost_model;
+  if(!cm){ const c=$('#costmodel-card'); if(c) c.style.display='none'; return; }
+  const noOh = !cm.any_overhead_set;
+  $('#cm-note').innerHTML = noOh
+    ? `Machine overhead is <b>$0 (not yet set)</b>, so “operating $/hr” currently equals labor only. Drop electricity/maintenance/equipment costs into <code>cost-rates.json</code> and every figure below (and in the explorer) fills in automatically.`
+    : `Machine overhead is set — “operating $/hr” includes electricity/equipment.`;
+  $('#costmodel tbody').innerHTML = cm.machines.map(m=>
+    `<tr><td><b>${m.machine}</b></td><td>${m.avg_operators}</td>`
+    +`<td>${money2(m.labor_per_hour)}</td>`
+    +`<td>${m.overhead_per_hour ? money2(m.overhead_per_hour) : '<span class="illus">$0 *</span>'}</td>`
+    +`<td><b>${money2(m.operating_per_hour)}</b></td>`
+    +`<td>${m.machine_hours_per_unit==null?'–':m.machine_hours_per_unit.toFixed(5)}</td>`
+    +`<td>${money4(m.labor_per_unit)}</td>`
+    +`<td>${m.overhead_per_unit ? money4(m.overhead_per_unit) : '<span class="illus">$0</span>'}</td>`
+    +`<td><b>${money4(m.total_per_unit)}</b></td></tr>`).join('');
 }
 
 /* ---------- SKU Cost Explorer ---------- */
@@ -460,17 +492,21 @@ function renderExTable(){
     const cs = it.case_size||1, mult = basis==='case'?cs:1;
     rows.push({it, r, cs,
       std: r.std_unit==null?null:r.std_unit*mult,
-      act: r.act_unit==null?null:r.act_unit*mult});
+      act: r.act_unit==null?null:r.act_unit*mult,
+      oh: r.oh_unit==null?null:r.oh_unit*mult,
+      tot: r.total_unit==null?null:r.total_unit*mult});
   });
-  rows.sort((x,y)=>((y.act??y.std??-1)-(x.act??x.std??-1)));
+  rows.sort((x,y)=>((y.tot??y.act??y.std??-1)-(x.tot??x.act??x.std??-1)));
   const body = $('#ex-table tbody');
   $('#ex-count').textContent = `${rows.length} SKU${rows.length===1?'':'s'}` + (rows.length>400?' (showing first 400)':'');
-  if(!rows.length){ body.innerHTML=`<tr><td colspan="6" class="ex-empty">No items match your search / machine filter.</td></tr>`; return; }
-  body.innerHTML = rows.slice(0,400).map(({it,r,cs,std,act})=>
+  if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No items match your search / machine filter.</td></tr>`; return; }
+  body.innerHTML = rows.slice(0,400).map(({it,r,cs,std,act,oh,tot})=>
     `<tr class="pick ${EXsel===it.item?'sel':''}" data-item="${it.item}">`
     +`<td>${it.item}</td><td class="desc" title="${it.desc||''}">${it.desc||''}</td>`
     +`<td class="mtag">${r.machines}</td><td>${num(cs)}</td>`
-    +`<td>${money4(std)}</td><td>${money4(act)}</td></tr>`).join('');
+    +`<td>${money4(std)}</td><td>${money4(act)}</td>`
+    +`<td>${oh ? money4(oh) : '<span class="illus">$0</span>'}</td>`
+    +`<td><b>${money4(tot)}</b></td></tr>`).join('');
   body.querySelectorAll('tr.pick').forEach(tr=>tr.addEventListener('click',()=>{
     EXsel = tr.dataset.item; renderExTable(); drawSku();
     $('#ex-chartwrap').scrollIntoView({behavior:'smooth', block:'nearest'});
@@ -485,7 +521,8 @@ function drawSku(){
   $('#ex-chart-title').innerHTML = `${it.item} — ${it.desc||''} `
     + `<span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · case size ${num(cs)}</span>`;
   const series = (src.series||[]).map(p=>({period:p.period, units:p.units,
-    std: p.std_unit==null?null:p.std_unit*mult, act: p.act_unit==null?null:p.act_unit*mult}));
+    std: p.std_unit==null?null:p.std_unit*mult,
+    act: p.total_unit==null?(p.act_unit==null?null:p.act_unit*mult):p.total_unit*mult}));
   drawLines($('#ex-chart'), series, EX_illus);
 }
 function drawLines(svg, series, illus){
@@ -517,8 +554,8 @@ function drawLines(svg, series, illus){
       tip.innerHTML=`<b>${c.dataset.p}</b><br>${c.dataset.k==='std'?'standard':'actual'}: ${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
     c.addEventListener('mouseleave',()=>tip.style.opacity=0);
   });
-  foot.innerHTML = illus ? '<span class="illus">* dollars illustrative until wage confirmed · dashed = standard, solid = actual</span>'
-                         : 'Dashed = standard, solid = actual.';
+  foot.innerHTML = (illus ? '<span class="illus">* dollars illustrative until wage confirmed</span> · ' : '')
+                 + 'Dashed = standard labor · solid = actual total operating (labor + machine overhead).';
 }
 
 function drawTrend(trend, illus){
