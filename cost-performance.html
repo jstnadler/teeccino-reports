@@ -112,10 +112,18 @@
   .ex-scroll table thead th { position:sticky; top:0; background:var(--surface); z-index:1; }
   .mtag { color:var(--muted); font-size:11px; }
   .ex-empty { color:var(--muted); padding:16px 8px; }
-  .legend { display:flex; gap:18px; font-size:12px; color:var(--ink2); margin:10px 0 0; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px 10px; font-size:12px; color:var(--ink2); margin:10px 0 0; }
   .legend i { display:inline-block; width:20px; height:0; border-top:2px solid var(--series);
     vertical-align:middle; margin-right:6px; }
   .legend i.std { border-top:2px dashed var(--muted); }
+  .legend .chip { display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+    padding:3px 9px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
+  .legend .chip:hover { border-color:var(--series); }
+  .legend .chip .sw { width:12px; height:3px; border-radius:2px; display:inline-block; }
+  .legend .chip .sw.dash { height:0; border-top:2px dashed var(--muted); }
+  .legend .chip .x { color:var(--muted); font-size:13px; line-height:1; }
+  .linkbtn { background:none; border:0; color:var(--series); cursor:pointer; font:inherit;
+    text-decoration:underline; padding:0; }
 </style>
 </head>
 <body data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
@@ -161,7 +169,7 @@
         <button data-b="case">Per case</button>
       </div>
     </div>
-    <p class="hint" style="margin:0 0 8px"><span id="ex-count"></span> · click a row for its cost-over-time chart</p>
+    <p class="hint" style="margin:0 0 8px"><span id="ex-count"></span> · <b>click rows to plot cost over time — pick several to compare</b> <span id="ex-selcount" class="mtag"></span> <button id="ex-clear" class="linkbtn" hidden>clear</button></p>
     <div class="ex-scroll">
       <table id="ex-table"><thead><tr>
         <th>Item</th><th>Description</th><th>Machine(s)</th><th>Case</th><th>std labor $</th><th>act labor $</th><th>mach oh $</th><th>total $</th>
@@ -170,7 +178,7 @@
     <div id="ex-chartwrap" hidden style="margin-top:18px">
       <h3 id="ex-chart-title" style="font-size:14px;margin:0 0 4px"></h3>
       <svg id="ex-chart" viewBox="0 0 900 260" preserveAspectRatio="none" role="img" aria-label="SKU cost over time"></svg>
-      <div class="legend"><span><i class="std"></i>standard labor $</span><span><i></i>actual total $ (labor + machine oh)</span></div>
+      <div class="legend" id="ex-legend"></div>
       <div class="foot" id="ex-chart-foot"></div>
     </div>
   </div>
@@ -572,7 +580,8 @@ function renderCostModel(d){
 }
 
 /* ---------- SKU Cost Explorer ---------- */
-let EX=null, EXsel=null, EX_illus=false;
+let EX=null, EXsel=new Set(), EX_illus=false;
+const EX_PALETTE = (document.body.dataset.palette||'#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834').split(',');
 function initExplorer(d){
   EX = d.sku_explorer;
   if(!EX){ $('#explorer-card').style.display='none'; return; }
@@ -580,12 +589,13 @@ function initExplorer(d){
   $('#ex-machine').innerHTML = '<option value="__all">All machines (pooled)</option>'
     + EX.machine_list.map(m=>`<option value="${m}">${m}</option>`).join('');
   $('#ex-search').addEventListener('input', renderExTable);
-  $('#ex-machine').addEventListener('change', ()=>{ renderExTable(); if(EXsel) drawSku(); });
+  $('#ex-machine').addEventListener('change', ()=>{ renderExTable(); drawChart(); });
   $('#ex-basis').addEventListener('click', e=>{
     const b=e.target.closest('button'); if(!b) return;
     $('#ex-basis').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
-    renderExTable(); if(EXsel) drawSku();
+    renderExTable(); drawChart();
   });
+  $('#ex-clear').addEventListener('click', ()=>{ EXsel.clear(); renderExTable(); drawChart(); });
   renderExTable();
 }
 const exBasis = () => $('#ex-basis button.on').dataset.b;      // 'unit' | 'case'
@@ -615,62 +625,105 @@ function renderExTable(){
   $('#ex-count').textContent = `${rows.length} SKU${rows.length===1?'':'s'}` + (rows.length>400?' (showing first 400)':'');
   if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No items match your search / machine filter.</td></tr>`; return; }
   body.innerHTML = rows.slice(0,400).map(({it,r,cs,std,act,oh,tot})=>
-    `<tr class="pick ${EXsel===it.item?'sel':''}" data-item="${it.item}">`
+    `<tr class="pick ${EXsel.has(it.item)?'sel':''}" data-item="${it.item}">`
     +`<td>${it.item}</td><td class="desc" title="${it.desc||''}">${it.desc||''}</td>`
     +`<td class="mtag">${r.machines}</td><td>${num(cs)}</td>`
     +`<td>${money4(std)}</td><td>${money4(act)}</td>`
     +`<td>${oh ? money4(oh) : '<span class="illus">$0</span>'}</td>`
     +`<td><b>${money4(tot)}</b></td></tr>`).join('');
   body.querySelectorAll('tr.pick').forEach(tr=>tr.addEventListener('click',()=>{
-    EXsel = tr.dataset.item; renderExTable(); drawSku();
-    $('#ex-chartwrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+    const id = tr.dataset.item;
+    if(EXsel.has(id)) EXsel.delete(id); else EXsel.add(id);
+    renderExTable(); drawChart();
+    if(EXsel.size) $('#ex-chartwrap').scrollIntoView({behavior:'smooth', block:'nearest'});
   }));
+  const n = EXsel.size;
+  $('#ex-selcount').textContent = n ? `· ${n} plotted` : '';
+  $('#ex-clear').hidden = !n;
   reapplySort('ex-table');
 }
-function drawSku(){
-  const it = EX.items.find(x=>x.item===EXsel); if(!it) return;
+/* item's period series for the current machine filter */
+function exSeriesFor(it){
   const m = exMachine();
   const src = (m==='__all') ? it.combined : (it.by_machine[m] || {series:[]});
-  const basis = exBasis(), cs = it.case_size||1, mult = basis==='case'?cs:1;
-  $('#ex-chartwrap').hidden = false;
-  $('#ex-chart-title').innerHTML = `${it.item} — ${it.desc||''} `
-    + `<span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · case size ${num(cs)}</span>`;
-  const series = (src.series||[]).map(p=>({period:p.period, units:p.units,
-    std: p.std_unit==null?null:p.std_unit*mult,
-    act: p.total_unit==null?(p.act_unit==null?null:p.act_unit*mult):p.total_unit*mult}));
-  drawLines($('#ex-chart'), series, EX_illus);
+  return src.series || [];
 }
-function drawLines(svg, series, illus){
+function drawChart(){
+  const ids = [...EXsel];
+  const wrap = $('#ex-chartwrap');
+  if(!ids.length){ wrap.hidden = true; return; }
+  wrap.hidden = false;
+  const m = exMachine(), basis = exBasis();
+  const val = p => p.total_unit!=null ? p.total_unit : (p.act_unit!=null ? p.act_unit : null);
+  const lines = [];
+  ids.forEach((id, idx)=>{
+    const it = EX.items.find(x=>x.item===id); if(!it) return;
+    const cs = it.case_size||1, mult = basis==='case'?cs:1;
+    const color = EX_PALETTE[idx % EX_PALETTE.length].trim();
+    const pts = exSeriesFor(it).map(p=>({period:p.period, units:p.units,
+      value: val(p)==null?null:val(p)*mult})).filter(p=>p.value!=null);
+    lines.push({key:id, label:`${id}`, desc:it.desc, color, pts});
+    // when only ONE item is plotted, also show its standard-labor line (dashed) for context
+    if(ids.length===1){
+      const sp = exSeriesFor(it).map(p=>({period:p.period, units:p.units,
+        value: p.std_unit==null?null:p.std_unit*mult})).filter(p=>p.value!=null);
+      if(sp.length) lines.push({key:id+'__std', label:'standard', color:'var(--muted)', dashed:true, pts:sp});
+    }
+  });
+  $('#ex-chart-title').innerHTML = (ids.length===1
+      ? `${lines[0].label} — ${lines[0].desc||''}`
+      : `${ids.length} items compared`)
+    + ` <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
+  drawMulti($('#ex-chart'), lines, EX_illus);
+  renderExLegend(lines);
+}
+function renderExLegend(lines){
+  $('#ex-legend').innerHTML = lines.map(l=>{
+    const removable = !l.key.endsWith('__std');
+    return `<span class="chip" ${removable?`data-rm="${l.key}"`:''} title="${removable?'click to remove':''}">`
+      +`<span class="sw ${l.dashed?'dash':''}" style="${l.dashed?'':`background:${l.color}`}"></span>`
+      +`${l.label}${removable?' <span class="x">✕</span>':''}</span>`;
+  }).join('');
+  $('#ex-legend').querySelectorAll('[data-rm]').forEach(c=>c.addEventListener('click',()=>{
+    EXsel.delete(c.dataset.rm); renderExTable(); drawChart();
+  }));
+}
+function drawMulti(svg, lines, illus){
   const W=900,H=260,padL=64,padR=16,padT=16,padB=34;
   const foot = $('#ex-chart-foot');
-  if(!series.length){ svg.innerHTML=''; foot.textContent='No production periods recorded for this selection.'; return; }
-  const allv = series.flatMap(p=>[p.act,p.std]).filter(v=>v!=null);
-  const ymax = (Math.max(...allv, 0.0001))*1.15, ymin=0, n=series.length;
+  const withPts = lines.filter(l=>l.pts.length);
+  if(!withPts.length){ svg.innerHTML=''; foot.textContent='No production periods recorded for this selection.'; return; }
+  // union of periods across all lines, sorted
+  const periods = [...new Set(withPts.flatMap(l=>l.pts.map(p=>p.period)))].sort();
+  const idx = Object.fromEntries(periods.map((p,i)=>[p,i]));
+  const n = periods.length;
+  const allv = withPts.flatMap(l=>l.pts.map(p=>p.value));
+  const ymax = (Math.max(...allv, 0.0001))*1.15, ymin=0;
   const X = i => n===1 ? padL+(W-padL-padR)/2 : padL+(W-padL-padR)*(i/(n-1));
   const Y = v => padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
   let g='';
   for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
     g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
     g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(v<1?3:2)}</text>`; }
-  series.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.period.replace('2026-','')}</text>`; });
-  const line = (key,color,dash)=>{
-    const pts = series.map((p,i)=>({i,v:p[key]})).filter(o=>o.v!=null);
+  periods.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.replace('2026-','')}</text>`; });
+  withPts.forEach(l=>{
+    const pts = l.pts.map(p=>({i:idx[p.period], v:p.value, u:p.units, per:p.period})).sort((a,b)=>a.i-b.i);
     if(pts.length>1){ const dp=pts.map((o,j)=>`${j?'L':'M'}${X(o.i).toFixed(1)},${Y(o.v).toFixed(1)}`).join(' ');
-      g+=`<path d="${dp}" fill="none" stroke="${color}" stroke-width="2" ${dash?'stroke-dasharray="5 4"':''}/>`; }
-    pts.forEach(o=>{ g+=`<circle cx="${X(o.i)}" cy="${Y(o.v)}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2" `
-      +`data-p="${series[o.i].period}" data-v="${o.v}" data-k="${key}" data-u="${series[o.i].units}"/>`; });
-  };
-  line('std','var(--muted)',true);
-  line('act','var(--series)',false);
+      g+=`<path d="${dp}" fill="none" stroke="${l.color}" stroke-width="2" ${l.dashed?'stroke-dasharray="5 4"':''}/>`; }
+    pts.forEach(o=>{ g+=`<circle cx="${X(o.i)}" cy="${Y(o.v)}" r="4" fill="${l.color}" stroke="var(--surface)" stroke-width="2" `
+      +`data-p="${o.per}" data-v="${o.v}" data-k="${l.label}" data-u="${o.u}"/>`; });
+  });
   svg.innerHTML = g;
   const tip=$('#tip');
   svg.querySelectorAll('circle').forEach(c=>{
     c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-10)+'px';
-      tip.innerHTML=`<b>${c.dataset.p}</b><br>${c.dataset.k==='std'?'standard':'actual'}: ${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
+      tip.innerHTML=`<b>${c.dataset.k}</b> · ${c.dataset.p}<br>${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
     c.addEventListener('mouseleave',()=>tip.style.opacity=0);
   });
+  const single = withPts.some(l=>l.key && l.key.endsWith('__std'));
   foot.innerHTML = (illus ? '<span class="illus">* dollars illustrative until wage confirmed</span> · ' : '')
-                 + 'Dashed = standard labor · solid = actual total operating (labor + machine overhead).';
+                 + (single ? 'Dashed = standard labor · solid = actual total operating (labor + machine overhead).'
+                          : 'Each line = one item’s total operating $ (labor + machine overhead) over time.');
 }
 
 function drawTrend(trend, illus){
