@@ -7,6 +7,15 @@ body{font:15px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;col
 h1{font-size:25px;margin-bottom:4px}
 .meta{color:#666;font-size:13px}
 .lead{background:#faf6ef;border:1px solid #e8ddca;border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px}
+.explain{background:#faf6ef;border:1px solid #e8ddca;border-radius:8px;padding:0 18px;margin:18px 0}
+.explain summary{cursor:pointer;font-weight:600;font-size:15px;color:#2d2a26;padding:14px 0;list-style:none;outline:none}
+.explain summary::-webkit-details-marker{display:none}
+.explain summary .tw{color:#b8860b;display:inline-block;width:14px}
+.explain ol{margin:2px 0 14px;padding-left:22px}
+.explain li{margin:10px 0;font-size:14px;line-height:1.5}
+.explain li b{color:#2d2a26}
+.explain code{background:#efe7d6;border-radius:4px;padding:1px 6px;font-size:12.5px}
+.explain .tip{color:#6b6355;font-size:12.5px;margin:2px 0 14px;padding-top:10px;border-top:1px solid #e8ddca}
 #bar{position:sticky;top:0;z-index:50;background:#2d2a26;color:#fff;padding:11px 18px;border-radius:0 0 8px 8px;margin:-32px -20px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 #bar b{font-size:15px}#bar .prog{font-size:13px;opacity:.85}
 #bar input,#bar select{font:inherit;padding:5px 9px;border:0;border-radius:6px}
@@ -32,7 +41,7 @@ h1{font-size:25px;margin-bottom:4px}
 <div id='bar'><b>Testimonials — moderation</b><input id='rname' placeholder='Your name' oninput='setReviewer()' style='width:120px'><select id='filter' onchange='render()'><option value='pending'>Pending only</option><option value='all'>All</option></select><span class='prog' id='prog'>loading…</span><button onclick='load()'>Refresh</button><span class='saved' id='saved'></span></div>
 <h1>Inbound Customer Testimonials</h1>
 <div class='meta'>Moderation console · setId <code>testimonials-inbound</code> · one card per public submission</div>
-<div class='lead'><b>How this works:</b> each card is a testimonial a customer submitted via the site (<i>“How has Teeccino helped you?”</i>). Click <b>Approve</b> to publish as-is, <b>Deny</b> to reject, or <b>Edit</b> to tweak the wording before it publishes (type your version in the box — that text is what gets published). Approved testimonials flow to the catalog team to go live in the matching condition section. The email address is shown for your spam check only — it is <b>private and never published</b>.</div>
+<details class='explain' open><summary><span class='tw'>▾</span>How this works — read me first</summary><ol><li><b>This is the moderation INBOX.</b> It shows only <b>new</b> customer submissions (<i>“How has Teeccino helped you?”</i>) awaiting your approval. <b>Empty here is normal</b> — it just means no new submissions are pending right now. It is <i>not</i> a sign the page is broken.</li><li><b>Each card → Approve / Deny / Edit.</b> Approve publishes it as-is, Deny rejects it, and Edit lets you tweak the wording first (type your version in the box — that text is what gets published). Approved testimonials get published to the live page.</li><li><b>This inbox does NOT list already-published testimonials.</b> Your live testimonials (including the ~470 migrated ones) appear on <b>teeccino.com/pages/testimonials</b> and are edited in <b>Shopify admin → Content → Metaobjects → “Testimonial”</b>.</li><li><b>To feature / spotlight a testimonial:</b> <b>Shopify admin → Content → Metaobjects → “Testimonial Condition”</b> → pick the condition → set its <code>spotlight</code> field.</li></ol><p class='tip'>The email on each card is shown for your spam check only — it is <b>private and never published</b>.</p></details>
 <div id='cards'></div>
 <script>
 const API="https://teeccino-review-api.teeccino.workers.dev";
