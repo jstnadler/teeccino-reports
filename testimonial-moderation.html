@@ -33,8 +33,21 @@ h1{font-size:25px;margin-bottom:4px}
 .chip{display:inline-block;font-size:12px;background:#eef3f8;border:1px solid #d6e4ef;color:#2f6fb0;border-radius:10px;padding:2px 9px;margin:2px 4px 2px 0}
 .small{font-size:12px;color:#888;margin-top:6px}
 .decbox{margin-top:12px;padding:10px 12px;background:#f4f8fb;border:1px solid #d6e4ef;border-radius:6px}
-.decbox label{font-size:14px;font-weight:600;margin-right:16px;cursor:pointer;user-select:none}
-.decbox input[type=radio]{vertical-align:middle;margin-right:4px;cursor:pointer}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.actbtn{font:600 14px inherit;padding:9px 20px;border:1.5px solid transparent;border-radius:7px;cursor:pointer;transition:transform .05s ease,box-shadow .15s ease,background .15s ease;outline-offset:2px}
+.actbtn:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.actbtn:active{transform:translateY(0)}
+.actbtn:focus-visible{outline:3px solid #7aa7d8}
+.btn-approve{background:#eaf6ea;color:#2f6b2f;border-color:#bcdfbc}
+.btn-approve:hover{background:#dcefdc}
+.btn-approve.is-active{background:#5a9e5a;color:#fff;border-color:#4c8a4c;box-shadow:0 2px 6px rgba(90,158,90,.4)}
+.btn-deny{background:#fbeeee;color:#a33;border-color:#eecccc}
+.btn-deny:hover{background:#f6e0e0}
+.btn-deny.is-active{background:#b03030;color:#fff;border-color:#9a2a2a;box-shadow:0 2px 6px rgba(176,48,48,.35)}
+.btn-edit{background:#f1f2f4;color:#4a4640;border-color:#d6d6d6}
+.btn-edit:hover{background:#e7e8ea}
+.btn-edit.is-active{background:#c8801f;color:#fff;border-color:#b0701a;box-shadow:0 2px 6px rgba(200,128,31,.35)}
+.cardsaved{font-size:12.5px;font-weight:600;color:#5a7a55;margin-left:2px}
 .decbox textarea{width:100%;box-sizing:border-box;margin-top:8px;font:13px/1.5 inherit;padding:8px 10px;border:1px solid #cdd6df;border-radius:5px;min-height:80px;display:none}
 .warn{background:#fdf3f3;border:1px solid #f0c8c8;color:#a33;border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px}
 </style></head><body>
@@ -70,21 +83,34 @@ function decide(itemId,decision,note){
     .then(r=>{if(r.ok){flash('saved');const it=ITEMS.find(x=>x.itemId===itemId);if(it){it.decision=decision;it.note=note||'';}applyCard(itemId,decision);}else{flash('save failed',false);}})
     .catch(()=>flash('offline — not saved',false));
 }
-function onDec(itemId){
-  const d=document.querySelector('input[name=dec_'+cssid(itemId)+']:checked');if(!d)return;
+// A decision button was clicked. Approve/Deny commit immediately; Edit opens the
+// tweak box and commits with the current (prefilled) text so it can be revised.
+function clickDec(itemId,decision){
   const ta=document.getElementById('note_'+cssid(itemId));
-  const note=(d.value==='Edit'&&ta)?ta.value:'';
-  decide(itemId,d.value,note);
+  if(decision==='Edit'){
+    if(ta){ta.style.display='block';ta.focus();}
+    decide(itemId,'Edit',ta?ta.value:'');
+  }else{
+    decide(itemId,decision,'');
+  }
 }
+// Live-update the published text while Edit is the committed decision.
 function onNote(itemId){
-  const d=document.querySelector('input[name=dec_'+cssid(itemId)+']:checked');
-  if(d&&d.value==='Edit'){const ta=document.getElementById('note_'+cssid(itemId));decide(itemId,'Edit',ta.value);}
+  const it=ITEMS.find(x=>x.itemId===itemId);
+  if(it&&it.decision==='Edit'){const ta=document.getElementById('note_'+cssid(itemId));decide(itemId,'Edit',ta.value);}
 }
 function cssid(s){return String(s).replace(/[^a-zA-Z0-9]/g,'');}
 function applyCard(itemId,v){
   const c=document.getElementById('card_'+cssid(itemId));if(!c)return;
   c.classList.remove('marked-approve','marked-deny','marked-edit');
   if(v)c.classList.add('marked-'+v.toLowerCase());
+  c.querySelectorAll('.actbtn').forEach(b=>{
+    const on=(b.dataset.dec===v);
+    b.classList.toggle('is-active',on);
+    b.setAttribute('aria-pressed',on?'true':'false');
+  });
+  const cs=document.getElementById('cs_'+cssid(itemId));
+  if(cs)cs.textContent=v?('✓ '+v+' — saved'):'';
   const ta=document.getElementById('note_'+cssid(itemId));
   if(ta)ta.style.display=(v==='Edit')?'block':(ta.value?'block':'none');
   prog();
@@ -115,9 +141,12 @@ function cardHTML(i){
     +(i.product?"<div class='small'>Product: "+esc(i.product)+"</div>":"")
     +"<div class='small'>Submitted "+esc(when)+" · consent: "+(i.consent?'yes':'NO')+" · ua: "+esc((i.ua||'').slice(0,60))+" · ip# "+esc((i.ip_hash||'').slice(0,10))+"</div>"
     +"<div class='decbox'>"
-      +"<label><input type='radio' name='dec_"+id+"' value='Approve' "+(i.decision==='Approve'?'checked':'')+" onchange=\"onDec('"+jsq(i.itemId)+"')\">Approve</label>"
-      +"<label><input type='radio' name='dec_"+id+"' value='Deny' "+(i.decision==='Deny'?'checked':'')+" onchange=\"onDec('"+jsq(i.itemId)+"')\">Deny</label>"
-      +"<label><input type='radio' name='dec_"+id+"' value='Edit' "+(i.decision==='Edit'?'checked':'')+" onchange=\"onDec('"+jsq(i.itemId)+"')\">Edit</label>"
+      +"<div class='actions'>"
+        +"<button type='button' class='actbtn btn-approve' data-dec='Approve' aria-pressed='false' onclick=\"clickDec('"+jsq(i.itemId)+"','Approve')\">Approve</button>"
+        +"<button type='button' class='actbtn btn-deny' data-dec='Deny' aria-pressed='false' onclick=\"clickDec('"+jsq(i.itemId)+"','Deny')\">Deny</button>"
+        +"<button type='button' class='actbtn btn-edit' data-dec='Edit' aria-pressed='false' onclick=\"clickDec('"+jsq(i.itemId)+"','Edit')\">Edit</button>"
+        +"<span class='cardsaved' id='cs_"+id+"'></span>"
+      +"</div>"
       +"<textarea id='note_"+id+"' placeholder='Edited testimonial text to publish…' oninput=\"onNote('"+jsq(i.itemId)+"')\">"+esc(editVal)+"</textarea>"
     +"</div></div>";
 }
