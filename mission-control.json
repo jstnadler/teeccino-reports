@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-07T10:30:06.514187-07:00",
+  "lastUpdated": "2026-07-07T10:38:12.853273-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -192,14 +192,24 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "How about calling it Crowley - Caroline's Assistant",
+        "source": "discord",
+        "startedAt": "2026-07-07T10:35:57.069528-07:00"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "How about calling it Crowley - Caroline's Assistant",
+          "lane": "write",
+          "startedAt": "2026-07-07T10:35:57-07:00"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Ok before we do this, i want to talk big picture.  In the future, i think I'd li",
-        "at": "2026-07-07T10:16:15.094157-07:00"
+        "summary": "Enabled live inbox_watcher for SearchSmith review loop (scoped, backlog-protected, $5/task cap, singleton-guarded); fired newest task 660d1848",
+        "at": "2026-07-07T09:50:23.004313-07:00"
       },
       "recentActivity": [
         {
@@ -510,20 +520,22 @@
       "emoji": "mag",
       "role": "Organic Search & SEO",
       "workspace": "clawd-searchsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Review activity for 'blog-seo-2026-06-29': 3 new message(s), 11 approved, 8 edited, 0 denied",
-        "source": "inbox-watcher",
-        "startedAt": "2026-07-07T10:30:06.217558-07:00"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
       "activeSessions": [],
-      "concurrentTasks": 1,
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Inbox task fc1519b9 = third duplicate re-fire of the blog-seo-2026-06-29 item-2 delta already fully actioned under 660d1848. No re-dispatch, no thread reply (both would duplicate). Item 2 remains blocked on Justin's full rewrite.",
-        "at": "2026-07-07T10:18:00-07:00"
+        "summary": "Fixed infinite 15-min re-fire of blog-seo-2026-06-29 review pull (item-2 int/str itemId dedup bug); pull now no-op, snapshot cleaned. Inbox task 905339bb complete.",
+        "at": "2026-07-07T10:40:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Fixed the infinite 15-min re-fire of blog-seo-2026-06-29 inbox tasks (this was the 4th duplicate). Root cause: export feed emits item 2 as BOTH an int and a str itemId; pull dedup keyed fingerprints by raw itemId so the int-keyed lookup never matched the JSON snapshot's string keys -> item 2 re-fired 'blocked'/'complete'? every run. Normalized itemId to str, merged duplicate records, deduped the decided list. Pull now verified no-op.",
+          "at": "2026-07-07T10:40:00-07:00",
+          "source": "inbox",
+          "status": "unknown"
+        },
         {
           "summary": "Inbox task fc1519b9 = third duplicate re-fire of the blog-seo-2026-06-29 item-2 delta already fully actioned under 660d1848. No re-dispatch, no thread reply (both would duplicate). Item 2 remains blocked on Justin's full rewrite.",
           "at": "2026-07-07T10:18:00-07:00",
@@ -577,12 +589,6 @@
           "at": "2026-07-06T10:10:12.352720",
           "source": "interactive",
           "status": "unknown"
-        },
-        {
-          "summary": "Weekly SEO digest 2026-06-27->2026-07-03: 953 clicks (-7.2% WoW), 68,716 impr, 1.39% CTR, pos 8.2. 4 fixes in flight, 1 CTR anomalies, 1 position drops.",
-          "at": "2026-07-06",
-          "source": "scheduled",
-          "status": "success"
         }
       ],
       "pendingTasks": 5,
@@ -672,7 +678,7 @@
       "id": "crowley",
       "name": "Crowley",
       "emoji": "crystal_ball",
-      "role": "Exec Analytics Portal (CEO)",
+      "role": "Caroline's Assistant (Analytics)",
       "workspace": "clawd-crowley",
       "status": "idle",
       "currentTask": null,
