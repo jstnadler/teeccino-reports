@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>June 2026 Sales — Caroline's Portal</title>
+<!--
+  Caroline's private dashboard (Crowley). Isolated portal (AGENT_STANDARDS §18).
+  Data: Shopify DTC "True Gross" from DataOps' live analytics (calc_daily_shopify,
+  calc_daily_sku_sales). Read-only. Latest data through 2026-07-06.
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh; color: #e8ecf3; padding: 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .header { margin: 20px 0 26px; }
+  .header h1 {
+    font-size: 2em;
+    background: linear-gradient(135deg, #D4A843, #F5D784);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .header .lead { color: #cbd5e1; font-size: 1.05em; line-height: 1.55; max-width: 760px; }
+  .header .fresh { color: #64748b; font-size: 0.8em; margin-top: 10px; }
+
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px; margin: 22px 0;
+  }
+  .kpi {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .kpi .label { color: #94a3b8; font-size: 0.82em; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .kpi .value { font-size: 2em; font-weight: 700; color: #F5D784; line-height: 1.1; }
+  .kpi .sub { font-size: 0.85em; color: #94a3b8; margin-top: 6px; }
+  .kpi .delta.down { color: #f0a3a3; }
+  .kpi .delta.up { color: #9be0a8; }
+
+  .panel {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; padding: 22px 24px; margin: 18px 0;
+  }
+  .panel h2 { font-size: 1.15em; color: #D4A843; margin-bottom: 4px; }
+  .panel .note { color: #94a3b8; font-size: 0.85em; margin-bottom: 18px; line-height: 1.5; }
+
+  /* Top SKU bars */
+  .bars { display: flex; flex-direction: column; gap: 11px; }
+  .bar-row { display: grid; grid-template-columns: 260px 1fr auto; align-items: center; gap: 14px; }
+  .bar-name { font-size: 0.9em; color: #e8ecf3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-name .sku { color: #64748b; font-size: 0.82em; }
+  .bar-track { background: rgba(255,255,255,0.05); border-radius: 6px; height: 22px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, #D4A843, #F5D784); border-radius: 6px; }
+  .bar-val { font-size: 0.9em; font-weight: 600; color: #F5D784; min-width: 118px; text-align: right; }
+  .bar-val .u { color: #94a3b8; font-weight: 400; font-size: 0.85em; }
+  @media (max-width: 720px) {
+    .bar-row { grid-template-columns: 1fr; gap: 4px; }
+    .bar-val { text-align: left; min-width: 0; }
+  }
+
+  footer { text-align: center; margin-top: 40px; padding: 22px 0; color: #64748b; font-size: 0.78em; border-top: 1px solid rgba(255,255,255,0.05); }
+  footer a { color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div id="portal-nav"></div>
+<script>
+  fetch('/teeccino-reports/crowley/_nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('portal-nav').innerHTML = html;
+      document.body.classList.add('has-portal-nav');
+    });
+</script>
+
+<div class="container">
+  <div class="header">
+    <h1>☕ June 2026 — Shopify Sales</h1>
+    <p class="lead">Your online store brought in <strong style="color:#F5D784">$157,193</strong> in sales last month across <strong>2,778 orders</strong>. That's down about 14% from May — a normal early-summer softening. Miraculous Mushrooms was your #1 seller.</p>
+    <p class="fresh">Shopify direct-to-consumer sales (True Gross). Wholesale (Walmart/Target/Faire) not included. Data through July 6, 2026.</p>
+  </div>
+
+  <!-- KPI TILES -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="label">Sales (True Gross)</div>
+      <div class="value">$157,193</div>
+      <div class="sub"><span class="delta down">▼ 13.8%</span> vs May ($182,269)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Orders</div>
+      <div class="value">2,778</div>
+      <div class="sub"><span class="delta down">▼ 13.0%</span> vs May (3,193)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Avg Order Value</div>
+      <div class="value">$56.58</div>
+      <div class="sub">Sales ÷ orders</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Subscriptions</div>
+      <div class="value">$69,115</div>
+      <div class="sub">1,380 orders · ~44% of sales</div>
+    </div>
+    <div class="kpi">
+      <div class="label">New Customers</div>
+      <div class="value">609</div>
+      <div class="sub">orders from first-time buyers</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Returning Customers</div>
+      <div class="value">2,169</div>
+      <div class="sub">orders from repeat buyers</div>
+    </div>
+  </div>
+
+  <!-- TOP SKUs -->
+  <div class="panel">
+    <h2>Top 10 Sellers — June</h2>
+    <p class="note">Ranked by sales dollars (paid units only — free gift &amp; sample items are excluded so demand isn't overstated). Bar length = sales dollars.</p>
+    <div class="bars" id="bars"></div>
+  </div>
+
+  <!-- DAILY TREND -->
+  <div class="panel">
+    <h2>Daily Sales Through June</h2>
+    <p class="note">Each bar is one day's Shopify sales. Note the mid-month bump around June 19–22.</p>
+    <svg id="trend" width="100%" viewBox="0 0 900 220" preserveAspectRatio="none" role="img" aria-label="Daily sales bar chart for June 2026"></svg>
+  </div>
+
+  <footer>
+    Caroline's private portal · Teeccino Reports · Built by Crowley · <a href="/teeccino-reports/crowley/index.html">← My Dashboards</a>
+  </footer>
+</div>
+
+<script>
+  // Top SKUs (paid gross). Names from Shopify product catalog; bulk/multi-pack SKUs
+  // without a catalog title are labeled by their pack code.
+  var skus = [
+    { name: "Miraculous Mushrooms Adapt & Protect Herbal Coffee", sku: "85070L", units: 414, gross: 8276 },
+    { name: "Dark Chocolate Prebiotic SuperBoost Herbal Coffee", sku: "86010L", units: 201, gross: 4018 },
+    { name: "Dark Chocolate Prebiotic SuperBoost Herbal Tea", sku: "46011", units: 198, gross: 3958 },
+    { name: "Bulk / multi-pack", sku: "60110", units: 43, gross: 3870 },
+    { name: "Bulk / multi-pack", sku: "60060", units: 39, gross: 3510 },
+    { name: "French Roast Chicory Herbal Coffee", sku: "80110L", units: 196, gross: 3330 },
+    { name: "Bulk / multi-pack", sku: "60010", units: 35, gross: 3150 },
+    { name: "Miraculous Mushrooms Adapt & Protect — Instant", sku: "30007L", units: 141, gross: 2819 },
+    { name: "Best Selling Herbal Coffees Sampler", sku: "50097", units: 86, gross: 2715 },
+    { name: "Bulk / multi-pack", sku: "63110", units: 23, gross: 2645 }
+  ];
+  var maxG = Math.max.apply(null, skus.map(function(s){return s.gross;}));
+  document.getElementById('bars').innerHTML = skus.map(function(s){
+    var pct = (s.gross / maxG * 100).toFixed(1);
+    return '<div class="bar-row">'
+      + '<div class="bar-name">' + s.name + ' <span class="sku">#' + s.sku + '</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>'
+      + '<div class="bar-val">$' + s.gross.toLocaleString() + ' <span class="u">· ' + s.units.toLocaleString() + ' u</span></div>'
+      + '</div>';
+  }).join('');
+
+  // Daily trend
+  var daily = [5209,3580,4199,5156,4423,2964,4325,3782,3317,4092,4703,3825,4215,4026,6317,3696,4722,6160,8653,9339,10514,11193,5807,3583,4475,3831,4436,5075,5427,6148];
+  var W=900, H=220, pad=6, n=daily.length, maxD=Math.max.apply(null,daily);
+  var bw=(W-pad*2)/n;
+  var svg='';
+  daily.forEach(function(v,i){
+    var bh=(v/maxD)*(H-30);
+    var x=pad+i*bw, y=H-bh-18;
+    svg += '<rect x="'+(x+1).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-2).toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="2" fill="url(#g)"><title>June '+(i+1)+': $'+v.toLocaleString()+'</title></rect>';
+    if((i+1)%5===0 || i===0){ svg += '<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-4)+'" fill="#64748b" font-size="11" text-anchor="middle">'+(i+1)+'</text>'; }
+  });
+  document.getElementById('trend').innerHTML =
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5D784"/><stop offset="1" stop-color="#D4A843"/></linearGradient></defs>' + svg;
+</script>
+
+</body>
+</html>
