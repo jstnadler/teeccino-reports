@@ -37,6 +37,23 @@
   .banner.ok { background:color-mix(in srgb,var(--good) 12%,var(--surface)); }
   .banner .ico { font-size:18px; line-height:1.2; }
   .banner b { color:var(--ink); }
+  /* date-range control */
+  .drange { position:sticky; top:0; z-index:15; display:flex; flex-wrap:wrap; gap:10px 14px;
+    align-items:center; background:color-mix(in srgb,var(--series) 7%,var(--surface));
+    border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:20px;
+    box-shadow:0 1px 0 var(--border); }
+  .drange .ctrl-lbl { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase;
+    letter-spacing:.04em; display:inline-flex; align-items:center; gap:5px; }
+  .drange .seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .drange .seg button { font:inherit; padding:6px 11px; border:0; border-right:1px solid var(--border);
+    background:var(--surface); color:var(--ink2); cursor:pointer; }
+  .drange .seg button:last-child { border-right:0; }
+  .drange .seg button.on { background:var(--series); color:#fff; }
+  .drange .custom { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink2); }
+  .drange input[type=date] { font:inherit; padding:6px 8px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface); color:var(--ink); }
+  .drange .rlabel { margin-left:auto; font-size:12px; color:var(--ink2); font-variant-numeric:tabular-nums; }
+  .drange .rlabel b { color:var(--ink); }
   /* kpi tiles */
   .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
   .kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
@@ -69,6 +86,7 @@
   .cols { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   @media (max-width:760px){ .cols{ grid-template-columns:1fr; } }
   .illus { color:var(--muted); font-style:italic; }
+  .empty { color:var(--muted); padding:14px 8px; font-style:italic; }
   /* glossary */
   details.gloss { background:var(--surface); border:1px solid var(--border); border-radius:12px;
     padding:0; margin-bottom:20px; overflow:hidden; }
@@ -140,7 +158,23 @@
 
 <div class="wrap">
   <h1>Production Cost 🧮</h1>
-  <p class="sub">Cost to operate each machine per hour → unit cost, plus variance, throughput, yield &amp; batch economics — from the production schedule. <b>Labor is live</b>; machine overhead (electricity/equipment) uses <b>realistic placeholder estimates</b> until Justin supplies actuals. Materials/packaging not yet included.</p>
+  <p class="sub">Cost to operate each machine per hour → unit cost, plus variance, throughput, yield &amp; batch economics — from the production schedule (2025 + live 2026). <b>Every section below responds to the date range you pick.</b> <b>Labor is live</b>; machine overhead (electricity/equipment) uses <b>realistic placeholder estimates</b> until Justin supplies actuals. Materials/packaging not yet included.</p>
+
+  <!-- DATE RANGE — drives the whole page -->
+  <div class="drange" id="daterange">
+    <span class="ctrl-lbl">📅 Date range</span>
+    <div class="seg" id="dr-presets">
+      <button data-p="all" class="on">All</button>
+      <button data-p="2026">2026</button>
+      <button data-p="2025">2025</button>
+      <button data-p="ytd">2026 YTD</button>
+      <button data-p="q90">Last 90 days</button>
+      <button data-p="q30">Last 30 days</button>
+    </div>
+    <span class="custom">from <input type="date" id="dr-from"> to <input type="date" id="dr-to">
+      <button class="linkbtn" id="dr-apply">apply</button></span>
+    <span class="rlabel" id="dr-label"></span>
+  </div>
 
   <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
 
@@ -159,7 +193,7 @@
 
   <div class="card" id="explorer-card">
     <h2>🔎 SKU Cost Explorer</h2>
-    <p class="hint">Search any item to see its labor cost <b>per individual unit</b> and <b>per case</b>, filter by the <b>machine</b> it ran on, then click a row to chart how that cost has changed <b>over time</b> (standard vs actual). <span class="illus" id="ex-note"></span></p>
+    <p class="hint">Search any item to see its labor cost <b>per individual unit</b> and <b>per case</b>, filter by the <b>machine</b> it ran on, then click a row to chart how that cost has changed <b>over time</b> (standard vs actual) — within the selected date range. <span class="illus" id="ex-note"></span></p>
     <div class="ctrls">
       <span class="ctrl-lbl">🔎 Filter</span>
       <input id="ex-search" placeholder="Search item # or description… (e.g. 85070, French Roast)" autocomplete="off">
@@ -192,8 +226,11 @@
         <dt>Unit</dt>
         <dd>One finished sellable item (e.g. one bag or one box), as defined by the item's case size in the production schedule. Every "$/unit" figure is the cost to produce <em>one</em> of these.</dd>
 
+        <dt>Date range</dt>
+        <dd>The picker at the top of the page filters <b>every</b> section — KPIs, machines, variance, throughput, yield, batch, trend and the SKU explorer — to production runs whose <em>actual production date</em> falls in the window. Undated rows are excluded whenever a range is active.</dd>
+
         <dt>Wage rate</dt>
-        <dd>The labor cost of one operator-hour, in dollars. Read from a single config value — <b>currently a $20/hr placeholder</b>, so all dollar figures are <span class="illus">illustrative</span> until Finance confirms the real loaded rate. Every dollar on this page = hours × this rate.</dd>
+        <dd>The labor cost of one operator-hour, in dollars. Read from a single config value; every dollar on this page = hours × this rate. When the rate is a placeholder the figures are <span class="illus">illustrative</span> — the banner at the top always states the current status.</dd>
 
         <dt>Standard (std)</dt>
         <dd>The <em>planned</em> expectation — how long a job <em>should</em> take, from the schedule's planned figures. The benchmark we measure reality against.</dd>
@@ -223,8 +260,8 @@
         <dd>How far actual ran <em>over</em> (or under) standard, as a percentage. Positive = took longer than planned = money leaking.
           <span class="fx">(actual − standard) ÷ standard × 100</span></dd>
 
-        <dt>$ over std (YTD)</dt>
-        <dd>The total dollars that variance cost across everything produced this year — the size of the leak, not just the rate.
+        <dt>$ over std (in range)</dt>
+        <dd>The total dollars that variance cost across everything produced in the selected window — the size of the leak, not just the rate.
           <span class="fx">(actual $/u − std $/u) × units produced</span></dd>
 
         <dt>Items over standard</dt>
@@ -298,7 +335,7 @@
         <dd>A tag meaning that stage's cost was estimated from the <em>standard</em> rate because it lacked operator counts to compute an actual. A transparency flag, not an error.</dd>
 
         <dt>Mis-dated year(s)</dt>
-        <dd>Rows with a date typo (e.g. a "2029") in the source. Flagged and excluded from the trend rather than silently dropped.</dd>
+        <dd>Rows with a date typo (e.g. a "2029" or "1900") in the source. Flagged and excluded from date-filtered views rather than silently dropped.</dd>
       </dl>
 
     </div>
@@ -306,7 +343,7 @@
 
   <div class="card" style="margin-top:20px">
     <h2>By production machine / stage</h2>
-    <p class="hint">Each stage is a machine. Bar = share of total labor cost. Blending splits by blender (LB/SB). <span class="illus">[std]/[n/a] = labor costed from the standard rate (stage lacks operator counts).</span></p>
+    <p class="hint"><b>Machine hours worked, units, and labor cost per stage — for the selected date range.</b> Bar = share of total labor cost. Blending splits by blender (LB/SB). <span class="illus">[std]/[n/a] = labor costed from the standard rate (stage lacks operator counts).</span></p>
     <table id="machines"><thead><tr>
       <th>Machine</th><th>runs</th><th>items</th><th>units</th><th>run hrs</th><th>op hrs</th><th>labor $/unit</th><th>labor $ total</th><th>DT %</th><th></th>
     </tr></thead><tbody></tbody></table>
@@ -331,16 +368,16 @@
 
   <div class="card">
     <h2>Labor cost per unit over time</h2>
-    <p class="hint">Quantity-weighted, plant-wide, by month. Trend <b>shape</b> is valid regardless of wage; absolute dollars scale with the rate.</p>
+    <p class="hint">Quantity-weighted, plant-wide, by month, within the selected range. Trend <b>shape</b> is valid regardless of wage; absolute dollars scale with the rate.</p>
     <svg id="trend" viewBox="0 0 900 240" preserveAspectRatio="none" role="img" aria-label="Labor cost per unit by month"></svg>
     <div class="foot" id="trend-foot"></div>
   </div>
 
   <div class="card">
     <h2>Where labor money leaks — efficiency variance</h2>
-    <p class="hint">Items whose <em>actual</em> labor cost most exceeds the <em>standard</em> (× units produced YTD). Bar = total $ over standard.</p>
+    <p class="hint">Items whose <em>actual</em> labor cost most exceeds the <em>standard</em> (× units produced in range). Bar = total $ over standard.</p>
     <table id="variance"><thead><tr>
-      <th>Item</th><th>Description</th><th>std $/u</th><th>act $/u</th><th>var %</th><th>$ over std (YTD)</th><th></th>
+      <th>Item</th><th>Description</th><th>std $/u</th><th>act $/u</th><th>var %</th><th>$ over std</th><th></th>
     </tr></thead><tbody></tbody></table>
   </div>
 
@@ -375,6 +412,7 @@
 
 <script>
 const $ = s => document.querySelector(s);
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 /* ---------- Generic click-to-sort for any data table ---------- */
 const SORT_STATE = {};
@@ -389,15 +427,15 @@ function sortTable(tableId, col, forceDir){
   const table = document.getElementById(tableId);
   if(!table || !table.tBodies[0]) return;
   const tb = table.tBodies[0];
-  const rows = [...tb.rows].filter(r => !r.querySelector('.ex-empty') && !r.querySelector('[colspan]'));
+  const rows = [...tb.rows].filter(r => !r.querySelector('.ex-empty') && !r.querySelector('.empty') && !r.querySelector('[colspan]'));
   if(rows.length < 2 && !forceDir) return;
   const st = SORT_STATE[tableId] || {};
-  const dir = forceDir || (st.col===col && st.dir==='desc' ? 'asc' : 'desc'); // first click = desc, then toggle
+  const dir = forceDir || (st.col===col && st.dir==='desc' ? 'asc' : 'desc');
   SORT_STATE[tableId] = {col, dir};
   rows.sort((a,b)=>{
     const A=_cellVal(a.cells[col]), B=_cellVal(b.cells[col]);
     if(A.n==null && B.n==null){ const c=A.s.localeCompare(B.s); return dir==='asc'?c:-c; }
-    if(A.n==null) return 1;        // blanks always last
+    if(A.n==null) return 1;
     if(B.n==null) return -1;
     return dir==='asc' ? A.n-B.n : B.n-A.n;
   });
@@ -411,7 +449,7 @@ function makeSortable(tableId){
   const table = document.getElementById(tableId);
   if(!table || !table.tHead) return;
   [...table.tHead.rows[0].cells].forEach((th,idx)=>{
-    if(!th.textContent.trim()) return;   // skip blank/bar columns
+    if(!th.textContent.trim()) return;
     th.classList.add('sortable');
     th.title = 'Click to sort';
     th.addEventListener('click', ()=>sortTable(tableId, idx));
@@ -425,54 +463,326 @@ const money = n => n==null ? "–" : "$"+Number(n).toLocaleString(undefined,{max
 const money2 = n => n==null ? "–" : "$"+Number(n).toFixed(2);
 const money4 = n => n==null ? "–" : "$"+Number(n).toFixed(4);
 const num = n => n==null ? "–" : Number(n).toLocaleString();
+const perLabel = pk => { if(!pk) return ''; const y=pk.slice(2,4), m=+pk.slice(6,8);
+  return (MON[m-1]||('M'+m))+"'"+y; };
 
-fetch('cost-performance-data.json?_='+Date.now()).then(r=>r.json()).then(render).catch(e=>{
-  $('#banner-txt').innerHTML = "Could not load cost-performance-data.json — "+e;
-});
+/* ==================================================================
+   DATA + CLIENT-SIDE AGGREGATION (all sections respect the date range)
+   ================================================================== */
+let RAW=null;                       // loaded fact-table payload
+let RANGE={from:null,to:null};      // active ISO date window (null = unbounded)
+let EX_illus=false;
 
-function render(d){
-  const ohOk = !!d.overhead_confirmed;
-  const illus = !(d.wage_confirmed && ohOk);   // fully-real only when BOTH confirmed
+const NONPROD = ['CLEAN','CHANGE','SETUP','MAINT','BREAK','TEST'];
+const isProduct = it => { if(!it) return false; const u=it.toUpperCase();
+  return !NONPROD.some(j=>u.includes(j)); };
+const inRange = f => {
+  if(!RANGE.from && !RANGE.to) return true;
+  if(!f.d) return false;
+  if(RANGE.from && f.d < RANGE.from) return false;
+  if(RANGE.to && f.d > RANGE.to) return false;
+  return true;
+};
+const pkey = d => { if(!d) return null; const y=+d.slice(0,4);
+  if(y<2024||y>2027) return null; return d.slice(0,4)+'-M'+d.slice(5,7); };
+const idesc = it => (RAW.items[it]&&RAW.items[it].desc) || it;
+const icase = it => (RAW.items[it]&&RAW.items[it].cs) || 1;
+
+/* ---- machine rollup / finalize (mirrors machine_breakdown.py) ---- */
+function machRollup(rows,label){
+  const d={machine:label,runs:0,items:new Set(),units:0,run_hours:0,op_hours:0,
+           downtime_min:0,std_wsum:0,std_wq:0,op_units:0};
+  rows.forEach(r=>{
+    d.runs++; d.items.add(r.i);
+    if(r.q) d.units+=r.q;
+    if(r.t){ d.run_hours+=r.t; if(r.o&&r.q){ d.op_hours+=r.t*r.o; d.op_units+=r.q; } }
+    if(r.dn) d.downtime_min+=r.dn;
+    if(r.s!=null && r.q){ d.std_wsum+=r.s*r.q; d.std_wq+=r.q; }
+  });
+  return d;
+}
+function machFinalize(d,wage){
+  const act=d.op_units? d.op_hours*wage/d.op_units : null;
+  const std=d.std_wq? d.std_wsum/d.std_wq*wage : null;
+  const basis = d.op_units? 'actual' : (std!=null? 'standard':'n/a');
+  const lcu = act!=null? act : std;
+  const tot = d.op_hours? d.op_hours*wage : ((std!=null&&d.units)? std*d.units : null);
+  const dt_pct = d.run_hours? d.downtime_min/(d.run_hours*60)*100 : null;
+  return {machine:d.machine,runs:d.runs,items:d.items.size,units:Math.round(d.units),
+    run_hours:+d.run_hours.toFixed(1),operator_hours:+d.op_hours.toFixed(1),
+    labor_cost_per_unit:lcu!=null?+lcu.toFixed(5):null,labor_basis:basis,
+    labor_cost_total:tot!=null?Math.round(tot):null,
+    downtime_pct:dt_pct!=null?+dt_pct.toFixed(1):null};
+}
+function fitSetup(pts){
+  const n=pts.length; if(n<3) return null;
+  let sx=0,sy=0,sxx=0,sxy=0;
+  pts.forEach(([q,h])=>{ sx+=q; sy+=h; sxx+=q*q; sxy+=q*h; });
+  const denom=n*sxx-sx*sx; if(denom===0) return null;
+  const b=(n*sxy-sx*sy)/denom; const a=(sy-b*sx)/n; return [a,b];
+}
+
+function aggregate(){
+  const wage=RAW.wage_rate;
+  const FIN=new Set(RAW.finished_stages), BASE=new Set(RAW.base_stages);
+  const OHR=RAW.overhead_rates||{};
+  const F=RAW.facts.filter(inRange);
+  const fin=F.filter(f=>FIN.has(f.m));
+  const blend=F.filter(f=>BASE.has(f.m));
+
+  /* ---- per (item,stage) rollup for variance/throughput/yield ---- */
+  const stage={};
+  fin.forEach(r=>{
+    const k=r.i+' '+r.m;
+    const b=stage[k]||(stage[k]={item:r.i,sheet:r.m,std_sum:0,std_n:0,hours:0,units:0,
+                                 op_hours:0,downtime:0,bad_fin:0,bad_cmp:0});
+    if(r.s!=null){ b.std_sum+=r.s; b.std_n++; }
+    if(r.t&&r.o&&r.q){ b.hours+=r.t*r.o; b.units+=r.q; b.op_hours+=r.t*r.o; }
+    if(r.dn) b.downtime+=r.dn;
+    if(r.bf) b.bad_fin+=r.bf;
+    if(r.bc) b.bad_cmp+=r.bc;
+  });
+  const stageArr=Object.values(stage);
+
+  /* variance */
+  const vmap={};
+  stageArr.forEach(b=>{
+    const std=b.std_n? b.std_sum/b.std_n:null;
+    const act=b.units? b.hours/b.units:null;
+    if(std==null||act==null) return;
+    const v=vmap[b.item]||(vmap[b.item]={item:b.item,std:0,act:0,units:0});
+    v.std+=std; v.act+=act; v.units=Math.max(v.units,b.units);
+  });
+  let variance=Object.values(vmap).map(v=>{
+    const vu=(v.act-v.std)*wage;
+    return {item:v.item,desc:idesc(v.item),
+      std_cost_unit:+(v.std*wage).toFixed(5),actual_cost_unit:+(v.act*wage).toFixed(5),
+      variance_unit:+vu.toFixed(5),
+      variance_pct:v.std? +((v.act-v.std)/v.std*100).toFixed(1):null,
+      variance_total:+(vu*v.units).toFixed(2)};
+  });
+  variance.sort((a,b)=>b.variance_total-a.variance_total);
+
+  /* throughput */
+  const tmap={};
+  stageArr.forEach(b=>{
+    const t=tmap[b.item]||(tmap[b.item]={item:b.item,units:0,hours:0,op_hours:0,downtime:0});
+    t.units+=b.units; t.hours+=b.hours; t.op_hours+=b.op_hours; t.downtime+=b.downtime;
+  });
+  let throughput=Object.values(tmap).filter(t=>t.hours).map(t=>{
+    const uph=t.op_hours? t.units/t.op_hours:null;
+    const dtp=t.hours? t.downtime/(t.hours*60)*100:null;
+    const dtc=t.hours? (t.downtime/60)*(t.op_hours/t.hours)*wage:0;
+    return {item:t.item,desc:idesc(t.item),
+      units_per_op_hour:uph!=null?+uph.toFixed(1):null,
+      downtime_pct:dtp!=null?+dtp.toFixed(1):null,downtime_cost:+dtc.toFixed(2)};
+  });
+  throughput.sort((a,b)=>b.downtime_cost-a.downtime_cost);
+
+  /* yield */
+  const smap={};
+  stageArr.forEach(b=>{
+    const s=smap[b.item]||(smap[b.item]={item:b.item,bad_fin:0,bad_cmp:0,good:0,hours:0,units:0});
+    s.bad_fin+=b.bad_fin; s.bad_cmp+=b.bad_cmp; s.good+=b.units; s.hours+=b.hours; s.units+=b.units;
+  });
+  let yields=Object.values(smap).filter(s=>s.bad_fin>0||s.bad_cmp>0).map(s=>{
+    const tot=s.good+s.bad_fin;
+    const rate=(tot&&s.bad_fin)? s.bad_fin/tot*100:null;
+    const lhpu=s.units? s.hours/s.units:null;
+    const labor=(lhpu&&s.bad_fin)? s.bad_fin*lhpu*wage:null;
+    return {item:s.item,desc:idesc(s.item),bad_finished:Math.round(s.bad_fin),
+      bad_component:Math.round(s.bad_cmp),
+      finished_scrap_rate:rate!=null?+rate.toFixed(2):null,
+      finished_scrap_labor:labor!=null?+labor.toFixed(2):null};
+  });
+  yields.sort((a,b)=>((b.finished_scrap_labor||0)-(a.finished_scrap_labor||0))||(b.bad_component-a.bad_component));
+
+  /* batch economics */
+  const bpts={};
+  fin.forEach(r=>{ if(!(r.t&&r.o&&r.q)) return;
+    (bpts[r.i]||(bpts[r.i]=[])).push([r.q,r.t*r.o]); });
+  let batch=[];
+  Object.entries(bpts).forEach(([item,pts])=>{
+    if(pts.length<4) return;
+    const fit=fitSetup(pts); if(!fit||fit[0]<=0) return;
+    const setup=fit[0]; const qtys=pts.map(p=>p[0]);
+    const avg=qtys.reduce((a,b)=>a+b,0)/qtys.length, mx=Math.max(...qtys);
+    const saveU=(setup/avg-setup/mx)*wage;
+    batch.push({item,setup_hours:+setup.toFixed(2),avg_batch:Math.round(avg),
+      max_batch:Math.round(mx),save_per_unit:+saveU.toFixed(5),
+      est_annual_saving:+(saveU*qtys.reduce((a,b)=>a+b,0)).toFixed(2)});
+  });
+  batch.sort((a,b)=>b.est_annual_saving-a.est_annual_saving);
+
+  /* trend (monthly) */
+  const per={};
+  fin.forEach(r=>{ if(!(r.t&&r.o&&r.q)) return; const pk=pkey(r.d); if(!pk) return;
+    const p=per[pk]||(per[pk]={hours:0,units:0}); p.hours+=r.t*r.o; p.units+=r.q; });
+  const trend=Object.keys(per).sort().map(k=>({period:k,units:Math.round(per[k].units),
+    labor_cost_unit:per[k].units? +(per[k].hours/per[k].units*wage).toFixed(5):null}));
+
+  /* machines / stage breakdown (+ blending children) */
+  const machines=[];
+  RAW.finished_stages.forEach(st=>{
+    const rows=fin.filter(f=>f.m===st); if(rows.length) machines.push(machFinalize(machRollup(rows,st),wage));
+  });
+  RAW.base_stages.forEach(st=>{
+    const rows=blend.filter(f=>f.m===st); if(!rows.length) return;
+    const parent=machFinalize(machRollup(rows,st),wage);
+    const subs={}; rows.forEach(r=>{ (subs[r.bl||'unknown']||(subs[r.bl||'unknown']=[])).push(r); });
+    const names={LB:'Blending · Large Blender',SB:'Blending · Small Blender'};
+    parent.children=Object.keys(subs).sort().map(bl=>
+      machFinalize(machRollup(subs[bl],names[bl]||('Blending · '+bl)),wage));
+    machines.push(parent);
+  });
+
+  /* cost-to-operate model per machine */
+  const cm={};
+  fin.forEach(r=>{ if(!isProduct(r.i)) return;
+    const d=cm[r.m]||(cm[r.m]={ops:[],mh:0,units:0});
+    if(r.o) d.ops.push(r.o);
+    if(r.t&&r.q){ d.mh+=r.t; d.units+=r.q; }
+  });
+  const cmOrder=RAW.finished_stages.concat(RAW.base_stages);
+  const cost_model=Object.entries(cm).filter(([,d])=>d.ops.length).map(([m,d])=>{
+    const avg=d.ops.reduce((a,b)=>a+b,0)/d.ops.length;
+    const oh=OHR[m]||0; const laborHr=avg*wage;
+    const mhpu=d.units? d.mh/d.units:null;
+    return {machine:m,avg_operators:+avg.toFixed(2),labor_per_hour:+laborHr.toFixed(2),
+      overhead_per_hour:+oh.toFixed(2),operating_per_hour:+(laborHr+oh).toFixed(2),
+      machine_hours_per_unit:mhpu!=null?+mhpu.toFixed(5):null,
+      labor_per_unit:mhpu!=null?+(mhpu*laborHr).toFixed(5):null,
+      overhead_per_unit:mhpu!=null?+(mhpu*oh).toFixed(5):null,
+      total_per_unit:mhpu!=null?+(mhpu*(laborHr+oh)).toFixed(5):null};
+  }).sort((a,b)=>(cmOrder.indexOf(a.machine))-(cmOrder.indexOf(b.machine)));
+
+  /* SKU explorer (per item combined + by machine, monthly series) */
+  const blank=()=>({std_sum:0,std_n:0,lh:0,mh:0,oh:0,units:0,runs:0,per:{}});
+  const agg={}, itc={};
+  fin.forEach(r=>{ if(!isProduct(r.i)) return;
+    const oh=OHR[r.m]||0;
+    const a=agg[r.i+' '+r.m]||(agg[r.i+' '+r.m]=blank());
+    const C=itc[r.i]||(itc[r.i]={...blank(),machines:new Set()});
+    C.machines.add(r.m); a.runs++; C.runs++;
+    if(r.s!=null){ a.std_sum+=r.s; a.std_n++; C.std_sum+=r.s; C.std_n++; }
+    if(r.t&&r.o&&r.q){ const lh=r.t*r.o, ohv=r.t*oh, pk=pkey(r.d);
+      [a,C].forEach(store=>{ store.lh+=lh; store.mh+=r.t; store.oh+=ohv; store.units+=r.q;
+        if(pk){ const p=store.per[pk]||(store.per[pk]={lh:0,mh:0,oh:0,units:0,std_sum:0,std_n:0});
+          p.lh+=lh; p.mh+=r.t; p.oh+=ohv; p.units+=r.q;
+          if(r.s!=null){ p.std_sum+=r.s; p.std_n++; } } });
+    }
+  });
+  const cost=b=>{ const std=b.std_n? b.std_sum/b.std_n:null; const act=b.units? b.lh/b.units:null;
+    const ovh=b.units? b.oh/b.units:null;
+    return {std_unit:std!=null?+(std*wage).toFixed(5):null,
+      act_unit:act!=null?+(act*wage).toFixed(5):null,oh_unit:ovh!=null?+ovh.toFixed(5):null,
+      total_unit:act!=null?+((act*wage)+(ovh||0)).toFixed(5):null,units:Math.round(b.units)}; };
+  const series=per_=>Object.keys(per_).sort().map(pk=>{ const c=cost(per_[pk]); c.period=pk; return c; });
+  const byItem={};
+  Object.entries(agg).forEach(([k,a])=>{ const [it,m]=k.split(' ');
+    const c=cost(a); c.runs=a.runs; c.series=series(a.per); (byItem[it]||(byItem[it]={}))[m]=c; });
+  const exItems=Object.entries(itc).map(([it,C])=>{ const c=cost(C); c.runs=C.runs; c.series=series(C.per);
+    return {item:it,desc:idesc(it),case_size:icase(it),machines:[...C.machines].sort(),
+      combined:c,by_machine:byItem[it]||{}}; }).sort((a,b)=>a.item<b.item?-1:1);
+
+  /* blending: cost per bulk blend (BBP) */
+  const rate=(RAW.blend_active_rate||0)+(RAW.blend_extra_rate||0);
+  const bacc={};
+  blend.forEach(r=>{ if(!r.i||!r.i.toUpperCase().endsWith('BBP')) return;
+    const d=bacc[r.i]||(bacc[r.i]={desc:idesc(r.i),runs:0,lbs:0,hrs:0,bl:{}});
+    d.runs++; if(r.bl) d.bl[r.bl]=(d.bl[r.bl]||0)+1;
+    if(r.t&&r.q){ d.lbs+=r.q; d.hrs+=r.t; } });
+  let blends=Object.entries(bacc).filter(([,d])=>d.lbs>0).map(([it,d])=>{
+    const total=d.hrs*rate; const blr=Object.keys(d.bl).sort((a,b)=>d.bl[b]-d.bl[a])[0]||null;
+    return {blend:it,desc:d.desc,blender:blr,runs:d.runs,total_lbs:Math.round(d.lbs),
+      blend_hours:+d.hrs.toFixed(2),cost_per_lb:+(total/d.lbs).toFixed(5),
+      cost_per_2000lb:+(total/d.lbs*2000).toFixed(2)}; });
+  blends.sort((a,b)=>b.total_lbs-a.total_lbs);
+
+  /* KPIs */
+  const avgLc = variance.length? variance.reduce((s,v)=>s+v.actual_cost_unit,0)/variance.length : null;
+  const kpis={
+    items_costed:variance.length,
+    avg_labor_cost_unit:avgLc!=null?+avgLc.toFixed(4):null,
+    items_over_std:variance.filter(v=>v.variance_unit>0).length,
+    total_over_std:Math.round(variance.filter(v=>v.variance_total>0).reduce((s,v)=>s+v.variance_total,0)),
+    downtime_labor_cost:Math.round(throughput.reduce((s,t)=>s+t.downtime_cost,0)),
+    batch_upside:Math.round(batch.filter(b=>b.est_annual_saving>0).reduce((s,b)=>s+b.est_annual_saving,0)),
+    scrap_finished_units:Math.round(yields.reduce((s,y)=>s+y.bad_finished,0)),
+    scrap_component_units:Math.round(yields.reduce((s,y)=>s+y.bad_component,0)),
+  };
+
+  return {
+    wage_rate:wage, wage_confirmed:RAW.wage_confirmed, overhead_confirmed:RAW.overhead_confirmed,
+    scope:RAW.scope, kpis, machines, cost_model:{
+      any_overhead_set:RAW.any_overhead_set, overhead_confirmed:RAW.overhead_confirmed, machines:cost_model},
+    blend_cost:{active_rate_per_hour:RAW.blend_active_rate, blends,
+      batches_note:blendNote()},
+    sku_explorer:{machine_list:RAW.finished_stages.slice(), items:exItems,
+      note:"Cost/unit = individual sellable unit; cost/case = cost/unit × case size. "
+        +"'All machines' pools quantity-weighted across the machines an item ran on "
+        +"(parallel machines like Maisa 1 / Maisa 2+3 are NOT double-counted; sequential stages "
+        +"are pooled, not summed — pick a machine for the isolated-stage cost)."},
+    variance_top:variance.slice(0,15), throughput_top:throughput.slice(0,10),
+    yield_top:yields.slice(0,10), batch_top:batch.slice(0,10), trend,
+    data_quality:{rows_finished:fin.length, rows_blending:blend.length,
+      items_finished:variance.length, misdated_years:RAW.misdated_years||[]},
+  };
+}
+function blendNote(){
+  const a=RAW.blend_active_rate, e=RAW.blend_extra_rate;
+  return "Quantities are in POUNDS (LB blender ~2000 lb/batch; SB smaller). Cost = blend-hours × $"
+    +a+"/hr all-in ACTIVE blending"+(e?(" + $"+e+"/hr other"):"")
+    +". Does NOT yet include the 'rest' of blending cost (cleaning, raw-material handling/staging, setup). "
+    +"Base-level — NOT yet added to finished SKUs (needs a recipe map: which blend + pounds per finished unit).";
+}
+
+/* ==================================================================
+   PAINT — render one aggregated snapshot into the page
+   ================================================================== */
+function paint(){
+  const d=aggregate();
+  const ohOk=!!d.overhead_confirmed;
+  const illus=!(d.wage_confirmed && ohOk);
+  EX_illus=illus;
+
   // banner
-  const b = $('#banner'); const bt = $('#banner-txt');
-  if (!d.wage_confirmed){
-    b.className = "banner warn";
-    b.querySelector('.ico').textContent = "⚠️";
-    bt.innerHTML = `<b>Wage rate is a placeholder ($${d.wage_rate}/hr) — dollar figures are ILLUSTRATIVE.</b> `
-      + `Ratios, %, hours, trend shape and counts are valid. Confirm the loaded labor rate to make dollars real.`;
-  } else if (!ohOk){
-    b.className = "banner warn";
-    b.querySelector('.ico').textContent = "◐";
-    bt.innerHTML = `<b>Labor rate CONFIRMED at $${d.wage_rate}/hr</b> — pure labor $ are real. `
-      + `Machine overhead (electricity/equipment) still uses <b>placeholder estimates</b>, so any figure that includes overhead `
-      + `(operating $/hr, total $/unit) is partly illustrative. Supply the real machine-overhead numbers to finalize.`;
+  const b=$('#banner'), bt=$('#banner-txt');
+  if(!d.wage_confirmed){
+    b.className="banner warn"; b.querySelector('.ico').textContent="⚠️";
+    bt.innerHTML=`<b>Wage rate is a placeholder ($${d.wage_rate}/hr) — dollar figures are ILLUSTRATIVE.</b> `
+      +`Ratios, %, hours, trend shape and counts are valid. Confirm the loaded labor rate to make dollars real.`;
+  } else if(!ohOk){
+    b.className="banner warn"; b.querySelector('.ico').textContent="◐";
+    bt.innerHTML=`<b>Labor rate CONFIRMED at $${d.wage_rate}/hr</b> — pure labor $ are real. `
+      +`Machine overhead (electricity/equipment) still uses <b>placeholder estimates</b>, so any figure that includes overhead `
+      +`(operating $/hr, total $/unit) is partly illustrative. Supply the real machine-overhead numbers to finalize.`;
   } else {
-    b.className = "banner ok";
-    b.querySelector('.ico').textContent = "✅";
-    bt.innerHTML = `<b>Wage ($${d.wage_rate}/hr) and machine overhead confirmed.</b> Dollar figures are live. ${d.scope}`;
+    b.className="banner ok"; b.querySelector('.ico').textContent="✅";
+    bt.innerHTML=`<b>Wage ($${d.wage_rate}/hr) and machine overhead confirmed.</b> Dollar figures are live. ${d.scope}`;
   }
 
   // kpis
-  const k = d.kpis;
-  const tiles = [
-    ["Items costed", num(k.items_costed), "finished goods"],
-    ["Avg labor $/unit", money4(k.avg_labor_cost_unit), illus?"illustrative":""],
-    ["Items over standard", num(k.items_over_std)+" / "+num(k.items_costed), "actual &gt; standard"],
-    ["Labor $ over standard", money(k.total_over_std), (illus?"illustrative · ":"")+"YTD"],
-    ["Downtime labor cost", money(k.downtime_labor_cost), illus?"illustrative":"YTD"],
-    ["Batch-consolidation upside", money(k.batch_upside), (illus?"illustrative · ":"")+"est./yr"],
-    ["Scrap — finished units", num(k.scrap_finished_units), "rate-able"],
-    ["Scrap — components", num(k.scrap_component_units), "bags/envelopes (ct)"],
+  const k=d.kpis;
+  const tiles=[
+    ["Items costed",num(k.items_costed),"finished goods"],
+    ["Avg labor $/unit",money4(k.avg_labor_cost_unit),illus?"illustrative":""],
+    ["Items over standard",num(k.items_over_std)+" / "+num(k.items_costed),"actual &gt; standard"],
+    ["Labor $ over standard",money(k.total_over_std),(illus?"illustrative · ":"")+"in range"],
+    ["Downtime labor cost",money(k.downtime_labor_cost),illus?"illustrative":"in range"],
+    ["Batch-consolidation upside",money(k.batch_upside),(illus?"illustrative · ":"")+"est./yr"],
+    ["Scrap — finished units",num(k.scrap_finished_units),"rate-able"],
+    ["Scrap — components",num(k.scrap_component_units),"bags/envelopes (ct)"],
   ];
-  $('#kpis').innerHTML = tiles.map(t=>`<div class="kpi"><div class="v">${t[1]}</div>`
+  $('#kpis').innerHTML=tiles.map(t=>`<div class="kpi"><div class="v">${t[1]}</div>`
     +`<div class="l">${t[0]}${t[2]?` <small>· ${t[2]}</small>`:''}</div></div>`).join('');
 
-  // machine / stage breakdown (parent rows + Blending children)
-  const mmax = Math.max(...d.machines.map(m=>m.labor_cost_total||0), 1);
-  const mrow = (m, child) => {
-    const w = Math.max(2, Math.round((m.labor_cost_total||0)/mmax*110));
-    const basis = m.labor_basis && m.labor_basis!=='actual' ? ` <small class="illus">[${m.labor_basis}]</small>` : '';
-    const nm = child ? `<span style="color:var(--muted)">↳ </span>${m.machine.replace('Blending · ','')}` : `<b>${m.machine}</b>`;
+  // machines
+  const mmax=Math.max(...d.machines.map(m=>m.labor_cost_total||0),1);
+  const mrow=(m,child)=>{
+    const w=Math.max(2,Math.round((m.labor_cost_total||0)/mmax*110));
+    const basis=m.labor_basis&&m.labor_basis!=='actual'?` <small class="illus">[${m.labor_basis}]</small>`:'';
+    const nm=child?`<span style="color:var(--muted)">↳ </span>${m.machine.replace('Blending · ','')}`:`<b>${m.machine}</b>`;
     return `<tr${child?' style="background:color-mix(in srgb,var(--muted) 6%,transparent)"':''}>`
       +`<td>${nm}${basis}</td><td>${num(m.runs)}</td><td>${num(m.items)}</td><td>${num(m.units)}</td>`
       +`<td>${num(Math.round(m.run_hours))}</td><td>${num(Math.round(m.operator_hours))}</td>`
@@ -480,84 +790,88 @@ function render(d){
       +`<td>${m.downtime_pct==null?'–':m.downtime_pct+'%'}</td>`
       +`<td class="barcell">${child?'':`<span class="bar" style="width:${w}px"></span>`}</td></tr>`;
   };
-  $('#machines tbody').innerHTML = d.machines.map(m=>{
-    let html = mrow(m, false);
-    (m.children||[]).forEach(c=>{ html += mrow(c, true); });
-    return html;
-  }).join('');
+  $('#machines tbody').innerHTML = d.machines.length
+    ? d.machines.map(m=>{ let h=mrow(m,false); (m.children||[]).forEach(c=>h+=mrow(c,true)); return h; }).join('')
+    : `<tr><td colspan="10" class="empty">No production runs in this date range.</td></tr>`;
+  reapplySort('machines');
 
-  // variance table
-  const vmax = Math.max(...d.variance_top.map(v=>v.variance_total||0), 1);
-  $('#variance tbody').innerHTML = d.variance_top.map(v=>{
-    const w = Math.max(2, Math.round((v.variance_total||0)/vmax*120));
+  // variance
+  const vmax=Math.max(...d.variance_top.map(v=>v.variance_total||0),1);
+  $('#variance tbody').innerHTML = d.variance_top.length ? d.variance_top.map(v=>{
+    const w=Math.max(2,Math.round((v.variance_total||0)/vmax*120));
     return `<tr><td>${v.item}</td><td class="desc" title="${v.desc||''}">${v.desc||''}</td>`
       +`<td>${money4(v.std_cost_unit)}</td><td>${money4(v.actual_cost_unit)}</td>`
       +`<td class="${v.variance_pct>0?'neg':''}">${v.variance_pct==null?'–':v.variance_pct+'%'}</td>`
       +`<td class="neg">${money(v.variance_total)}</td>`
       +`<td class="barcell"><span class="bar" style="width:${w}px"></span></td></tr>`;
-  }).join('');
+  }).join('') : `<tr><td colspan="7" class="empty">No items with both standard and actual in range.</td></tr>`;
+  reapplySort('variance');
 
   // throughput
-  $('#throughput tbody').innerHTML = d.throughput_top.map(t=>
+  $('#throughput tbody').innerHTML = d.throughput_top.length ? d.throughput_top.map(t=>
     `<tr><td>${t.item}</td><td>${t.units_per_op_hour==null?'–':Math.round(t.units_per_op_hour)}</td>`
-    +`<td>${t.downtime_pct==null?'–':t.downtime_pct+'%'}</td><td>${money(t.downtime_cost)}</td></tr>`).join('');
+    +`<td>${t.downtime_pct==null?'–':t.downtime_pct+'%'}</td><td>${money(t.downtime_cost)}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="empty">No throughput data in range.</td></tr>`;
+  reapplySort('throughput');
 
   // batch
-  $('#batch tbody').innerHTML = d.batch_top.map(bb=>
+  $('#batch tbody').innerHTML = d.batch_top.length ? d.batch_top.map(bb=>
     `<tr><td>${bb.item}</td><td>${bb.setup_hours}</td><td>${num(bb.avg_batch)}→${num(bb.max_batch)}</td>`
-    +`<td>${money(bb.est_annual_saving)}</td></tr>`).join('');
+    +`<td>${money(bb.est_annual_saving)}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="empty">Not enough runs per item in range to estimate setup.</td></tr>`;
+  reapplySort('batch');
 
   // yield
-  $('#yield tbody').innerHTML = d.yield_top.map(y=>
+  $('#yield tbody').innerHTML = d.yield_top.length ? d.yield_top.map(y=>
     `<tr><td>${y.item}</td><td class="desc" title="${y.desc||''}">${y.desc||''}</td>`
     +`<td>${num(y.bad_finished)}</td><td>${y.finished_scrap_rate==null?'–':y.finished_scrap_rate+'%'}</td>`
     +`<td>${y.finished_scrap_labor==null?'–':money(y.finished_scrap_labor)}</td>`
-    +`<td>${num(y.bad_component)}</td></tr>`).join('');
+    +`<td>${num(y.bad_component)}</td></tr>`).join('')
+    : `<tr><td colspan="6" class="empty">No scrap recorded in range.</td></tr>`;
+  reapplySort('yield');
 
   // data quality
-  const dq = d.data_quality;
-  const mis = dq.misdated_years && dq.misdated_years.length
-    ? `<span class="neg">⚑ mis-dated year(s) in source: ${dq.misdated_years.join(', ')}</span> (excluded from trend)` : "no date anomalies";
-  $('#dq').innerHTML = `Workbook: <b>${d.workbook}</b> · updated ${(d.workbook_mtime||'').slice(0,10)} · `
-    +`built ${(d.built_at||'').slice(0,10)}<br>`
-    +`Finished-good rows parsed: ${num(dq.rows_finished)} · items costed: ${num(dq.items_finished)} · `
-    +`blending rows (base-level, excluded): ${num(dq.rows_blending)}<br>${mis}<br><span class="illus">${dq.scope_note}</span>`;
+  const dq=d.data_quality;
+  const mis=dq.misdated_years&&dq.misdated_years.length
+    ? `<span class="neg">⚑ mis-dated year(s) in source: ${dq.misdated_years.join(', ')}</span> (excluded from date-filtered views)`
+    : "no date anomalies";
+  const src=(RAW.sources||[]).filter(s=>s.present).map(s=>`${s.file} (${num(s.rows)} rows, updated ${(s.mtime||'').slice(0,10)})`).join(' · ');
+  $('#dq').innerHTML=`Sources: <b>${src||'—'}</b> · built ${(RAW.built_at||'').slice(0,10)}<br>`
+    +`In selected range — finished-good rows: ${num(dq.rows_finished)} · items costed: ${num(dq.items_finished)} · `
+    +`blending rows (base-level, excluded from finished rollups): ${num(dq.rows_blending)}<br>`
+    +`${RAW.n_undated?`<span class="illus">${num(RAW.n_undated)} undated rows are excluded whenever a date range is active.</span><br>`:''}`
+    +`${mis}<br><span class="illus">Blending is base-level and excluded from finished-good rollups.</span>`;
 
   drawTrend(d.trend, illus);
   renderCostModel(d);
   renderBlend(d);
-  EX_illus = illus;
-  initExplorer(d);
-  ['blend','ex-table','costmodel','variance','throughput','batch','yield'].forEach(makeSortable);
+  EX=d.sku_explorer;
+  refreshExplorer();
 }
 
-/* ---------- Blending: cost per bulk blend (BBP) ---------- */
+/* ---------- Blending ---------- */
 let BLENDS=[];
 function renderBlend(d){
-  const bc = d.blend_cost;
-  if(!bc || !bc.blends || !bc.blends.length){ const c=$('#blend-card'); if(c) c.style.display='none'; return; }
-  BLENDS = bc.blends;
-  $('#blend-oh').textContent = money2(bc.active_rate_per_hour);
-  $('#blend-foot').innerHTML = bc.batches_note;
-  const blenders = [...new Set(BLENDS.map(b=>b.blender).filter(Boolean))].sort();
-  $('#blend-blender').innerHTML = '<option value="__all">All blenders</option>'
-    + blenders.map(x=>`<option value="${x}">${x}</option>`).join('');
-  $('#blend-search').addEventListener('input', filterBlend);
-  $('#blend-blender').addEventListener('change', filterBlend);
+  const bc=d.blend_cost; BLENDS=(bc&&bc.blends)||[];
+  const card=$('#blend-card');
+  if(!BLENDS.length){ card.style.display='none'; return; }
+  card.style.display='';
+  $('#blend-oh').textContent=money2(bc.active_rate_per_hour);
+  $('#blend-foot').innerHTML=bc.batches_note;
   filterBlend();
 }
 function filterBlend(){
-  const q = $('#blend-search').value.trim().toLowerCase();
-  const bl = $('#blend-blender').value;
-  const rows = BLENDS.filter(b=>{
-    if(bl!=='__all' && b.blender!==bl) return false;
-    if(q && !(b.blend.toLowerCase().includes(q) || (b.desc||'').toLowerCase().includes(q))) return false;
+  const q=$('#blend-search').value.trim().toLowerCase();
+  const bl=$('#blend-blender').value;
+  const rows=BLENDS.filter(b=>{
+    if(bl&&bl!=='__all'&&b.blender!==bl) return false;
+    if(q&&!(b.blend.toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q))) return false;
     return true;
   });
-  $('#blend-count').textContent = `${rows.length} blend${rows.length===1?'':'s'}`;
-  const body = $('#blend tbody');
+  $('#blend-count').textContent=`${rows.length} blend${rows.length===1?'':'s'}`;
+  const body=$('#blend tbody');
   if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No blends match.</td></tr>`; return; }
-  body.innerHTML = rows.map(b=>
+  body.innerHTML=rows.map(b=>
     `<tr><td>${b.blend}</td><td class="desc" title="${b.desc||''}">${b.desc||''}</td>`
     +`<td class="mtag">${b.blender||'–'}</td><td>${num(b.runs)}</td><td>${num(b.total_lbs)}</td>`
     +`<td>${b.blend_hours}</td>`
@@ -565,150 +879,133 @@ function filterBlend(){
   reapplySort('blend');
 }
 
-/* ---------- Cost model (how it's calculated) ---------- */
+/* ---------- Cost model ---------- */
 function renderCostModel(d){
-  const cm = d.cost_model;
-  if(!cm){ const c=$('#costmodel-card'); if(c) c.style.display='none'; return; }
-  const noOh = !cm.any_overhead_set;
-  $('#cm-note').innerHTML = noOh
+  const cm=d.cost_model;
+  if(!cm||!cm.machines.length){ $('#costmodel tbody').innerHTML=`<tr><td colspan="9" class="empty">No machine data in range.</td></tr>`; return; }
+  const noOh=!cm.any_overhead_set;
+  $('#cm-note').innerHTML=noOh
     ? `Machine overhead is <b>$0 (not yet set)</b>, so “operating $/hr” currently equals labor only. Drop electricity/maintenance/equipment costs into <code>cost-rates.json</code> and every figure below (and in the explorer) fills in automatically.`
     : (cm.overhead_confirmed
         ? `Machine overhead is <b>confirmed</b> — “operating $/hr” includes electricity/maintenance/equipment.`
         : `Machine overhead shown is a <b>realistic placeholder estimate</b> (electricity/maintenance/equipment), not yet confirmed — replace with actuals to finalize.`);
-  $('#costmodel tbody').innerHTML = cm.machines.map(m=>
+  $('#costmodel tbody').innerHTML=cm.machines.map(m=>
     `<tr><td><b>${m.machine}</b></td><td>${m.avg_operators}</td>`
     +`<td>${money2(m.labor_per_hour)}</td>`
-    +`<td>${m.overhead_per_hour ? money2(m.overhead_per_hour) : '<span class="illus">$0 *</span>'}</td>`
+    +`<td>${m.overhead_per_hour?money2(m.overhead_per_hour):'<span class="illus">$0 *</span>'}</td>`
     +`<td><b>${money2(m.operating_per_hour)}</b></td>`
     +`<td>${m.machine_hours_per_unit==null?'–':m.machine_hours_per_unit.toFixed(5)}</td>`
     +`<td>${money4(m.labor_per_unit)}</td>`
-    +`<td>${m.overhead_per_unit ? money4(m.overhead_per_unit) : '<span class="illus">$0</span>'}</td>`
+    +`<td>${m.overhead_per_unit?money4(m.overhead_per_unit):'<span class="illus">$0</span>'}</td>`
     +`<td><b>${money4(m.total_per_unit)}</b></td></tr>`).join('');
+  reapplySort('costmodel');
 }
 
 /* ---------- SKU Cost Explorer ---------- */
-let EX=null, EXsel=new Set(), EX_illus=false;
-const EX_PALETTE = (document.body.dataset.palette||'#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834').split(',');
-function initExplorer(d){
-  EX = d.sku_explorer;
+let EX=null, EXsel=new Set();
+const EX_PALETTE=(document.body.dataset.palette||'#2a78d6').split(',');
+function refreshExplorer(){
   if(!EX){ $('#explorer-card').style.display='none'; return; }
-  $('#ex-note').textContent = EX.note || '';
-  $('#ex-machine').innerHTML = '<option value="__all">All machines (pooled)</option>'
-    + EX.machine_list.map(m=>`<option value="${m}">${m}</option>`).join('');
-  $('#ex-search').addEventListener('input', renderExTable);
-  $('#ex-machine').addEventListener('change', ()=>{ renderExTable(); drawChart(); });
-  $('#ex-basis').addEventListener('click', e=>{
-    const b=e.target.closest('button'); if(!b) return;
-    $('#ex-basis').querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
-    renderExTable(); drawChart();
-  });
-  $('#ex-clear').addEventListener('click', ()=>{ EXsel.clear(); renderExTable(); drawChart(); });
+  $('#explorer-card').style.display='';
+  $('#ex-note').textContent=EX.note||'';
   renderExTable();
+  drawChart();
 }
-const exBasis = () => $('#ex-basis button.on').dataset.b;      // 'unit' | 'case'
-const exMachine = () => $('#ex-machine').value;
+const exBasis=()=>$('#ex-basis button.on').dataset.b;
+const exMachine=()=>$('#ex-machine').value;
 function exRow(it){
-  const m = exMachine();
-  if(m==='__all') return {...it.combined, machines: it.machines.join(' + ')};
-  const bm = it.by_machine[m];
-  return bm ? {...bm, machines:m} : null;
+  const m=exMachine();
+  if(m==='__all') return {...it.combined,machines:it.machines.join(' + ')};
+  const bm=it.by_machine[m];
+  return bm?{...bm,machines:m}:null;
 }
 function renderExTable(){
-  const q = $('#ex-search').value.trim().toLowerCase();
-  const basis = exBasis();
+  const q=$('#ex-search').value.trim().toLowerCase();
+  const basis=exBasis();
   const rows=[];
   EX.items.forEach(it=>{
-    const r = exRow(it); if(!r) return;
-    if(q && !(it.item.toLowerCase().includes(q) || (it.desc||'').toLowerCase().includes(q))) return;
-    const cs = it.case_size||1, mult = basis==='case'?cs:1;
-    rows.push({it, r, cs,
-      std: r.std_unit==null?null:r.std_unit*mult,
-      act: r.act_unit==null?null:r.act_unit*mult,
-      oh: r.oh_unit==null?null:r.oh_unit*mult,
-      tot: r.total_unit==null?null:r.total_unit*mult});
+    const r=exRow(it); if(!r) return;
+    if(q&&!(it.item.toLowerCase().includes(q)||(it.desc||'').toLowerCase().includes(q))) return;
+    const cs=it.case_size||1, mult=basis==='case'?cs:1;
+    rows.push({it,r,cs,
+      std:r.std_unit==null?null:r.std_unit*mult,
+      act:r.act_unit==null?null:r.act_unit*mult,
+      oh:r.oh_unit==null?null:r.oh_unit*mult,
+      tot:r.total_unit==null?null:r.total_unit*mult});
   });
   rows.sort((x,y)=>((y.tot??y.act??y.std??-1)-(x.tot??x.act??x.std??-1)));
-  const body = $('#ex-table tbody');
-  $('#ex-count').textContent = `${rows.length} SKU${rows.length===1?'':'s'}` + (rows.length>400?' (showing first 400)':'');
-  if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No items match your search / machine filter.</td></tr>`; return; }
-  body.innerHTML = rows.slice(0,400).map(({it,r,cs,std,act,oh,tot})=>
+  const body=$('#ex-table tbody');
+  $('#ex-count').textContent=`${rows.length} SKU${rows.length===1?'':'s'}`+(rows.length>400?' (showing first 400)':'');
+  if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No items match your search / machine filter in this date range.</td></tr>`;
+    $('#ex-selcount').textContent=''; $('#ex-clear').hidden=true; return; }
+  body.innerHTML=rows.slice(0,400).map(({it,r,cs,std,act,oh,tot})=>
     `<tr class="pick ${EXsel.has(it.item)?'sel':''}" data-item="${it.item}">`
     +`<td>${it.item}</td><td class="desc" title="${it.desc||''}">${it.desc||''}</td>`
     +`<td class="mtag">${r.machines}</td><td>${num(cs)}</td>`
     +`<td>${money4(std)}</td><td>${money4(act)}</td>`
-    +`<td>${oh ? money4(oh) : '<span class="illus">$0</span>'}</td>`
+    +`<td>${oh?money4(oh):'<span class="illus">$0</span>'}</td>`
     +`<td><b>${money4(tot)}</b></td></tr>`).join('');
   body.querySelectorAll('tr.pick').forEach(tr=>tr.addEventListener('click',()=>{
-    const id = tr.dataset.item;
+    const id=tr.dataset.item;
     if(EXsel.has(id)) EXsel.delete(id); else EXsel.add(id);
     renderExTable(); drawChart();
-    if(EXsel.size) $('#ex-chartwrap').scrollIntoView({behavior:'smooth', block:'nearest'});
+    if(EXsel.size) $('#ex-chartwrap').scrollIntoView({behavior:'smooth',block:'nearest'});
   }));
-  const n = EXsel.size;
-  $('#ex-selcount').textContent = n ? `· ${n} plotted` : '';
-  $('#ex-clear').hidden = !n;
+  const n=EXsel.size;
+  $('#ex-selcount').textContent=n?`· ${n} plotted`:'';
+  $('#ex-clear').hidden=!n;
   reapplySort('ex-table');
 }
-/* item's period series for the current machine filter */
-function exSeriesFor(it){
-  const m = exMachine();
-  const src = (m==='__all') ? it.combined : (it.by_machine[m] || {series:[]});
-  return src.series || [];
-}
 function drawChart(){
-  const ids = [...EXsel];
-  const wrap = $('#ex-chartwrap');
-  if(!ids.length){ wrap.hidden = true; return; }
-  wrap.hidden = false;
-  const m = exMachine(), basis = exBasis();
-  const val = p => p.total_unit!=null ? p.total_unit : (p.act_unit!=null ? p.act_unit : null);
-  const mkPts = (series, mult, fn) => (series||[]).map(p=>({period:p.period, units:p.units,
-      value: fn(p)==null ? null : fn(p)*mult })).filter(p=>p.value!=null);
-  const lines = [];
-  let title, foot;
-
-  if(ids.length === 1){
-    const it = EX.items.find(x=>x.item===ids[0]);
-    const cs = (it && it.case_size) || 1, mult = basis==='case'?cs:1;
-    const breakdown = it && m==='__all' && (it.machines||[]).length > 1;
+  const ids=[...EXsel]; const wrap=$('#ex-chartwrap');
+  if(!ids.length||!EX){ wrap.hidden=true; return; }
+  wrap.hidden=false;
+  const m=exMachine(), basis=exBasis();
+  const val=p=>p.total_unit!=null?p.total_unit:(p.act_unit!=null?p.act_unit:null);
+  const mkPts=(s,mult,fn)=>(s||[]).map(p=>({period:p.period,units:p.units,
+      value:fn(p)==null?null:fn(p)*mult})).filter(p=>p.value!=null);
+  const lines=[]; let title,foot;
+  if(ids.length===1){
+    const it=EX.items.find(x=>x.item===ids[0]);
+    if(!it){ wrap.hidden=true; return; }
+    const cs=(it&&it.case_size)||1, mult=basis==='case'?cs:1;
+    const breakdown=it&&m==='__all'&&(it.machines||[]).length>1;
     if(breakdown){
-      // pooled total (bold) + one line per machine it ran on
-      lines.push({key:it.item, label:'All machines (pooled)', color:EX_PALETTE[0].trim(), width:3.5,
-        pts: mkPts(it.combined.series, mult, val)});
+      lines.push({key:it.item,label:'All machines (pooled)',color:EX_PALETTE[0].trim(),width:3.5,
+        pts:mkPts(it.combined.series,mult,val)});
       (it.machines||[]).forEach((mac,i)=>{
-        lines.push({key:it.item+'::'+mac, label:mac, color:EX_PALETTE[(i+1)%EX_PALETTE.length].trim(),
-          pts: mkPts((it.by_machine[mac]||{}).series, mult, val)});
+        lines.push({key:it.item+'::'+mac,label:mac,color:EX_PALETTE[(i+1)%EX_PALETTE.length].trim(),
+          pts:mkPts((it.by_machine[mac]||{}).series,mult,val)});
       });
-      title = `${it.item} — ${it.desc||''} <span class="mtag">· pooled + per-machine · per ${basis} · total operating $</span>`;
-      foot = 'Bold line = pooled across all machines; thinner lines = each machine it ran on.';
+      title=`${it.item} — ${it.desc||''} <span class="mtag">· pooled + per-machine · per ${basis} · total operating $</span>`;
+      foot='Bold line = pooled across all machines; thinner lines = each machine it ran on.';
     } else {
-      const src = m==='__all' ? it.combined : (it.by_machine[m] || {series:[]});
-      lines.push({key:it.item, label:(m==='__all'?'All machines':m), color:EX_PALETTE[0].trim(), width:3,
-        pts: mkPts(src.series, mult, val)});
-      const sp = mkPts(src.series, mult, p=>p.std_unit);
-      if(sp.length) lines.push({key:it.item+'__std', label:'standard labor', color:'var(--muted)', dashed:true, pts:sp});
-      title = `${it.item} — ${it.desc||''} <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
-      foot = 'Dashed = standard labor · solid = actual total operating (labor + machine overhead).';
+      const src=m==='__all'?it.combined:(it.by_machine[m]||{series:[]});
+      lines.push({key:it.item,label:(m==='__all'?'All machines':m),color:EX_PALETTE[0].trim(),width:3,
+        pts:mkPts(src.series,mult,val)});
+      const sp=mkPts(src.series,mult,p=>p.std_unit);
+      if(sp.length) lines.push({key:it.item+'__std',label:'standard labor',color:'var(--muted)',dashed:true,pts:sp});
+      title=`${it.item} — ${it.desc||''} <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
+      foot='Dashed = standard labor · solid = actual total operating (labor + machine overhead).';
     }
   } else {
-    // multi-SKU compare: one line per SKU
-    ids.forEach((id, idx)=>{
-      const it = EX.items.find(x=>x.item===id); if(!it) return;
-      const cs = it.case_size||1, mult = basis==='case'?cs:1;
-      const src = m==='__all' ? it.combined : (it.by_machine[m] || {series:[]});
-      lines.push({key:id, label:id, color:EX_PALETTE[idx % EX_PALETTE.length].trim(), pts: mkPts(src.series, mult, val)});
+    ids.forEach((id,idx)=>{
+      const it=EX.items.find(x=>x.item===id); if(!it) return;
+      const cs=it.case_size||1, mult=basis==='case'?cs:1;
+      const src=m==='__all'?it.combined:(it.by_machine[m]||{series:[]});
+      lines.push({key:id,label:id,color:EX_PALETTE[idx%EX_PALETTE.length].trim(),pts:mkPts(src.series,mult,val)});
     });
-    title = `${ids.length} items compared <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
-    foot = 'Each line = one item’s total operating $ (labor + machine overhead) over time.';
+    title=`${ids.length} items compared <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
+    foot='Each line = one item’s total operating $ (labor + machine overhead) over time.';
   }
-  $('#ex-chart-title').innerHTML = title;
-  drawMulti($('#ex-chart'), lines, EX_illus, foot);
+  $('#ex-chart-title').innerHTML=title;
+  drawMulti($('#ex-chart'),lines,EX_illus,foot);
   renderExLegend(lines);
 }
 function renderExLegend(lines){
-  const multi = EXsel.size > 1;
-  $('#ex-legend').innerHTML = lines.map(l=>{
-    const removable = multi && EXsel.has(l.key);   // only in multi-SKU compare mode
+  const multi=EXsel.size>1;
+  $('#ex-legend').innerHTML=lines.map(l=>{
+    const removable=multi&&EXsel.has(l.key);
     return `<span class="chip" ${removable?`data-rm="${l.key}"`:''} title="${removable?'click to remove':''}">`
       +`<span class="sw ${l.dashed?'dash':''}" style="${l.dashed?'':`background:${l.color}`}"></span>`
       +`${l.label}${removable?' <span class="x">✕</span>':''}</span>`;
@@ -717,74 +1014,135 @@ function renderExLegend(lines){
     EXsel.delete(c.dataset.rm); renderExTable(); drawChart();
   }));
 }
-function drawMulti(svg, lines, illus, footNote){
+function drawMulti(svg,lines,illus,footNote){
   const W=900,H=260,padL=64,padR=16,padT=16,padB=34;
-  const foot = $('#ex-chart-foot');
-  const withPts = lines.filter(l=>l.pts.length);
-  if(!withPts.length){ svg.innerHTML=''; foot.textContent='No production periods recorded for this selection.'; return; }
-  // union of periods across all lines, sorted
-  const periods = [...new Set(withPts.flatMap(l=>l.pts.map(p=>p.period)))].sort();
-  const idx = Object.fromEntries(periods.map((p,i)=>[p,i]));
-  const n = periods.length;
-  const allv = withPts.flatMap(l=>l.pts.map(p=>p.value));
-  const ymax = (Math.max(...allv, 0.0001))*1.15, ymin=0;
-  const X = i => n===1 ? padL+(W-padL-padR)/2 : padL+(W-padL-padR)*(i/(n-1));
-  const Y = v => padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
+  const foot=$('#ex-chart-foot');
+  const withPts=lines.filter(l=>l.pts.length);
+  if(!withPts.length){ svg.innerHTML=''; foot.textContent='No production periods recorded for this selection in range.'; return; }
+  const periods=[...new Set(withPts.flatMap(l=>l.pts.map(p=>p.period)))].sort();
+  const idx=Object.fromEntries(periods.map((p,i)=>[p,i]));
+  const n=periods.length;
+  const allv=withPts.flatMap(l=>l.pts.map(p=>p.value));
+  const ymax=(Math.max(...allv,0.0001))*1.15, ymin=0;
+  const X=i=>n===1?padL+(W-padL-padR)/2:padL+(W-padL-padR)*(i/(n-1));
+  const Y=v=>padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
   let g='';
   for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
     g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
     g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(v<1?3:2)}</text>`; }
-  periods.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.replace('2026-','')}</text>`; });
+  periods.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${perLabel(p)}</text>`; });
   withPts.forEach(l=>{
-    const pts = l.pts.map(p=>({i:idx[p.period], v:p.value, u:p.units, per:p.period})).sort((a,b)=>a.i-b.i);
-    const lw = l.width || 2;
+    const pts=l.pts.map(p=>({i:idx[p.period],v:p.value,u:p.units,per:p.period})).sort((a,b)=>a.i-b.i);
+    const lw=l.width||2;
     if(pts.length>1){ const dp=pts.map((o,j)=>`${j?'L':'M'}${X(o.i).toFixed(1)},${Y(o.v).toFixed(1)}`).join(' ');
       g+=`<path d="${dp}" fill="none" stroke="${l.color}" stroke-width="${lw}" ${l.dashed?'stroke-dasharray="5 4"':''}/>`; }
     pts.forEach(o=>{ g+=`<circle cx="${X(o.i)}" cy="${Y(o.v)}" r="4" fill="${l.color}" stroke="var(--surface)" stroke-width="2" `
       +`data-p="${o.per}" data-v="${o.v}" data-k="${l.label}" data-u="${o.u}"/>`; });
   });
-  svg.innerHTML = g;
+  svg.innerHTML=g;
   const tip=$('#tip');
   svg.querySelectorAll('circle').forEach(c=>{
     c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-10)+'px';
-      tip.innerHTML=`<b>${c.dataset.k}</b> · ${c.dataset.p}<br>${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
+      tip.innerHTML=`<b>${c.dataset.k}</b> · ${perLabel(c.dataset.p)}<br>${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
     c.addEventListener('mouseleave',()=>tip.style.opacity=0);
   });
-  foot.innerHTML = (illus ? '<span class="illus">* includes placeholder machine overhead — partly illustrative</span> · ' : '')
-                 + (footNote || 'Each line = one item’s total operating $ (labor + machine overhead) over time.');
+  foot.innerHTML=(illus?'<span class="illus">* includes placeholder machine overhead — partly illustrative</span> · ':'')
+               +(footNote||'Each line = one item’s total operating $ over time.');
 }
-
-function drawTrend(trend, illus){
-  const svg = $('#trend'); const W=900,H=240,padL=64,padR=16,padT=16,padB=32;
-  const pts = trend.filter(p=>p.labor_cost_unit!=null);
-  if (pts.length<2){ $('#trend-foot').textContent="Not enough periods to plot."; return; }
-  const xs = pts.map((_,i)=>i), ys = pts.map(p=>p.labor_cost_unit);
-  const ymax = Math.max(...ys)*1.15, ymin=0;
-  const X = i => padL + (W-padL-padR)*(i/(pts.length-1));
-  const Y = v => padT + (H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
+function drawTrend(trend,illus){
+  const svg=$('#trend'); const W=900,H=240,padL=64,padR=16,padT=16,padB=32;
+  const pts=trend.filter(p=>p.labor_cost_unit!=null);
+  if(pts.length<2){ svg.innerHTML=''; $('#trend-foot').textContent="Not enough months in range to plot."; return; }
+  const ys=pts.map(p=>p.labor_cost_unit);
+  const ymax=Math.max(...ys)*1.15, ymin=0;
+  const X=i=>padL+(W-padL-padR)*(i/(pts.length-1));
+  const Y=v=>padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
   let g="";
-  // gridlines + y labels (4)
   for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
     g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
     g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(3)}</text>`; }
-  // x labels
-  pts.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.period.replace('2026-','')}</text>`; });
-  // line
-  const dpath = pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.labor_cost_unit).toFixed(1)}`).join(' ');
+  pts.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${perLabel(p.period)}</text>`; });
+  const dpath=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.labor_cost_unit).toFixed(1)}`).join(' ');
   g+=`<path d="${dpath}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
-  // dots + hover
   pts.forEach((p,i)=>{ g+=`<circle class="dot" cx="${X(i)}" cy="${Y(p.labor_cost_unit)}" r="4.5"
      data-p="${p.period}" data-v="${p.labor_cost_unit}" data-u="${p.units}"/>`; });
-  svg.innerHTML = g;
+  svg.innerHTML=g;
   const tip=$('#tip');
   svg.querySelectorAll('.dot').forEach(c=>{
     c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px';
       tip.style.top=(e.clientY-10)+'px';
-      tip.innerHTML=`<b>${c.dataset.p}</b><br>${money4(+c.dataset.v)}/unit${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
+      tip.innerHTML=`<b>${perLabel(c.dataset.p)}</b><br>${money4(+c.dataset.v)}/unit${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
     c.addEventListener('mouseleave',()=>tip.style.opacity=0);
   });
-  $('#trend-foot').innerHTML = illus ? '<span class="illus">* dollar level illustrative until wage confirmed</span>' : '';
+  $('#trend-foot').innerHTML=illus?'<span class="illus">* dollar level illustrative until wage confirmed</span>':'';
 }
+
+/* ==================================================================
+   DATE-RANGE CONTROLS
+   ================================================================== */
+function shiftDays(iso,days){
+  const [y,m,d]=iso.split('-').map(Number);
+  const dt=new Date(Date.UTC(y,m-1,d)); dt.setUTCDate(dt.getUTCDate()+days);
+  return dt.toISOString().slice(0,10);
+}
+function setRange(from,to,presetBtn){
+  RANGE={from:from||null,to:to||null};
+  $('#dr-presets').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===presetBtn));
+  $('#dr-from').value=from||''; $('#dr-to').value=to||'';
+  const lbl=$('#dr-label');
+  if(!from&&!to) lbl.innerHTML=`<b>All dates</b> · ${RAW.date_min||''} → ${RAW.date_max||''}`;
+  else lbl.innerHTML=`<b>${from||'earliest'}</b> → <b>${to||'latest'}</b>`;
+  paint();
+}
+function initControls(){
+  const today=(RAW.data_today)||(RAW.date_max)||'2026-12-31';
+  const clampMax='2026-12-31', clampMin='2025-01-01';
+  const fEl=$('#dr-from'), tEl=$('#dr-to');
+  fEl.min=clampMin; fEl.max=clampMax; tEl.min=clampMin; tEl.max=clampMax;
+  const presets={
+    all:()=>[null,null],
+    '2026':()=>['2026-01-01','2026-12-31'],
+    '2025':()=>['2025-01-01','2025-12-31'],
+    ytd:()=>['2026-01-01', RAW.date_max&&RAW.date_max<='2026-12-31'?RAW.date_max:today],
+    q90:()=>[shiftDays(today,-90),today],
+    q30:()=>[shiftDays(today,-30),today],
+  };
+  $('#dr-presets').addEventListener('click',e=>{
+    const btn=e.target.closest('button'); if(!btn) return;
+    const [f,t]=presets[btn.dataset.p](); setRange(f,t,btn);
+  });
+  const applyCustom=()=>{
+    const f=fEl.value||null, t=tEl.value||null;
+    setRange(f,t,null);
+  };
+  $('#dr-apply').addEventListener('click',applyCustom);
+  fEl.addEventListener('change',applyCustom);
+  tEl.addEventListener('change',applyCustom);
+
+  // explorer + blend controls — bound ONCE; they read the current aggregated data
+  $('#ex-machine').innerHTML='<option value="__all">All machines (pooled)</option>'
+    + RAW.finished_stages.map(m=>`<option value="${m}">${m}</option>`).join('');
+  $('#ex-search').addEventListener('input',renderExTable);
+  $('#ex-machine').addEventListener('change',()=>{ renderExTable(); drawChart(); });
+  $('#ex-basis').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    $('#ex-basis').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    renderExTable(); drawChart(); });
+  $('#ex-clear').addEventListener('click',()=>{ EXsel.clear(); renderExTable(); drawChart(); });
+
+  const blenders=[...new Set(RAW.facts.filter(f=>RAW.base_stages.includes(f.m)&&f.bl).map(f=>f.bl))].sort();
+  $('#blend-blender').innerHTML='<option value="__all">All blenders</option>'
+    + blenders.map(x=>`<option value="${x}">${x}</option>`).join('');
+  $('#blend-search').addEventListener('input',filterBlend);
+  $('#blend-blender').addEventListener('change',filterBlend);
+
+  ['blend','ex-table','costmodel','variance','throughput','batch','yield','machines'].forEach(makeSortable);
+}
+
+fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
+  RAW=data;
+  initControls();
+  setRange(null,null,$('#dr-presets button[data-p="all"]'));
+}).catch(e=>{ $('#banner-txt').innerHTML="Could not load cost-performance-facts.json — "+e; });
 </script>
 </body>
 </html>
