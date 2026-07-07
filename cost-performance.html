@@ -662,31 +662,53 @@ function drawChart(){
   wrap.hidden = false;
   const m = exMachine(), basis = exBasis();
   const val = p => p.total_unit!=null ? p.total_unit : (p.act_unit!=null ? p.act_unit : null);
+  const mkPts = (series, mult, fn) => (series||[]).map(p=>({period:p.period, units:p.units,
+      value: fn(p)==null ? null : fn(p)*mult })).filter(p=>p.value!=null);
   const lines = [];
-  ids.forEach((id, idx)=>{
-    const it = EX.items.find(x=>x.item===id); if(!it) return;
-    const cs = it.case_size||1, mult = basis==='case'?cs:1;
-    const color = EX_PALETTE[idx % EX_PALETTE.length].trim();
-    const pts = exSeriesFor(it).map(p=>({period:p.period, units:p.units,
-      value: val(p)==null?null:val(p)*mult})).filter(p=>p.value!=null);
-    lines.push({key:id, label:`${id}`, desc:it.desc, color, pts});
-    // when only ONE item is plotted, also show its standard-labor line (dashed) for context
-    if(ids.length===1){
-      const sp = exSeriesFor(it).map(p=>({period:p.period, units:p.units,
-        value: p.std_unit==null?null:p.std_unit*mult})).filter(p=>p.value!=null);
-      if(sp.length) lines.push({key:id+'__std', label:'standard', color:'var(--muted)', dashed:true, pts:sp});
+  let title, foot;
+
+  if(ids.length === 1){
+    const it = EX.items.find(x=>x.item===ids[0]);
+    const cs = (it && it.case_size) || 1, mult = basis==='case'?cs:1;
+    const breakdown = it && m==='__all' && (it.machines||[]).length > 1;
+    if(breakdown){
+      // pooled total (bold) + one line per machine it ran on
+      lines.push({key:it.item, label:'All machines (pooled)', color:EX_PALETTE[0].trim(), width:3.5,
+        pts: mkPts(it.combined.series, mult, val)});
+      (it.machines||[]).forEach((mac,i)=>{
+        lines.push({key:it.item+'::'+mac, label:mac, color:EX_PALETTE[(i+1)%EX_PALETTE.length].trim(),
+          pts: mkPts((it.by_machine[mac]||{}).series, mult, val)});
+      });
+      title = `${it.item} — ${it.desc||''} <span class="mtag">· pooled + per-machine · per ${basis} · total operating $</span>`;
+      foot = 'Bold line = pooled across all machines; thinner lines = each machine it ran on.';
+    } else {
+      const src = m==='__all' ? it.combined : (it.by_machine[m] || {series:[]});
+      lines.push({key:it.item, label:(m==='__all'?'All machines':m), color:EX_PALETTE[0].trim(), width:3,
+        pts: mkPts(src.series, mult, val)});
+      const sp = mkPts(src.series, mult, p=>p.std_unit);
+      if(sp.length) lines.push({key:it.item+'__std', label:'standard labor', color:'var(--muted)', dashed:true, pts:sp});
+      title = `${it.item} — ${it.desc||''} <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
+      foot = 'Dashed = standard labor · solid = actual total operating (labor + machine overhead).';
     }
-  });
-  $('#ex-chart-title').innerHTML = (ids.length===1
-      ? `${lines[0].label} — ${lines[0].desc||''}`
-      : `${ids.length} items compared`)
-    + ` <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
-  drawMulti($('#ex-chart'), lines, EX_illus);
+  } else {
+    // multi-SKU compare: one line per SKU
+    ids.forEach((id, idx)=>{
+      const it = EX.items.find(x=>x.item===id); if(!it) return;
+      const cs = it.case_size||1, mult = basis==='case'?cs:1;
+      const src = m==='__all' ? it.combined : (it.by_machine[m] || {series:[]});
+      lines.push({key:id, label:id, color:EX_PALETTE[idx % EX_PALETTE.length].trim(), pts: mkPts(src.series, mult, val)});
+    });
+    title = `${ids.length} items compared <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
+    foot = 'Each line = one item’s total operating $ (labor + machine overhead) over time.';
+  }
+  $('#ex-chart-title').innerHTML = title;
+  drawMulti($('#ex-chart'), lines, EX_illus, foot);
   renderExLegend(lines);
 }
 function renderExLegend(lines){
+  const multi = EXsel.size > 1;
   $('#ex-legend').innerHTML = lines.map(l=>{
-    const removable = !l.key.endsWith('__std');
+    const removable = multi && EXsel.has(l.key);   // only in multi-SKU compare mode
     return `<span class="chip" ${removable?`data-rm="${l.key}"`:''} title="${removable?'click to remove':''}">`
       +`<span class="sw ${l.dashed?'dash':''}" style="${l.dashed?'':`background:${l.color}`}"></span>`
       +`${l.label}${removable?' <span class="x">✕</span>':''}</span>`;
@@ -695,7 +717,7 @@ function renderExLegend(lines){
     EXsel.delete(c.dataset.rm); renderExTable(); drawChart();
   }));
 }
-function drawMulti(svg, lines, illus){
+function drawMulti(svg, lines, illus, footNote){
   const W=900,H=260,padL=64,padR=16,padT=16,padB=34;
   const foot = $('#ex-chart-foot');
   const withPts = lines.filter(l=>l.pts.length);
@@ -715,8 +737,9 @@ function drawMulti(svg, lines, illus){
   periods.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${p.replace('2026-','')}</text>`; });
   withPts.forEach(l=>{
     const pts = l.pts.map(p=>({i:idx[p.period], v:p.value, u:p.units, per:p.period})).sort((a,b)=>a.i-b.i);
+    const lw = l.width || 2;
     if(pts.length>1){ const dp=pts.map((o,j)=>`${j?'L':'M'}${X(o.i).toFixed(1)},${Y(o.v).toFixed(1)}`).join(' ');
-      g+=`<path d="${dp}" fill="none" stroke="${l.color}" stroke-width="2" ${l.dashed?'stroke-dasharray="5 4"':''}/>`; }
+      g+=`<path d="${dp}" fill="none" stroke="${l.color}" stroke-width="${lw}" ${l.dashed?'stroke-dasharray="5 4"':''}/>`; }
     pts.forEach(o=>{ g+=`<circle cx="${X(o.i)}" cy="${Y(o.v)}" r="4" fill="${l.color}" stroke="var(--surface)" stroke-width="2" `
       +`data-p="${o.per}" data-v="${o.v}" data-k="${l.label}" data-u="${o.u}"/>`; });
   });
@@ -727,10 +750,8 @@ function drawMulti(svg, lines, illus){
       tip.innerHTML=`<b>${c.dataset.k}</b> · ${c.dataset.p}<br>${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
     c.addEventListener('mouseleave',()=>tip.style.opacity=0);
   });
-  const single = withPts.some(l=>l.key && l.key.endsWith('__std'));
-  foot.innerHTML = (illus ? '<span class="illus">* dollars illustrative until wage confirmed</span> · ' : '')
-                 + (single ? 'Dashed = standard labor · solid = actual total operating (labor + machine overhead).'
-                          : 'Each line = one item’s total operating $ (labor + machine overhead) over time.');
+  foot.innerHTML = (illus ? '<span class="illus">* includes placeholder machine overhead — partly illustrative</span> · ' : '')
+                 + (footNote || 'Each line = one item’s total operating $ (labor + machine overhead) over time.');
 }
 
 function drawTrend(trend, illus){
