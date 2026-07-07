@@ -1,0 +1,88 @@
+<!--
+  PORTAL-SCOPED nav partial — Burke's portal (persona: Orinoco, Amazon channel).
+  Owner: HubSmith. Modify only via clawd-hubsmith.
+
+  ISOLATION (AGENT_STANDARDS §18): this nav links ONLY to pages inside burke/.
+  It MUST NOT link to Justin's main hub (/teeccino-reports/index.html) or any of his
+  dashboards — including Justin's own /teeccino-reports/amazon.html. Burke gets his
+  OWN burke/amazon.html (built by Orinoco once the amazon-data-portal ingest ships).
+  It deliberately does NOT load the shared nav (/_partials/nav.html) or its search
+  (nav-boot.js searches Justin's pages.json — that would leak his dashboards here).
+  Pure HTML + CSS, no JS, no external manifest.
+
+  Accent = forest green (#2E7D32, Orinoco's color) to signal the Amazon portal.
+
+  How the portal's own pages include it (index.html + any burke/*.html dashboard):
+      <div id="portal-nav"></div>
+      <script>
+        fetch('/teeccino-reports/burke/_nav.html')
+          .then(r => r.text())
+          .then(html => {
+            document.getElementById('portal-nav').innerHTML = html;
+            document.body.classList.add('has-portal-nav');
+          });
+      </script>
+
+  Adding a dashboard link: once Orinoco ships burke/amazon.html (and later views),
+  uncomment / add the <a class="nav-link" href="/teeccino-reports/burke/NAME.html">
+  below. (Chrome is HubSmith-owned — Orinoco dispatches HubSmith to add the link.)
+-->
+<style>
+  /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
+  #portal-nav-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(20, 33, 24, 0.96);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid rgba(46, 125, 50, 0.35);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    flex-wrap: wrap; row-gap: 6px;
+  }
+  #portal-nav-bar .brand {
+    font-weight: 700; font-size: 1.05em; color: #6FCF7A;
+    text-decoration: none; letter-spacing: -0.02em;
+  }
+  #portal-nav-bar .brand:hover { color: #A5E3AC; }
+  #portal-nav-bar .portal-tag {
+    color: #94a3b8; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; border: 1px solid rgba(46, 125, 50, 0.4);
+    padding: 2px 8px; border-radius: 999px; margin-left: 2px;
+  }
+  #portal-nav-bar .group { display: flex; align-items: center; gap: 14px; margin-left: 16px; }
+  #portal-nav-bar .group-label {
+    color: #64748b; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  #portal-nav-bar a.nav-link {
+    color: #94a3b8; text-decoration: none; font-size: 0.88em;
+    padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+  }
+  #portal-nav-bar a.nav-link:hover { color: #6FCF7A; background: rgba(46, 125, 50, 0.1); }
+  #portal-nav-bar a.nav-link.active { color: #6FCF7A; background: rgba(46, 125, 50, 0.16); font-weight: 600; }
+  #portal-nav-bar .spacer { flex: 1; }
+  #portal-nav-bar .home-link {
+    color: #6FCF7A; font-size: 0.85em; text-decoration: none;
+    border: 1px solid rgba(46, 125, 50, 0.4); padding: 4px 12px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  #portal-nav-bar .home-link:hover { background: rgba(46, 125, 50, 0.14); }
+
+  body.has-portal-nav { padding-top: 72px; }
+  @media (max-width: 880px) {
+    #portal-nav-bar { gap: 8px; padding: 10px 12px; }
+    #portal-nav-bar .group { margin-left: 0; gap: 8px; }
+    #portal-nav-bar .group-label { display: none; }
+    #portal-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
+    body.has-portal-nav { padding-top: 96px; }
+  }
+</style>
+<nav id="portal-nav-bar" aria-label="Burke's portal navigation">
+  <a class="brand" href="/teeccino-reports/burke/index.html">📦 Teeccino</a>
+  <span class="portal-tag">Burke&rsquo;s Portal · Amazon</span>
+  <div class="group" data-cat="dashboards">
+    <span class="group-label">Dashboards</span>
+    <!-- <a class="nav-link" href="/teeccino-reports/burke/amazon.html">Amazon</a>  (pending amazon-data-portal ingest) -->
+  </div>
+  <span class="spacer"></span>
+  <a class="home-link" href="/teeccino-reports/burke/index.html">My Dashboards →</a>
+</nav>

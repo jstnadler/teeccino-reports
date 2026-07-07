@@ -1,0 +1,84 @@
+<!--
+  PORTAL-SCOPED nav partial — Caroline's portal (persona: Crowley).
+  Owner: HubSmith. Modify only via clawd-hubsmith.
+
+  ISOLATION (AGENT_STANDARDS §18): this nav links ONLY to pages inside crowley/.
+  It MUST NOT link to Justin's main hub (/teeccino-reports/index.html) or any of his
+  dashboards, and it deliberately does NOT load the shared nav (/_partials/nav.html)
+  or its search (nav-boot.js searches Justin's pages.json — that would leak his
+  dashboards into this portal). Pure HTML + CSS, no JS, no external manifest.
+
+  How the portal's own pages include it (index.html + any crowley/*.html dashboard):
+      <div id="portal-nav"></div>
+      <script>
+        fetch('/teeccino-reports/crowley/_nav.html')
+          .then(r => r.text())
+          .then(html => {
+            document.getElementById('portal-nav').innerHTML = html;
+            document.body.classList.add('has-portal-nav');
+          });
+      </script>
+
+  Adding a dashboard link: as Crowley ships a new crowley/*.html view, add a
+  <a class="nav-link" href="/teeccino-reports/crowley/NAME.html">Label</a> below.
+  (Chrome is HubSmith-owned — Crowley dispatches HubSmith to add the link.)
+-->
+<style>
+  /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
+  #portal-nav-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(26, 26, 46, 0.96);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.25);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    flex-wrap: wrap; row-gap: 6px;
+  }
+  #portal-nav-bar .brand {
+    font-weight: 700; font-size: 1.05em; color: #D4A843;
+    text-decoration: none; letter-spacing: -0.02em;
+  }
+  #portal-nav-bar .brand:hover { color: #F5D784; }
+  #portal-nav-bar .portal-tag {
+    color: #94a3b8; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; border: 1px solid rgba(212,168,67,0.3);
+    padding: 2px 8px; border-radius: 999px; margin-left: 2px;
+  }
+  #portal-nav-bar .group { display: flex; align-items: center; gap: 14px; margin-left: 16px; }
+  #portal-nav-bar .group-label {
+    color: #64748b; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  #portal-nav-bar a.nav-link {
+    color: #94a3b8; text-decoration: none; font-size: 0.88em;
+    padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+  }
+  #portal-nav-bar a.nav-link:hover { color: #D4A843; background: rgba(212, 168, 67, 0.08); }
+  #portal-nav-bar a.nav-link.active { color: #D4A843; background: rgba(212, 168, 67, 0.12); font-weight: 600; }
+  #portal-nav-bar .spacer { flex: 1; }
+  #portal-nav-bar .home-link {
+    color: #D4A843; font-size: 0.85em; text-decoration: none;
+    border: 1px solid rgba(212, 168, 67, 0.3); padding: 4px 12px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  #portal-nav-bar .home-link:hover { background: rgba(212, 168, 67, 0.1); }
+
+  body.has-portal-nav { padding-top: 72px; }
+  @media (max-width: 880px) {
+    #portal-nav-bar { gap: 8px; padding: 10px 12px; }
+    #portal-nav-bar .group { margin-left: 0; gap: 8px; }
+    #portal-nav-bar .group-label { display: none; }
+    #portal-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
+    body.has-portal-nav { padding-top: 96px; }
+  }
+</style>
+<nav id="portal-nav-bar" aria-label="Caroline's portal navigation">
+  <a class="brand" href="/teeccino-reports/crowley/index.html">☕ Teeccino</a>
+  <span class="portal-tag">Caroline&rsquo;s Portal</span>
+  <div class="group" data-cat="dashboards">
+    <span class="group-label">Dashboards</span>
+    <!-- Portal dashboard links go here as Crowley ships crowley/*.html views. -->
+  </div>
+  <span class="spacer"></span>
+  <a class="home-link" href="/teeccino-reports/crowley/index.html">My Dashboards →</a>
+</nav>
