@@ -314,7 +314,7 @@
 
   <div class="card" id="blend-card">
     <h2>🌀 Blending — cost to make each bulk blend (BBP)</h2>
-    <p class="hint">Cost to blend one <b>pound</b> of each bulk blend = labor (time × operators × wage) + blending machine overhead (<span id="blend-oh"></span>/hr placeholder). LB = large blender (~2,000 lb batches), SB = small batch. <b>Base-level</b>: <span class="illus">not yet added to finished-SKU cost — that needs a recipe map (which blend feeds which finished good + pounds per finished unit).</span></p>
+    <p class="hint">Cost to blend one <b>pound</b> = blend-hours × the all-in <b>active-blending rate (<span id="blend-oh"></span>/hr)</b>. LB = large blender (~2,000 lb batches), SB = small batch. <span class="illus">Does <b>not</b> yet include the “rest” of blending cost (cleaning, raw-material gathering, setup). <b>Base-level</b>: not added to finished-SKU cost — needs a recipe map (which blend + lbs per finished unit).</span></p>
     <div class="ctrls">
       <span class="ctrl-lbl">🔎 Filter</span>
       <input id="blend-search" placeholder="Search blend # or description… (e.g. 80110, French Roast)" autocomplete="off">
@@ -323,7 +323,7 @@
     </div>
     <div class="ex-scroll">
       <table id="blend"><thead><tr>
-        <th>Blend</th><th>Description</th><th>Blender</th><th>batches</th><th>total lbs</th><th>labor $/lb</th><th>oh $/lb</th><th>blend $/lb</th><th>$ / 2,000-lb batch</th>
+        <th>Blend</th><th>Description</th><th>Blender</th><th>batches</th><th>total lbs</th><th>blend hrs</th><th>blend $/lb</th><th>$ / 2,000-lb batch</th>
       </tr></thead><tbody></tbody></table>
     </div>
     <p class="foot" id="blend-foot"></p>
@@ -431,18 +431,25 @@ fetch('cost-performance-data.json?_='+Date.now()).then(r=>r.json()).then(render)
 });
 
 function render(d){
-  const illus = !d.wage_confirmed;
+  const ohOk = !!d.overhead_confirmed;
+  const illus = !(d.wage_confirmed && ohOk);   // fully-real only when BOTH confirmed
   // banner
   const b = $('#banner'); const bt = $('#banner-txt');
-  if (illus){
+  if (!d.wage_confirmed){
     b.className = "banner warn";
     b.querySelector('.ico').textContent = "⚠️";
     bt.innerHTML = `<b>Wage rate is a placeholder ($${d.wage_rate}/hr) — dollar figures are ILLUSTRATIVE.</b> `
       + `Ratios, %, hours, trend shape and counts are valid. Confirm the loaded labor rate to make dollars real.`;
+  } else if (!ohOk){
+    b.className = "banner warn";
+    b.querySelector('.ico').textContent = "◐";
+    bt.innerHTML = `<b>Labor rate CONFIRMED at $${d.wage_rate}/hr</b> — pure labor $ are real. `
+      + `Machine overhead (electricity/equipment) still uses <b>placeholder estimates</b>, so any figure that includes overhead `
+      + `(operating $/hr, total $/unit) is partly illustrative. Supply the real machine-overhead numbers to finalize.`;
   } else {
     b.className = "banner ok";
     b.querySelector('.ico').textContent = "✅";
-    bt.innerHTML = `<b>Wage rate confirmed: $${d.wage_rate}/hr.</b> Dollar figures are live. ${d.scope}`;
+    bt.innerHTML = `<b>Wage ($${d.wage_rate}/hr) and machine overhead confirmed.</b> Dollar figures are live. ${d.scope}`;
   }
 
   // kpis
@@ -530,7 +537,7 @@ function renderBlend(d){
   const bc = d.blend_cost;
   if(!bc || !bc.blends || !bc.blends.length){ const c=$('#blend-card'); if(c) c.style.display='none'; return; }
   BLENDS = bc.blends;
-  $('#blend-oh').textContent = money2(bc.blend_overhead_per_hour);
+  $('#blend-oh').textContent = money2(bc.active_rate_per_hour);
   $('#blend-foot').innerHTML = bc.batches_note;
   const blenders = [...new Set(BLENDS.map(b=>b.blender).filter(Boolean))].sort();
   $('#blend-blender').innerHTML = '<option value="__all">All blenders</option>'
@@ -549,11 +556,11 @@ function filterBlend(){
   });
   $('#blend-count').textContent = `${rows.length} blend${rows.length===1?'':'s'}`;
   const body = $('#blend tbody');
-  if(!rows.length){ body.innerHTML=`<tr><td colspan="9" class="ex-empty">No blends match.</td></tr>`; return; }
+  if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No blends match.</td></tr>`; return; }
   body.innerHTML = rows.map(b=>
     `<tr><td>${b.blend}</td><td class="desc" title="${b.desc||''}">${b.desc||''}</td>`
     +`<td class="mtag">${b.blender||'–'}</td><td>${num(b.runs)}</td><td>${num(b.total_lbs)}</td>`
-    +`<td>${money4(b.labor_per_lb)}</td><td>${money4(b.overhead_per_lb)}</td>`
+    +`<td>${b.blend_hours}</td>`
     +`<td><b>${money4(b.cost_per_lb)}</b></td><td>${money2(b.cost_per_2000lb)}</td></tr>`).join('');
   reapplySort('blend');
 }
