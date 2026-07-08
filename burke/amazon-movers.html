@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon YoY Movers — Jan–Apr 2026 vs 2025 · Burke's Portal</title>
+<!--
+  Burke's private Amazon dashboard (Orinoco-built). ISOLATED PORTAL (AGENT_STANDARDS §18):
+  mounts ONLY the portal-scoped nav (/burke/_nav.html). Not registered in the main hub / pages.json.
+  Data: read-only from teeccino_analytics.db (raw_amazon_shipments), grouped by first-5 of merchant_sku
+  as an ASIN proxy. Gross ordered revenue (no fees/returns/COGS). Coverage through 2026-04-30.
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #14211a 0%, #16241b 100%);
+    min-height: 100vh; color: #e8eef0; padding: 20px;
+  }
+  .container { max-width: 1180px; margin: 0 auto; }
+  .header { margin: 20px 0 8px; }
+  .header h1 {
+    font-size: 1.9em;
+    background: linear-gradient(135deg, #2E7D32, #6FCF7A);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px;
+  }
+  .header .sub { color: #94a3b8; font-size: 0.95em; line-height: 1.5; }
+  .header .sub b { color: #cbd5e1; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 22px 0; }
+  .kpi { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 18px; }
+  .kpi .label { font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 6px; }
+  .kpi .val { font-size: 1.7em; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+  .kpi .delta { font-size: 0.82em; margin-top: 4px; }
+  .up { color: #6FCF7A; } .down { color: #F2A65A; }
+
+  .panels { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 10px; }
+  @media (min-width: 900px) { .panels { grid-template-columns: 1fr 1fr; } }
+  .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 18px 20px 22px; }
+  .panel h2 { font-size: 1.05em; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
+  .panel .note { font-size: 0.78em; color: #94a3b8; margin-bottom: 14px; }
+  .panel.inc h2 { color: #6FCF7A; } .panel.dec h2 { color: #F2A65A; }
+
+  .row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .row:last-child { border-bottom: none; }
+  .rname { font-size: 0.86em; color: #e8eef0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rname .code { color: #64748b; font-size: 0.85em; font-variant-numeric: tabular-nums; margin-right: 6px; }
+  .rval { font-size: 0.85em; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rval .pct { color: #94a3b8; font-weight: 400; font-size: 0.88em; margin-left: 6px; }
+  .bar-wrap { grid-column: 1 / -1; height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-top: 3px; }
+  .bar { height: 100%; border-radius: 4px; }
+  .inc .bar { background: linear-gradient(90deg, #2E7D32, #6FCF7A); }
+  .dec .bar { background: linear-gradient(90deg, #B45309, #F2A65A); }
+
+  footer { text-align: center; margin: 40px 0 16px; padding-top: 20px; color: #64748b; font-size: 0.76em; border-top: 1px solid rgba(255,255,255,0.05); line-height: 1.7; }
+  .caveat { max-width: 760px; margin: 26px auto 0; background: rgba(242,166,90,0.06); border: 1px solid rgba(242,166,90,0.22); border-radius: 10px; padding: 12px 16px; font-size: 0.8em; color: #cbd5e1; line-height: 1.6; }
+  .caveat b { color: #F2A65A; }
+</style>
+</head>
+<body>
+
+<div id="portal-nav"></div>
+<script>
+  fetch('/teeccino-reports/burke/_nav.html')
+    .then(r => r.text())
+    .then(html => { document.getElementById('portal-nav').innerHTML = html; document.body.classList.add('has-portal-nav'); });
+</script>
+
+<div class="container">
+  <div class="header">
+    <h1>📈 Amazon YoY Movers</h1>
+    <p class="sub">Which products grew and which shrank — <b>Jan–Apr 2026 vs Jan–Apr 2025</b>. Ranked by change in gross ordered revenue. Products grouped by 5-digit SKU code (pack/size variants combined) as an ASIN proxy.</p>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panels">
+    <div class="panel inc">
+      <h2>▲ Top 15 Increases</h2>
+      <div class="note">Biggest revenue gains vs same period last year</div>
+      <div id="inc"></div>
+    </div>
+    <div class="panel dec">
+      <h2>▼ Top 15 Decreases</h2>
+      <div class="note">Biggest revenue drops vs same period last year</div>
+      <div id="dec"></div>
+    </div>
+  </div>
+
+  <div class="caveat">
+    <b>Read this:</b> Figures are <b>gross ordered revenue</b> — no Amazon fees, returns not netted, no COGS (not margin). Coverage runs <b>through Apr 30, 2026</b> (May/Jun not yet loaded). Products are grouped by the first 5 digits of the merchant SKU as an ASIN stand-in — true ASIN-level, ad, traffic &amp; inventory data aren't wired in yet. A few zeroed-out lines may be delists or stockouts rather than lost demand (e.g. 49020 gift set) — that needs a listing/inventory check.
+  </div>
+
+  <footer>
+    Burke's private portal · Teeccino Amazon · built by Orinoco · data through 2026-04-30<br>
+    Source: teeccino_analytics.db (read-only) · gross ordered revenue
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  tot: {"r25":3118455,"r26":3832890,"u25":193031,"u26":230609,"codes25":240,"codes26":268},
+  inc: [
+    {"code":"85070","title":"Miraculous Mushrooms Adapt & Protect","r25":113.93,"r26":50534.25,"d":50420.32,"pct":44255.5},
+    {"code":"10013","title":"Organic Hibiscus Tea","r25":2484.85,"r26":48351.77,"d":45866.92,"pct":1845.9},
+    {"code":"46011","title":"Dark Chocolate Prebiotic SuperBoost Tea","r25":57789.08,"r26":103239.59,"d":45450.51,"pct":78.6},
+    {"code":"10042","title":"Organic Burdock Root","r25":39.98,"r26":44864.93,"d":44824.95,"pct":112118.4},
+    {"code":"10027","title":"Organic Licorice Root","r25":0,"r26":42203.77,"d":42203.77,"pct":null},
+    {"code":"10035","title":"French Chicory Root (5 lb)","r25":6594.32,"r26":46098.43,"d":39504.11,"pct":599.1},
+    {"code":"10006","title":"Organic Lemon Balm Tea","r25":71598.55,"r26":105286.02,"d":33687.47,"pct":47.1},
+    {"code":"10012","title":"Organic Lemon Grass Leaves","r25":4473.31,"r26":35467.12,"d":30993.81,"pct":692.9},
+    {"code":"10019","title":"Organic Astragalus Root","r25":119.94,"r26":27023.85,"d":26903.91,"pct":22431.1},
+    {"code":"40016","title":"Vanilla Nut Herbal Tea (50 ct)","r25":259.87,"r26":26901.57,"d":26641.70,"pct":10251.9},
+    {"code":"30003","title":"Instant Chicory Root","r25":0,"r26":25786.94,"d":25786.94,"pct":null},
+    {"code":"10022","title":"Organic Dandelion Root","r25":459.77,"r26":26015.03,"d":25555.26,"pct":5558.3},
+    {"code":"10008","title":"Organic Red Rooibos Tea","r25":1784.04,"r26":26534.78,"d":24750.74,"pct":1387.3},
+    {"code":"10402","title":"Organic Holy Basil Tea (Tulsi)","r25":12341.26,"r26":37036.77,"d":24695.51,"pct":200.1},
+    {"code":"10201","title":"Organic Peppermint Loose Leaf","r25":46302.82,"r26":69479.29,"d":23176.47,"pct":50.1}
+  ],
+  dec: [
+    {"code":"43113","title":"Dark Roast Dandelion Tea (3-pk)","r25":32263.74,"r26":10477.26,"d":-21786.48,"pct":-67.5},
+    {"code":"80080","title":"Mocha Chicory Coffee Alt (6-pk)","r25":44620.04,"r26":26630.51,"d":-17989.53,"pct":-40.3},
+    {"code":"43221","title":"Dandelion Caramel Nut Tea","r25":60976.63,"r26":43688.39,"d":-17288.24,"pct":-28.4},
+    {"code":"50096","title":"Herbal Coffee Sampler (6x30g)","r25":41463.46,"r26":24519.12,"d":-16944.34,"pct":-40.9},
+    {"code":"49020","title":"Herbal Tea Gift Set (48 ct)","r25":16355.75,"r26":32.62,"d":-16323.13,"pct":-99.8},
+    {"code":"40011","title":"Vanilla Nut Herbal Tea (25 ct)","r25":52625.14,"r26":37367.64,"d":-15257.50,"pct":-29.0},
+    {"code":"80066","title":"Hazelnut Chicory Coffee Alt","r25":29862.19,"r26":15190.36,"d":-14671.83,"pct":-49.1},
+    {"code":"85020","title":"Chaga Ashwagandha Coffee (6-pk)","r25":33987.36,"r26":23405.76,"d":-10581.60,"pct":-31.1},
+    {"code":"45021","title":"Mushroom Herbal Tea (Chaga Ash.)","r25":38003.05,"r26":27513.69,"d":-10489.36,"pct":-27.6},
+    {"code":"80083","title":"Mocha Chicory Coffee Alt (3-pk)","r25":28008.75,"r26":18212.27,"d":-9796.48,"pct":-35.0},
+    {"code":"45001","title":"Mushroom Adaptogen Tea Sampler","r25":39315.53,"r26":30019.27,"d":-9296.26,"pct":-23.6},
+    {"code":"40111","title":"French Roast Herbal Tea","r25":48379.00,"r26":39339.19,"d":-9039.81,"pct":-18.7},
+    {"code":"83226","title":"Dandelion Caramel Nut Herbal Coffee","r25":14722.57,"r26":6333.97,"d":-8388.60,"pct":-57.0},
+    {"code":"80070","title":"Java Chicory Coffee Alt","r25":40929.63,"r26":32769.85,"d":-8159.78,"pct":-19.9},
+    {"code":"40031","title":"Almond Amaretto Herbal Tea","r25":28817.97,"r26":20963.73,"d":-7854.24,"pct":-27.3}
+  ]
+};
+
+const fmtK = n => '$' + (Math.round(n)).toLocaleString();
+const fmtD = n => (n>=0?'+':'−') + '$' + Math.abs(Math.round(n)).toLocaleString();
+const fmtPct = p => p===null ? 'NEW' : (p>=0?'+':'−') + Math.abs(p).toLocaleString(undefined,{maximumFractionDigits: p>=1000?0:0}) + '%';
+
+// KPIs
+const t = DATA.tot;
+const revPct = ((t.r26/t.r25-1)*100).toFixed(1);
+const unitPct = ((t.u26/t.u25-1)*100).toFixed(1);
+document.getElementById('kpis').innerHTML = `
+  <div class="kpi"><div class="label">Revenue 2026 YTD</div><div class="val">${fmtK(t.r26)}</div><div class="delta up">▲ ${revPct}% vs ${fmtK(t.r25)}</div></div>
+  <div class="kpi"><div class="label">Units 2026 YTD</div><div class="val">${t.u26.toLocaleString()}</div><div class="delta up">▲ ${unitPct}% vs ${t.u25.toLocaleString()}</div></div>
+  <div class="kpi"><div class="label">Active Product Codes</div><div class="val">${t.codes26}</div><div class="delta up">▲ ${t.codes26-t.codes25} vs LY (${t.codes25})</div></div>
+  <div class="kpi"><div class="label">Window</div><div class="val" style="font-size:1.15em;line-height:1.4">Jan–Apr<br>2026 vs 2025</div></div>
+`;
+
+function render(id, rows, kind) {
+  const max = Math.max(...rows.map(r => Math.abs(r.d)));
+  document.getElementById(id).innerHTML = rows.map(r => `
+    <div class="row">
+      <div class="rname"><span class="code">${r.code}</span>${r.title}</div>
+      <div class="rval ${kind==='inc'?'up':'down'}">${fmtD(r.d)}<span class="pct">${fmtPct(r.pct)}</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:${(Math.abs(r.d)/max*100).toFixed(1)}%"></div></div>
+    </div>`).join('');
+}
+render('inc', DATA.inc, 'inc');
+render('dec', DATA.dec, 'dec');
+</script>
+
+</body>
+</html>
