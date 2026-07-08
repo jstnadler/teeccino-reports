@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-08T16:14:52.418188-07:00",
+  "lastUpdated": "2026-07-08T16:36:34.686972-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -239,6 +239,12 @@
           "status": "success"
         },
         {
+          "summary": "Fixed CostSmith 'concurrency limit' queueing: CostSmith was missing from the Switchboard write-lane concurrency map, so it fell to _default=1 and a second Discord message queued behind a running task. Added costsmith:3 to switchboard_config.json (matches dataops — same read/analysis class). Restarted daemon via preflight (PID 30324, connected 16:26:23); new limit live. CostSmith can now run up to 3 parallel sessions.",
+          "at": "2026-07-08T23:26:41Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Closed the --check gap that let today's message-ignoring bug through: --check now ASSERTS the required event handlers (on_message, on_ready) are actually bound as coroutine functions on the client after registration, not merely that registration didn't raise. A dropped/relocated @client.event now FAILS the gate (exit 1) instead of silently producing a daemon that connects but ignores all messages. Verified: clean=exit 0, on_message decorator dropped=exit 1 with clear message, restored=exit 0.",
           "at": "2026-07-08T22:55:46Z",
           "source": "interactive",
@@ -277,12 +283,6 @@
         {
           "summary": "Added per-agent decision-card routing so Orinoco (Amazon) approval + choice cards post to Burke's #burke channel instead of Justin's #decisions",
           "at": "2026-07-08T10:12:54",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Added per-agent decision-card routing so Orinoco (Amazon) approval + choice cards post to #burke instead of Justin's #decisions",
-          "at": "2026-07-08T10:12:12",
           "source": "interactive",
           "status": "unknown"
         }
@@ -646,24 +646,30 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "USER REPLIED INSTEAD OF PICKING an option (for \"How do you want to handle the \"i",
+        "summary": "Yes wire it up, yea dont pull from the static one in downloads.   We're also goi",
         "source": "discord",
-        "startedAt": "2026-07-08T16:12:57-07:00"
+        "startedAt": "2026-07-08T16:30:32.345110-07:00"
       },
       "activeBranches": [],
       "activeSessions": [
         {
-          "task": "USER REPLIED INSTEAD OF PICKING an option (for \"How do you want to handle the \"i",
+          "task": "Yes wire it up, yea dont pull from the static one in downloads.   We're also goi",
           "lane": "write",
-          "startedAt": "2026-07-08T16:12:57-07:00"
+          "startedAt": "2026-07-08T16:30:32-07:00"
         }
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Switched authoritative units-per-case to Item Listing col H 'Case Pack Units' (was col D 'Case Size', wrong on 124/840 items); updated both builders and rebuilt cost-performance-facts.json. Deploy gated for approval.",
-        "at": "2026-07-08T18:15:00Z"
+        "summary": "DATA-QUALITY ALERT: 572 data-quality findings (high=333, med=235); 86 in last 14d (76 high). facts_rebuilt=True.",
+        "at": "2026-07-08T23:36:27.927943+00:00"
       },
       "recentActivity": [
+        {
+          "summary": "DATA-QUALITY ALERT: 572 data-quality findings (high=333, med=235); 86 in last 14d (76 high). facts_rebuilt=True.",
+          "at": "2026-07-08T23:36:27.927943+00:00",
+          "source": "scheduled",
+          "status": "unknown"
+        },
         {
           "summary": "Switched authoritative units-per-case to Item Listing col H 'Case Pack Units' (was col D 'Case Size', wrong on 124/840 items); updated both builders and rebuilt cost-performance-facts.json. Deploy gated for approval.",
           "at": "2026-07-08T18:15:00Z",
@@ -714,12 +720,6 @@
         },
         {
           "summary": "SKU Explorer chart now overlays the pooled total AND each machine's cost line when a single SKU is selected.",
-          "at": "2026-07-07T15:40:00-07:00",
-          "source": "discord",
-          "status": "unknown"
-        },
-        {
-          "summary": "Computed machine run-hours per stage for 2026 from March 1 onward (workbook data spans 2026-03-02 to 2026-07-02). Totals: run-hours 3,448.8; operator-hours 10,059.1.",
           "at": "2026-07-07T15:40:00-07:00",
           "source": "discord",
           "status": "unknown"
