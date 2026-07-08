@@ -348,7 +348,11 @@
 
   <div class="card" id="blend-card">
     <h2>🌀 Blending — cost to make each bulk blend (BBP)</h2>
-    <p class="hint">Cost to blend one <b>pound</b> = blend-hours × the all-in <b>active-blending rate (<span id="blend-oh"></span>/hr)</b>. LB = large blender (~2,000 lb batches), SB = small batch. <span class="illus">Does <b>not</b> yet include the “rest” of blending cost (cleaning, raw-material gathering, setup). <b>Base-level</b>: not added to finished-SKU cost — needs a recipe map (which blend + lbs per finished unit).</span></p>
+    <p class="hint">Cost to blend one <b>pound</b> = blend-hours × the <b>fully-loaded blend-labor rate (<span id="blend-oh"></span>/hr)</b> — the blender operator’s full cost spread over the pounds he blends. LB = large blender (~2,000 lb batches), SB = small batch. <span class="illus">Labor only — excludes blender machine overhead (electricity/equipment), ingredients, and packaging. Base-level: not yet added to finished-SKU cost.</span></p>
+    <details id="blend-method" style="margin:6px 0 2px;background:#f2f7f4;border:1px solid #d5e6dd;border-radius:8px;padding:8px 12px;font-size:12.5px">
+      <summary style="cursor:pointer;font-weight:700;color:#2f6b52">How we get this number ▾</summary>
+      <div id="blend-method-body" style="margin-top:8px;line-height:1.6"></div>
+    </details>
     <div class="ctrls">
       <span class="ctrl-lbl">🔎 Filter</span>
       <input id="blend-search" placeholder="Search blend # or description… (e.g. 80110, French Roast)" autocomplete="off">
@@ -727,11 +731,11 @@ function aggregate(){
   };
 }
 function blendNote(){
-  const a=RAW.blend_active_rate, e=RAW.blend_extra_rate;
-  return "Quantities are in POUNDS (LB blender ~2000 lb/batch; SB smaller). Cost = blend-hours × $"
-    +a+"/hr all-in ACTIVE blending"+(e?(" + $"+e+"/hr other"):"")
-    +". Does NOT yet include the 'rest' of blending cost (cleaning, raw-material handling/staging, setup). "
-    +"Base-level — NOT yet added to finished SKUs (needs a recipe map: which blend + pounds per finished unit).";
+  const w=RAW.blend_active_rate||0, e=RAW.blend_extra_rate||0, L=w+e;
+  return "Quantities are in POUNDS (LB blender ~2000 lb/batch; SB smaller). Blend $/lb = blend-hours × the fully-loaded rate $"
+    +L.toFixed(2)+"/hr (wage $"+w+" + $"+e+"/hr of the operator’s support &amp; idle time absorbed). "
+    +"Standard baselined on 2026 Jan–Jun. Labor only — excludes blender machine overhead, ingredients, and packaging. "
+    +"Base-level — not yet added to finished SKUs (needs a recipe map: which blend + pounds per finished unit).";
 }
 
 /* ==================================================================
@@ -853,7 +857,18 @@ function renderBlend(d){
   const card=$('#blend-card');
   if(!BLENDS.length){ card.style.display='none'; return; }
   card.style.display='';
-  $('#blend-oh').textContent=money2(bc.active_rate_per_hour);
+  var _w=(RAW.blend_active_rate||0), _e=(RAW.blend_extra_rate||0), _L=_w+_e, _m=_w?(_L/_w):0;
+  $('#blend-oh').textContent=money2(_L);
+  var _mb=$('#blend-method-body');
+  if(_mb){ _mb.innerHTML='<b>Fully-loaded blend-labor standard.</b> Everything the blender operator is paid, spread over the pounds actually blended.'
+    +'<ol style="margin:6px 0 6px 18px;padding:0">'
+    +'<li><b>Wage:</b> $'+_w+'/hr (blender operator, confirmed).</li>'
+    +'<li><b>Baseline period:</b> 2026 Jan–Jun (6 complete months, confirmed normal volume).</li>'
+    +'<li><b>Paid to operator:</b> ~$33,411 across ~992 paid hours (40 hrs/wk minus holidays).</li>'
+    +'<li><b>Productive blending:</b> only ~316 hrs (~32%) — the rest is weighing, cleaning, inventory, setup &amp; idle. As a dedicated blender, 100% of that cost is a blending cost.</li>'
+    +'<li><b>Absorb it back:</b> $33,411 ÷ ~316 productive blend-hrs = <b>$'+money2(_L)+'/blend-hour</b> ('+_m.toFixed(2)+'× the wage). The added $'+_e+'/hr is the support &amp; idle time loaded onto the pounds.</li>'
+    +'<li><b>Per blend:</b> that blend’s hours × $'+money2(_L)+'/hr ÷ its pounds = the $/lb in the table. Small batches cost more per lb — they use more operator time per pound.</li>'
+    +'</ol><span class="illus">Labor only — excludes blender electricity/equipment, ingredients, packaging. Re-baselined annually.</span>'; }
   $('#blend-foot').innerHTML=bc.batches_note;
   filterBlend();
 }
