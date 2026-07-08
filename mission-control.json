@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-08T15:30:58.089855-07:00",
+  "lastUpdated": "2026-07-08T15:58:34.531060-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -245,6 +245,30 @@
           "status": "success"
         },
         {
+          "summary": "Closed the --check gap that let today's message-ignoring bug through: --check now ASSERTS the required event handlers (on_message, on_ready) are actually bound as coroutine functions on the client after registration, not merely that registration didn't raise. A dropped/relocated @client.event now FAILS the gate (exit 1) instead of silently producing a daemon that connects but ignores all messages. Verified: clean=exit 0, on_message decorator dropped=exit 1 with clear message, restored=exit 0.",
+          "at": "2026-07-08T22:55:46Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Restored the missing @client.event on on_message — the daemon was connecting but silently ignoring ALL Discord messages (CostSmith thread 'not responding' was the symptom, but it affected every agent). Root cause: today's 15:06 edit relocated on_message's @client.event decorator onto decision_channel_ids; my earlier crash-loop fix removed the stray decorator but left on_message undecorated. Confirmed against git HEAD (both on_message + on_ready had @client.event). Fixed, --check PASS, daemon restarted via preflight (PID 74948, connected 15:49:49). Thread->session map survived restart, so agents resume on next reply.",
+          "at": "2026-07-08T22:50:20Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Wired `switchboard.py --check` into sb-boot/sb-restart as a preflight gate in the PowerShell profile. A broken switchboard.py (failed handler registration) is now REFUSED before the daemon starts, so it can never enter the watchdog crash-loop that made sb-boot look dead this morning. Added _sb-Preflight helper, -SkipCheck bypass, updated the sb-* comment block. Profile parses clean; preflight verified True on clean code (exit-1/False on broken code proven earlier).",
+          "at": "2026-07-08T22:36:52Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
+          "summary": "Added `switchboard.py --check` pre-deploy smoke test: builds the discord client and registers every @client.event / @tasks.loop handler exactly as a live boot would, then returns BEFORE client.run (no Gateway connection). Catches the runtime-only registration errors (non-async @client.event, bad @tasks.loop) that ast.parse can't see — the exact class of bug that crash-looped the daemon earlier today. Exit 0 = PASS, exit 1 + traceback + clear FAIL line = broken. Verified both directions (clean=PASS/0, reintroduced bug=FAIL/1).",
+          "at": "2026-07-08T22:33:59Z",
+          "source": "interactive",
+          "status": "success"
+        },
+        {
           "summary": "Fixed Switchboard crash-loop: today's 15:06 off-menu edit left a stray @client.event decorator on the synchronous helper decision_channel_ids() (switchboard.py:1836), so the daemon threw 'event registered must be a coroutine function' on every startup and the watchdog relaunched it endlessly. sb-boot/sb-restart appeared to 'do nothing'. Removed the decorator (own file, no sibling touch); watchdog auto-recovered on next relaunch (15:29:26 connected to Gateway clean). Daemon stable, off-menu-reply feature now actually live for the first time.",
           "at": "2026-07-08T22:30:23Z",
           "source": "interactive",
@@ -265,30 +289,6 @@
         {
           "summary": "Added per-agent decision-card routing so Orinoco (Amazon) approval + choice cards post to #burke instead of Justin's #decisions",
           "at": "2026-07-08T10:12:12",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Built per-agent scoped-approver map in Switchboard so Burke can approve Orinoco (Amazon) gates without global guild authority",
-          "at": "2026-07-08T09:59:57",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Routed Crowley's email/SMS questions to Klaviyo-reported data (per Justin directive).",
-          "at": "2026-07-08T00:00:00Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Scaffolded + wired Orinoco (Burke's read-only Amazon analytics portal), 14th guild agent",
-          "at": "2026-07-07T19:00:00Z",
-          "source": "discord",
-          "status": "unknown"
-        },
-        {
-          "summary": "Scoped the Amazon data + Burke portal initiative; created project tracker + recorded locked decisions",
-          "at": "2026-07-07T18:48:34Z",
           "source": "interactive",
           "status": "unknown"
         }
@@ -650,14 +650,24 @@
       "emoji": "abacus",
       "role": "Production Cost & COGS",
       "workspace": "clawd-costsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Left-justify Description columns on cost-performance dashboard",
+        "source": "interactive",
+        "startedAt": "2026-07-08T15:10:00Z"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "The tables on our cost-performance, Make the description columns left justified.",
+          "lane": "write",
+          "startedAt": "2026-07-08T15:57:36-07:00"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Yes definitly do that.",
-        "at": "2026-07-08T15:09:39.817687-07:00"
+        "summary": "Switched authoritative units-per-case to Item Listing col H 'Case Pack Units' (was col D 'Case Size', wrong on 124/840 items); updated both builders and rebuilt cost-performance-facts.json. Deploy gated for approval.",
+        "at": "2026-07-08T18:15:00Z"
       },
       "recentActivity": [
         {
@@ -722,7 +732,7 @@
         }
       ],
       "pendingTasks": 0,
-      "health": "healthy"
+      "health": "interrupted"
     },
     {
       "id": "crowley",
