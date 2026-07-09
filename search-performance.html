@@ -51,6 +51,27 @@
   a.pglink { color:var(--blue); text-decoration:none; }
   a.pglink:hover { text-decoration:underline; }
   .foot { margin-top:30px; color:var(--text-dim); font-size:.75rem; }
+  .b-maturing { background:rgba(96,165,250,.18); color:var(--blue); }
+  .b-verifying2 { background:rgba(121,134,203,.25); color:var(--indigo); }
+  .b-complete { background:rgba(74,222,128,.18); color:var(--green); }
+  .camp-head { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .camp-head h3 { margin:0; font-size:1rem; }
+  .callout { border-left:3px solid var(--blue); background:rgba(96,165,250,.08); padding:11px 14px;
+    border-radius:0 8px 8px 0; font-size:.85rem; color:var(--text); margin:12px 0; line-height:1.55; }
+  .callout.ready { border-left-color:var(--green); background:rgba(74,222,128,.08); }
+  .timeline { display:flex; gap:0; margin:16px 0 6px; flex-wrap:wrap; }
+  .tl-step { flex:1; min-width:120px; position:relative; padding:0 6px; }
+  .tl-dot { width:11px; height:11px; border-radius:50%; background:var(--text-dim); display:inline-block; }
+  .tl-step.done .tl-dot { background:var(--green); }
+  .tl-step.now .tl-dot { background:var(--yellow); box-shadow:0 0 0 4px rgba(251,191,36,.2); }
+  .tl-step.future .tl-dot { background:var(--border); border:1px solid var(--text-dim); }
+  .tl-line { height:2px; background:var(--border); margin:5px 0 8px; }
+  .tl-step.done .tl-line { background:var(--green); }
+  .tl-label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.4px; }
+  .tl-date { font-size:.82rem; font-weight:600; margin-top:1px; }
+  .mini-stats { display:flex; gap:26px; flex-wrap:wrap; margin:14px 0 4px; }
+  .mini-stats .stat .num { font-size:1.5rem; }
+  td.maturing { color:var(--text-dim); font-style:italic; }
 </style>
 </head>
 <body>
@@ -135,6 +156,8 @@ function render(D){
       <div class="stat"><div class="num">${c.position}</div><div class="label">Avg position · 28d</div>${deltaHTML(c.position,p.position,'pos')}</div>
     </div>
 
+    <div id="campaigns"></div>
+
     <h2>Daily trend <span class="hint">last 90 days · dashed line = a fix dispatched</span></h2>
     <div class="grid-2">
       <div class="chart-wrap"><canvas id="trendVol"></canvas></div>
@@ -183,6 +206,9 @@ function render(D){
       scales:{x:{ticks:{maxTicksLimit:8}}, y:{position:'left', title:{display:true,text:'CTR %'}}, y1:{position:'right', reverse:true, grid:{drawOnChartArea:false}, title:{display:true,text:'Position (lower=better)'}}}}
   });
 
+  // ---- Shipped-campaign trackers (blog SEO set, etc.) ----
+  renderCampaigns(D);
+
   // ---- Improvement ledger ----
   renderLedger(D);
 
@@ -222,6 +248,121 @@ function render(D){
   document.getElementById('sitemaps').innerHTML =
     `<table><tr><th>Path</th><th>Last downloaded</th><th class="num">Submitted</th><th class="num">Indexed</th><th class="num">Errors</th></tr>`+
     D.sitemaps.map(s=>`<tr><td><code>${esc(s.path)}</code></td><td>${esc(s.lastDownloaded||'—')}</td><td class="num">${fmt(s.submitted)}</td><td class="num">${fmt(s.indexed)}</td><td class="num" ${s.errors>0?'style="color:var(--red)"':''}>${s.errors}</td></tr>`).join('')+`</table>`;
+}
+
+function renderCampaigns(D){
+  const wrap = document.getElementById('campaigns');
+  const camps = D.campaigns || [];
+  if(!camps.length){ wrap.innerHTML=''; return; }
+  const dataEnd = D.window.end; // last date GSC has reported
+  let html = `<h2>📝 Blog SEO campaign tracker <span class="hint">shipped changes → GSC outcome, tracked against a banked pre-change baseline</span></h2>`;
+
+  camps.forEach((c,i)=>{
+    const bt=c.base_totals, ptot=c.post_totals;
+    const proj=c.projected_clicks, baseClk=bt.clicks;
+    const headroom = proj - baseClk;
+    const badgeClass = c.status==='maturing'?'b-maturing':c.status==='verifying'?'b-verifying2':'b-complete';
+    const statusLabel = c.status==='maturing'?'Data maturing':c.status==='verifying'?'Verify window open':'Complete';
+
+    // Callout: what to expect, honestly.
+    let callout;
+    if(!c.has_post_data){
+      const dtv = c.days_to_verify;
+      callout = `<div class="callout"><strong>No post-change data yet — this is expected.</strong>
+        These ${c.article_count} articles shipped <strong>${c.go_live}</strong>, but GSC only has data through
+        <strong>${dataEnd}</strong> (≈3-day reporting lag), so the current window is entirely <em>before</em> the change.
+        Titles &amp; metas don't move CTR instantly — Google has to re-crawl and searchers have to react.
+        Give it 14–21 days: the <strong>verify window opens ${c.verify_start}</strong>${dtv>0?` (in ${dtv} day${dtv===1?'':'s'})`:''}.
+        The chart below will grow a post-go-live tail to the <em>right</em> of the dashed line as data lands — that's where the answer shows up.</div>`;
+    } else if(c.status==='verifying'){
+      const dPP = ptot ? ((ptot.ctr-bt.ctr)*100) : null;
+      const cls = dPP>0?'up':dPP<0?'down':'flat';
+      callout = `<div class="callout ready"><strong>Post-change data is landing.</strong>
+        Tracked set CTR since go-live: <strong>${ptot?pct(ptot.ctr):'—'}</strong> vs a <strong>${pct(bt.ctr)}</strong> baseline
+        ${dPP!=null?`(<span class="${cls}">${dPP>=0?'+':''}${dPP.toFixed(2)}pp</span>)`:''}
+        across ${ptot?fmt(ptot.impressions):'—'} post-go-live impressions. Read per-article movement below.</div>`;
+    } else {
+      callout = `<div class="callout ready"><strong>Verified.</strong> See the before/after per article below.</div>`;
+    }
+
+    // Timeline: baseline banked → shipped → first signal → verify window.
+    const firstSignal = c.go_live; // GSC will start reflecting it ~3d after
+    const past = d => d && d <= dataEnd;
+    const step = (state,label,dt)=>`<div class="tl-step ${state}"><span class="tl-dot"></span><div class="tl-line"></div>
+      <div class="tl-label">${label}</div><div class="tl-date">${dt||'—'}</div></div>`;
+    const shippedState = past(c.go_live)?'done':'now';
+    const verifyState = c.days_to_verify>0?'future':(c.status==='complete'?'done':'now');
+    const timeline = `<div class="timeline">
+      ${step('done','Baseline banked',(c.baseline_window||'').split(' to ')[0]||'')}
+      ${step(shippedState,'Shipped (go-live)',c.go_live)}
+      ${step(c.has_post_data?'done':'future','First GSC signal','~'+c.go_live)}
+      ${step(verifyState,'Verify window',c.verify_start)}
+    </div>`;
+
+    html += `<div class="card">
+      <div class="camp-head">
+        <h3>${esc(c.set)}</h3>
+        <span class="badge ${badgeClass}">${statusLabel}</span>
+        <span class="subtitle" style="margin:0">${c.article_count} articles · go-live ${c.go_live}</span>
+      </div>
+      ${callout}
+      ${timeline}
+      <div class="mini-stats">
+        <div class="stat"><div class="num">${fmt(bt.impressions)}</div><div class="label">Impr the set already earns · baseline</div></div>
+        <div class="stat"><div class="num">${pct(bt.ctr)}</div><div class="label">Blended CTR · baseline</div></div>
+        <div class="stat"><div class="num">${fmt(baseClk)}</div><div class="label">Clicks / 28d · baseline</div></div>
+        <div class="stat"><div class="num" style="color:var(--green)">~${fmt(proj)}</div><div class="label">Clicks if set hits ${pct(c.target_ctr)}* </div><div class="delta up">+${fmt(headroom)} headroom</div></div>
+      </div>
+      <div class="chart-wrap" style="margin-top:8px"><h3 style="color:var(--text)">Tracked set — daily clicks &amp; impressions
+        <span class="hint" style="font-weight:400"><span class="legend-mark"></span>go-live · after-tail grows to the right</span></h3>
+        <canvas id="camp_${i}"></canvas></div>
+      <table>
+        <tr><th>#</th><th>Article</th>
+          <th class="num">Base impr</th><th class="num">Base CTR</th><th class="num">Base pos</th>
+          <th class="num">Post CTR</th><th class="num">Post pos</th><th class="num">Δ CTR</th></tr>
+        ${c.articles.map(a=>{
+          const dPP = (a.post_ctr!=null && a.base_ctr!=null) ? (a.post_ctr-a.base_ctr)*100 : null;
+          const cls = dPP>0?'up':dPP<0?'down':'flat';
+          const mat = '<td class="num maturing">maturing</td>';
+          return `<tr>
+            <td class="num">${esc(a.n)}</td>
+            <td><a class="pglink" href="https://teeccino.com${esc(a.path)}" target="_blank">${esc(a.path.replace('/blogs/',''))}</a></td>
+            <td class="num">${fmt(a.base_impr)}</td>
+            <td class="num">${pct(a.base_ctr)}</td>
+            <td class="num">${a.base_pos}</td>
+            ${a.post_ctr!=null?`<td class="num">${pct(a.post_ctr)}</td>`:mat}
+            ${a.post_pos!=null?`<td class="num">${a.post_pos}</td>`:mat}
+            ${dPP!=null?`<td class="num"><span class="${cls}">${dPP>=0?'+':''}${dPP.toFixed(2)}pp</span></td>`:mat}
+          </tr>`;
+        }).join('')}
+      </table>
+      <div class="ledger-note" style="margin-top:10px">*<strong>${pct(c.target_ctr)}</strong> is an illustrative benchmark for a non-brand
+        informational article ranking top-10 — it sizes the prize, it is not a promise. ${c.note_16?esc(c.note_16)+' ':''}${c.note_12?esc(c.note_12):''}</div>
+    </div>`;
+  });
+
+  wrap.innerHTML = html;
+
+  // per-campaign aggregate chart: extend x-axis past the data so go-live + verify markers show
+  camps.forEach((c,i)=>{
+    const s=c.agg_series; if(!s.length) return;
+    const map={}; s.forEach(x=>map[x.date]=x);
+    const extra=[c.go_live,c.verify_start].filter(d=>d && !map[d]);
+    const labels=[...new Set(s.map(x=>x.date).concat(extra))].sort();
+    const clicks=labels.map(d=>map[d]?map[d].clicks:null);
+    const impr=labels.map(d=>map[d]?map[d].impressions:null);
+    const marks=[{date:c.go_live,label:'go-live',color:palette.yellow}];
+    if(c.verify_start) marks.push({date:c.verify_start,label:'verify',color:palette.indigo});
+    new Chart(document.getElementById('camp_'+i), {
+      type:'line',
+      data:{labels, datasets:[
+        {label:'Clicks', data:clicks, borderColor:palette.accent, backgroundColor:'transparent', spanGaps:false, tension:.3, pointRadius:0, borderWidth:2, yAxisID:'y'},
+        {label:'Impressions', data:impr, borderColor:palette.blue, backgroundColor:'transparent', spanGaps:false, tension:.3, pointRadius:0, borderWidth:1.5, yAxisID:'y1'},
+      ]},
+      options:{responsive:true, interaction:{mode:'index',intersect:false}, plugins:{markers:{marks}, legend:{labels:{boxWidth:12}}},
+        scales:{x:{ticks:{maxTicksLimit:8}}, y:{position:'left', title:{display:true,text:'Clicks'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Impressions'}}}}
+    });
+  });
 }
 
 function renderLedger(D){
