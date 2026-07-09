@@ -29,6 +29,35 @@
   .presets button:hover { background:#334155; }
   .presets button.active { background:#D4A843; color:#1a1a1a; border-color:#D4A843; font-weight:600; }
 
+  /* campaign multi-select dropdown */
+  .ms { position:relative; min-width:200px; max-width:250px; }
+  .ms-btn { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%;
+            padding:8px 10px; border-radius:7px; border:1px solid #334155;
+            background:#0f172a; color:#e2e8f0; font-size:0.9rem; cursor:pointer; }
+  .ms-btn:hover { border-color:#475569; }
+  .ms-btn #camp-summary { flex:1; min-width:0; text-align:left; overflow:hidden;
+            text-overflow:ellipsis; white-space:nowrap; }
+  .ms-btn .caret { color:#94a3b8; font-size:0.66rem; }
+  .ms-panel { display:none; position:absolute; z-index:60; top:calc(100% + 4px); left:0;
+            width:280px; max-height:340px; flex-direction:column;
+            background:#1e293b; border:1px solid #334155; border-radius:8px;
+            box-shadow:0 10px 28px rgba(0,0,0,0.5); }
+  .ms.open .ms-panel { display:flex; }
+  .ms-search { padding:8px; border-bottom:1px solid #334155; }
+  .ms-search input { width:100%; padding:6px 8px; border-radius:6px; border:1px solid #334155;
+            background:#0f172a; color:#e2e8f0; font-size:0.84rem; }
+  .ms-actions { display:flex; gap:6px; padding:8px; border-bottom:1px solid #334155; }
+  .ms-actions button { flex:1; padding:6px; border-radius:6px; border:1px solid #334155;
+            background:#0f172a; color:#cbd5e1; cursor:pointer; font-size:0.76rem; }
+  .ms-actions button:hover { background:#334155; }
+  .ms-list { overflow-y:auto; padding:4px; flex:1; }
+  .ms-opt { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px;
+            cursor:pointer; font-size:0.84rem; color:#e2e8f0; line-height:1.3; }
+  .ms-opt:hover { background:#0f172a; }
+  .ms-opt input { margin:0; accent-color:#D4A843; cursor:pointer; flex-shrink:0; }
+  .ms-opt.hidden { display:none; }
+  .ms-empty { padding:12px 8px; color:#64748b; font-size:0.8rem; text-align:center; }
+
   .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
            gap:12px; margin-bottom:20px; }
   .stat { background:#1e293b; border:1px solid #334155; padding:16px; border-radius:10px; text-align:center; }
@@ -174,8 +203,21 @@
       </select>
     </div>
     <div class="ctl">
-      <label for="campaign">Campaign</label>
-      <select id="campaign"><option value="">All campaigns</option></select>
+      <label>Campaign</label>
+      <div class="ms" id="camp-ms">
+        <button type="button" class="ms-btn" id="camp-btn" aria-haspopup="true" aria-expanded="false">
+          <span id="camp-summary">All campaigns</span>
+          <span class="caret">▾</span>
+        </button>
+        <div class="ms-panel" id="camp-panel">
+          <div class="ms-search"><input type="text" id="camp-search" placeholder="Filter campaigns…"></div>
+          <div class="ms-actions">
+            <button type="button" id="camp-all">Select all</button>
+            <button type="button" id="camp-clear">Clear</button>
+          </div>
+          <div class="ms-list" id="camp-list"></div>
+        </div>
+      </div>
     </div>
     <div class="ctl">
       <label for="ctype">Creative type</label>
@@ -211,6 +253,8 @@
 
 <script>
 let DATA = null;
+const campaignSel = new Set();   // selected campaigns; empty Set = All campaigns
+let campaignOptions = [];        // campaigns with spend in the current date range, sorted
 
 const $ = id => document.getElementById(id);
 const fmtUSD = n => '$' + (n||0).toLocaleString('en-US',{maximumFractionDigits:0});
@@ -232,7 +276,6 @@ function isoDaysAgo(maxDate, days){
 
 function aggregate(){
   const start = $('start').value, end = $('end').value;
-  const campFilter = $('campaign').value;
   const typeFilter = $('ctype').value;
   const minSpend = parseFloat($('minspend').value) || 0;
   const search = $('search').value.trim().toLowerCase();
@@ -249,7 +292,8 @@ function aggregate(){
   const out = [];
   for (const aid in agg){
     const meta = DATA.ads[aid]; if (!meta) continue;
-    if (campFilter && meta.campaign !== campFilter) continue;
+    // empty selection = All campaigns; otherwise keep only selected campaigns
+    if (campaignSel.size && !campaignSel.has(meta.campaign)) continue;
     if (typeFilter && meta.type !== typeFilter) continue;
     if (search && !(meta.name.toLowerCase().includes(search))) continue;
     const a = agg[aid];
@@ -266,25 +310,46 @@ function aggregate(){
   return out;
 }
 
-// Rebuild the campaign dropdown to list ONLY campaigns with spend in the selected
-// date range. Preserves the current selection if it's still in range, else resets
-// to "All campaigns" (and signals the caller that the filter changed).
+// Rebuild the campaign multi-select to list ONLY campaigns with spend in the
+// selected date range. Selections persist across rebuilds; a campaign is dropped
+// from the selection ONLY if it no longer has spend in the current range.
 function refreshCampaignOptions(){
   const start=$('start').value, end=$('end').value;
-  const sel=$('campaign');
-  const prev=sel.value;
   const camps=new Set();
   for (const row of DATA.daily){
     if (row[1]<start || row[1]>end) continue;
     if (row[2]<=0) continue;                // spend in the period
     const meta=DATA.ads[row[0]]; if(meta) camps.add(meta.campaign);
   }
-  const list=[...camps].sort();
-  const keep = prev && camps.has(prev);
-  sel.innerHTML='<option value="">All campaigns ('+list.length+')</option>' +
-    list.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
-  sel.value = keep ? prev : '';
-  return keep || !prev;                     // false => selection was dropped
+  // drop only selections that no longer have spend in range
+  for (const c of [...campaignSel]) if(!camps.has(c)) campaignSel.delete(c);
+  campaignOptions=[...camps].sort();
+  renderCampaignList();
+  updateCampaignSummary();
+}
+
+// Render the checkbox list, honoring the in-dropdown text filter.
+function renderCampaignList(){
+  const q=($('camp-search').value||'').trim().toLowerCase();
+  const list=$('camp-list');
+  if(!campaignOptions.length){
+    list.innerHTML='<div class="ms-empty">No campaigns with spend in range</div>';
+    return;
+  }
+  list.innerHTML=campaignOptions.map(c=>{
+    const hidden=q && !c.toLowerCase().includes(q);
+    const checked=campaignSel.has(c)?'checked':'';
+    return `<label class="ms-opt${hidden?' hidden':''}">`+
+      `<input type="checkbox" value="${esc(c)}" ${checked}><span>${esc(c)}</span></label>`;
+  }).join('');
+}
+
+// Compact collapsed-state summary label.
+function updateCampaignSummary(){
+  const n=campaignSel.size, el=$('camp-summary');
+  if(n===0) el.textContent='All campaigns'+(campaignOptions.length?` (${campaignOptions.length})`:'');
+  else if(n===1) el.textContent=[...campaignSel][0];
+  else el.textContent=`${n} campaigns`;
 }
 
 function render(){
@@ -445,7 +510,13 @@ function renderCharts(aid){
 
 function closeModal(){ destroyCharts(); $('modal').classList.remove('open'); }
 $('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  const ms=$('camp-ms');
+  if(ms && ms.classList.contains('open')){
+    ms.classList.remove('open'); $('camp-btn').setAttribute('aria-expanded','false');
+  } else { closeModal(); }
+});
 
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
 
@@ -507,10 +578,42 @@ function setPreset(btn){
 }
 
 function bind(){
-  ['kpi','campaign','ctype','minspend','search','start','end'].forEach(id=>{
+  ['kpi','ctype','minspend','search','start','end'].forEach(id=>{
     $(id).addEventListener('input', ()=>{ if(id==='start'||id==='end') setPreset(null); render(); });
     $(id).addEventListener('change', render);
   });
+
+  // campaign multi-select
+  const ms=$('camp-ms');
+  $('camp-btn').addEventListener('click', e=>{
+    e.stopPropagation();
+    const open=ms.classList.toggle('open');
+    $('camp-btn').setAttribute('aria-expanded', open?'true':'false');
+    if(open) $('camp-search').focus();
+  });
+  $('camp-panel').addEventListener('click', e=>e.stopPropagation());
+  $('camp-search').addEventListener('input', renderCampaignList);
+  $('camp-list').addEventListener('change', e=>{
+    if(e.target.type!=='checkbox') return;
+    if(e.target.checked) campaignSel.add(e.target.value); else campaignSel.delete(e.target.value);
+    updateCampaignSummary(); render();
+  });
+  // "Select all" selects the campaigns currently visible under the text filter
+  // (so filtering to "COLD" then Select-all grabs all COLD campaigns at once).
+  $('camp-all').addEventListener('click', ()=>{
+    const q=($('camp-search').value||'').trim().toLowerCase();
+    campaignOptions.forEach(c=>{ if(!q || c.toLowerCase().includes(q)) campaignSel.add(c); });
+    renderCampaignList(); updateCampaignSummary(); render();
+  });
+  $('camp-clear').addEventListener('click', ()=>{
+    campaignSel.clear(); renderCampaignList(); updateCampaignSummary(); render();
+  });
+  document.addEventListener('click', ()=>{
+    if(ms.classList.contains('open')){
+      ms.classList.remove('open'); $('camp-btn').setAttribute('aria-expanded','false');
+    }
+  });
+
   document.querySelectorAll('#presets button').forEach(b=>{
     b.addEventListener('click', ()=>{
       setPreset(b);
