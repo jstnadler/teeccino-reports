@@ -9,7 +9,7 @@
   :root {
     --bg:#1a1a2e; --card:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.1);
     --text:#e2e8f0; --text-dim:#888; --accent:#D4A843; --indigo:#7986cb;
-    --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa;
+    --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa; --violet:#c084fc;
   }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -17,9 +17,10 @@
     padding:24px; padding-top:70px; line-height:1.5; min-height:100vh; }
   header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:12px; }
   h1 { font-size:1.7rem; background:linear-gradient(135deg,#D4A843,#8B6914); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  h2 { font-size:1.1rem; margin:34px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  h2 { font-size:1.1rem; margin:34px 0 6px; padding-bottom:8px; border-bottom:1px solid var(--border); }
   h2 .hint { font-size:.72rem; color:var(--text-dim); font-weight:400; text-transform:none; letter-spacing:0; margin-left:8px; }
   h3 { font-size:.95rem; color:var(--accent); font-weight:600; margin-bottom:8px; }
+  .section-note { font-size:.8rem; color:var(--text-dim); margin:0 0 12px; max-width:60ch; }
   .subtitle { color:var(--text-dim); font-size:.85rem; margin-bottom:4px; }
   .badge { font-size:.7rem; padding:3px 10px; border-radius:12px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; display:inline-block; }
   .badge-live { background:rgba(74,222,128,.18); color:var(--green); }
@@ -27,51 +28,46 @@
   .b-triaging { background:rgba(96,165,250,.18); color:var(--blue); }
   .b-dispatched { background:rgba(251,191,36,.18); color:var(--yellow); }
   .b-verifying { background:rgba(121,134,203,.25); color:var(--indigo); }
+  .b-maturing { background:rgba(96,165,250,.18); color:var(--blue); }
   .b-done { background:rgba(74,222,128,.18); color:var(--green); }
+  .surf { font-size:.66rem; padding:2px 8px; border-radius:10px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; }
+  .surf-product { background:rgba(74,222,128,.16); color:var(--green); }
+  .surf-collection { background:rgba(192,132,252,.18); color:var(--violet); }
+  .surf-blog { background:rgba(96,165,250,.16); color:var(--blue); }
+  .surf-page { background:rgba(212,168,67,.16); color:var(--accent); }
+  .surf-other { background:rgba(136,136,136,.2); color:var(--text-dim); }
+  .group-tag { font-size:.66rem; color:var(--violet); background:rgba(192,132,252,.1); border:1px solid rgba(192,132,252,.25); padding:1px 6px; border-radius:5px; }
   .stats-bar { display:flex; gap:30px; margin:14px 0 8px; flex-wrap:wrap; }
   .stat .num { font-size:2rem; font-weight:700; color:var(--accent); line-height:1.1; }
+  .stat .sub { font-size:.72rem; color:var(--text-dim); margin-top:1px; }
   .stat .label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; }
   .stat .delta { font-size:.78rem; font-weight:600; margin-top:2px; }
   .up { color:var(--green); } .down { color:var(--red); } .flat { color:var(--text-dim); }
   .grid-2 { display:grid; grid-template-columns:2fr 1fr; gap:20px; }
   @media (max-width:900px){ .grid-2{ grid-template-columns:1fr; } .stats-bar{ gap:20px; } }
   .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:14px; }
+  .hero { background:linear-gradient(135deg,rgba(212,168,67,.06),rgba(96,165,250,.05)); border:1px solid rgba(212,168,67,.2); }
   .chart-wrap { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
-  .chart-wrap canvas { width:100%!important; max-height:320px; }
+  .chart-wrap canvas { width:100%!important; max-height:340px; }
   .empty { padding:24px; text-align:center; color:var(--text-dim); font-style:italic; background:rgba(255,255,255,.02); border:1px dashed var(--border); border-radius:8px; font-size:.88rem; }
   table { width:100%; border-collapse:separate; border-spacing:0; }
   th, td { padding:9px 11px; text-align:left; border-bottom:1px solid var(--border); font-size:.84rem; }
   th { background:rgba(212,168,67,.08); color:var(--accent); font-weight:600; text-transform:uppercase; font-size:.7rem; letter-spacing:.4px; }
   td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  td.maturing { color:var(--text-dim); font-style:italic; }
   tr:hover td { background:rgba(255,255,255,.02); }
   code { font-family:'SF Mono',Consolas,monospace; font-size:.8rem; background:rgba(212,168,67,.08); color:var(--accent); padding:1px 6px; border-radius:4px; }
-  .ledger-note { font-size:.8rem; color:var(--text-dim); line-height:1.55; }
-  .pill-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
-  .legend-mark { display:inline-block; width:22px; border-top:2px dashed var(--yellow); vertical-align:middle; margin-right:6px; }
+  .callout { border-left:3px solid var(--yellow); background:rgba(251,191,36,.07); padding:11px 14px; border-radius:0 8px 8px 0; font-size:.85rem; line-height:1.55; margin:12px 0; }
+  .callout.info { border-left-color:var(--blue); background:rgba(96,165,250,.07); }
+  .marker-legend { display:flex; gap:14px; flex-wrap:wrap; font-size:.76rem; color:var(--text-dim); margin:2px 2px 14px; }
+  .marker-legend b { color:var(--yellow); }
+  .filter-row { display:flex; gap:8px; flex-wrap:wrap; margin:2px 0 12px; }
+  .fbtn { font-size:.74rem; padding:4px 12px; border-radius:14px; border:1px solid var(--border); background:transparent; color:var(--text-dim); cursor:pointer; }
+  .fbtn.on { background:rgba(212,168,67,.15); color:var(--accent); border-color:rgba(212,168,67,.4); }
   a.pglink { color:var(--blue); text-decoration:none; }
   a.pglink:hover { text-decoration:underline; }
   .foot { margin-top:30px; color:var(--text-dim); font-size:.75rem; }
-  .b-maturing { background:rgba(96,165,250,.18); color:var(--blue); }
-  .b-verifying2 { background:rgba(121,134,203,.25); color:var(--indigo); }
-  .b-complete { background:rgba(74,222,128,.18); color:var(--green); }
-  .camp-head { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
-  .camp-head h3 { margin:0; font-size:1rem; }
-  .callout { border-left:3px solid var(--blue); background:rgba(96,165,250,.08); padding:11px 14px;
-    border-radius:0 8px 8px 0; font-size:.85rem; color:var(--text); margin:12px 0; line-height:1.55; }
-  .callout.ready { border-left-color:var(--green); background:rgba(74,222,128,.08); }
-  .timeline { display:flex; gap:0; margin:16px 0 6px; flex-wrap:wrap; }
-  .tl-step { flex:1; min-width:120px; position:relative; padding:0 6px; }
-  .tl-dot { width:11px; height:11px; border-radius:50%; background:var(--text-dim); display:inline-block; }
-  .tl-step.done .tl-dot { background:var(--green); }
-  .tl-step.now .tl-dot { background:var(--yellow); box-shadow:0 0 0 4px rgba(251,191,36,.2); }
-  .tl-step.future .tl-dot { background:var(--border); border:1px solid var(--text-dim); }
-  .tl-line { height:2px; background:var(--border); margin:5px 0 8px; }
-  .tl-step.done .tl-line { background:var(--green); }
-  .tl-label { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.4px; }
-  .tl-date { font-size:.82rem; font-weight:600; margin-top:1px; }
-  .mini-stats { display:flex; gap:26px; flex-wrap:wrap; margin:14px 0 4px; }
-  .mini-stats .stat .num { font-size:1.5rem; }
-  td.maturing { color:var(--text-dim); font-style:italic; }
+  .legend-mark { display:inline-block; width:22px; border-top:2px dashed var(--yellow); vertical-align:middle; margin-right:6px; }
 </style>
 </head>
 <body>
@@ -85,28 +81,32 @@
 <header>
   <div>
     <h1>🔍 Search Performance (SEO)</h1>
-    <div class="subtitle" id="sub">Organic search health for teeccino.com — Google Search Console</div>
+    <div class="subtitle" id="sub">Organic traffic &amp; search health for teeccino.com</div>
   </div>
   <div style="text-align:right">
-    <span class="badge badge-live">Live · GSC</span>
+    <span class="badge badge-live">Live · GA4 + GSC</span>
     <div class="subtitle" id="stamp" style="margin-top:6px"></div>
   </div>
 </header>
 
-<div id="app"><div class="empty" style="margin-top:30px">Loading Search Console data…</div></div>
+<div id="app"><div class="empty" style="margin-top:30px">Loading organic traffic &amp; Search Console data…</div></div>
 
 <div class="foot">
-  Owner: <strong>SearchSmith</strong> · Property <code>sc-domain:teeccino.com</code> · 28-day window vs prior 28 days, 3-day reporting lag.
-  Data regenerated by <code>automations/build_search_dashboard.py</code>. Improvement ledger sourced from SearchSmith's opportunity backlog.
+  Owner: <strong>SearchSmith</strong> · Property <code>sc-domain:teeccino.com</code>.
+  Organic-traffic (GA4) series consumed from DataOps' <code>organic-traffic-data.json</code> feed; search metrics from Google Search Console (28-day window vs prior 28 days, 3-day reporting lag).
+  Regenerated by <code>automations/build_search_dashboard.py</code>.
 </div>
 
 <script>
-const palette = {accent:'#D4A843', indigo:'#7986cb', green:'#4ade80', red:'#f87171', yellow:'#fbbf24', blue:'#60a5fa', dim:'#888'};
-const fmt = n => n>=1000 ? n.toLocaleString() : String(n);
-const pct = v => (v*100).toFixed(2)+'%';
-const esc = s => String(s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const palette = {accent:'#D4A843', indigo:'#7986cb', green:'#4ade80', red:'#f87171', yellow:'#fbbf24', blue:'#60a5fa', violet:'#c084fc', dim:'#888'};
+const fmt = n => (n==null)?'—':(Math.abs(n)>=1000 ? Math.round(n).toLocaleString() : String(n));
+const pct = v => (v==null)?'—':(v*100).toFixed(2)+'%';
+const money = n => (n==null)?'—':'$'+Math.round(n).toLocaleString();
+const esc = s => String(s==null?'':s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const YEAR_COLORS = {2023:palette.dim, 2024:palette.blue, 2025:palette.indigo, 2026:palette.accent};
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// vertical date-marker plugin: draws dashed lines at given label dates (e.g. a fix dispatch/ship date)
+// vertical dated markers; clustered so same-day changes never write over each other
 const markerPlugin = {
   id:'markers',
   afterDraw(chart, args, opts){
@@ -121,9 +121,12 @@ const markerPlugin = {
       ctx.save();
       ctx.strokeStyle = m.color || palette.yellow; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
       ctx.beginPath(); ctx.moveTo(px,top); ctx.lineTo(px,bottom); ctx.stroke();
-      ctx.setLineDash([]); ctx.fillStyle=m.color||palette.yellow; ctx.font='10px sans-serif';
-      ctx.textAlign = idx > labels.length*0.8 ? 'right' : 'left';
-      ctx.fillText(' '+m.label, px+(idx>labels.length*0.8?-4:4), top+11);
+      ctx.setLineDash([]);
+      // count badge at top of the line
+      const lab = m.count>1 ? ('●'+m.count) : ('●'+(m.label||''));
+      ctx.fillStyle = m.color || palette.yellow; ctx.font='bold 10px sans-serif';
+      ctx.textAlign = idx > labels.length*0.82 ? 'right' : 'left';
+      ctx.fillText(' '+lab, px+(idx>labels.length*0.82?-4:4), top+11);
       ctx.restore();
     });
   }
@@ -133,46 +136,56 @@ Chart.defaults.color = '#aaa';
 Chart.defaults.font.size = 11;
 
 function deltaHTML(cur, prior, kind){
-  if(prior===0||prior==null) return '<span class="delta flat">—</span>';
+  if(prior===0||prior==null||cur==null) return '<span class="delta flat">—</span>';
   if(kind==='pp'){ const d=(cur-prior)*100; const cls=d>0?'up':d<0?'down':'flat';
     return `<span class="delta ${cls}">${d>=0?'+':''}${d.toFixed(2)}pp</span>`; }
   const d=(cur-prior)/prior*100;
-  // position: lower is better -> invert color
   let cls = d>0?'up':d<0?'down':'flat';
-  if(kind==='pos') cls = d<0?'up':d>0?'down':'flat';
+  if(kind==='pos') cls = d<0?'up':d>0?'down':'flat'; // lower position is better
   const arrow = d>0?'▲':d<0?'▼':'■';
   return `<span class="delta ${cls}">${arrow} ${Math.abs(d).toFixed(1)}%</span>`;
 }
 
-function render(D){
-  document.getElementById('stamp').textContent = 'Built '+D.built_at+' · window '+D.window.start+' → '+D.window.end;
-  const c=D.kpis.current, p=D.kpis.prior;
+// ---- YoY same-period rollup from GA4 daily series ----
+function ytdYoY(daily, metric){
+  if(!daily||!daily.length) return null;
+  const last = daily[daily.length-1].date;         // e.g. 2026-07-08
+  const curYear = +last.slice(0,4);
+  const md = last.slice(5);                         // "07-08"
+  const sumFor = y => daily.filter(r=>r.date.slice(0,4)==String(y) && r.date.slice(5)<=md)
+                           .reduce((a,r)=>a+(r[metric]||0),0);
+  return {cur:sumFor(curYear), prior:sumFor(curYear-1), curYear, priorYear:curYear-1, through:last};
+}
+
+function render(D, G){
+  document.getElementById('stamp').textContent =
+    'Built '+D.built_at+' · GSC window '+D.window.start+' → '+D.window.end + (G?(' · GA4 through '+G.meta.date_max):'');
   const app = document.getElementById('app');
   app.innerHTML = `
-    <div class="stats-bar">
-      <div class="stat"><div class="num">${fmt(c.clicks)}</div><div class="label">Clicks · 28d</div>${deltaHTML(c.clicks,p.clicks)}</div>
-      <div class="stat"><div class="num">${fmt(c.impressions)}</div><div class="label">Impressions · 28d</div>${deltaHTML(c.impressions,p.impressions)}</div>
-      <div class="stat"><div class="num">${pct(c.ctr)}</div><div class="label">CTR · 28d</div>${deltaHTML(c.ctr,p.ctr,'pp')}</div>
-      <div class="stat"><div class="num">${c.position}</div><div class="label">Avg position · 28d</div>${deltaHTML(c.position,p.position,'pos')}</div>
-    </div>
+    <h2>🌱 Organic traffic <span class="hint">GA4 Organic Search — the real seasonal traffic picture, year over year</span></h2>
+    <div id="organic"></div>
 
-    <div id="campaigns"></div>
+    <h2>🔎 Search Console signal <span class="hint">how we show up in Google — 28d vs prior 28d</span></h2>
+    <div class="stats-bar" id="gscKpis"></div>
 
-    <h2>Daily trend <span class="hint">last 90 days · dashed line = a fix dispatched</span></h2>
+    <h2>Daily search trend <span class="hint">last 90 days · ● dashed = SEO change shipped (count if several that day — see change log below)</span></h2>
     <div class="grid-2">
       <div class="chart-wrap"><canvas id="trendVol"></canvas></div>
       <div class="chart-wrap"><canvas id="trendCtr"></canvas></div>
     </div>
+    <div class="marker-legend" id="markerLegend"></div>
 
-    <h2>🛠️ Improvement ledger <span class="hint">every fix we dispatch, tracked to its GSC outcome</span></h2>
-    <div id="ledger"></div>
+    <h2>🛠️ Change log <span class="hint">every SEO change we ship — product, collection or blog — one ledger, tracked to its page's GSC outcome</span></h2>
+    <p class="section-note">A page is a page: we track a product, collection and blog fix the same way. "Campaign" is just a group tag on changes that shipped together. Post-change columns read <em>maturing</em> until Google has re-crawled and GSC has data past the change date.</p>
+    <div class="filter-row" id="changeFilter"></div>
+    <div id="changelog"></div>
 
     <div class="grid-2" style="grid-template-columns:1fr 1fr">
       <div><h2>Where we rank <span class="hint">impressions by position bucket</span></h2><div class="chart-wrap"><canvas id="posDist"></canvas></div></div>
       <div><h2>Devices</h2><div class="card" id="device"></div></div>
     </div>
 
-    <h2>CTR opportunity backlog <span class="hint">rank well, get few clicks — impact-ranked</span></h2>
+    <h2>CTR opportunity backlog <span class="hint">rank well, get few clicks — impact-ranked, not yet actioned</span></h2>
     <div class="card" id="opps"></div>
 
     <div class="grid-2" style="grid-template-columns:1fr 1fr">
@@ -183,15 +196,112 @@ function render(D){
     <h2>Sitemaps</h2><div class="card" id="sitemaps"></div>
   `;
 
-  const labels = D.trend.map(t=>t.date);
-  const marks = (D.ledger||[]).filter(l=>l.dispatch&&l.dispatch.at)
-    .map(l=>({date:l.dispatch.at, label:l.query, color:palette.yellow}));
+  renderOrganic(G);
+  renderGscKpis(D);
+  renderTrend(D);
+  renderChangeLog(D);
+  renderRankDevice(D);
+  renderOpps(D);
+  renderTopLists(D);
+  renderSitemaps(D);
+}
+
+// ============ ORGANIC TRAFFIC HERO (GA4, from DataOps) ============
+function renderOrganic(G){
+  const el = document.getElementById('organic');
+  if(!G || !G.organic_search){ el.innerHTML = `<div class="empty">Organic-traffic feed unavailable. SEO metrics below still load from GSC.</div>`; return; }
+  const O = G.organic_search;
+  const s = ytdYoY(O.daily,'sessions'), p = ytdYoY(O.daily,'purchases'), r = ytdYoY(O.daily,'revenue');
+
+  // full-year rollup for the "traffic flat, conversion down" story
+  const yr = {};
+  (O.monthly||[]).forEach(m=>{ const y=m.period.slice(0,4); (yr[y]=yr[y]||{sessions:0,revenue:0}); yr[y].sessions+=m.sessions||0; yr[y].revenue+=m.revenue||0; });
+  let callout = '';
+  if(yr['2023'] && yr['2025']){
+    const sPP = ((yr['2025'].sessions-yr['2023'].sessions)/yr['2023'].sessions*100);
+    const rPP = ((yr['2025'].revenue-yr['2023'].revenue)/yr['2023'].revenue*100);
+    callout = `<div class="callout info"><strong>The real story:</strong> organic sessions were roughly flat 2023→2025
+      (${fmt(yr['2023'].sessions)} → ${fmt(yr['2025'].sessions)}, ${sPP>=0?'+':''}${sPP.toFixed(0)}%),
+      but organic revenue fell <strong>${rPP.toFixed(0)}%</strong> (${money(yr['2023'].revenue)} → ${money(yr['2025'].revenue)}, GA4 last-click).
+      Traffic volume isn't the problem — <strong>conversion of that traffic is</strong>. That's a landing-page/CRO lever (worth a LabSmith look), not just a rankings one.</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="card hero">
+      <div class="stats-bar">
+        <div class="stat"><div class="num">${fmt(s.cur)}</div><div class="label">Organic sessions · ${s.curYear} YTD</div>
+          ${deltaHTML(s.cur,s.prior)}<div class="sub">vs ${fmt(s.prior)} same period ${s.priorYear}</div></div>
+        <div class="stat"><div class="num">${fmt(p.cur)}</div><div class="label">Organic purchases · ${p.curYear} YTD</div>
+          ${deltaHTML(p.cur,p.prior)}<div class="sub">vs ${fmt(p.prior)} in ${p.priorYear}</div></div>
+        <div class="stat"><div class="num">${money(r.cur)}</div><div class="label">Organic revenue · ${r.curYear} YTD *</div>
+          ${deltaHTML(r.cur,r.prior)}<div class="sub">vs ${money(r.prior)} in ${r.priorYear}</div></div>
+      </div>
+      ${callout}
+      <div class="chart-wrap" style="margin-top:6px;background:transparent;border:none;padding:0">
+        <h3 style="color:var(--text)">Organic sessions by month — year over year
+          <span class="hint" style="font-weight:400">seasonal shape · current partial month excluded from ${s.curYear} line (data through ${G.meta.date_max})</span></h3>
+        <canvas id="yoyChart"></canvas>
+      </div>
+      <div class="section-note" style="margin-top:8px">* Revenue &amp; purchases are GA4 last-click attribution (organic-search channel), good for trend/seasonality — not reconciled to Shopify True Gross. Source: DataOps <code>organic-traffic-data.json</code>.</div>
+    </div>`;
+
+  // YoY monthly line chart from the ready-made pivot
+  const pivot = O.monthly_yoy_sessions || {};
+  const years = [...new Set(Object.values(pivot).flatMap(o=>Object.keys(o)))].sort();
+  const curYear = String(s.curYear);
+  const partialMonth = +G.meta.date_max.slice(5,7); // current month is incomplete -> drop from cur-year line
+  const datasets = years.map(y=>({
+    label:y===curYear?y+' (YTD)':y,
+    data: MONTHS.map((_,i)=> (y===curYear && (i+1)===partialMonth) ? null : ((pivot[String(i+1)]||{})[y] ?? null)),
+    borderColor: YEAR_COLORS[+y] || palette.dim,
+    backgroundColor:'transparent',
+    borderWidth: y===curYear?3:1.6,
+    borderDash: y===curYear?[]:(y===String(s.priorYear)?[]:[4,3]),
+    tension:.35, pointRadius:0, spanGaps:false,
+  }));
+  new Chart(document.getElementById('yoyChart'), {
+    type:'line',
+    data:{labels:MONTHS, datasets},
+    options:{responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{boxWidth:12}}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.parsed.y)} sessions`}}},
+      scales:{y:{title:{display:true,text:'Organic sessions / month'}}}}
+  });
+}
+
+// ============ GSC KPI BAR ============
+function renderGscKpis(D){
+  const c=D.kpis.current, p=D.kpis.prior;
+  document.getElementById('gscKpis').innerHTML = `
+    <div class="stat"><div class="num">${fmt(c.clicks)}</div><div class="label">Clicks · 28d</div>${deltaHTML(c.clicks,p.clicks)}</div>
+    <div class="stat"><div class="num">${fmt(c.impressions)}</div><div class="label">Impressions · 28d</div>${deltaHTML(c.impressions,p.impressions)}</div>
+    <div class="stat"><div class="num">${pct(c.ctr)}</div><div class="label">CTR · 28d</div>${deltaHTML(c.ctr,p.ctr,'pp')}</div>
+    <div class="stat"><div class="num">${c.position}</div><div class="label">Avg position · 28d</div>${deltaHTML(c.position,p.position,'pos')}</div>`;
+}
+
+// ============ DAILY TREND + CLUSTERED CHANGE MARKERS ============
+function clusterMarks(D){
+  const byDate = {};
+  (D.changes||[]).forEach(ch=>{ if(!ch.date) return; (byDate[ch.date]=byDate[ch.date]||[]).push(ch); });
+  return Object.keys(byDate).sort().map(d=>{
+    const items = byDate[d];
+    const label = items.length===1 ? (items[0].query || (items[0].target_page||'').split('/').pop()) : '';
+    return {date:d, count:items.length, label, items};
+  });
+}
+function renderTrend(D){
+  const marks = clusterMarks(D);
+  // extend x-axis so markers beyond the data edge (recent go-lives) still show
+  const trendDates = D.trend.map(t=>t.date);
+  const map={}; D.trend.forEach(t=>map[t.date]=t);
+  const extra = marks.map(m=>m.date).filter(d=>!map[d]);
+  const labels = [...new Set(trendDates.concat(extra))].sort();
+  const col = (k)=>labels.map(d=>map[d]?map[d][k]:null);
 
   new Chart(document.getElementById('trendVol'), {
     type:'line',
     data:{labels, datasets:[
-      {label:'Clicks', data:D.trend.map(t=>t.clicks), borderColor:palette.accent, backgroundColor:'transparent', yAxisID:'y', tension:.3, pointRadius:0, borderWidth:2},
-      {label:'Impressions', data:D.trend.map(t=>t.impressions), borderColor:palette.blue, backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0, borderWidth:1.5},
+      {label:'Clicks', data:col('clicks'), borderColor:palette.accent, backgroundColor:'transparent', yAxisID:'y', tension:.3, pointRadius:0, borderWidth:2, spanGaps:false},
+      {label:'Impressions', data:col('impressions'), borderColor:palette.blue, backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0, borderWidth:1.5, spanGaps:false},
     ]},
     options:{responsive:true, interaction:{mode:'index',intersect:false}, plugins:{markers:{marks}, legend:{labels:{boxWidth:12}}},
       scales:{x:{ticks:{maxTicksLimit:8}}, y:{position:'left', title:{display:true,text:'Clicks'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Impressions'}}}}
@@ -199,20 +309,72 @@ function render(D){
   new Chart(document.getElementById('trendCtr'), {
     type:'line',
     data:{labels, datasets:[
-      {label:'CTR %', data:D.trend.map(t=>+(t.ctr*100).toFixed(2)), borderColor:palette.green, backgroundColor:'transparent', yAxisID:'y', tension:.3, pointRadius:0, borderWidth:2},
-      {label:'Avg position', data:D.trend.map(t=>t.position), borderColor:palette.indigo, backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0, borderWidth:1.5},
+      {label:'CTR %', data:labels.map(d=>map[d]?+(map[d].ctr*100).toFixed(2):null), borderColor:palette.green, backgroundColor:'transparent', yAxisID:'y', tension:.3, pointRadius:0, borderWidth:2, spanGaps:false},
+      {label:'Avg position', data:col('position'), borderColor:palette.indigo, backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0, borderWidth:1.5, spanGaps:false},
     ]},
     options:{responsive:true, interaction:{mode:'index',intersect:false}, plugins:{markers:{marks}, legend:{labels:{boxWidth:12}}},
       scales:{x:{ticks:{maxTicksLimit:8}}, y:{position:'left', title:{display:true,text:'CTR %'}}, y1:{position:'right', reverse:true, grid:{drawOnChartArea:false}, title:{display:true,text:'Position (lower=better)'}}}}
   });
 
-  // ---- Shipped-campaign trackers (blog SEO set, etc.) ----
-  renderCampaigns(D);
+  document.getElementById('markerLegend').innerHTML = marks.length
+    ? marks.map(m=>`<span><b>●</b> ${esc(m.date)}: ${m.count>1?(m.count+' changes'):(esc(m.label)||'1 change')}${m.items[0].group?` <span class="group-tag">${esc(m.items[0].group)}</span>`:''}</span>`).join('')
+    : '<span>No changes shipped in this window yet.</span>';
+}
 
-  // ---- Improvement ledger ----
-  renderLedger(D);
+// ============ UNIFIED CHANGE LOG ============
+function renderChangeLog(D){
+  const el = document.getElementById('changelog');
+  const changes = D.changes || [];
+  if(!changes.length){ el.innerHTML = `<div class="empty">No SEO changes in flight. When a title/meta, on-page or content fix ships, it appears here and is tracked to its page's GSC outcome.</div>`;
+    document.getElementById('changeFilter').innerHTML=''; return; }
 
-  // ---- position distribution ----
+  // filter pills by surface
+  const surfaces = [...new Set(changes.map(c=>c.surface))];
+  const counts = surfaces.map(s=>`${s} (${changes.filter(c=>c.surface===s).length})`);
+  document.getElementById('changeFilter').innerHTML =
+    `<button class="fbtn on" data-f="all">All (${changes.length})</button>` +
+    surfaces.map((s,i)=>`<button class="fbtn" data-f="${esc(s)}">${esc(counts[i])}</button>`).join('');
+
+  el.innerHTML = `<div class="card" style="padding:0"><table id="clTable">
+    <tr><th>Shipped</th><th>Surface</th><th>Page</th><th>Target query</th><th>Owner</th><th>Status</th>
+        <th class="num">Base CTR</th><th class="num">Post CTR</th><th class="num">Δ CTR</th><th class="num">Base→Post pos</th></tr>`
+    + changes.map(c=>{
+        const dPP = (c.post_ctr!=null && c.base_ctr!=null) ? (c.post_ctr-c.base_ctr)*100 : null;
+        const cls = dPP>0?'up':dPP<0?'down':'flat';
+        const mat = '<td class="num maturing">maturing</td>';
+        const posCell = (c.post_pos!=null)
+          ? `<td class="num">${c.base_pos} → ${c.post_pos}</td>`
+          : `<td class="num">${c.base_pos} → <span class="maturing">…</span></td>`;
+        const grp = c.group?` <span class="group-tag">${esc(c.group)}</span>`:'';
+        const dtv = (c.days_to_verify!=null && c.days_to_verify>0 && !c.has_post_data)
+          ? `<div class="sub">verify in ${c.days_to_verify}d</div>`:'';
+        return `<tr data-surface="${esc(c.surface)}">
+          <td>${esc(c.date||'—')}</td>
+          <td><span class="surf surf-${esc(c.surface)}">${esc(c.surface)}</span></td>
+          <td><a class="pglink" href="https://teeccino.com${esc(c.target_page||'')}" target="_blank">${esc((c.target_page||'').replace('/blogs/','').slice(0,40))}</a>${grp}</td>
+          <td>${c.query?`<code>${esc(c.query)}</code>`:'<span class="sub">page-level</span>'}</td>
+          <td>${esc(c.owner||'')}</td>
+          <td><span class="badge b-${esc(c.status||'new')}">${esc(c.status||'new')}</span>${dtv}</td>
+          <td class="num">${pct(c.base_ctr)}</td>
+          ${c.post_ctr!=null?`<td class="num">${pct(c.post_ctr)}</td>`:mat}
+          ${dPP!=null?`<td class="num"><span class="${cls}">${dPP>=0?'+':''}${dPP.toFixed(2)}pp</span></td>`:mat}
+          ${posCell}
+        </tr>`;
+      }).join('') + `</table></div>`;
+
+  // wire filter
+  document.querySelectorAll('#changeFilter .fbtn').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#changeFilter .fbtn').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const f=b.dataset.f;
+    document.querySelectorAll('#clTable tr[data-surface]').forEach(tr=>{
+      tr.style.display = (f==='all'||tr.dataset.surface===f)?'':'none';
+    });
+  }));
+}
+
+// ============ rank / device / opps / lists / sitemaps ============
+function renderRankDevice(D){
   const pd=D.position_distribution;
   new Chart(document.getElementById('posDist'), {
     type:'doughnut',
@@ -220,13 +382,11 @@ function render(D){
       backgroundColor:[palette.green,palette.accent,palette.blue,palette.dim], borderColor:'#1a1a2e', borderWidth:2}]},
     options:{plugins:{legend:{position:'right',labels:{boxWidth:12}}}}
   });
-
-  // ---- device ----
   document.getElementById('device').innerHTML =
     `<table><tr><th>Device</th><th class="num">Clicks</th><th class="num">Impr</th><th class="num">CTR</th></tr>`+
     D.device.map(d=>`<tr><td>${esc(d.device)}</td><td class="num">${fmt(d.clicks)}</td><td class="num">${fmt(d.impressions)}</td><td class="num">${pct(d.ctr)}</td></tr>`).join('')+`</table>`;
-
-  // ---- opportunities ----
+}
+function renderOpps(D){
   document.getElementById('opps').innerHTML =
     `<table><tr><th>#</th><th>Query</th><th>Target page</th><th class="num">Impr</th><th class="num">CTR</th><th class="num">Pos</th><th class="num">Impact</th><th>Owner</th><th>Status</th></tr>`+
     D.opportunities.map(o=>`<tr>
@@ -235,193 +395,26 @@ function render(D){
       <td class="num">${fmt(o.impressions)}</td><td class="num">${pct(o.ctr)}</td><td class="num">${o.position}</td>
       <td class="num">${o.impact_score}</td><td>${esc(o.owner||'')}</td>
       <td><span class="badge b-${o.status||'new'}">${esc(o.status||'new')}</span></td></tr>`).join('')+`</table>`;
-
-  // ---- top queries / pages ----
+}
+function renderTopLists(D){
   document.getElementById('topq').innerHTML =
     `<table><tr><th>Query</th><th class="num">Clk</th><th class="num">Impr</th><th class="num">CTR</th><th class="num">Pos</th></tr>`+
     D.top_queries.map(r=>`<tr><td><code>${esc(r.query)}</code></td><td class="num">${fmt(r.clicks)}</td><td class="num">${fmt(r.impressions)}</td><td class="num">${pct(r.ctr)}</td><td class="num">${r.position}</td></tr>`).join('')+`</table>`;
   document.getElementById('topp').innerHTML =
     `<table><tr><th>Page</th><th class="num">Clk</th><th class="num">Impr</th><th class="num">CTR</th><th class="num">Pos</th></tr>`+
     D.top_pages.map(r=>`<tr><td><a class="pglink" href="https://teeccino.com${esc(r.page)}" target="_blank">${esc(r.page)}</a></td><td class="num">${fmt(r.clicks)}</td><td class="num">${fmt(r.impressions)}</td><td class="num">${pct(r.ctr)}</td><td class="num">${r.position}</td></tr>`).join('')+`</table>`;
-
-  // ---- sitemaps ----
+}
+function renderSitemaps(D){
   document.getElementById('sitemaps').innerHTML =
     `<table><tr><th>Path</th><th>Last downloaded</th><th class="num">Submitted</th><th class="num">Indexed</th><th class="num">Errors</th></tr>`+
     D.sitemaps.map(s=>`<tr><td><code>${esc(s.path)}</code></td><td>${esc(s.lastDownloaded||'—')}</td><td class="num">${fmt(s.submitted)}</td><td class="num">${fmt(s.indexed)}</td><td class="num" ${s.errors>0?'style="color:var(--red)"':''}>${s.errors}</td></tr>`).join('')+`</table>`;
 }
 
-function renderCampaigns(D){
-  const wrap = document.getElementById('campaigns');
-  const camps = D.campaigns || [];
-  if(!camps.length){ wrap.innerHTML=''; return; }
-  const dataEnd = D.window.end; // last date GSC has reported
-  let html = `<h2>📝 Blog SEO campaign tracker <span class="hint">shipped changes → GSC outcome, tracked against a banked pre-change baseline</span></h2>`;
-
-  camps.forEach((c,i)=>{
-    const bt=c.base_totals, ptot=c.post_totals;
-    const proj=c.projected_clicks, baseClk=bt.clicks;
-    const headroom = proj - baseClk;
-    const badgeClass = c.status==='maturing'?'b-maturing':c.status==='verifying'?'b-verifying2':'b-complete';
-    const statusLabel = c.status==='maturing'?'Data maturing':c.status==='verifying'?'Verify window open':'Complete';
-
-    // Callout: what to expect, honestly.
-    let callout;
-    if(!c.has_post_data){
-      const dtv = c.days_to_verify;
-      callout = `<div class="callout"><strong>No post-change data yet — this is expected.</strong>
-        These ${c.article_count} articles shipped <strong>${c.go_live}</strong>, but GSC only has data through
-        <strong>${dataEnd}</strong> (≈3-day reporting lag), so the current window is entirely <em>before</em> the change.
-        Titles &amp; metas don't move CTR instantly — Google has to re-crawl and searchers have to react.
-        Give it 14–21 days: the <strong>verify window opens ${c.verify_start}</strong>${dtv>0?` (in ${dtv} day${dtv===1?'':'s'})`:''}.
-        The chart below will grow a post-go-live tail to the <em>right</em> of the dashed line as data lands — that's where the answer shows up.</div>`;
-    } else if(c.status==='verifying'){
-      const dPP = ptot ? ((ptot.ctr-bt.ctr)*100) : null;
-      const cls = dPP>0?'up':dPP<0?'down':'flat';
-      callout = `<div class="callout ready"><strong>Post-change data is landing.</strong>
-        Tracked set CTR since go-live: <strong>${ptot?pct(ptot.ctr):'—'}</strong> vs a <strong>${pct(bt.ctr)}</strong> baseline
-        ${dPP!=null?`(<span class="${cls}">${dPP>=0?'+':''}${dPP.toFixed(2)}pp</span>)`:''}
-        across ${ptot?fmt(ptot.impressions):'—'} post-go-live impressions. Read per-article movement below.</div>`;
-    } else {
-      callout = `<div class="callout ready"><strong>Verified.</strong> See the before/after per article below.</div>`;
-    }
-
-    // Timeline: baseline banked → shipped → first signal → verify window.
-    const firstSignal = c.go_live; // GSC will start reflecting it ~3d after
-    const past = d => d && d <= dataEnd;
-    const step = (state,label,dt)=>`<div class="tl-step ${state}"><span class="tl-dot"></span><div class="tl-line"></div>
-      <div class="tl-label">${label}</div><div class="tl-date">${dt||'—'}</div></div>`;
-    const shippedState = past(c.go_live)?'done':'now';
-    const verifyState = c.days_to_verify>0?'future':(c.status==='complete'?'done':'now');
-    const timeline = `<div class="timeline">
-      ${step('done','Baseline banked',(c.baseline_window||'').split(' to ')[0]||'')}
-      ${step(shippedState,'Shipped (go-live)',c.go_live)}
-      ${step(c.has_post_data?'done':'future','First GSC signal','~'+c.go_live)}
-      ${step(verifyState,'Verify window',c.verify_start)}
-    </div>`;
-
-    html += `<div class="card">
-      <div class="camp-head">
-        <h3>${esc(c.set)}</h3>
-        <span class="badge ${badgeClass}">${statusLabel}</span>
-        <span class="subtitle" style="margin:0">${c.article_count} articles · go-live ${c.go_live}</span>
-      </div>
-      ${callout}
-      ${timeline}
-      <div class="mini-stats">
-        <div class="stat"><div class="num">${fmt(bt.impressions)}</div><div class="label">Impr the set already earns · baseline</div></div>
-        <div class="stat"><div class="num">${pct(bt.ctr)}</div><div class="label">Blended CTR · baseline</div></div>
-        <div class="stat"><div class="num">${fmt(baseClk)}</div><div class="label">Clicks / 28d · baseline</div></div>
-        <div class="stat"><div class="num" style="color:var(--green)">~${fmt(proj)}</div><div class="label">Clicks if set hits ${pct(c.target_ctr)}* </div><div class="delta up">+${fmt(headroom)} headroom</div></div>
-      </div>
-      <div class="chart-wrap" style="margin-top:8px"><h3 style="color:var(--text)">Tracked set — daily clicks &amp; impressions
-        <span class="hint" style="font-weight:400"><span class="legend-mark"></span>go-live · after-tail grows to the right</span></h3>
-        <canvas id="camp_${i}"></canvas></div>
-      <table>
-        <tr><th>#</th><th>Article</th>
-          <th class="num">Base impr</th><th class="num">Base CTR</th><th class="num">Base pos</th>
-          <th class="num">Post CTR</th><th class="num">Post pos</th><th class="num">Δ CTR</th></tr>
-        ${c.articles.map(a=>{
-          const dPP = (a.post_ctr!=null && a.base_ctr!=null) ? (a.post_ctr-a.base_ctr)*100 : null;
-          const cls = dPP>0?'up':dPP<0?'down':'flat';
-          const mat = '<td class="num maturing">maturing</td>';
-          return `<tr>
-            <td class="num">${esc(a.n)}</td>
-            <td><a class="pglink" href="https://teeccino.com${esc(a.path)}" target="_blank">${esc(a.path.replace('/blogs/',''))}</a></td>
-            <td class="num">${fmt(a.base_impr)}</td>
-            <td class="num">${pct(a.base_ctr)}</td>
-            <td class="num">${a.base_pos}</td>
-            ${a.post_ctr!=null?`<td class="num">${pct(a.post_ctr)}</td>`:mat}
-            ${a.post_pos!=null?`<td class="num">${a.post_pos}</td>`:mat}
-            ${dPP!=null?`<td class="num"><span class="${cls}">${dPP>=0?'+':''}${dPP.toFixed(2)}pp</span></td>`:mat}
-          </tr>`;
-        }).join('')}
-      </table>
-      <div class="ledger-note" style="margin-top:10px">*<strong>${pct(c.target_ctr)}</strong> is an illustrative benchmark for a non-brand
-        informational article ranking top-10 — it sizes the prize, it is not a promise. ${c.note_16?esc(c.note_16)+' ':''}${c.note_12?esc(c.note_12):''}</div>
-    </div>`;
-  });
-
-  wrap.innerHTML = html;
-
-  // per-campaign aggregate chart: extend x-axis past the data so go-live + verify markers show
-  camps.forEach((c,i)=>{
-    const s=c.agg_series; if(!s.length) return;
-    const map={}; s.forEach(x=>map[x.date]=x);
-    const extra=[c.go_live,c.verify_start].filter(d=>d && !map[d]);
-    const labels=[...new Set(s.map(x=>x.date).concat(extra))].sort();
-    const clicks=labels.map(d=>map[d]?map[d].clicks:null);
-    const impr=labels.map(d=>map[d]?map[d].impressions:null);
-    const marks=[{date:c.go_live,label:'go-live',color:palette.yellow}];
-    if(c.verify_start) marks.push({date:c.verify_start,label:'verify',color:palette.indigo});
-    new Chart(document.getElementById('camp_'+i), {
-      type:'line',
-      data:{labels, datasets:[
-        {label:'Clicks', data:clicks, borderColor:palette.accent, backgroundColor:'transparent', spanGaps:false, tension:.3, pointRadius:0, borderWidth:2, yAxisID:'y'},
-        {label:'Impressions', data:impr, borderColor:palette.blue, backgroundColor:'transparent', spanGaps:false, tension:.3, pointRadius:0, borderWidth:1.5, yAxisID:'y1'},
-      ]},
-      options:{responsive:true, interaction:{mode:'index',intersect:false}, plugins:{markers:{marks}, legend:{labels:{boxWidth:12}}},
-        scales:{x:{ticks:{maxTicksLimit:8}}, y:{position:'left', title:{display:true,text:'Clicks'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Impressions'}}}}
-    });
-  });
-}
-
-function renderLedger(D){
-  const el = document.getElementById('ledger');
-  if(!D.ledger || !D.ledger.length){ el.innerHTML = `<div class="empty">No fixes in flight yet. When SearchSmith dispatches a title/meta or on-page fix, it appears here and is tracked to its GSC outcome.</div>`; return; }
-  let html = `<table>
-    <tr><th>Query</th><th>Page</th><th>Fix</th><th>Owner</th><th>Status</th><th>Dispatched</th>
-        <th class="num">CTR @ dispatch</th><th class="num">CTR now</th><th class="num">Δ</th></tr>`;
-  D.ledger.forEach(l=>{
-    const series = (D.tracked_series||{})[l.query] || [];
-    const nowCtr = series.length ? series[series.length-1].ctr : null;
-    const baseCtr = l.ctr;
-    let deltaCell = '—';
-    if(nowCtr!=null && baseCtr!=null){
-      const d=(nowCtr-baseCtr)*100; const cls=d>0?'up':d<0?'down':'flat';
-      deltaCell = `<span class="${cls}">${d>=0?'+':''}${d.toFixed(2)}pp</span>`;
-    }
-    const disp = l.dispatch ? l.dispatch.at : '—';
-    html += `<tr>
-      <td><code>${esc(l.query)}</code></td>
-      <td><a class="pglink" href="https://teeccino.com${esc(l.target_page||'')}" target="_blank">${esc((l.target_page||'').slice(0,38))}${(l.target_page||'').length>38?'…':''}</a></td>
-      <td>${esc(l.fix_type||'')}</td>
-      <td>${esc(l.owner||'')}</td>
-      <td><span class="badge b-${l.status}">${esc(l.status)}</span></td>
-      <td>${esc(disp)}</td>
-      <td class="num">${baseCtr!=null?pct(baseCtr):'—'}</td>
-      <td class="num">${nowCtr!=null?pct(nowCtr):'—'}</td>
-      <td class="num">${deltaCell}</td></tr>`;
-    if(l.notes || l.realistic_target_ctr){
-      html += `<tr><td colspan="9" class="ledger-note">${l.realistic_target_ctr?`<strong>Realistic CTR ceiling:</strong> ${pct(l.realistic_target_ctr)} — `:''}${esc(l.notes||'')}</td></tr>`;
-    }
-  });
-  html += `</table>`;
-  // per-tracked-query CTR chart(s)
-  Object.keys(D.tracked_series||{}).forEach((qq,i)=>{
-    const s=D.tracked_series[qq]; if(!s.length) return;
-    html += `<div class="chart-wrap" style="margin-top:14px"><h3>Tracked: “${esc(qq)}” — daily CTR
-      <span class="hint" style="font-weight:400"><span class="legend-mark"></span>dispatch date</span></h3>
-      <canvas id="ts_${i}"></canvas></div>`;
-  });
-  el.innerHTML = html;
-  Object.keys(D.tracked_series||{}).forEach((qq,i)=>{
-    const s=D.tracked_series[qq]; if(!s.length) return;
-    const led = D.ledger.find(l=>l.query===qq);
-    const marks = led&&led.dispatch ? [{date:led.dispatch.at,label:'dispatched',color:palette.yellow}] : [];
-    new Chart(document.getElementById('ts_'+i), {
-      type:'line',
-      data:{labels:s.map(x=>x.date), datasets:[
-        {label:'CTR %', data:s.map(x=>+(x.ctr*100).toFixed(3)), borderColor:palette.green, backgroundColor:'rgba(74,222,128,.08)', fill:true, tension:.3, pointRadius:0, borderWidth:2, yAxisID:'y'},
-        {label:'Impr', data:s.map(x=>x.impressions), borderColor:palette.blue, backgroundColor:'transparent', tension:.3, pointRadius:0, borderWidth:1, yAxisID:'y1'},
-      ]},
-      options:{responsive:true, interaction:{mode:'index',intersect:false}, plugins:{markers:{marks}, legend:{labels:{boxWidth:12}}},
-        scales:{x:{ticks:{maxTicksLimit:8}}, y:{position:'left', title:{display:true,text:'CTR %'}}, y1:{position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Impr'}}}}
-    });
-  });
-}
-
-fetch('search-performance-data.json',{cache:'no-store'})
-  .then(r=>r.json()).then(render)
+// ============ boot: load both feeds (GSC required, GA4 best-effort) ============
+Promise.all([
+  fetch('search-performance-data.json',{cache:'no-store'}).then(r=>r.json()),
+  fetch('organic-traffic-data.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null),
+]).then(([D,G])=>render(D,G))
   .catch(e=>{ document.getElementById('app').innerHTML =
     `<div class="empty">Could not load <code>search-performance-data.json</code>. ${esc(e.message||e)}<br>If viewing locally, serve over HTTP (fetch is blocked on file://).</div>`; });
 </script>
