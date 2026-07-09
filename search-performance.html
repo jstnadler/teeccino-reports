@@ -213,9 +213,24 @@ function renderOrganic(G){
   const O = G.organic_search;
   const s = ytdYoY(O.daily,'sessions'), p = ytdYoY(O.daily,'purchases'), r = ytdYoY(O.daily,'revenue');
 
-  // full-year rollup for the "traffic flat, conversion down" story
+  // Known contaminated monthly points: automated/bot traffic mislabeled google/organic,
+  // confirmed by DataOps (Oct 6-9 2025 = 87% desktop, 80% Windows-Chrome, proxy geo, ~12s dwell).
+  // Corrected client-side with a GUARD so it self-disables once DataOps filters at the feed source.
+  const CONTAMINATED = [{year:'2025', month:10, corrected:8436,
+    note:'Oct 2025 corrected: a 4-day bot spike (Oct 6–9, ~3.4k automated sessions mislabeled google/organic) removed. Not Discover, not real demand; GSC saw nothing. DataOps is filtering this at the feed source.'}];
+  const appliedCorrections = [];
+  const corr = (y, monthNum, raw) => {
+    if(raw==null) return raw;
+    const c = CONTAMINATED.find(c=>c.year===y && c.month===monthNum);
+    if(!c) return raw;
+    if(raw > c.corrected + 1500){ if(!appliedCorrections.includes(c)) appliedCorrections.push(c); return c.corrected; }
+    return raw; // source already cleaned -> leave as-is (no double-correction)
+  };
+
+  // full-year rollup for the "traffic flat, conversion down" story (bot-corrected)
   const yr = {};
-  (O.monthly||[]).forEach(m=>{ const y=m.period.slice(0,4); (yr[y]=yr[y]||{sessions:0,revenue:0}); yr[y].sessions+=m.sessions||0; yr[y].revenue+=m.revenue||0; });
+  (O.monthly||[]).forEach(m=>{ const y=m.period.slice(0,4); (yr[y]=yr[y]||{sessions:0,revenue:0});
+    yr[y].sessions += corr(y, +m.period.slice(5,7), m.sessions)||0; yr[y].revenue += m.revenue||0; });
   let callout = '';
   if(yr['2023'] && yr['2025']){
     const sPP = ((yr['2025'].sessions-yr['2023'].sessions)/yr['2023'].sessions*100);
@@ -242,6 +257,8 @@ function renderOrganic(G){
           <span class="hint" style="font-weight:400">seasonal shape · current partial month excluded from ${s.curYear} line (data through ${G.meta.date_max})</span></h3>
         <canvas id="yoyChart"></canvas>
       </div>
+      ${appliedCorrections.length ? `<div class="callout" style="border-left-color:var(--red);background:rgba(248,113,113,.07)">
+        <strong>◆ Data-quality note:</strong> ${appliedCorrections.map(c=>esc(c.note)).join(' ')} Diamond-marked points on the chart are bot-corrected; year totals above use the corrected figure.</div>` : ''}
       <div class="section-note" style="margin-top:8px">* Revenue &amp; purchases are GA4 last-click attribution (organic-search channel), good for trend/seasonality — not reconciled to Shopify True Gross. Source: DataOps <code>organic-traffic-data.json</code>.</div>
     </div>`;
 
@@ -250,14 +267,20 @@ function renderOrganic(G){
   const years = [...new Set(Object.values(pivot).flatMap(o=>Object.keys(o)))].sort();
   const curYear = String(s.curYear);
   const partialMonth = +G.meta.date_max.slice(5,7); // current month is incomplete -> drop from cur-year line
+  const isCorrected = (y,i)=> CONTAMINATED.some(c=>c.year===y && c.month===i+1);
   const datasets = years.map(y=>({
     label:y===curYear?y+' (YTD)':y,
-    data: MONTHS.map((_,i)=> (y===curYear && (i+1)===partialMonth) ? null : ((pivot[String(i+1)]||{})[y] ?? null)),
+    data: MONTHS.map((_,i)=> (y===curYear && (i+1)===partialMonth) ? null
+                             : corr(y, i+1, (pivot[String(i+1)]||{})[y] ?? null)),
     borderColor: YEAR_COLORS[+y] || palette.dim,
     backgroundColor:'transparent',
     borderWidth: y===curYear?3:1.6,
     borderDash: y===curYear?[]:(y===String(s.priorYear)?[]:[4,3]),
-    tension:.35, pointRadius:0, spanGaps:false,
+    tension:.35, spanGaps:false,
+    // asterisk any bot-corrected point so the adjustment is visible, not silent
+    pointRadius: MONTHS.map((_,i)=> isCorrected(y,i)?4:0),
+    pointStyle: MONTHS.map((_,i)=> isCorrected(y,i)?'rectRot':'circle'),
+    pointBackgroundColor: YEAR_COLORS[+y] || palette.dim,
   }));
   new Chart(document.getElementById('yoyChart'), {
     type:'line',
