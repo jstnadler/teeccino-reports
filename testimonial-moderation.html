@@ -24,7 +24,11 @@ h1{font-size:25px;margin-bottom:4px}
 .saved{font-size:12px;color:#9fe0a0;margin-left:auto}
 /* Summary counts strip */
 #summary{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
-.tile{border:1px solid #e2e2e2;border-radius:8px;padding:8px 14px;font-size:13px;background:#fafafa;min-width:78px}
+.tile{border:1px solid #e2e2e2;border-radius:8px;padding:8px 14px;font-size:13px;background:#fafafa;min-width:78px;cursor:pointer;font-family:inherit;text-align:left;transition:box-shadow .12s ease,transform .05s ease}
+.tile:hover{box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.tile:active{transform:translateY(1px)}
+.tile.is-active{box-shadow:0 0 0 2px #2d2a26 inset;background:#fff}
+.tile:focus-visible{outline:3px solid #7aa7d8;outline-offset:2px}
 .tile .n{font-size:20px;font-weight:700;line-height:1.1;display:block}
 .tile .l{color:#666;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
 .tile.t-pending{border-left:4px solid #b8860b}.tile.t-pending .n{color:#8a6a12}
@@ -88,7 +92,7 @@ h1{font-size:25px;margin-bottom:4px}
 .logrow .lchips{margin-top:4px}
 .dot{color:#ccc}
 </style></head><body>
-<div id='bar'><b>Testimonials — moderation</b><input id='rname' placeholder='Your name' oninput='setReviewer()' style='width:120px'><select id='filter' onchange='onFilter()'><option value='pending'>Pending inbox</option><option value='all'>History — all</option></select><span class='prog' id='prog'>loading…</span><button onclick='load()'>Refresh</button><span class='saved' id='saved'></span></div>
+<div id='bar'><b>Testimonials — moderation</b><input id='rname' placeholder='Your name' oninput='setReviewer()' style='width:120px'><select id='filter' onchange='onFilter()'><option value='pending'>Pending inbox</option><option value='all'>History — all</option></select><select id='statusfilter' onchange='onStatusFilter()' style='display:none' title='Filter history by status'><option value='all'>All statuses</option><option value='pending'>Pending</option><option value='approved'>Approved</option><option value='edited'>Edited</option><option value='live'>Live</option><option value='denied'>Denied</option></select><span class='prog' id='prog'>loading…</span><button onclick='load()'>Refresh</button><span class='saved' id='saved'></span></div>
 <h1>Inbound Customer Testimonials</h1>
 <div class='meta'>Moderation console · setId <code>testimonials-inbound</code> · one record per public submission</div>
 <details class='explain' open><summary><span class='tw'>▾</span>How this works — read me first</summary><ol><li><b>Two views, switch with the dropdown up top.</b> <b>Pending inbox</b> (default) shows only <b>new</b> submissions awaiting your decision. <b>History — all</b> is the full status log: every submission ever received, with where it stands (pending → approved/edited/denied → live). Nothing disappears — approved &amp; published testimonials stay visible here as a permanent record.</li><li><b>Each pending card → Approve / Deny / Edit.</b> Approve publishes it as-is, Deny rejects it, and Edit lets you tweak the wording first (type your version in the box — that text is what gets published).</li><li><b>Status badges.</b> <span class='badge bg-pending'>Pending</span> awaiting your call · <span class='badge bg-approved'>Approved</span> / <span class='badge bg-edited'>Edited</span> decided, queued for SearchSmith to publish · <span class='badge bg-live'>Live</span> published to teeccino.com · <span class='badge bg-denied'>Denied</span> rejected.</li><li><b>The live testimonials page</b> is <b>teeccino.com/pages/testimonials</b> (incl. the ~470 migrated ones), edited in <b>Shopify admin → Content → Metaobjects → “Testimonial”</b>. To feature one: <b>Metaobjects → “Testimonial Condition”</b> → set its <code>spotlight</code> field.</li></ol><p class='tip'>The email on each card is shown for your spam check only — it is <b>private and never published</b>.</p></details>
@@ -187,27 +191,51 @@ function prog(){
   document.getElementById('prog').textContent=decided+' of '+total+' decided';
 }
 // Summary counts strip — always reflects ALL records, not the current filter.
+// Tiles double as clickable filter shortcuts; the tile matching the active
+// view/status is highlighted. Counts always sum over ALL records via statusOf.
 function summary(){
   const box=document.getElementById('summary');
   if(!ITEMS.length){box.innerHTML='';return;}
   const c={pending:0,approved:0,edited:0,live:0,denied:0};
   ITEMS.forEach(i=>{c[statusOf(i)]++;});
-  const tile=(cls,n,l)=>"<div class='tile "+cls+"'><span class='n'>"+n+"</span><span class='l'>"+l+"</span></div>";
+  const view=document.getElementById('filter').value;
+  const sf=statusFilterVal();
+  // Which tile reads as "active": Pending inbox → pending tile; History → the
+  // status tile in play (or 'total' when no single status is selected).
+  const activeKey=(view==='pending')?'pending':(sf==='all'?'total':sf);
+  const tile=(cls,key,n,l)=>"<button type='button' class='tile "+cls+(key===activeKey?' is-active':'')+"' aria-pressed='"+(key===activeKey?'true':'false')+"' onclick=\"pickTile('"+key+"')\"><span class='n'>"+n+"</span><span class='l'>"+l+"</span></button>";
   box.innerHTML=
-    tile('t-total',ITEMS.length,'total')
-    +tile('t-pending',c.pending,'pending')
-    +tile('t-approved',c.approved,'approved')
-    +tile('t-edited',c.edited,'edited')
-    +tile('t-live',c.live,'live')
-    +tile('t-denied',c.denied,'denied');
+    tile('t-total','total',ITEMS.length,'total')
+    +tile('t-pending','pending',c.pending,'pending')
+    +tile('t-approved','approved',c.approved,'approved')
+    +tile('t-edited','edited',c.edited,'edited')
+    +tile('t-live','live',c.live,'live')
+    +tile('t-denied','denied',c.denied,'denied');
+}
+function statusFilterVal(){const el=document.getElementById('statusfilter');return (el&&el.value)||'all';}
+// Clicking a count tile is a filter shortcut:
+//   'pending' → the interactive Pending inbox
+//   'total'   → History, all statuses
+//   others    → History, filtered to that single status
+function pickTile(which){
+  const f=document.getElementById('filter'),sf=document.getElementById('statusfilter');
+  if(which==='pending'){f.value='pending';}
+  else if(which==='total'){f.value='all';sf.value='all';}
+  else{f.value='all';sf.value=which;}
+  try{localStorage.setItem('tm-view',f.value);localStorage.setItem('tm-status',sf.value);}catch(e){}
+  render();
 }
 function onFilter(){try{localStorage.setItem('tm-view',document.getElementById('filter').value);}catch(e){}render();}
+function onStatusFilter(){try{localStorage.setItem('tm-status',statusFilterVal());}catch(e){}render();}
 function render(){
   summary();
   const filter=document.getElementById('filter').value;
+  // Status sub-filter only applies to (and only shows in) the History view.
+  const sfEl=document.getElementById('statusfilter');
+  if(sfEl)sfEl.style.display=(filter==='all')?'':'none';
   const box=document.getElementById('cards');
   if(!ITEMS.length){box.innerHTML="<p style='color:#666'>No submissions yet.</p>";prog();return;}
-  if(filter==='all'){renderHistory(box);prog();return;}
+  if(filter==='all'){renderHistory(box,statusFilterVal());prog();return;}
   // Pending inbox: interactive cards for undecided items only.
   const list=ITEMS.filter(i=>!i.decision);
   if(!list.length){box.innerHTML="<p style='color:#666'>Nothing pending — switch to “History — all” to see decided &amp; published items.</p>";prog();return;}
@@ -215,17 +243,24 @@ function render(){
   list.forEach(i=>applyCard(i.itemId,i.decision));
 }
 // History view — every record as a status-log row, grouped by status then date.
-function renderHistory(box){
+// statusSel ('all' or one bucket) narrows to a single status group; buckets are
+// the same statusOf() ones used by the summary strip, so counts stay consistent.
+function renderHistory(box,statusSel){
   const groups={};GROUP_ORDER.forEach(g=>groups[g]=[]);
   ITEMS.forEach(i=>groups[statusOf(i)].push(i));
   const keyDate=i=>i.implemented_at||i.decided_at||i.ts||'';
+  const shownGroups=(statusSel&&statusSel!=='all')?[statusSel]:GROUP_ORDER;
   let html='';
-  GROUP_ORDER.forEach(g=>{
-    const rows=groups[g];if(!rows.length)return;
+  shownGroups.forEach(g=>{
+    const rows=groups[g];if(!rows||!rows.length)return;
     rows.sort((a,b)=>keyDate(b).localeCompare(keyDate(a)));
     html+="<div class='grouphd'>"+STATUS_META[g].label+" · "+rows.length+"</div>";
     html+=rows.map(logRowHTML).join('');
   });
+  if(!html){
+    const lbl=(statusSel&&statusSel!=='all'&&STATUS_META[statusSel])?STATUS_META[statusSel].label:'';
+    html="<p style='color:#666'>No "+esc(lbl)+" submissions"+(lbl?'':' yet')+".</p>";
+  }
   box.innerHTML=html;
 }
 function logRowHTML(i){
@@ -274,6 +309,7 @@ function jsq(s){return String(s).replace(/'/g,"\\'");}
 document.addEventListener('DOMContentLoaded',()=>{
   const rn=document.getElementById('rname');if(rn)rn.value=localStorage.getItem('tm-reviewer')||'';
   try{const v=localStorage.getItem('tm-view');if(v){document.getElementById('filter').value=v;}}catch(e){}
+  try{const s=localStorage.getItem('tm-status');if(s){document.getElementById('statusfilter').value=s;}}catch(e){}
   load();
 });
 
