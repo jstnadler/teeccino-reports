@@ -7,7 +7,22 @@
     "date_max": "2026-07-08",
     "primary_channel": "Organic Search",
     "channel_definition": "GA4 default channel grouping. 'Organic Search' = unpaid search engine traffic (google/bing organic). 'Organic Shopping' (free Google Shopping listings) and 'Organic Video' are exposed separately as daily series so you can build an 'all non-paid organic' view if desired. Paid Search is NOT included.",
-    "metric_notes": "sessions/engaged_sessions/purchases/revenue are GA4-additive and safe to sum across days. engagement_rate is recomputed as engaged/sessions per period, never summed. purchases = ecommerce_purchases; revenue = purchase_revenue (GA4 attribution, differs from Shopify True Gross)."
+    "metric_notes": "sessions/engaged_sessions/purchases/revenue are GA4-additive and safe to sum across days. engagement_rate is recomputed as engaged/sessions per period, never summed. purchases = ecommerce_purchases; revenue = purchase_revenue (GA4 attribution, differs from Shopify True Gross).",
+    "bot_filtering": "sessions and engaged_sessions are CLEAN BY DEFAULT: on days inside a listed contaminated_periods window, the bot burst is removed via baseline substitution (median of surrounding clean days). Consumers should just read `sessions` and get clean numbers -- no client-side correction needed. The original GA4 values are preserved as `sessions_raw`/`engaged_sessions_raw`, and any affected daily/period row carries `contaminated: true` + `bot_excluded_sessions`. purchases/revenue are left raw (bots convert ~0). See contaminated_periods for the windows and the source registry (ga4_bot_windows table).",
+    "contaminated_periods": [
+      {
+        "window_id": "2025-10-organic-desktop-bot",
+        "channel_group": "Organic Search",
+        "start_date": "2025-10-06",
+        "end_date": "2025-10-09",
+        "raw_sessions": 4428,
+        "est_clean_sessions": 1114,
+        "excluded_sessions": 3314,
+        "reason": "Automated google/organic-mislabeled desktop bot burst (Windows-Chrome / proxy-datacenter geo, sub-15s engagement, near-zero conversion). ~3.3k contaminated sessions.",
+        "detection_method": "detect_ga4_bot_windows.py: multi-day session spike (>=1.8x local baseline) + desktop skew (>=68%) + collapsed engagement (<=45% of baseline sec/sess) + near-zero conversion; confirmed in GA4 UI (browser/OS + geo not in DB).",
+        "detected_at": "2026-07-09"
+      }
+    ]
   },
   "organic_search": {
     "daily": [
@@ -7027,31 +7042,47 @@
       },
       {
         "date": "2025-10-06",
-        "sessions": 624,
-        "engaged_sessions": 603,
+        "sessions": 277,
+        "engaged_sessions": 259,
         "purchases": 3,
-        "revenue": 113.63
+        "revenue": 113.63,
+        "sessions_raw": 624,
+        "engaged_sessions_raw": 603,
+        "bot_excluded_sessions": 347,
+        "contaminated": true
       },
       {
         "date": "2025-10-07",
-        "sessions": 1507,
-        "engaged_sessions": 1459,
+        "sessions": 279,
+        "engaged_sessions": 262,
         "purchases": 8,
-        "revenue": 362.69
+        "revenue": 362.69,
+        "sessions_raw": 1507,
+        "engaged_sessions_raw": 1459,
+        "bot_excluded_sessions": 1228,
+        "contaminated": true
       },
       {
         "date": "2025-10-08",
-        "sessions": 1392,
-        "engaged_sessions": 1360,
+        "sessions": 279,
+        "engaged_sessions": 262,
         "purchases": 4,
-        "revenue": 190.93
+        "revenue": 190.93,
+        "sessions_raw": 1392,
+        "engaged_sessions_raw": 1360,
+        "bot_excluded_sessions": 1113,
+        "contaminated": true
       },
       {
         "date": "2025-10-09",
-        "sessions": 905,
-        "engaged_sessions": 881,
+        "sessions": 279,
+        "engaged_sessions": 262,
         "purchases": 3,
-        "revenue": 125.9
+        "revenue": 125.9,
+        "sessions_raw": 905,
+        "engaged_sessions_raw": 881,
+        "bot_excluded_sessions": 626,
+        "contaminated": true
       },
       {
         "date": "2025-10-10",
@@ -10121,11 +10152,14 @@
       },
       {
         "period": "2025-W41",
-        "sessions": 5205,
-        "engaged_sessions": 5036,
-        "engagement_rate": 0.9675,
+        "sessions": 1891,
+        "engaged_sessions": 1778,
+        "engagement_rate": 0.9402,
         "purchases": 34,
-        "revenue": 1532.38
+        "revenue": 1532.38,
+        "contaminated": true,
+        "sessions_raw": 5205,
+        "bot_excluded_sessions": 3314
       },
       {
         "period": "2025-W42",
@@ -10707,11 +10741,14 @@
       },
       {
         "period": "2025-10",
-        "sessions": 11864,
-        "engaged_sessions": 11251,
-        "engagement_rate": 0.9483,
+        "sessions": 8550,
+        "engaged_sessions": 7993,
+        "engagement_rate": 0.9349,
         "purchases": 178,
-        "revenue": 9144.11
+        "revenue": 9144.11,
+        "contaminated": true,
+        "sessions_raw": 11864,
+        "bot_excluded_sessions": 3314
       },
       {
         "period": "2025-11",
@@ -10842,7 +10879,7 @@
       "10": {
         "2023": 10724,
         "2024": 9780,
-        "2025": 11864
+        "2025": 8550
       },
       "11": {
         "2023": 12157,
