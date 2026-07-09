@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-09T07:18:20.370101-07:00",
+  "lastUpdated": "2026-07-09T10:02:42.441252-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -216,8 +216,8 @@
       "activeSessions": [],
       "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "The Discord Approve/Reject buttons failed for CostSmith this session — user clic",
-        "at": "2026-07-08T16:48:42.389077-07:00"
+        "summary": "Question on this, a bunch of the posts are marked approved, are they live and up",
+        "at": "2026-07-09T10:01:03.996599-07:00"
       },
       "recentActivity": [
         {
@@ -225,12 +225,6 @@
           "at": "2026-07-07T09:50:23.004313-07:00",
           "source": "discord",
           "status": "unknown"
-        },
-        {
-          "summary": "Added a central #decisions channel to Switchboard so every approval/choice gate is decided in one place instead of thread-hopping.",
-          "at": "2026-07-02T09:38:48-07:00",
-          "source": "interactive",
-          "status": "success"
         },
         {
           "summary": "Fixed the Discord Approve/Reject 'interaction failed' -> agent-never-resumed bug (CostSmith). Root cause: decision Views (ApprovalControls/ChoiceControls) were timeout=None but had NO custom_id and were never re-registered via add_view, so any card that outlived its posting process was orphaned -> click hit no listener -> Discord 'interaction failed' -> no resume. Compounded by on_ready wiping state['awaiting'], which also killed the typed-reply fallback on restart. Fix: stable thread-scoped custom_ids (persistent views, verified is_persistent True on discord.py 2.7.1), lazy thread resolution for restart-reconstructed views, persist choice options+multi, and on_ready now re-arms each pending card via client.add_view(message_id=...) instead of wiping awaiting (clears only 'running').",
@@ -279,6 +273,12 @@
           "at": "2026-07-08T15:10:00-07:00",
           "source": "discord",
           "status": "success"
+        },
+        {
+          "summary": "Added per-agent decision-card routing so Orinoco (Amazon) approval + choice cards post to Burke's #burke channel instead of Justin's #decisions",
+          "at": "2026-07-08T10:12:54",
+          "source": "interactive",
+          "status": "unknown"
         }
       ],
       "pendingTasks": 0,
@@ -564,10 +564,16 @@
       "activeSessions": [],
       "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Read-only status check on blog-seo-2026-06-29 review set: Caroline received & engaged the keyed link; 10 approved / 5 edited-with-her-copy / 4 held awaiting her reply. Reviewer URL re-surfaced.",
-        "at": "2026-07-08T13:05:00-07:00"
+        "summary": "blog-seo-2026-06-29 implementation-status check: 0/14 live, all 14 dispatched-not-shipped (CatalogSmith task 9c9e5ae4 still pending)",
+        "at": "2026-07-09T10:15:00-07:00"
       },
       "recentActivity": [
+        {
+          "summary": "Read-only implementation-status check on blog-seo-2026-06-29's 14 settled items (10 approved + 4 edited): 0 of 14 are LIVE. All 14 remain 'Approved' = dispatched-but-not-shipped. Holdup = CatalogSmith has not actioned dispatch task 9c9e5ae4 (still status=pending in its inbox, no outbox result).",
+          "at": "2026-07-09T10:15:00-07:00",
+          "source": "broker",
+          "status": "unknown"
+        },
         {
           "summary": "Read-only status check on blog-seo-2026-06-29 review set: Caroline received & engaged the keyed link; 10 approved / 5 edited-with-her-copy / 4 held awaiting her reply. Reviewer URL re-surfaced.",
           "at": "2026-07-08T13:05:00-07:00",
@@ -621,12 +627,6 @@
           "at": "2026-07-07T09:39:00-07:00",
           "source": "discord",
           "status": "unknown"
-        },
-        {
-          "summary": "Render blocker resolved (was Shopify full-page cache, now flushed; no theme change needed — ThemeSmith traced clean Dawn head render). Re-verified live: /pages/testimonials now renders the NEW title/meta/og/canonical. Reindex unblocked — handed Justin the manual GSC Request Indexing click (API can't trigger). Baseline + weekly monitor already live; watch continues to day-7/14/21 checkpoints.",
-          "at": "2026-07-07T12:15:00-07:00",
-          "source": "discord",
-          "status": "success"
         }
       ],
       "pendingTasks": 5,
@@ -1393,7 +1393,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-07-09T07:17:26.180736-07:00",
+        "lastRun": "2026-07-09T07:18:35.361675-07:00",
         "status": "healthy"
       },
       {
