@@ -22,10 +22,30 @@ h1{font-size:25px;margin-bottom:4px}
 #bar button{font:600 13px inherit;padding:7px 14px;border:0;border-radius:6px;cursor:pointer;background:#e8a531;color:#2d2a26}
 #bar button.sec{background:#56524c;color:#fff}#bar button:hover{opacity:.9}
 .saved{font-size:12px;color:#9fe0a0;margin-left:auto}
+/* Summary counts strip */
+#summary{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.tile{border:1px solid #e2e2e2;border-radius:8px;padding:8px 14px;font-size:13px;background:#fafafa;min-width:78px}
+.tile .n{font-size:20px;font-weight:700;line-height:1.1;display:block}
+.tile .l{color:#666;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+.tile.t-pending{border-left:4px solid #b8860b}.tile.t-pending .n{color:#8a6a12}
+.tile.t-approved{border-left:4px solid #5a9e5a}.tile.t-approved .n{color:#2f6b2f}
+.tile.t-edited{border-left:4px solid #c8801f}.tile.t-edited .n{color:#9a5f12}
+.tile.t-live{border-left:4px solid #2f6fb0}.tile.t-live .n{color:#255d95}
+.tile.t-denied{border-left:4px solid #b03030}.tile.t-denied .n{color:#8f2626}
+.tile.t-total{border-left:4px solid #56524c}.tile.t-total .n{color:#3a3a3a}
+/* Status badges */
+.badge{display:inline-block;font:700 11px/1 -apple-system,Segoe UI,Roboto,sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:20px;vertical-align:middle}
+.badge.bg-pending{background:#fbf2d6;color:#7d5e0f;border:1px solid #ecd9a0}
+.badge.bg-approved{background:#e5f4e5;color:#2f6b2f;border:1px solid #bcdfbc}
+.badge.bg-edited{background:#fbeed8;color:#9a5f12;border:1px solid #eccf9f}
+.badge.bg-live{background:#e3eefb;color:#255d95;border:1px solid #b9d3ef}
+.badge.bg-denied{background:#fbe4e4;color:#8f2626;border:1px solid #eec2c2}
+/* Interactive moderation cards (Pending view) */
 .card{border:1px solid #e2e2e2;border-left:5px solid #b8860b;border-radius:8px;padding:14px 18px;margin:14px 0}
 .card.marked-approve{border-left-color:#5a9e5a;background:#f6fbf6}
 .card.marked-deny{border-left-color:#b03030;background:#fcf5f5}
 .card.marked-edit{border-left-color:#c8801f;background:#fffaf2}
+.card.marked-live{border-left-color:#2f6fb0;background:#f5f9fe}
 .who{font-weight:600;font-size:15px}.loc{color:#666;font-weight:400;font-size:13px}
 .priv{font-size:12px;color:#8a6d3b;background:#fcf8e3;border:1px solid #f3e6c0;border-radius:5px;padding:2px 8px;display:inline-block;margin-top:4px}
 .body{white-space:pre-wrap;background:#f7f7f7;border-radius:6px;padding:10px 12px;margin:10px 0;font-size:14px}
@@ -50,11 +70,29 @@ h1{font-size:25px;margin-bottom:4px}
 .cardsaved{font-size:12.5px;font-weight:600;color:#5a7a55;margin-left:2px}
 .decbox textarea{width:100%;box-sizing:border-box;margin-top:8px;font:13px/1.5 inherit;padding:8px 10px;border:1px solid #cdd6df;border-radius:5px;min-height:80px;display:none}
 .warn{background:#fdf3f3;border:1px solid #f0c8c8;color:#a33;border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px}
+/* History / status-log rows */
+.grouphd{margin:22px 0 6px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#555;border-bottom:1px solid #e5e5e5;padding-bottom:5px}
+.logrow{display:flex;gap:12px;align-items:flex-start;border:1px solid #e8e8e8;border-radius:7px;padding:10px 14px;margin:8px 0;background:#fff}
+.logrow.st-pending{border-left:4px solid #b8860b}
+.logrow.st-approved{border-left:4px solid #5a9e5a}
+.logrow.st-edited{border-left:4px solid #c8801f}
+.logrow.st-live{border-left:4px solid #2f6fb0}
+.logrow.st-denied{border-left:4px solid #b03030}
+.logrow .lmain{flex:1;min-width:0}
+.logrow .lhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.logrow .lname{font-weight:600}
+.logrow .lloc{color:#777;font-weight:400;font-size:12.5px}
+.logrow .lsnip{color:#444;font-size:13px;margin:5px 0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.logrow .ldates{font-size:12px;color:#777;display:flex;flex-wrap:wrap;gap:4px 14px}
+.logrow .ldates b{color:#555;font-weight:600}
+.logrow .lchips{margin-top:4px}
+.dot{color:#ccc}
 </style></head><body>
-<div id='bar'><b>Testimonials — moderation</b><input id='rname' placeholder='Your name' oninput='setReviewer()' style='width:120px'><select id='filter' onchange='render()'><option value='pending'>Pending only</option><option value='all'>All</option></select><span class='prog' id='prog'>loading…</span><button onclick='load()'>Refresh</button><span class='saved' id='saved'></span></div>
+<div id='bar'><b>Testimonials — moderation</b><input id='rname' placeholder='Your name' oninput='setReviewer()' style='width:120px'><select id='filter' onchange='onFilter()'><option value='pending'>Pending inbox</option><option value='all'>History — all</option></select><span class='prog' id='prog'>loading…</span><button onclick='load()'>Refresh</button><span class='saved' id='saved'></span></div>
 <h1>Inbound Customer Testimonials</h1>
-<div class='meta'>Moderation console · setId <code>testimonials-inbound</code> · one card per public submission</div>
-<details class='explain' open><summary><span class='tw'>▾</span>How this works — read me first</summary><ol><li><b>This is the moderation INBOX.</b> It shows only <b>new</b> customer submissions (<i>“How has Teeccino helped you?”</i>) awaiting your approval. <b>Empty here is normal</b> — it just means no new submissions are pending right now. It is <i>not</i> a sign the page is broken.</li><li><b>Each card → Approve / Deny / Edit.</b> Approve publishes it as-is, Deny rejects it, and Edit lets you tweak the wording first (type your version in the box — that text is what gets published). Approved testimonials get published to the live page.</li><li><b>This inbox does NOT list already-published testimonials.</b> Your live testimonials (including the ~470 migrated ones) appear on <b>teeccino.com/pages/testimonials</b> and are edited in <b>Shopify admin → Content → Metaobjects → “Testimonial”</b>.</li><li><b>To feature / spotlight a testimonial:</b> <b>Shopify admin → Content → Metaobjects → “Testimonial Condition”</b> → pick the condition → set its <code>spotlight</code> field.</li></ol><p class='tip'>The email on each card is shown for your spam check only — it is <b>private and never published</b>.</p></details>
+<div class='meta'>Moderation console · setId <code>testimonials-inbound</code> · one record per public submission</div>
+<details class='explain' open><summary><span class='tw'>▾</span>How this works — read me first</summary><ol><li><b>Two views, switch with the dropdown up top.</b> <b>Pending inbox</b> (default) shows only <b>new</b> submissions awaiting your decision. <b>History — all</b> is the full status log: every submission ever received, with where it stands (pending → approved/edited/denied → live). Nothing disappears — approved &amp; published testimonials stay visible here as a permanent record.</li><li><b>Each pending card → Approve / Deny / Edit.</b> Approve publishes it as-is, Deny rejects it, and Edit lets you tweak the wording first (type your version in the box — that text is what gets published).</li><li><b>Status badges.</b> <span class='badge bg-pending'>Pending</span> awaiting your call · <span class='badge bg-approved'>Approved</span> / <span class='badge bg-edited'>Edited</span> decided, queued for SearchSmith to publish · <span class='badge bg-live'>Live</span> published to teeccino.com · <span class='badge bg-denied'>Denied</span> rejected.</li><li><b>The live testimonials page</b> is <b>teeccino.com/pages/testimonials</b> (incl. the ~470 migrated ones), edited in <b>Shopify admin → Content → Metaobjects → “Testimonial”</b>. To feature one: <b>Metaobjects → “Testimonial Condition”</b> → set its <code>spotlight</code> field.</li></ol><p class='tip'>The email on each card is shown for your spam check only — it is <b>private and never published</b>.</p></details>
+<div id='summary'></div>
 <div id='cards'></div>
 <script>
 const API="https://teeccino-review-api.teeccino.workers.dev";
@@ -68,19 +106,46 @@ function reviewerName(){const el=document.getElementById('rname');return (el&&el
 function setReviewer(){localStorage.setItem('tm-reviewer',document.getElementById('rname').value);}
 function flash(t,ok){const s=document.getElementById('saved');s.textContent=(ok===false?'⚠ ':'✓ ')+t;s.style.color=ok===false?'#f0b0b0':'#9fe0a0';clearTimeout(window._ft);window._ft=setTimeout(()=>s.textContent='',2500);}
 
+// --- Status model -----------------------------------------------------------
+// Final status is derived purely from existing record fields (no writes):
+//   LIVE      implemented flag OR implemented_at set  (published — supersedes all)
+//   APPROVED  decision === 'Approve' (not yet live)
+//   EDITED    decision === 'Edit'    (not yet live)
+//   DENIED    decision === 'Deny'
+//   PENDING   decision null/empty
+// Buckets are mutually exclusive so counts sum to the total.
+function statusOf(i){
+  if(i.implemented||i.implemented_at) return 'live';
+  const d=i.decision;
+  if(d==='Approve') return 'approved';
+  if(d==='Edit')    return 'edited';
+  if(d==='Deny')    return 'denied';
+  return 'pending';
+}
+const STATUS_META={
+  pending:{label:'Pending', badge:'bg-pending'},
+  approved:{label:'Approved', badge:'bg-approved'},
+  edited:{label:'Edited', badge:'bg-edited'},
+  live:{label:'Live', badge:'bg-live'},
+  denied:{label:'Denied', badge:'bg-denied'},
+};
+const GROUP_ORDER=['pending','approved','edited','live','denied'];
+function fmtDate(s){if(!s)return '';const d=new Date(s);return isNaN(d)?'':d.toLocaleString();}
+function badgeHTML(st){const m=STATUS_META[st];return "<span class='badge "+m.badge+"'>"+m.label+"</span>";}
+
 function load(){
-  if(!RKEY){document.getElementById('cards').innerHTML="<div class='warn'>No moderation key in the link. Open the capability link that ends in <code>#k=…</code>.</div>";document.getElementById('prog').textContent='';return;}
+  if(!RKEY){document.getElementById('cards').innerHTML="<div class='warn'>No moderation key in the link. Open the capability link that ends in <code>#k=…</code>.</div>";document.getElementById('prog').textContent='';document.getElementById('summary').innerHTML='';return;}
   document.getElementById('prog').textContent='loading…';
   fetch(API+'/api/decisions?setId='+SETID,{headers:{'x-review-key':RKEY}})
     .then(r=>r.ok?r.json():Promise.reject(r.status))
     .then(j=>{ITEMS=(j.decisions||[]).sort((a,b)=>(b.ts||'').localeCompare(a.ts||''));render();})
-    .catch(e=>{document.getElementById('cards').innerHTML="<div class='warn'>Couldn't load submissions (error "+esc(e)+"). Check the moderation key.</div>";document.getElementById('prog').textContent='';});
+    .catch(e=>{document.getElementById('cards').innerHTML="<div class='warn'>Couldn't load submissions (error "+esc(e)+"). Check the moderation key.</div>";document.getElementById('prog').textContent='';document.getElementById('summary').innerHTML='';});
 }
 
 function decide(itemId,decision,note){
   fetch(API+'/api/decision',{method:'POST',headers:{'content-type':'application/json','x-review-key':RKEY},
     body:JSON.stringify({setId:SETID,itemId:itemId,decision:decision||null,note:note||'',reviewer:reviewerName()})})
-    .then(r=>{if(r.ok){flash('saved');const it=ITEMS.find(x=>x.itemId===itemId);if(it){it.decision=decision;it.note=note||'';}applyCard(itemId,decision);}else{flash('save failed',false);}})
+    .then(r=>{if(r.ok){flash('saved');const it=ITEMS.find(x=>x.itemId===itemId);if(it){it.decision=decision;it.note=note||'';it.reviewer=reviewerName();}applyCard(itemId,decision);summary();}else{flash('save failed',false);}})
     .catch(()=>flash('offline — not saved',false));
 }
 // A decision button was clicked. Approve/Deny commit immediately; Edit opens the
@@ -102,8 +167,10 @@ function onNote(itemId){
 function cssid(s){return String(s).replace(/[^a-zA-Z0-9]/g,'');}
 function applyCard(itemId,v){
   const c=document.getElementById('card_'+cssid(itemId));if(!c)return;
-  c.classList.remove('marked-approve','marked-deny','marked-edit');
-  if(v)c.classList.add('marked-'+v.toLowerCase());
+  c.classList.remove('marked-approve','marked-deny','marked-edit','marked-live');
+  const it=ITEMS.find(x=>x.itemId===itemId);
+  if(it&&(it.implemented||it.implemented_at)){c.classList.add('marked-live');}
+  else if(v){c.classList.add('marked-'+v.toLowerCase());}
   c.querySelectorAll('.actbtn').forEach(b=>{
     const on=(b.dataset.dec===v);
     b.classList.toggle('is-active',on);
@@ -119,14 +186,67 @@ function prog(){
   const total=ITEMS.length,decided=ITEMS.filter(i=>i.decision).length;
   document.getElementById('prog').textContent=decided+' of '+total+' decided';
 }
+// Summary counts strip — always reflects ALL records, not the current filter.
+function summary(){
+  const box=document.getElementById('summary');
+  if(!ITEMS.length){box.innerHTML='';return;}
+  const c={pending:0,approved:0,edited:0,live:0,denied:0};
+  ITEMS.forEach(i=>{c[statusOf(i)]++;});
+  const tile=(cls,n,l)=>"<div class='tile "+cls+"'><span class='n'>"+n+"</span><span class='l'>"+l+"</span></div>";
+  box.innerHTML=
+    tile('t-total',ITEMS.length,'total')
+    +tile('t-pending',c.pending,'pending')
+    +tile('t-approved',c.approved,'approved')
+    +tile('t-edited',c.edited,'edited')
+    +tile('t-live',c.live,'live')
+    +tile('t-denied',c.denied,'denied');
+}
+function onFilter(){try{localStorage.setItem('tm-view',document.getElementById('filter').value);}catch(e){}render();}
 function render(){
+  summary();
   const filter=document.getElementById('filter').value;
-  const list=ITEMS.filter(i=>filter==='all'?true:!i.decision);
   const box=document.getElementById('cards');
   if(!ITEMS.length){box.innerHTML="<p style='color:#666'>No submissions yet.</p>";prog();return;}
-  if(!list.length){box.innerHTML="<p style='color:#666'>Nothing pending — switch to “All” to see decided items.</p>";prog();return;}
+  if(filter==='all'){renderHistory(box);prog();return;}
+  // Pending inbox: interactive cards for undecided items only.
+  const list=ITEMS.filter(i=>!i.decision);
+  if(!list.length){box.innerHTML="<p style='color:#666'>Nothing pending — switch to “History — all” to see decided &amp; published items.</p>";prog();return;}
   box.innerHTML=list.map(cardHTML).join('');
   list.forEach(i=>applyCard(i.itemId,i.decision));
+}
+// History view — every record as a status-log row, grouped by status then date.
+function renderHistory(box){
+  const groups={};GROUP_ORDER.forEach(g=>groups[g]=[]);
+  ITEMS.forEach(i=>groups[statusOf(i)].push(i));
+  const keyDate=i=>i.implemented_at||i.decided_at||i.ts||'';
+  let html='';
+  GROUP_ORDER.forEach(g=>{
+    const rows=groups[g];if(!rows.length)return;
+    rows.sort((a,b)=>keyDate(b).localeCompare(keyDate(a)));
+    html+="<div class='grouphd'>"+STATUS_META[g].label+" · "+rows.length+"</div>";
+    html+=rows.map(logRowHTML).join('');
+  });
+  box.innerHTML=html;
+}
+function logRowHTML(i){
+  const st=statusOf(i);
+  const chips=(i.conditionTags||[]).map(t=>"<span class='chip'>"+esc(TAG_LABELS[t]||t)+"</span>").join('');
+  const shown=(st==='edited'&&i.note)?i.note:(i.body||'');
+  const dates=[];
+  if(i.ts)dates.push("<span><b>Submitted</b> "+esc(fmtDate(i.ts))+"</span>");
+  if(i.decided_at)dates.push("<span><b>Decided</b> "+esc(fmtDate(i.decided_at))+(i.reviewer?" by "+esc(i.reviewer):'')+"</span>");
+  if(i.implemented_at)dates.push("<span><b>Live</b> "+esc(fmtDate(i.implemented_at))+"</span>");
+  return "<div class='logrow st-"+st+"'>"
+    +"<div class='lmain'>"
+      +"<div class='lhead'>"+badgeHTML(st)
+        +"<span class='lname'>"+esc(i.author_name||'(no name)')+"</span>"
+        +(i.author_location?"<span class='lloc'>· "+esc(i.author_location)+"</span>":'')
+      +"</div>"
+      +"<div class='lsnip'>"+esc(shown)+"</div>"
+      +(chips?"<div class='lchips'>"+chips+"</div>":"")
+      +"<div class='ldates'>"+dates.join("<span class='dot'>•</span>")+"</div>"
+    +"</div>"
+  +"</div>";
 }
 function cardHTML(i){
   const id=cssid(i.itemId);
@@ -134,7 +254,7 @@ function cardHTML(i){
   const editVal=(i.decision==='Edit'&&i.note)?i.note:(i.body||'');
   const when=i.ts?new Date(i.ts).toLocaleString():'';
   return "<div class='card' id='card_"+id+"'>"
-    +"<div class='who'>"+esc(i.author_name||'(no name)')+(i.author_location?" <span class='loc'>· "+esc(i.author_location)+"</span>":'')+"</div>"
+    +"<div class='who'>"+badgeHTML(statusOf(i))+" "+esc(i.author_name||'(no name)')+(i.author_location?" <span class='loc'>· "+esc(i.author_location)+"</span>":'')+"</div>"
     +"<div class='priv'>✉ "+esc(i.email||'(no email)')+" — private, for spam check only, never published</div>"
     +"<div class='body'>"+esc(i.body||'')+"</div>"
     +(chips?"<div class='chips'>"+chips+"</div>":"")
@@ -151,6 +271,10 @@ function cardHTML(i){
     +"</div></div>";
 }
 function jsq(s){return String(s).replace(/'/g,"\\'");}
-document.addEventListener('DOMContentLoaded',()=>{const rn=document.getElementById('rname');if(rn)rn.value=localStorage.getItem('tm-reviewer')||'';load();});
+document.addEventListener('DOMContentLoaded',()=>{
+  const rn=document.getElementById('rname');if(rn)rn.value=localStorage.getItem('tm-reviewer')||'';
+  try{const v=localStorage.getItem('tm-view');if(v){document.getElementById('filter').value=v;}}catch(e){}
+  load();
+});
 
 </script></body></html>
