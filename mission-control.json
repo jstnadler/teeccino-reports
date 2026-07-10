@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-10T13:02:47.671616-07:00",
+  "lastUpdated": "2026-07-10T13:05:16.886985-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -249,7 +249,7 @@
       "workspace": "clawd-agentsmith",
       "status": "working",
       "currentTask": {
-        "summary": "USER CHOSE (for \"Which should I build?\"): C — both A and B. Continue with this d [+2 more tasks]",
+        "summary": "USER CHOSE (for \"Which should I build?\"): C — both A and B. Continue with this d [+1 more task]",
         "source": "discord",
         "startedAt": "2026-07-10T12:55:40-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1525228118321926234"
@@ -263,19 +263,13 @@
           "threadUrl": "https://discord.com/channels/1466925435316076567/1525228118321926234"
         },
         {
-          "task": "DELEGATE RESULT from Shopkeeper (you delegated: \"Restore the rich Promo Hub cale",
-          "lane": "write",
-          "startedAt": "2026-07-10T12:59:39-07:00",
-          "threadUrl": "https://discord.com/channels/1466925435316076567/1525226335713366046"
-        },
-        {
           "task": "Shopkeeper's Promo Hub calendar feed is now **enriched and rewritten**: `promo-h",
           "lane": "write",
           "startedAt": "2026-07-10T13:01:33-07:00",
           "threadUrl": "https://discord.com/channels/1466925435316076567/1525230518789210143"
         }
       ],
-      "concurrentTasks": 3,
+      "concurrentTasks": 2,
       "lastActivity": {
         "summary": "Promo Hub LIVE — composed all 4 agent feeds and deployed promo-hub.html to teeccino-reports (HTTP 200 verified). Auto-registered in pages.json.",
         "at": "2026-07-10T12:46:49-07:00"
@@ -298,6 +292,12 @@
           "at": "2026-07-07T09:50:23.004313-07:00",
           "source": "discord",
           "status": "unknown"
+        },
+        {
+          "summary": "Recomposed + redeployed Promo Hub after Shopkeeper enriched the calendar feed (12-mo FOTM + Summer Hydration + promosSource marker). Upgraded renderCalendar to surface the enriched data.",
+          "at": "2026-07-10T13:12:00-07:00",
+          "source": "discord",
+          "status": "success"
         },
         {
           "summary": "Restored rich Promo Hub calendar (4 promos + 12-month FOTM) after a concurrent-session feed trim. Staged exact payload from prior deploy 24e09e4, delegated the feed write to Shopkeeper (owner), recomposed, redeployed. Repo/origin verified 4 promos/12 FOTM; live page HTTP 200 (CDN propagating).",
@@ -332,12 +332,6 @@
         {
           "summary": "Restored the missing @client.event on on_message — the daemon was connecting but silently ignoring ALL Discord messages (CostSmith thread 'not responding' was the symptom, but it affected every agent). Root cause: today's 15:06 edit relocated on_message's @client.event decorator onto decision_channel_ids; my earlier crash-loop fix removed the stray decorator but left on_message undecorated. Confirmed against git HEAD (both on_message + on_ready had @client.event). Fixed, --check PASS, daemon restarted via preflight (PID 74948, connected 15:49:49). Thread->session map survived restart, so agents resume on next reply.",
           "at": "2026-07-08T22:50:20Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Wired `switchboard.py --check` into sb-boot/sb-restart as a preflight gate in the PowerShell profile. A broken switchboard.py (failed handler registration) is now REFUSED before the daemon starts, so it can never enter the watchdog crash-loop that made sb-boot look dead this morning. Added _sb-Preflight helper, -SkipCheck bypass, updated the sb-* comment block. Profile parses clean; preflight verified True on clean code (exit-1/False on broken code proven earlier).",
-          "at": "2026-07-08T22:36:52Z",
           "source": "interactive",
           "status": "success"
         }
