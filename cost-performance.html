@@ -338,6 +338,22 @@
     </div>
   </div>
 
+  <div class="card" id="bomcogs-card" style="margin-top:20px">
+    <h2>🧬 BOM SKU cost — labor slice (DTC-matched finished goods)</h2>
+    <p class="hint">The <b>engineered standard</b> labor cost per unit built from the <b>Sage bill of materials</b>, for the finished goods that map to a <b>live Shopify SKU</b>. This is the model that assembles <b>full landed COGS</b> the instant material/packaging prices land — the component counts below are the <b>unpriced gap</b>. Distinct from the run-derived explorer above (that's actual production hours; this is the BOM standard). <span class="illus" id="bomcogs-note"></span></p>
+    <div class="ctrls">
+      <span class="ctrl-lbl">🔎 Filter</span>
+      <input id="bom-search" placeholder="Search SKU or product… (e.g. 85070, French Roast)" autocomplete="off">
+      <span class="mtag" id="bom-count"></span>
+    </div>
+    <div class="ex-scroll">
+      <table id="bomcogs"><thead><tr>
+        <th>SKU</th><th>Product</th><th>labor $/unit</th><th>unpriced: raw</th><th>pkg</th><th>fee</th><th>Shopify $</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+    <p class="foot" id="bomcogs-foot"></p>
+  </div>
+
   <div class="card" style="margin-top:20px">
     <h2>By production machine / stage</h2>
     <p class="hint"><b>Machine hours worked, units, and labor cost per stage — for the selected date range.</b> Bar = share of total labor cost. Blending splits by blender (LB/SB). <span class="illus">[std]/[n/a] = labor costed from the standard rate (stage lacks operator counts).</span></p>
@@ -1150,9 +1166,45 @@ function initControls(){
   ['blend','ex-table','costmodel','variance','throughput','batch','yield','machines'].forEach(makeSortable);
 }
 
+/* ---------- BOM SKU COGS (labor slice) — static, not date-filtered ---------- */
+let BOMROWS=[];
+function renderBomCogs(){
+  const bc=RAW.bom_cogs, card=$('#bomcogs-card');
+  if(!bc||!bc.items||!bc.items.length){ if(card) card.style.display='none'; return; }
+  card.style.display='';
+  BOMROWS=bc.items;
+  const wb=bc.wage_basis||{};
+  const basis=Object.keys(wb).map(k=>`${k} $${wb[k]}/hr`).join(', ');
+  $('#bomcogs-note').innerHTML=`LABOR ONLY — wages CONFIRMED (${basis}). `
+    +`Materials, packaging &amp; fees are counted but <b>not yet priced</b>, so this is not full COGS.`;
+  const built=(bc.built||'').slice(0,10);
+  $('#bomcogs-foot').innerHTML=`<b>${num(bc.matched)}</b> DTC-matched finished goods `
+    +`(${num(bc.positive)} with positive labor) · mean labor <b>${money4(bc.mean_labor_per_unit)}</b>/unit · `
+    +`<b>${num(bc.total_unpriced_components)}</b> component lines awaiting a Purchasing price list to reach full landed COGS. `
+    +`Source: ${bc.source_file}, built ${built}. <span class="illus">Shopify $ shown for context only — margin belongs to DataOps/Shopkeeper once materials are priced.</span>`;
+  filterBomCogs();
+}
+function filterBomCogs(){
+  const q=$('#bom-search').value.trim().toLowerCase();
+  const rows=BOMROWS.filter(r=>!q
+    || (r.sku&&(''+r.sku).toLowerCase().includes(q))
+    || (r.title&&r.title.toLowerCase().includes(q)));
+  $('#bom-count').textContent=`${rows.length} of ${BOMROWS.length} SKUs`;
+  $('#bomcogs tbody').innerHTML = rows.length ? rows.map(r=>
+    `<tr><td>${r.sku||r.fg||''}</td><td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    +`<td>${r.lpu==null?'–':money4(r.lpu)}</td>`
+    +`<td>${num(r.raw)}</td><td>${num(r.pkg)}</td><td>${num(r.fee)}</td>`
+    +`<td>${r.price?money2(r.price):'–'}</td></tr>`).join('')
+    : `<tr><td colspan="7" class="empty">No matching SKUs.</td></tr>`;
+  reapplySort('bomcogs');
+}
+
 fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
   RAW=data;
   initControls();
+  makeSortable('bomcogs');
+  $('#bom-search').addEventListener('input',filterBomCogs);
+  renderBomCogs();
   setRange(null,null,$('#dr-presets button[data-p="all"]'));
 }).catch(e=>{ $('#banner-txt').innerHTML="Could not load cost-performance-facts.json — "+e; });
 </script>
