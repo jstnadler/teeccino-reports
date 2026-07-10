@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-10T13:13:51.668480-07:00",
+  "lastUpdated": "2026-07-10T13:16:35.899851-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -11,26 +11,14 @@
       "emoji": "cart",
       "role": "Shopify Operations",
       "workspace": "clawd-shopkeeper",
-      "status": "working",
-      "currentTask": {
-        "summary": "DELEGATE RESULT from AgentSmith (you delegated: \"Promo Hub calendar feed is now ",
-        "source": "discord",
-        "startedAt": "2026-07-10T13:13:20-07:00",
-        "threadUrl": "https://discord.com/channels/1466925435316076567/1525185887317655642"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
-      "activeSessions": [
-        {
-          "task": "DELEGATE RESULT from AgentSmith (you delegated: \"Promo Hub calendar feed is now ",
-          "lane": "write",
-          "startedAt": "2026-07-10T13:13:20-07:00",
-          "threadUrl": "https://discord.com/channels/1466925435316076567/1525185887317655642"
-        }
-      ],
-      "concurrentTasks": 1,
+      "activeSessions": [],
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Restored rich Promo Hub calendar (4 promos + 12-mo FOTM); reconciled active Summer Hydration entry against live store — no drift found.",
-        "at": "2026-07-10T19:59:00Z"
+        "summary": "DELEGATE to AgentSmith is now RUNNING in its own thread (it may pause there for ",
+        "at": "2026-07-10T13:14:11.330584-07:00"
       },
       "recentActivity": [
         {
@@ -261,9 +249,9 @@
       "workspace": "clawd-agentsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Auto-stamp project→thread links + backfill active projects",
+        "summary": "Yes please [+1 more task]",
         "source": "discord",
-        "startedAt": "2026-07-10T13:30:00-07:00",
+        "startedAt": "2026-07-10T13:12:50-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1525228118321926234"
       },
       "activeBranches": [],
@@ -273,9 +261,15 @@
           "lane": "write",
           "startedAt": "2026-07-10T13:12:50-07:00",
           "threadUrl": "https://discord.com/channels/1466925435316076567/1525228118321926234"
+        },
+        {
+          "task": "Data-hygiene fix applied on Shopkeeper's side: the duplicate `subscription-savin",
+          "lane": "write",
+          "startedAt": "2026-07-10T13:14:02-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1525233660486488254"
         }
       ],
-      "concurrentTasks": 1,
+      "concurrentTasks": 2,
       "lastActivity": {
         "summary": "Promo Hub LIVE — composed all 4 agent feeds and deployed promo-hub.html to teeccino-reports (HTTP 200 verified). Auto-registered in pages.json.",
         "at": "2026-07-10T12:46:49-07:00"
@@ -298,6 +292,12 @@
           "at": "2026-07-07T09:50:23.004313-07:00",
           "source": "discord",
           "status": "unknown"
+        },
+        {
+          "summary": "Added durable auto-stamp so projects bind to the Discord thread they're worked from — no manual step. On every MC build, autostamp_project_threads() scans the Switchboard 'running' registry + 'delegations' and binds a project's thread when the session text names the project verbatim (phrase-only match on id/name). Never overwrites a manual bind. Backfill of the 7 unbound active projects found NO reliable thread association in state, so none were fabricated.",
+          "at": "2026-07-10T20:40:00Z",
+          "source": "discord",
+          "status": "success"
         },
         {
           "summary": "Added Discord thread deep-links to Mission Control, live on teeccino-reports: (A) working-agent cards get a live '↗ thread' link to the active Discord session; (B) project cards get a '↳ thread' button to pick the project back up. Guild-aware URL builder + threadId passthrough + --bind-thread CLI in build_mission_control.py; render + CSS in mission-control-dashboard.html. Bound promo-hub to its thread as a live example. Verified live (3 deep-links in JSON, both render classes in HTML).",
@@ -333,12 +333,6 @@
           "summary": "Fixed the Discord Approve/Reject 'interaction failed' -> agent-never-resumed bug (CostSmith). Root cause: decision Views (ApprovalControls/ChoiceControls) were timeout=None but had NO custom_id and were never re-registered via add_view, so any card that outlived its posting process was orphaned -> click hit no listener -> Discord 'interaction failed' -> no resume. Compounded by on_ready wiping state['awaiting'], which also killed the typed-reply fallback on restart. Fix: stable thread-scoped custom_ids (persistent views, verified is_persistent True on discord.py 2.7.1), lazy thread resolution for restart-reconstructed views, persist choice options+multi, and on_ready now re-arms each pending card via client.add_view(message_id=...) instead of wiping awaiting (clears only 'running').",
           "at": "2026-07-08T23:52:00Z",
           "source": "discord",
-          "status": "success"
-        },
-        {
-          "summary": "Fixed CostSmith 'concurrency limit' queueing: CostSmith was missing from the Switchboard write-lane concurrency map, so it fell to _default=1 and a second Discord message queued behind a running task. Added costsmith:3 to switchboard_config.json (matches dataops — same read/analysis class). Restarted daemon via preflight (PID 30324, connected 16:26:23); new limit live. CostSmith can now run up to 3 parallel sessions.",
-          "at": "2026-07-08T23:26:41Z",
-          "source": "interactive",
           "status": "success"
         }
       ],
