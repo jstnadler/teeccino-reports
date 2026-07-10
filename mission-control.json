@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-10T13:08:10.868119-07:00",
+  "lastUpdated": "2026-07-10T13:12:48.444025-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -11,26 +11,14 @@
       "emoji": "cart",
       "role": "Shopify Operations",
       "workspace": "clawd-shopkeeper",
-      "status": "working",
-      "currentTask": {
-        "summary": "promo calendar is closed now",
-        "source": "discord",
-        "startedAt": "2026-07-10T13:05:42-07:00",
-        "threadUrl": "https://discord.com/channels/1466925435316076567/1525185887317655642"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
-      "activeSessions": [
-        {
-          "task": "promo calendar is closed now",
-          "lane": "write",
-          "startedAt": "2026-07-10T13:05:42-07:00",
-          "threadUrl": "https://discord.com/channels/1466925435316076567/1525185887317655642"
-        }
-      ],
-      "concurrentTasks": 1,
+      "activeSessions": [],
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Restored rich Promo Hub calendar (4 promos + 12-mo FOTM); reconciled active Summer Hydration entry against live store — no drift found.",
-        "at": "2026-07-10T19:59:00Z"
+        "summary": "DELEGATE to AgentSmith is now RUNNING in its own thread (it may pause there for ",
+        "at": "2026-07-10T13:08:55.773256-07:00"
       },
       "recentActivity": [
         {
@@ -259,14 +247,26 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Promo Hub calendar feed is now **fully backfilled** — `promo-hub-calendar.json` ",
+        "source": "discord",
+        "startedAt": "2026-07-10T13:08:21-07:00",
+        "threadUrl": "https://discord.com/channels/1466925435316076567/1525232231910477975"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "Promo Hub calendar feed is now **fully backfilled** — `promo-hub-calendar.json` ",
+          "lane": "write",
+          "startedAt": "2026-07-10T13:08:21-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1525232231910477975"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "USER CHOSE (for \"Which should I build?\"): C — both A and B. Continue with this d",
-        "at": "2026-07-10T13:07:47.943327-07:00"
+        "summary": "Promo Hub LIVE — composed all 4 agent feeds and deployed promo-hub.html to teeccino-reports (HTTP 200 verified). Auto-registered in pages.json.",
+        "at": "2026-07-10T12:46:49-07:00"
       },
       "recentActivity": [
         {
@@ -290,6 +290,12 @@
         {
           "summary": "Added Discord thread deep-links to Mission Control, live on teeccino-reports: (A) working-agent cards get a live '↗ thread' link to the active Discord session; (B) project cards get a '↳ thread' button to pick the project back up. Guild-aware URL builder + threadId passthrough + --bind-thread CLI in build_mission_control.py; render + CSS in mission-control-dashboard.html. Bound promo-hub to its thread as a live example. Verified live (3 deep-links in JSON, both render classes in HTML).",
           "at": "2026-07-10T20:22:00Z",
+          "source": "discord",
+          "status": "success"
+        },
+        {
+          "summary": "Recomposed + redeployed Promo Hub with the full backfilled calendar — 16 promos (workbook Overview) + 12-mo FOTM, ingested:true. Upgraded renderCalendar to surface the enriched shape; verified live 16 promos serving.",
+          "at": "2026-07-10T13:25:00-07:00",
           "source": "discord",
           "status": "success"
         },
@@ -320,12 +326,6 @@
         {
           "summary": "Fixed CostSmith 'concurrency limit' queueing: CostSmith was missing from the Switchboard write-lane concurrency map, so it fell to _default=1 and a second Discord message queued behind a running task. Added costsmith:3 to switchboard_config.json (matches dataops — same read/analysis class). Restarted daemon via preflight (PID 30324, connected 16:26:23); new limit live. CostSmith can now run up to 3 parallel sessions.",
           "at": "2026-07-08T23:26:41Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Closed the --check gap that let today's message-ignoring bug through: --check now ASSERTS the required event handlers (on_message, on_ready) are actually bound as coroutine functions on the client after registration, not merely that registration didn't raise. A dropped/relocated @client.event now FAILS the gate (exit 1) instead of silently producing a daemon that connects but ignores all messages. Verified: clean=exit 0, on_message decorator dropped=exit 1 with clear message, restored=exit 0.",
-          "at": "2026-07-08T22:55:46Z",
           "source": "interactive",
           "status": "success"
         }
