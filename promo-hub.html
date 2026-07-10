@@ -166,9 +166,19 @@ function renderCalendar(env) {
     }
     h += '</tbody></table>';
   } else h += '<div class="nodata">No promos in calendar.</div>';
+  // promosSource marker: the promo list above may be confirmed-live only when the
+  // broader promo-calendar workbook hasn't been ingested this run (Shopkeeper flag).
+  const ps = d.promosSource;
+  if (ps && ps.ingested === false) {
+    h += `<div class="nodata" style="margin-top:10px">⏳ Full promo lineup pending — showing confirmed-live promos only${ps.note ? '. ' + esc(ps.note) : ''}</div>`;
+  }
   if (fotm.length) {
-    h += '<div style="margin-top:16px"><table><thead><tr><th>FOTM Month</th><th>Product</th><th>OTP</th><th>SUB</th></tr></thead><tbody>';
-    for (const f of fotm) h += `<tr><td>${esc(f.month)}</td><td>${esc(f.product)}</td><td>${esc(f.otp)}%</td><td>${esc(f.sub)}%</td></tr>`;
+    h += '<div style="margin-top:16px"><table><thead><tr><th>FOTM Month</th><th>Phase</th><th>Product</th><th>Free packet</th><th>OTP</th><th>SUB</th></tr></thead><tbody>';
+    for (const f of fotm) {
+      const phasePill = f.phase ? `<span class="pill ${esc(f.phase)}">${esc(f.phase)}</span>` : '—';
+      const label = f.monthName ? `${esc(f.monthName)} <span style="color:#64748b">${esc(f.month)}</span>` : esc(f.month);
+      h += `<tr><td>${label}</td><td>${phasePill}</td><td>${esc(f.product)}</td><td>${esc(f.freePacket || '—')}</td><td>${esc(f.otp)}%</td><td>${esc(f.sub)}%</td></tr>`;
+    }
     h += '</tbody></table></div>';
   }
   return h;
