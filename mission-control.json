@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-10T12:47:15.063247-07:00",
+  "lastUpdated": "2026-07-10T12:53:07.594174-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -241,13 +241,28 @@
       "emoji": "gear",
       "role": "AI Systems Architect & Gateway",
       "workspace": "clawd-agentsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "On our dashboard channel, is there a way to link to the conversation/thread that [+1 more task]",
+        "source": "discord",
+        "startedAt": "2026-07-10T12:52:01-07:00"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "On our dashboard channel, is there a way to link to the conversation/thread that",
+          "lane": "write",
+          "startedAt": "2026-07-10T12:52:01-07:00"
+        },
+        {
+          "task": "APPROVED by simbastampede: proceed with the action you requested (\"Deploy the Pr",
+          "lane": "write",
+          "startedAt": "2026-07-10T12:52:30-07:00"
+        }
+      ],
+      "concurrentTasks": 2,
       "lastActivity": {
-        "summary": "Promo Hub scoped, built, and deployed live (4-agent composed dashboard on teeccino-reports)",
+        "summary": "Promo Hub LIVE — composed all 4 agent feeds and deployed promo-hub.html to teeccino-reports (HTTP 200 verified). Auto-registered in pages.json.",
         "at": "2026-07-10T12:46:49-07:00"
       },
       "recentActivity": [
@@ -268,6 +283,12 @@
           "at": "2026-07-07T09:50:23.004313-07:00",
           "source": "discord",
           "status": "unknown"
+        },
+        {
+          "summary": "Deployed Promo Hub dashboard live to teeccino-reports after all 4 feeds landed. Composed promo-hub-state.json (calendar+runbook+monitor+analytics, 0 active alerts), dry-built, gated deploy approved by Justin, pushed. Verified live (promo-hub.html + promo-hub-state.json both HTTP 200).",
+          "at": "2026-07-10T12:53:00-07:00",
+          "source": "discord",
+          "status": "success"
         },
         {
           "summary": "Fixed the Discord Approve/Reject 'interaction failed' -> agent-never-resumed bug (CostSmith). Root cause: decision Views (ApprovalControls/ChoiceControls) were timeout=None but had NO custom_id and were never re-registered via add_view, so any card that outlived its posting process was orphaned -> click hit no listener -> Discord 'interaction failed' -> no resume. Compounded by on_ready wiping state['awaiting'], which also killed the typed-reply fallback on restart. Fix: stable thread-scoped custom_ids (persistent views, verified is_persistent True on discord.py 2.7.1), lazy thread resolution for restart-reconstructed views, persist choice options+multi, and on_ready now re-arms each pending card via client.add_view(message_id=...) instead of wiping awaiting (clears only 'running').",
@@ -302,12 +323,6 @@
         {
           "summary": "Added `switchboard.py --check` pre-deploy smoke test: builds the discord client and registers every @client.event / @tasks.loop handler exactly as a live boot would, then returns BEFORE client.run (no Gateway connection). Catches the runtime-only registration errors (non-async @client.event, bad @tasks.loop) that ast.parse can't see — the exact class of bug that crash-looped the daemon earlier today. Exit 0 = PASS, exit 1 + traceback + clear FAIL line = broken. Verified both directions (clean=PASS/0, reintroduced bug=FAIL/1).",
           "at": "2026-07-08T22:33:59Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Fixed Switchboard crash-loop: today's 15:06 off-menu edit left a stray @client.event decorator on the synchronous helper decision_channel_ids() (switchboard.py:1836), so the daemon threw 'event registered must be a coroutine function' on every startup and the watchdog relaunched it endlessly. sb-boot/sb-restart appeared to 'do nothing'. Removed the decorator (own file, no sibling touch); watchdog auto-recovered on next relaunch (15:29:26 connected to Gateway clean). Daemon stable, off-menu-reply feature now actually live for the first time.",
-          "at": "2026-07-08T22:30:23Z",
           "source": "interactive",
           "status": "success"
         }
