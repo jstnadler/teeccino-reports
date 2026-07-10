@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teeccino Promo Hub</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh; color: #fff;
+    padding: 20px; padding-top: 70px;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+
+.header { text-align: center; margin-bottom: 24px; }
+.header h1 {
+    font-size: 2.2em; font-weight: 800; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #D4A843, #F5D784, #D4A843);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header .sub { color: #94a3b8; margin-top: 6px; font-size: 1em; }
+.header .updated { color: #64748b; font-size: 0.8em; margin-top: 4px; }
+
+/* ---- ALERT BANNER ---- */
+.alerts { margin: 0 0 24px; display: flex; flex-direction: column; gap: 8px; }
+.alert {
+    border-radius: 10px; padding: 12px 16px; font-size: 0.92em;
+    display: flex; align-items: center; gap: 10px;
+}
+.alert.critical { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: #fca5a5; }
+.alert.warning  { background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.35); color: #fcd34d; }
+.alert .code { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.8em; }
+
+/* ---- SECTIONS ---- */
+.section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin: 32px 0 16px 0; padding-bottom: 8px;
+    border-bottom: 2px solid rgba(212,168,67,0.2);
+}
+.section-header h2 {
+    font-size: 1.15em; font-weight: 700; color: #D4A843;
+    letter-spacing: 0.5px; text-transform: uppercase;
+}
+.section-header .section-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.1em;
+    background: rgba(236,72,153,0.15); color: #f9a8d4;
+}
+.section-header .stale-chip {
+    margin-left: auto; font-size: 0.72em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.04em; padding: 4px 10px; border-radius: 999px;
+}
+.stale-chip.ok    { background: rgba(74,222,128,0.14); color: #4ade80; }
+.stale-chip.stale { background: rgba(251,191,36,0.14); color: #fcd34d; }
+.stale-chip.none  { background: rgba(148,163,184,0.12); color: #94a3b8; }
+
+.card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+}
+.nodata { color: #64748b; font-style: italic; padding: 8px 2px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.88em; color: #e2e8f0; }
+th {
+    text-align: left; font-weight: 600; color: #94a3b8; font-size: 0.8em;
+    text-transform: uppercase; letter-spacing: 0.03em; padding: 8px 10px;
+    border-bottom: 1px solid rgba(148,163,184,0.2); white-space: nowrap;
+}
+td { padding: 8px 10px; border-bottom: 1px solid rgba(148,163,184,0.08); }
+tbody tr:hover { background: rgba(148,163,184,0.05); }
+
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.78em; font-weight: 600; }
+.pill.done    { background: rgba(74,222,128,0.15); color: #4ade80; }
+.pill.pending { background: rgba(148,163,184,0.15); color: #cbd5e1; }
+.pill.active  { background: rgba(96,165,250,0.15); color: #93c5fd; }
+.pill.past    { background: rgba(148,163,184,0.12); color: #94a3b8; }
+.pill.upcoming{ background: rgba(212,168,67,0.15); color: #fbbf24; }
+.pill.blocked { background: rgba(248,113,113,0.15); color: #fca5a5; }
+
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.kv .item { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px 14px; }
+.kv .item .label { color: #94a3b8; font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.03em; }
+.kv .item .value { font-size: 1.3em; font-weight: 700; color: #fff; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.owner-tag { font-size: 0.72em; color: #64748b; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+    }).catch(() => {});
+</script>
+
+<div class="container">
+  <div class="header">
+    <h1>Promo Hub</h1>
+    <div class="sub">Full promo lifecycle — scheduling &bull; launch runbook &bull; live monitoring &bull; post-promo analysis</div>
+    <div class="updated" id="updated">Loading…</div>
+  </div>
+
+  <div class="alerts" id="alerts"></div>
+
+  <!-- 1. Scheduling / Calendar -->
+  <div class="section-header">
+    <div class="section-icon">📅</div><h2>Scheduling &amp; Calendar</h2>
+    <span class="stale-chip none" id="chip-calendar">—</span>
+  </div>
+  <div class="card" id="mod-calendar"><div class="nodata">Loading…</div></div>
+
+  <!-- 2. Launch Runbook -->
+  <div class="section-header">
+    <div class="section-icon">✅</div><h2>Launch Runbook</h2>
+    <span class="stale-chip none" id="chip-runbook">—</span>
+  </div>
+  <div class="card" id="mod-runbook"><div class="nodata">Loading…</div></div>
+
+  <!-- 3. Active Monitoring -->
+  <div class="section-header">
+    <div class="section-icon">📡</div><h2>Active Monitoring</h2>
+    <span class="stale-chip none" id="chip-monitor">—</span>
+  </div>
+  <div class="card" id="mod-monitor"><div class="nodata">Loading…</div></div>
+
+  <!-- 4. Post-Promo Analysis -->
+  <div class="section-header">
+    <div class="section-icon">📈</div><h2>Post-Promo Analysis</h2>
+    <span class="stale-chip none" id="chip-analytics">—</span>
+  </div>
+  <div class="card" id="mod-analytics"><div class="nodata">Loading…</div></div>
+</div>
+
+<script>
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtAge = s => s == null ? '' : (s < 3600 ? Math.round(s/60)+'m' : s < 86400 ? Math.round(s/3600)+'h' : Math.round(s/86400)+'d');
+const money = n => n == null ? '—' : '$' + Number(n).toLocaleString();
+const num = n => n == null ? '—' : Number(n).toLocaleString();
+
+function chip(id, env) {
+  const el = document.getElementById(id);
+  if (!env || !env.present) { el.className = 'stale-chip none'; el.textContent = env && env.error ? env.error : 'no data'; return; }
+  if (env.stale) { el.className = 'stale-chip stale'; el.textContent = 'stale · ' + fmtAge(env.ageSeconds); return; }
+  el.className = 'stale-chip ok'; el.textContent = 'fresh · ' + fmtAge(env.ageSeconds);
+}
+const noData = env => `<div class="nodata">No data${env && env.error ? ' — ' + esc(env.error) : ''}. Waiting on the owning agent's feed.</div>`;
+
+function renderCalendar(env) {
+  if (!env || !env.present || !env.data) return noData(env);
+  const d = env.data, promos = d.promos || [], fotm = d.fotm || [];
+  let h = '';
+  if (promos.length) {
+    h += '<table><thead><tr><th>Promo</th><th>Phase</th><th>Dates</th><th>Scope</th><th>Advertised</th><th>Functional</th><th>Free gift</th></tr></thead><tbody>';
+    for (const p of promos) {
+      const adv = p.advertisedRate ? `OTP ${esc(p.advertisedRate.otp)} · SUB ${esc(p.advertisedRate.sub)}` : '—';
+      const fn = p.functionalRate ? `OTP ${esc(p.functionalRate.otp)}% · SUB ${esc(p.functionalRate.sub)}%` : '—';
+      h += `<tr><td><strong>${esc(p.name)}</strong></td><td><span class="pill ${esc(p.phase)}">${esc(p.phase)}</span></td>`
+        + `<td>${esc(p.startsAt)} → ${esc(p.endsAt || '—')}</td><td>${esc(p.scope)}</td><td>${adv}</td><td>${fn}</td>`
+        + `<td>${p.freeGiftThreshold ? money(p.freeGiftThreshold) : '—'}</td></tr>`;
+    }
+    h += '</tbody></table>';
+  } else h += '<div class="nodata">No promos in calendar.</div>';
+  if (fotm.length) {
+    h += '<div style="margin-top:16px"><table><thead><tr><th>FOTM Month</th><th>Product</th><th>OTP</th><th>SUB</th></tr></thead><tbody>';
+    for (const f of fotm) h += `<tr><td>${esc(f.month)}</td><td>${esc(f.product)}</td><td>${esc(f.otp)}%</td><td>${esc(f.sub)}%</td></tr>`;
+    h += '</tbody></table></div>';
+  }
+  return h;
+}
+
+function renderRunbook(env) {
+  if (!env || !env.present || !env.data) return noData(env);
+  const d = env.data, steps = d.steps || [];
+  let h = `<div style="margin-bottom:12px">Promo <strong>${esc(d.promoId||'—')}</strong> · phase <span class="pill active">${esc(d.phase||'—')}</span></div>`;
+  if (steps.length) {
+    h += '<table><thead><tr><th>#</th><th>Step</th><th>Owner</th><th>Status</th><th>Note</th></tr></thead><tbody>';
+    for (const s of steps) {
+      const cls = s.status === 'done' ? 'done' : s.status === 'blocked' ? 'blocked' : 'pending';
+      h += `<tr><td>${esc(s.n)}</td><td>${esc(s.name)}</td><td>${esc(s.owner)}</td>`
+        + `<td><span class="pill ${cls}">${esc(s.status)}</span></td><td style="color:#94a3b8">${esc(s.note||s.tool||'')}</td></tr>`;
+    }
+    h += '</tbody></table>';
+  } else h += '<div class="nodata">No steps defined.</div>';
+  if (d.teardown) {
+    h += `<div style="margin-top:14px;color:#94a3b8;font-size:0.88em">Teardown: <span class="pill ${d.teardown.armed?'blocked':'past'}">${d.teardown.armed?'ARMED':'display-only'}</span> — runs on explicit instruction only.</div>`;
+  }
+  return h;
+}
+
+function renderMonitor(env) {
+  if (!env || !env.present || !env.data) return noData(env);
+  const d = env.data;
+  let h = `<div style="margin-bottom:12px">Promo <strong>${esc(d.promoId||'—')}</strong></div>`;
+  const disc = d.discounts || [];
+  if (disc.length) {
+    h += '<table><thead><tr><th>Discount</th><th>Type</th><th>Active</th><th>Ends At</th></tr></thead><tbody>';
+    for (const x of disc) {
+      const risk = x.endsAt ? 'blocked' : 'done';
+      h += `<tr><td>${esc(x.title)}</td><td>${esc(x.type)}</td><td><span class="pill ${x.active?'active':'past'}">${x.active?'yes':'no'}</span></td>`
+        + `<td><span class="pill ${risk}">${x.endsAt ? esc(x.endsAt)+' ⚠' : 'null (safe)'}</span></td></tr>`;
+    }
+    h += '</tbody></table>';
+  }
+  const mf = d.metafields || {}, cc = d.collectionCounts || {};
+  h += '<div class="kv" style="margin-top:14px">';
+  h += `<div class="item"><div class="label">custom.discount</div><div class="value">${mf['custom.discount'] != null ? mf['custom.discount']+'%' : '—'}</div></div>`;
+  h += `<div class="item"><div class="label">first_subscription_discount</div><div class="value">${mf['custom.first_subscription_discount'] != null ? mf['custom.first_subscription_discount']+'%' : '—'}</div></div>`;
+  h += `<div class="item"><div class="label">Discount collection</div><div class="value">${num(cc['Discount'])}</div></div>`;
+  h += `<div class="item"><div class="label">First-Sub collection</div><div class="value">${num(cc['FirstSubscriptionDiscount'])}</div></div>`;
+  h += `<div class="item"><div class="label">Free-ship threshold</div><div class="value">${d.freeShippingThreshold != null ? money(d.freeShippingThreshold) : '—'}</div></div>`;
+  h += '</div>';
+  return h;
+}
+
+function renderAnalytics(env, activeStart) {
+  if (!env || !env.present || !env.data) return noData(env);
+  const d = env.data, live = d.live || {}, pp = d.postPromo || {};
+  // Pre-ingest guard: if the pipeline's latest day is BEFORE the active promo's
+  // start, no promo day has closed yet — zeros mean "not yet ingested", not "no sales".
+  const preIngest = activeStart && live.throughDate && live.throughDate < activeStart;
+  let h = '';
+  if (preIngest) {
+    h += `<div class="alert warning" style="margin-bottom:14px"><span class="code">pre-ingest</span>`
+      + `<span>Promo launched ${esc(activeStart)}; pipeline data runs through ${esc(live.throughDate)}. `
+      + `First promo-day numbers land after the next daily ingest — the zeros below are not yet real.</span></div>`;
+  }
+  h += `<div style="margin-bottom:8px;color:#94a3b8;font-size:0.85em">LIVE — through ${esc(live.throughDate||'—')}</div><div class="kv">`;
+  h += `<div class="item"><div class="label">Sales</div><div class="value">${money(live.sales)}</div></div>`;
+  h += `<div class="item"><div class="label">Units</div><div class="value">${num(live.units)}</div></div>`;
+  h += `<div class="item"><div class="label">AOV</div><div class="value">${money(live.aov)}</div></div>`;
+  h += `<div class="item"><div class="label">Subscription starts</div><div class="value">${num(live.subscriptionStarts)}</div></div>`;
+  h += '</div>';
+  if (pp && pp.computed) {
+    h += `<div style="margin:16px 0 8px;color:#94a3b8;font-size:0.85em">POST-PROMO</div><div class="kv">`;
+    h += `<div class="item"><div class="label">Lift vs baseline</div><div class="value">${pp.liftVsBaseline != null ? pp.liftVsBaseline+'x' : '—'}</div></div>`;
+    h += `<div class="item"><div class="label">Revenue</div><div class="value">${money(pp.revenue)}</div></div>`;
+    h += `<div class="item"><div class="label">Rev attr. to discount</div><div class="value">${money(pp.revenueAttributedToDiscount)}</div></div>`;
+    h += `<div class="item"><div class="label">Sub starts</div><div class="value">${num(pp.subscriptionStarts)}</div></div>`;
+    h += '</div>';
+  } else {
+    h += `<div class="nodata" style="margin-top:14px">Post-promo analysis computes after the promo ends.</div>`;
+  }
+  return h;
+}
+
+fetch('promo-hub-state.json?t=' + Date.now())
+  .then(r => r.json())
+  .then(state => {
+    const m = state.modules || {};
+    document.getElementById('updated').textContent = 'Composed ' + esc(state.generatedAt || '');
+    // alerts
+    const al = document.getElementById('alerts');
+    const alerts = state.activeAlerts || [];
+    al.innerHTML = alerts.length ? alerts.map(a =>
+      `<div class="alert ${a.severity==='critical'?'critical':'warning'}"><span class="code">${esc(a.code)}</span><span>${esc(a.detail)}${a.promoId?' ('+esc(a.promoId)+')':''}</span></div>`
+    ).join('') : '';
+    // modules
+    // active promo start (for the analytics pre-ingest guard)
+    const cal = (m.calendar && m.calendar.data && m.calendar.data.promos) || [];
+    const activePromo = cal.find(p => p.phase === 'active');
+    const activeStart = activePromo ? activePromo.startsAt : null;
+    document.getElementById('mod-calendar').innerHTML  = renderCalendar(m.calendar);   chip('chip-calendar', m.calendar);
+    document.getElementById('mod-runbook').innerHTML   = renderRunbook(m.runbook);     chip('chip-runbook', m.runbook);
+    document.getElementById('mod-monitor').innerHTML   = renderMonitor(m.monitor);     chip('chip-monitor', m.monitor);
+    document.getElementById('mod-analytics').innerHTML = renderAnalytics(m.analytics, activeStart); chip('chip-analytics', m.analytics);
+  })
+  .catch(e => {
+    document.getElementById('updated').textContent = 'Failed to load promo-hub-state.json';
+    for (const id of ['calendar','runbook','monitor','analytics'])
+      document.getElementById('mod-'+id).innerHTML = '<div class="nodata">State file unavailable.</div>';
+  });
+</script>
+</body>
+</html>
