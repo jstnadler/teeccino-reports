@@ -340,17 +340,19 @@
 
   <div class="card" id="bomcogs-card" style="margin-top:20px">
     <h2>🧬 BOM SKU cost — labor slice (DTC-matched finished goods)</h2>
-    <p class="hint">The <b>engineered standard</b> labor cost per unit built from the <b>Sage bill of materials</b>, for the finished goods that map to a <b>live Shopify SKU</b>. This is the model that assembles <b>full landed COGS</b> the instant material/packaging prices land — the component counts below are the <b>unpriced gap</b>. Distinct from the run-derived explorer above (that's actual production hours; this is the BOM standard). <span class="illus" id="bomcogs-note"></span></p>
+    <p class="hint">The <b>engineered standard</b> labor cost per unit built from the <b>Acctivate bill of materials</b>, for the finished goods that map to a <b>live Shopify SKU</b>. This is the model that assembles <b>full landed COGS</b> the instant material/packaging prices land — the component counts below are the <b>unpriced gap</b>. Distinct from the run-derived explorer above (that's actual production hours; this is the BOM standard). <span class="illus" id="bomcogs-note"></span></p>
     <div class="ctrls">
       <span class="ctrl-lbl">🔎 Filter</span>
       <input id="bom-search" placeholder="Search SKU or product… (e.g. 85070, French Roast)" autocomplete="off">
       <span class="mtag" id="bom-count"></span>
     </div>
+    <p class="hint" style="margin:0 0 8px"><b>Click any row to see the math</b> — the full cost buildup for that SKU.</p>
     <div class="ex-scroll">
       <table id="bomcogs"><thead><tr>
         <th>SKU</th><th>Product</th><th>labor $/unit</th><th>unpriced: raw</th><th>pkg</th><th>fee</th><th>Shopify $</th>
       </tr></thead><tbody></tbody></table>
     </div>
+    <div id="bomcogs-detail" hidden style="margin-top:16px;background:#f2f7f4;border:1px solid #d5e6dd;border-radius:8px;padding:14px 16px"></div>
     <p class="foot" id="bomcogs-foot"></p>
   </div>
 
@@ -1191,12 +1193,47 @@ function filterBomCogs(){
     || (r.title&&r.title.toLowerCase().includes(q)));
   $('#bom-count').textContent=`${rows.length} of ${BOMROWS.length} SKUs`;
   $('#bomcogs tbody').innerHTML = rows.length ? rows.map(r=>
-    `<tr><td>${r.sku||r.fg||''}</td><td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}" style="cursor:pointer">`
+    +`<td>${r.sku||r.fg||''}</td><td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
     +`<td>${r.lpu==null?'–':money4(r.lpu)}</td>`
     +`<td>${num(r.raw)}</td><td>${num(r.pkg)}</td><td>${num(r.fee)}</td>`
     +`<td>${r.price?money2(r.price):'–'}</td></tr>`).join('')
     : `<tr><td colspan="7" class="empty">No matching SKUs.</td></tr>`;
   reapplySort('bomcogs');
+}
+function bomShowMath(fg,sku){
+  const r=BOMROWS.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku)) || BOMROWS.find(x=>(''+(x.sku||''))===(''+sku));
+  const box=$('#bomcogs-detail');
+  if(!r||!r.math){ box.hidden=true; return; }
+  const m=r.math, wb=RAW.bom_cogs.wage_basis||{};
+  const L=(m.labor_lines||[]).filter(l=>l.usd>0||l.hours>0);
+  const laborRows=L.length? L.map(l=>
+    `<tr><td>${l.code}</td><td class="desc">${l.desc||''}</td><td>${(+l.hours).toFixed(4)} hr</td>`
+    +`<td>× ${money2(l.rate)}/hr</td><td><b>${money4(l.usd)}</b></td></tr>`).join('')
+    : `<tr><td colspan="5" class="empty">No BOM labor hours on this item (BOM gap).</td></tr>`;
+  const comps=m.components||[];
+  const byCls={};
+  comps.forEach(c=>{(byCls[c.cls]=byCls[c.cls]||[]).push(c);});
+  const clsLabel={raw_material:'Raw material',packaging:'Packaging',fee_service:'Fee / service'};
+  const compBlocks=Object.keys(byCls).sort().map(cl=>{
+    const list=byCls[cl].map(c=>`<li><code>${c.id}</code> × ${(+c.qty).toFixed(4)} <span class="desc">${c.desc||''}</span></li>`).join('');
+    return `<div style="margin-top:8px"><b>${clsLabel[cl]||cl}</b> <span class="mtag">${byCls[cl].length} lines · price pending</span>`
+      +`<ul style="margin:4px 0 0 18px;padding:0;max-height:170px;overflow:auto;font-size:12px">${list}</ul></div>`;
+  }).join('');
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">`
+    +`<h3 style="margin:0;font-size:15px">${r.sku||r.fg} — ${r.title||''}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('bomcogs-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:6px 0">Labor $/unit = Σ (BOM standard hours × confirmed wage). `
+    +`Wages: ${Object.keys(wb).filter(k=>wb[k]!==undefined&&typeof wb[k]==='number').map(k=>`${k} ${money2(wb[k])}/hr`).join(', ')}.</p>`
+    +`<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left">`
+    +`<th>Labor code</th><th>What</th><th>Std hours/unit</th><th>Wage</th><th>$/unit</th></tr></thead>`
+    +`<tbody>${laborRows}</tbody>`
+    +`<tfoot><tr style="border-top:2px solid #cfe0d7"><td colspan="4" style="text-align:right"><b>Labor $/unit</b></td>`
+    +`<td><b>${money4(m.labor_total)}</b></td></tr></tfoot></table>`
+    +`<div style="margin-top:12px"><b>Materials, packaging &amp; fees</b> <span class="illus">— counted from the BOM but NOT yet priced (the gap to full landed COGS). Full COGS = the labor $ above + these once Purchasing sends unit prices.</span>`
+    +(comps.length?compBlocks:`<p class="hint" style="margin:4px 0">No non-labor components on this item.</p>`)+`</div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
@@ -1204,6 +1241,10 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   initControls();
   makeSortable('bomcogs');
   $('#bom-search').addEventListener('input',filterBomCogs);
+  $('#bomcogs tbody').addEventListener('click',e=>{
+    const tr=e.target.closest('tr.clk'); if(!tr) return;
+    bomShowMath(tr.getAttribute('data-fg'),tr.getAttribute('data-sku'));
+  });
   renderBomCogs();
   setRange(null,null,$('#dr-presets button[data-p="all"]'));
 }).catch(e=>{ $('#banner-txt').innerHTML="Could not load cost-performance-facts.json — "+e; });
