@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-10T13:01:19.896906-07:00",
+  "lastUpdated": "2026-07-10T13:02:47.671616-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -11,26 +11,14 @@
       "emoji": "cart",
       "role": "Shopify Operations",
       "workspace": "clawd-shopkeeper",
-      "status": "working",
-      "currentTask": {
-        "summary": "DELEGATE RESULT from AgentSmith (you delegated: \"Shopkeeper's 3 Promo Hub feed f",
-        "source": "discord",
-        "startedAt": "2026-07-10T12:59:40-07:00",
-        "threadUrl": "https://discord.com/channels/1466925435316076567/1525185887317655642"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
-      "activeSessions": [
-        {
-          "task": "DELEGATE RESULT from AgentSmith (you delegated: \"Shopkeeper's 3 Promo Hub feed f",
-          "lane": "write",
-          "startedAt": "2026-07-10T12:59:40-07:00",
-          "threadUrl": "https://discord.com/channels/1466925435316076567/1525185887317655642"
-        }
-      ],
-      "concurrentTasks": 1,
+      "activeSessions": [],
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Restored rich Promo Hub calendar (4 promos + 12-mo FOTM); reconciled active Summer Hydration entry against live store — no drift found.",
-        "at": "2026-07-10T19:59:00Z"
+        "summary": "DELEGATE to AgentSmith is now RUNNING in its own thread (it may pause there for ",
+        "at": "2026-07-10T13:01:41.315423-07:00"
       },
       "recentActivity": [
         {
@@ -261,9 +249,9 @@
       "workspace": "clawd-agentsmith",
       "status": "working",
       "currentTask": {
-        "summary": "DELEGATE RESULT from Shopkeeper (you delegated: \"Restore the rich Promo Hub cale [+1 more task]",
+        "summary": "USER CHOSE (for \"Which should I build?\"): C — both A and B. Continue with this d [+2 more tasks]",
         "source": "discord",
-        "startedAt": "2026-07-10T12:59:39.802578-07:00",
+        "startedAt": "2026-07-10T12:55:40-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1525228118321926234"
       },
       "activeBranches": [],
@@ -279,9 +267,15 @@
           "lane": "write",
           "startedAt": "2026-07-10T12:59:39-07:00",
           "threadUrl": "https://discord.com/channels/1466925435316076567/1525226335713366046"
+        },
+        {
+          "task": "Shopkeeper's Promo Hub calendar feed is now **enriched and rewritten**: `promo-h",
+          "lane": "write",
+          "startedAt": "2026-07-10T13:01:33-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1525230518789210143"
         }
       ],
-      "concurrentTasks": 2,
+      "concurrentTasks": 3,
       "lastActivity": {
         "summary": "Promo Hub LIVE — composed all 4 agent feeds and deployed promo-hub.html to teeccino-reports (HTTP 200 verified). Auto-registered in pages.json.",
         "at": "2026-07-10T12:46:49-07:00"
@@ -304,6 +298,12 @@
           "at": "2026-07-07T09:50:23.004313-07:00",
           "source": "discord",
           "status": "unknown"
+        },
+        {
+          "summary": "Restored rich Promo Hub calendar (4 promos + 12-month FOTM) after a concurrent-session feed trim. Staged exact payload from prior deploy 24e09e4, delegated the feed write to Shopkeeper (owner), recomposed, redeployed. Repo/origin verified 4 promos/12 FOTM; live page HTTP 200 (CDN propagating).",
+          "at": "2026-07-10T13:02:00-07:00",
+          "source": "discord",
+          "status": "success"
         },
         {
           "summary": "Deployed Promo Hub dashboard live to teeccino-reports after all 4 feeds landed. Composed promo-hub-state.json (calendar+runbook+monitor+analytics, 0 active alerts), dry-built, gated deploy approved by Justin, pushed. Verified live (promo-hub.html + promo-hub-state.json both HTTP 200).",
@@ -338,12 +338,6 @@
         {
           "summary": "Wired `switchboard.py --check` into sb-boot/sb-restart as a preflight gate in the PowerShell profile. A broken switchboard.py (failed handler registration) is now REFUSED before the daemon starts, so it can never enter the watchdog crash-loop that made sb-boot look dead this morning. Added _sb-Preflight helper, -SkipCheck bypass, updated the sb-* comment block. Profile parses clean; preflight verified True on clean code (exit-1/False on broken code proven earlier).",
           "at": "2026-07-08T22:36:52Z",
-          "source": "interactive",
-          "status": "success"
-        },
-        {
-          "summary": "Added `switchboard.py --check` pre-deploy smoke test: builds the discord client and registers every @client.event / @tasks.loop handler exactly as a live boot would, then returns BEFORE client.run (no Gateway connection). Catches the runtime-only registration errors (non-async @client.event, bad @tasks.loop) that ast.parse can't see — the exact class of bug that crash-looped the daemon earlier today. Exit 0 = PASS, exit 1 + traceback + clear FAIL line = broken. Verified both directions (clean=PASS/0, reintroduced bug=FAIL/1).",
-          "at": "2026-07-08T22:33:59Z",
           "source": "interactive",
           "status": "success"
         }
