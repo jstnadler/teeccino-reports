@@ -154,21 +154,36 @@ const noData = env => `<div class="nodata">No data${env && env.error ? ' — ' +
 function renderCalendar(env) {
   if (!env || !env.present || !env.data) return noData(env);
   const d = env.data, promos = d.promos || [], fotm = d.fotm || [];
+  const ps = d.promosSource;
   let h = '';
+  // Source caption: when the full workbook lineup is ingested, say so + count.
+  if (ps && ps.ingested === true) {
+    h += `<div style="color:#64748b;font-size:0.85em;margin-bottom:8px">Full ${ps.count ? esc(ps.count)+'-promo ' : ''}lineup${ps.sheet ? ' · source: '+esc(ps.file || '')+(ps.sheet?' ('+esc(ps.sheet)+')':'') : ''}</div>`;
+  }
   if (promos.length) {
-    h += '<table><thead><tr><th>Promo</th><th>Phase</th><th>Dates</th><th>Scope</th><th>Advertised</th><th>Functional</th><th>Free gift</th></tr></thead><tbody>';
+    h += '<table><thead><tr><th>Promo</th><th>Phase</th><th>Timing</th><th>Scope</th><th>Advertised</th><th>Functional</th><th>Free gift</th></tr></thead><tbody>';
     for (const p of promos) {
       const adv = p.advertisedRate ? `OTP ${esc(p.advertisedRate.otp)} · SUB ${esc(p.advertisedRate.sub)}` : '—';
       const fn = p.functionalRate ? `OTP ${esc(p.functionalRate.otp)}% · SUB ${esc(p.functionalRate.sub)}%` : '—';
-      h += `<tr><td><strong>${esc(p.name)}</strong></td><td><span class="pill ${esc(p.phase)}">${esc(p.phase)}</span></td>`
-        + `<td>${esc(p.startsAt)} → ${esc(p.endsAt || '—')}</td><td>${esc(p.scope)}</td><td>${adv}</td><td>${fn}</td>`
-        + `<td>${p.freeGiftThreshold ? money(p.freeGiftThreshold) : '—'}</td></tr>`;
+      // Prefer parsed dates; fall back to the verbatim human timing line; else —.
+      const dates = (p.startsAt || p.endsAt)
+        ? `${esc(p.startsAt || '?')} → ${esc(p.endsAt || '—')}`
+        : (p.timing ? esc(p.timing) : '—');
+      const scope = p.scope ? esc(p.scope) : '—';
+      const gift = p.freeGiftThreshold ? money(p.freeGiftThreshold) : '—';
+      // Expose the verbatim workbook detail without cluttering the row.
+      const detail = p.detail
+        ? `<details style="margin-top:4px"><summary style="cursor:pointer;color:#64748b;font-size:0.85em">detail</summary>`
+          + `<pre style="white-space:pre-wrap;color:#94a3b8;font-size:0.82em;margin:6px 0 0">${esc(p.detail)}</pre></details>`
+        : '';
+      h += `<tr><td><strong>${esc(p.name)}</strong>${detail}</td><td><span class="pill ${esc(p.phase)}">${esc(p.phase)}</span></td>`
+        + `<td>${dates}</td><td>${scope}</td><td>${adv}</td><td>${fn}</td>`
+        + `<td>${gift}</td></tr>`;
     }
     h += '</tbody></table>';
   } else h += '<div class="nodata">No promos in calendar.</div>';
   // promosSource marker: the promo list above may be confirmed-live only when the
   // broader promo-calendar workbook hasn't been ingested this run (Shopkeeper flag).
-  const ps = d.promosSource;
   if (ps && ps.ingested === false) {
     h += `<div class="nodata" style="margin-top:10px">⏳ Full promo lineup pending — showing confirmed-live promos only${ps.note ? '. ' + esc(ps.note) : ''}</div>`;
   }
