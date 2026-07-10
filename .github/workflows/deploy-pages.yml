@@ -1,0 +1,46 @@
+name: Deploy static site to GitHub Pages
+
+# Owned by HubSmith (webmaster for teeccino-reports).
+# Migrated from the legacy Jekyll build pipeline to the GitHub Actions
+# build type on 2026-07-10 after repeated flaky "Page build failed" errors
+# on the legacy builder (identical commits erroring then building on retry).
+# The site is pure static HTML with a .nojekyll marker, so this just uploads
+# the repo root as a Pages artifact and deploys it -- no Jekyll step.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Least-privilege perms required by the deploy-pages action.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel an in-flight deploy; queue instead so a push can't abort a live rollout.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact (repo root)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
