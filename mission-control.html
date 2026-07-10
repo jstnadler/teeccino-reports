@@ -185,6 +185,19 @@
   }
   .project-dashboard-link:hover { background: rgba(212,168,67,0.25); border-color: var(--accent); }
 
+  /* Discord thread deep-link (project card): "pick this project back up" */
+  .project-thread-link {
+    font-size: 0.75rem; padding: 3px 10px; border-radius: 4px;
+    background: rgba(96,165,250,0.12); color: var(--blue);
+    text-decoration: none; font-weight: 600; white-space: nowrap;
+    border: 1px solid rgba(96,165,250,0.3); transition: all 0.15s; margin-right: 6px;
+  }
+  .project-thread-link:hover { background: rgba(96,165,250,0.22); border-color: var(--blue); }
+
+  /* Discord thread deep-link (agent card meta line): jump into the live session */
+  .thread-link { color: var(--blue); text-decoration: none; font-weight: 600; }
+  .thread-link:hover { text-decoration: underline; }
+
   /* ── DISPATCHES ── */
   .dispatch-item {
     display: flex; align-items: center; gap: 12px; padding: 8px 0;
@@ -379,10 +392,13 @@ function renderAgents(agents) {
     if (a.status === 'working' && a.currentTask) {
       var sourceCls = a.currentTask.source === 'gateway' ? 'source-gateway' : 'source-interactive';
       var sourceLabel = a.currentTask.source === 'gateway' ? 'Gateway' : 'Interactive';
+      var threadLink = a.currentTask.threadUrl
+        ? ' &middot; <a class="thread-link" href="' + esc(a.currentTask.threadUrl) + '" target="_blank" rel="noopener" title="Open the Discord thread">&#x2197; thread</a>'
+        : '';
       taskHtml = '<div class="agent-task">' +
         esc(a.currentTask.summary) +
         '<div class="agent-meta"><span class="' + sourceCls + ' source-badge">' + sourceLabel + '</span>' +
-        ' &middot; started ' + timeAgo(a.currentTask.startedAt) + '</div></div>';
+        ' &middot; started ' + timeAgo(a.currentTask.startedAt) + threadLink + '</div></div>';
     } else if (a.lastActivity) {
       taskHtml = '<div class="agent-task idle-task">Last: ' + esc(a.lastActivity.summary) +
         '<div class="agent-meta">' + timeAgo(a.lastActivity.at) + '</div></div>';
@@ -464,13 +480,16 @@ function renderProjects(projects) {
         var dashLink = p.dashboardUrl
           ? '<a class="project-dashboard-link" href="' + esc(p.dashboardUrl) + '" target="_blank" rel="noopener">View Dashboard &rarr;</a>'
           : '';
+        var threadLink = p.threadUrl
+          ? '<a class="project-thread-link" href="' + esc(p.threadUrl) + '" target="_blank" rel="noopener" title="Pick this project back up in Discord">&#x21B3; thread</a>'
+          : '';
         return '<div class="project-row">' +
           '<span class="badge ' + bc + '">' + esc(p.status) + '</span>' +
           '<span class="project-name">' + esc(p.name) + '</span>' +
           '<span class="project-owner">' + esc(p.owner) + '</span>' +
           '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
           '<span class="project-tasks">' + totalTasks + ' tasks</span>' +
-          dashLink + '</div>';
+          threadLink + dashLink + '</div>';
       }).join('');
 }
 
@@ -480,13 +499,16 @@ function projRow(p) {
   var dashLink = p.dashboardUrl
     ? '<a class="project-dashboard-link" href="' + esc(p.dashboardUrl) + '" target="_blank" rel="noopener">View Dashboard &rarr;</a>'
     : '';
+  var threadLink = p.threadUrl
+    ? '<a class="project-thread-link" href="' + esc(p.threadUrl) + '" target="_blank" rel="noopener" title="Pick this project back up in Discord">&#x21B3; thread</a>'
+    : '';
   return '<div class="project-row">' +
     '<span class="badge badge-active">Active</span>' +
     '<span class="project-name">' + esc(p.name) + '</span>' +
     '<span class="project-owner">' + esc(p.owner) + '</span>' +
     '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
     '<span class="project-tasks">' + (p.tasksPending || 0) + ' pending</span>' +
-    dashLink + '</div>';
+    threadLink + dashLink + '</div>';
 }
 
 // ── Infrastructure ──
