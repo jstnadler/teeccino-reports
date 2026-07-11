@@ -339,17 +339,17 @@
   </div>
 
   <div class="card" id="bomcogs-card" style="margin-top:20px">
-    <h2>🧬 BOM SKU cost — labor slice (DTC-matched finished goods)</h2>
-    <p class="hint">The <b>engineered standard</b> labor cost per unit built from the <b>Acctivate bill of materials</b>, for the finished goods that map to a <b>live Shopify SKU</b>. This is the model that assembles <b>full landed COGS</b> the instant material/packaging prices land — the component counts below are the <b>unpriced gap</b>. Distinct from the run-derived explorer above (that's actual production hours; this is the BOM standard). <span class="illus" id="bomcogs-note"></span></p>
+    <h2>🏭 Cost to Make — per SKU (blending + production labor)</h2>
+    <p class="hint">What it costs to <b>make</b> each unit from a <b>blending + production</b> perspective: <b>blend cost</b> (pounds of BBP × the fully-loaded blend-labor rate) + <b>production labor</b> (weigh/pack/finish). Built from the <b>Acctivate bill of materials</b>; bundles &amp; samplers are <b>rolled up</b> through their component bags. <span class="illus" id="bomcogs-note"></span></p>
     <div class="ctrls">
       <span class="ctrl-lbl">🔎 Filter</span>
       <input id="bom-search" placeholder="Search SKU or product… (e.g. 85070, French Roast)" autocomplete="off">
       <span class="mtag" id="bom-count"></span>
     </div>
-    <p class="hint" style="margin:0 0 8px"><b>Click any row to see the math</b> — the full cost buildup for that SKU.</p>
+    <p class="hint" style="margin:0 0 8px"><b>Click any row for the complete breakdown</b> of that SKU (every blend and labor step, bundles expanded).</p>
     <div class="ex-scroll">
       <table id="bomcogs"><thead><tr>
-        <th>SKU</th><th>Product</th><th>labor $/unit</th><th>unpriced: raw</th><th>pkg</th><th>fee</th><th>Shopify $</th>
+        <th>SKU</th><th>Product</th><th>blend $</th><th>prod. labor $</th><th>make $/unit</th><th>Shopify $</th>
       </tr></thead><tbody></tbody></table>
     </div>
     <div id="bomcogs-detail" hidden style="margin-top:16px;background:#f2f7f4;border:1px solid #d5e6dd;border-radius:8px;padding:14px 16px"></div>
@@ -1168,22 +1168,20 @@ function initControls(){
   ['blend','ex-table','costmodel','variance','throughput','batch','yield','machines'].forEach(makeSortable);
 }
 
-/* ---------- BOM SKU COGS (labor slice) — static, not date-filtered ---------- */
+/* ---------- Cost to Make (blending + production labor) — static, not date-filtered ---------- */
 let BOMROWS=[];
 function renderBomCogs(){
   const bc=RAW.bom_cogs, card=$('#bomcogs-card');
   if(!bc||!bc.items||!bc.items.length){ if(card) card.style.display='none'; return; }
   card.style.display='';
   BOMROWS=bc.items;
-  const wb=bc.wage_basis||{};
-  const basis=Object.keys(wb).map(k=>`${k} $${wb[k]}/hr`).join(', ');
-  $('#bomcogs-note').innerHTML=`LABOR ONLY — wages CONFIRMED (${basis}). `
-    +`Materials, packaging &amp; fees are counted but <b>not yet priced</b>, so this is not full COGS.`;
+  $('#bomcogs-note').innerHTML=`Blend labor $105.85/blend-hr (fully loaded) · production labor $26.06/hr — both CONFIRMED. `
+    +`<b>Excludes raw ingredients &amp; packaging</b> — this is the cost to MAKE, not full COGS.`;
   const built=(bc.built||'').slice(0,10);
-  $('#bomcogs-foot').innerHTML=`<b>${num(bc.matched)}</b> DTC-matched finished goods `
-    +`(${num(bc.positive)} with positive labor) · mean labor <b>${money4(bc.mean_labor_per_unit)}</b>/unit · `
-    +`<b>${num(bc.total_unpriced_components)}</b> component lines awaiting a Purchasing price list to reach full landed COGS. `
-    +`Source: ${bc.source_file}, built ${built}. <span class="illus">Shopify $ shown for context only — margin belongs to DataOps/Shopkeeper once materials are priced.</span>`;
+  const nb=BOMROWS.filter(x=>x.is_bundle).length;
+  $('#bomcogs-foot').innerHTML=`<b>${num(bc.matched)}</b> DTC-matched SKUs · mean make cost <b>${money4(bc.mean_make_cost)}</b>/unit · `
+    +`${num(nb)} bundles/samplers rolled up through their component bags · built ${built}. `
+    +`<span class="illus">Shopify $ is retail (context only). Cost to make = blending + production labor; raw materials &amp; packaging are excluded by design.</span>`;
   filterBomCogs();
 }
 function filterBomCogs(){
@@ -1194,45 +1192,49 @@ function filterBomCogs(){
   $('#bom-count').textContent=`${rows.length} of ${BOMROWS.length} SKUs`;
   $('#bomcogs tbody').innerHTML = rows.length ? rows.map(r=>
     `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}" style="cursor:pointer">`
-    +`<td>${r.sku||r.fg||''}</td><td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
-    +`<td>${r.lpu==null?'–':money4(r.lpu)}</td>`
-    +`<td>${num(r.raw)}</td><td>${num(r.pkg)}</td><td>${num(r.fee)}</td>`
+    +`<td>${r.sku||r.fg||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    +`<td>${r.make_blend==null?'–':money4(r.make_blend)}</td>`
+    +`<td>${r.make_labor==null?'–':money4(r.make_labor)}</td>`
+    +`<td><b>${r.make==null?'–':money4(r.make)}</b></td>`
     +`<td>${r.price?money2(r.price):'–'}</td></tr>`).join('')
-    : `<tr><td colspan="7" class="empty">No matching SKUs.</td></tr>`;
+    : `<tr><td colspan="6" class="empty">No matching SKUs.</td></tr>`;
   reapplySort('bomcogs');
+}
+function bomLine(l,indent){
+  const pad=`padding-left:${indent*16}px`;
+  if(l.type==='blend')
+    return `<tr><td style="${pad}">🌀 blend <code>${l.id}</code>${l.fallback?' <span class="illus">(plantwide est.)</span>':''}</td>`
+      +`<td class="desc">${l.desc||''}</td><td>${(+l.lbs).toFixed(3)} lb × ${money4(l.per_lb)}/lb</td><td><b>${money4(l.usd)}</b></td></tr>`;
+  if(l.type==='pack_labor')
+    return `<tr><td style="${pad}">🧑‍🏭 production labor</td><td class="desc">weigh / pack / finish</td>`
+      +`<td>${(+l.hours).toFixed(4)} hr × ${money2(l.rate)}/hr</td><td><b>${money4(l.usd)}</b></td></tr>`;
+  if(l.type==='component'){
+    let h=`<tr><td style="${pad}">📦 contains <code>${l.id}</code> × ${(+l.qty).toFixed(2)}</td>`
+      +`<td class="desc">${l.desc||''}</td><td>make ${money4(l.unit_make_cost)}/ea</td><td><b>${money4(l.usd)}</b></td></tr>`;
+    (l.sub||[]).forEach(s=>{ h+=bomLine(s,indent+1); });
+    return h;
+  }
+  return '';
 }
 function bomShowMath(fg,sku){
   const r=BOMROWS.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku)) || BOMROWS.find(x=>(''+(x.sku||''))===(''+sku));
   const box=$('#bomcogs-detail');
-  if(!r||!r.math){ box.hidden=true; return; }
-  const m=r.math, wb=RAW.bom_cogs.wage_basis||{};
-  const L=(m.labor_lines||[]).filter(l=>l.usd>0||l.hours>0);
-  const laborRows=L.length? L.map(l=>
-    `<tr><td>${l.code}</td><td class="desc">${l.desc||''}</td><td>${(+l.hours).toFixed(4)} hr</td>`
-    +`<td>× ${money2(l.rate)}/hr</td><td><b>${money4(l.usd)}</b></td></tr>`).join('')
-    : `<tr><td colspan="5" class="empty">No BOM labor hours on this item (BOM gap).</td></tr>`;
-  const comps=m.components||[];
-  const byCls={};
-  comps.forEach(c=>{(byCls[c.cls]=byCls[c.cls]||[]).push(c);});
-  const clsLabel={raw_material:'Raw material',packaging:'Packaging',fee_service:'Fee / service'};
-  const compBlocks=Object.keys(byCls).sort().map(cl=>{
-    const list=byCls[cl].map(c=>`<li><code>${c.id}</code> × ${(+c.qty).toFixed(4)} <span class="desc">${c.desc||''}</span></li>`).join('');
-    return `<div style="margin-top:8px"><b>${clsLabel[cl]||cl}</b> <span class="mtag">${byCls[cl].length} lines · price pending</span>`
-      +`<ul style="margin:4px 0 0 18px;padding:0;max-height:170px;overflow:auto;font-size:12px">${list}</ul></div>`;
-  }).join('');
+  if(!r||!r.make_breakdown){ box.hidden=true; return; }
+  const lines=r.make_breakdown.map(l=>bomLine(l,0)).join('') || `<tr><td colspan="4" class="empty">No blend or production-labor steps found.</td></tr>`;
   box.hidden=false;
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">`
-    +`<h3 style="margin:0;font-size:15px">${r.sku||r.fg} — ${r.title||''}</h3>`
+    +`<h3 style="margin:0;font-size:15px">${r.sku||r.fg} — ${r.title||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('bomcogs-detail').hidden=true">close ✕</button></div>`
-    +`<p class="hint" style="margin:6px 0">Labor $/unit = Σ (BOM standard hours × confirmed wage). `
-    +`Wages: ${Object.keys(wb).filter(k=>wb[k]!==undefined&&typeof wb[k]==='number').map(k=>`${k} ${money2(wb[k])}/hr`).join(', ')}.</p>`
+    +`<p class="hint" style="margin:6px 0">Cost to make = 🌀 blend labor (lbs × loaded $/lb) + 🧑‍🏭 production labor (hrs × wage). `
+    +`Bundles expand into 📦 the bags they contain. <span class="illus">Raw ingredients &amp; packaging excluded by design.</span></p>`
     +`<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left">`
-    +`<th>Labor code</th><th>What</th><th>Std hours/unit</th><th>Wage</th><th>$/unit</th></tr></thead>`
-    +`<tbody>${laborRows}</tbody>`
-    +`<tfoot><tr style="border-top:2px solid #cfe0d7"><td colspan="4" style="text-align:right"><b>Labor $/unit</b></td>`
-    +`<td><b>${money4(m.labor_total)}</b></td></tr></tfoot></table>`
-    +`<div style="margin-top:12px"><b>Materials, packaging &amp; fees</b> <span class="illus">— counted from the BOM but NOT yet priced (the gap to full landed COGS). Full COGS = the labor $ above + these once Purchasing sends unit prices.</span>`
-    +(comps.length?compBlocks:`<p class="hint" style="margin:4px 0">No non-labor components on this item.</p>`)+`</div>`;
+    +`<th>Step</th><th>What</th><th>Calc</th><th>$/unit</th></tr></thead><tbody>${lines}</tbody>`
+    +`<tfoot>`
+    +`<tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${money4(r.make_blend)}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right">production-labor subtotal</td><td>${money4(r.make_labor)}</td></tr>`
+    +`<tr style="border-top:2px solid #cfe0d7"><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td>`
+    +`<td><b>${money4(r.make)}</b></td></tr></tfoot></table>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
