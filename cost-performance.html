@@ -1175,13 +1175,15 @@ function renderBomCogs(){
   if(!bc||!bc.items||!bc.items.length){ if(card) card.style.display='none'; return; }
   card.style.display='';
   BOMROWS=bc.items;
-  $('#bomcogs-note').innerHTML=`Blend labor $105.85/blend-hr (fully loaded) · production labor $26.06/hr — both CONFIRMED. `
+  $('#bomcogs-note').innerHTML=`Built from <b>ACTUAL production runs</b> (not Acctivate/standard): actual pack labor $26.06/hr + blend at the fully-loaded $105.85/blend-hr (from Jorge's real hours &amp; pounds). `
     +`<b>Excludes raw ingredients &amp; packaging</b> — this is the cost to MAKE, not full COGS.`;
   const built=(bc.built||'').slice(0,10);
   const nb=BOMROWS.filter(x=>x.is_bundle).length;
+  const est=BOMROWS.filter(x=>x.labor_basis==='partial_standard').length;
   $('#bomcogs-foot').innerHTML=`<b>${num(bc.matched)}</b> DTC-matched SKUs · mean make cost <b>${money4(bc.mean_make_cost)}</b>/unit · `
-    +`${num(nb)} bundles/samplers rolled up through their component bags · built ${built}. `
-    +`<span class="illus">Shopify $ is retail (context only). Cost to make = blending + production labor; raw materials &amp; packaging are excluded by design.</span>`;
+    +`${num(nb)} bundles rolled up through their component bags · <b>${num(BOMROWS.length-est)}</b> from actual runs`
+    +(est?`, <span class="illus">${num(est)} estimated (no production run recorded yet)</span>`:'')+` · built ${built}. `
+    +`<span class="illus">Shopify $ is retail (context only). Cost to make = blending + production labor from real runs; raw materials &amp; packaging excluded by design.</span>`;
   filterBomCogs();
 }
 function filterBomCogs(){
@@ -1206,9 +1208,13 @@ function bomLine(l,indent){
   if(l.type==='blend')
     return `<tr><td style="${pad}">🌀 blend <code>${l.id}</code>${l.fallback?' <span class="illus">(plantwide est.)</span>':''}</td>`
       +`<td class="desc">${l.desc||''}</td><td>${(+l.lbs).toFixed(3)} lb × ${money4(l.per_lb)}/lb</td><td><b>${money4(l.usd)}</b></td></tr>`;
-  if(l.type==='pack_labor')
+  if(l.type==='pack_labor'){
+    const calc = l.basis==='actual'
+      ? 'actual production runs'
+      : `${(+l.hours).toFixed(4)} hr × ${money2(l.rate)}/hr <span class="illus">(no run yet — standard est.)</span>`;
     return `<tr><td style="${pad}">🧑‍🏭 production labor</td><td class="desc">weigh / pack / finish</td>`
-      +`<td>${(+l.hours).toFixed(4)} hr × ${money2(l.rate)}/hr</td><td><b>${money4(l.usd)}</b></td></tr>`;
+      +`<td>${calc}</td><td><b>${money4(l.usd)}</b></td></tr>`;
+  }
   if(l.type==='component'){
     let h=`<tr><td style="${pad}">📦 contains <code>${l.id}</code> × ${(+l.qty).toFixed(2)}</td>`
       +`<td class="desc">${l.desc||''}</td><td>make ${money4(l.unit_make_cost)}/ea</td><td><b>${money4(l.usd)}</b></td></tr>`;
