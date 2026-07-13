@@ -86,7 +86,7 @@
 
   <!-- 2. PACKING -->
   <div class="card" id="c-pack">
-    <div class="num">Section 2</div>
+    <div class="num">Section 2 · Packing</div>
     <h2>📦 Packing — cost to pack &amp; finish each SKU</h2>
     <p class="hint">The <b>production labor</b> to weigh, pack and finish one unit of each finished good — from <b>actual</b> run hours ($26.06/hr). For bundles/samplers this rolls up the packing of every component bag plus final assembly. <span class="illus">Blend cost is <b>not</b> in this column — it's added in Section 3.</span></p>
     <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="pack-n"></span></div>
@@ -98,7 +98,7 @@
 
   <!-- 2b. MACHINE HOURS BY SKU -->
   <div class="card" id="c-mh">
-    <div class="num">Section 2 · Machine hours</div>
+    <div class="num">Section 2a · Machine hours by SKU</div>
     <h2>⏱️ Machine hours by SKU</h2>
     <p class="hint">Actual <b>machine run-hours</b> per finished good, from production runs (2025 + 2026), split by machine/stage. Click a SKU to see the per-machine breakdown. <span class="illus">This is machine occupancy time (run hours), separate from the labor $ above.</span></p>
     <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="mh-n"></span></div>
@@ -108,6 +108,18 @@
     </tr></thead><tbody></tbody></table></div>
     <div id="mh-detail" class="detail" hidden></div>
     <p class="foot" id="mh-foot"></p>
+  </div>
+
+  <!-- 2c. BY PRODUCTION MACHINE -->
+  <div class="card" id="c-machines">
+    <div class="num">Section 2b · By production machine</div>
+    <h2>🏭 By production machine / stage</h2>
+    <p class="hint">Totals per packing/finishing machine across all production runs (2025 + 2026): runs, distinct items, units, machine &amp; operator hours, and labor cost ($26.06/hr). <span class="illus">Blending is its own stage in Section 1 (different rate &amp; unit — pounds), so it's not mixed in here.</span></p>
+    <table id="t-machines"><thead><tr>
+      <th>Machine</th><th>runs</th><th>items</th><th>units</th><th>run hrs</th><th>op hrs</th>
+      <th>labor $/unit</th><th>labor $ total</th><th>DT %</th>
+    </tr></thead><tbody></tbody></table>
+    <p class="foot" id="machines-foot"></p>
   </div>
 
   <!-- 3. FINISHED GOODS -->
@@ -298,6 +310,33 @@ function showMH(sku){
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
+/* ---- Section 2b: By production machine ---- */
+function renderMachines(){
+  const fin=RAW.finished_stages||['WeighRight','AMS','Maisa 1','Maisa 2+3','Assembly'];
+  const wage=RAW.wage_rate||26.06, finset=new Set(fin);
+  const agg={};
+  RAW.facts.forEach(f=>{
+    if(!finset.has(f.m)) return;
+    const a=agg[f.m]||(agg[f.m]={runs:0,items:new Set(),units:0,rh:0,oh:0,dn:0});
+    a.runs++; if(f.i)a.items.add(f.i); if(f.q)a.units+=f.q;
+    if(f.t){ a.rh+=f.t; if(f.o)a.oh+=f.t*f.o; }
+    if(f.dn)a.dn+=f.dn;
+  });
+  const order=fin;
+  const rows=order.filter(m=>agg[m]).map(m=>{
+    const a=agg[m], lt=a.oh*wage, lpu=a.units?lt/a.units:null, dt=a.rh?(a.dn/(a.rh*60))*100:null;
+    return {m,runs:a.runs,items:a.items.size,units:a.units,rh:a.rh,oh:a.oh,lt,lpu,dt};
+  });
+  const mx=Math.max(...rows.map(r=>r.lt),1);
+  $('#t-machines tbody').innerHTML = rows.length ? rows.map(r=>
+    `<tr><td><b>${r.m}</b></td><td>${num(r.runs)}</td><td>${num(r.items)}</td><td>${num(r.units)}</td>`
+    +`<td>${num(Math.round(r.rh))}</td><td>${num(Math.round(r.oh))}</td><td>${m4(r.lpu)}</td>`
+    +`<td>${m2(r.lt)}</td><td>${r.dt==null?'–':r.dt.toFixed(1)+'%'}</td></tr>`
+  ).join('') : `<tr><td colspan="9" class="empty">No production runs.</td></tr>`;
+  const tl=rows.reduce((s,r)=>s+r.lt,0);
+  $('#machines-foot').innerHTML=`${rows.length} machines · total packing labor ${m2(tl)} across 2025+2026. <span class="illus">Labor only, $${wage}/hr; excludes machine overhead (electricity/equipment).</span>`;
+}
+
 fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
   RAW=data;
   const bc=data.bom_cogs||{}; FG=(bc.items||[]);
@@ -322,6 +361,8 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   wireSort('t-mh',()=>{ const q=$('#mh-q').value.trim().toLowerCase(); return MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q)); },renderMH);
   const totH=MH.reduce((s,r)=>s+r.hrs,0);
   $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with logged runs · ${num(totH)} total machine hrs (2025+2026).`;
+  // Section 2b: by production machine
+  renderMachines();
   // Section 3
   const disc=FG.filter(x=>x.discontinued).length, est=FG.filter(x=>x.labor_basis==='partial_standard'&&!x.discontinued).length, act=FG.filter(x=>x.labor_basis==='actual'&&!x.discontinued).length;
   $('#fg-note').textContent=`Actual-run based; raw ingredients & packaging excluded by design.`;
