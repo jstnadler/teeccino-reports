@@ -96,6 +96,20 @@
     <p class="foot" id="pack-foot"></p>
   </div>
 
+  <!-- 2b. MACHINE HOURS BY SKU -->
+  <div class="card" id="c-mh">
+    <div class="num">Section 2 · Machine hours</div>
+    <h2>⏱️ Machine hours by SKU</h2>
+    <p class="hint">Actual <b>machine run-hours</b> per finished good, from production runs (2025 + 2026), split by machine/stage. Click a SKU to see the per-machine breakdown. <span class="illus">This is machine occupancy time (run hours), separate from the labor $ above.</span></p>
+    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="mh-n"></span></div>
+    <div class="scroll"><table id="t-mh"><thead><tr>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="units">units made</th>
+      <th data-k="hrs">machine hrs</th><th data-k="hper1k">hrs / 1k units</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="mh-detail" class="detail" hidden></div>
+    <p class="foot" id="mh-foot"></p>
+  </div>
+
   <!-- 3. FINISHED GOODS -->
   <div class="card" id="c-fg">
     <div class="num">Section 3</div>
@@ -245,6 +259,45 @@ function showFG(fg,sku){
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
+/* ---- Section 2b: Machine hours by SKU ---- */
+let MH=[];
+function buildMH(){
+  const fin=new Set(RAW.finished_stages||['WeighRight','AMS','Maisa 1','Maisa 2+3','Assembly']);
+  const acc={};
+  RAW.facts.forEach(f=>{
+    if(!fin.has(f.m)||f.t==null) return;
+    const o=acc[f.i]||(acc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',hrs:0,units:0,by:{}});
+    o.hrs+=f.t; if(f.q) o.units+=f.q; o.by[f.m]=(o.by[f.m]||0)+f.t;
+  });
+  MH=Object.values(acc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
+}
+function renderMH(rows){
+  $('#t-mh tbody').innerHTML = rows.length ? rows.map(r=>
+    `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td><td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    +`<td>${num(r.units)}</td><td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`
+  ).join('') : `<tr><td colspan="5" class="empty">No machine runs match.</td></tr>`;
+}
+function filterMH(){
+  const q=$('#mh-q').value.trim().toLowerCase();
+  let rows=MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q));
+  rows.sort((a,b)=>b.hrs-a.hrs);
+  $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
+  renderMH(rows);
+}
+function showMH(sku){
+  const r=MH.find(x=>(''+x.sku)===(''+sku)); const box=$('#mh-detail');
+  if(!r){ box.hidden=true; return; }
+  const machs=Object.entries(r.by).sort((a,b)=>b[1]-a[1]);
+  const rows=machs.map(([m,h])=>`<tr><td>${m}</td><td>${num(+h.toFixed(2))}</td><td>${r.hrs?((h/r.hrs)*100).toFixed(0):0}%</td></tr>`).join('');
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">`
+   +`<h3 style="margin:0;font-size:15px">${r.sku} — ${r.title||''}</h3>`
+   +`<button class="linkbtn" onclick="document.getElementById('mh-detail').hidden=true">close ✕</button></div>`
+   +`<p class="hint" style="margin:6px 0"><b>${num(r.hrs)}</b> machine hrs to make <b>${num(r.units)}</b> units. By machine:</p>`
+   +`<table style="font-size:12.5px"><thead><tr><th>Machine / stage</th><th>machine hrs</th><th>share</th></tr></thead><tbody>${rows}</tbody></table>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
 fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
   RAW=data;
   const bc=data.bom_cogs||{}; FG=(bc.items||[]);
@@ -261,6 +314,14 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#pack-q').addEventListener('input',filterPack);
   wireSort('t-pack',()=>{ const q=$('#pack-q').value.trim().toLowerCase(); return packRows().filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q)); },renderPack);
   $('#pack-foot').innerHTML=`Actual pack/finish labor at $26.06/hr, pooled across production runs. <span class="illus">SKUs with no logged run use a standard estimate.</span>`;
+  // Section 2b: machine hours by SKU
+  buildMH();
+  filterMH();
+  $('#mh-q').addEventListener('input',filterMH);
+  $('#t-mh tbody').addEventListener('click',e=>{ const tr=e.target.closest('tr.clk'); if(!tr) return; showMH(tr.dataset.mh); });
+  wireSort('t-mh',()=>{ const q=$('#mh-q').value.trim().toLowerCase(); return MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q)); },renderMH);
+  const totH=MH.reduce((s,r)=>s+r.hrs,0);
+  $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with logged runs · ${num(totH)} total machine hrs (2025+2026).`;
   // Section 3
   const disc=FG.filter(x=>x.discontinued).length, est=FG.filter(x=>x.labor_basis==='partial_standard'&&!x.discontinued).length, act=FG.filter(x=>x.labor_basis==='actual'&&!x.discontinued).length;
   $('#fg-note').textContent=`Actual-run based; raw ingredients & packaging excluded by design.`;
