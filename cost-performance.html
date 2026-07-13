@@ -80,6 +80,7 @@
       <th data-k="blend">Blend</th><th data-k="desc">Description</th><th data-k="blender">Blender</th>
       <th data-k="total_lbs">total lbs</th><th data-k="blend_hours">blend hrs</th><th data-k="cost_per_lb">cost $/lb</th>
     </tr></thead><tbody></tbody></table></div>
+    <div id="blend-detail" class="detail" hidden></div>
     <p class="foot" id="blend-foot"></p>
   </div>
 
@@ -139,7 +140,7 @@ function wireSort(tableId,getRows,render){
 /* ---- Section 1: Blending ---- */
 function renderBlend(rows){
   $('#t-blend tbody').innerHTML = rows.length ? rows.map(b=>
-    `<tr><td>${b.blend}</td><td class="desc" title="${(b.desc||'').replace(/"/g,'&quot;')}">${b.desc||''}</td>`
+    `<tr class="clk" data-blend="${b.blend}"><td>${b.blend}</td><td class="desc" title="${(b.desc||'').replace(/"/g,'&quot;')}">${b.desc||''}</td>`
     +`<td>${b.blender||'–'}</td><td>${num(b.total_lbs)}</td><td>${num(b.blend_hours)}</td><td class="big">${m4(b.cost_per_lb)}</td></tr>`
   ).join('') : `<tr><td colspan="6" class="empty">No blends match.</td></tr>`;
 }
@@ -148,6 +149,32 @@ function filterBlend(){
   const rows=RAW.blends.filter(b=>!q||(''+b.blend).toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q));
   $('#blend-n').textContent=`${rows.length} of ${RAW.blends.length} blends`;
   renderBlend(rows);
+}
+function showBlend(id){
+  const runs=RAW.facts.filter(f=>f.m==='Blending'&&(''+f.i)===(''+id)&&f.q);
+  const box=$('#blend-detail');
+  if(!runs.length){ box.hidden=true; return; }
+  const desc=(RAW.blends.find(b=>b.blend===id)||{}).desc||'';
+  const mo={}; runs.filter(f=>f.d).forEach(f=>{ const k=f.d.slice(0,7); mo[k]=(mo[k]||0)+f.q; });
+  const keys=Object.keys(mo).sort();
+  const W=900,H=200,pad=30, step=keys.length?(W-2*pad)/keys.length:0, bw=Math.max(2,step*0.78);
+  const max=Math.max(...keys.map(k=>mo[k]),1);
+  const bars=keys.map((k,i)=>{ const x=pad+i*step, h=(mo[k]/max)*(H-44);
+    return `<rect x="${x.toFixed(1)}" y="${(H-24-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="var(--series)"><title>${k}: ${Math.round(mo[k]).toLocaleString()} lb</title></rect>`;
+  }).join('');
+  const labs=keys.length? [...new Set([0,Math.floor((keys.length-1)/2),keys.length-1])].map(i=>
+    `<text x="${(pad+i*step).toFixed(1)}" y="${H-6}" font-size="10" fill="var(--muted)">${keys[i]}</text>`).join('') : '';
+  runs.sort((a,b)=>(b.d||'').localeCompare(a.d||''));
+  const total=runs.reduce((s,f)=>s+(f.q||0),0), hrs=runs.reduce((s,f)=>s+(f.t||0),0);
+  const list=runs.map(f=>`<tr><td>${f.d||'—'}</td><td>${f.bl||'–'}</td><td>${num(f.q)}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}</td></tr>`).join('');
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">`
+   +`<h3 style="margin:0;font-size:15px">${id} — ${desc}</h3>`
+   +`<button class="linkbtn" onclick="document.getElementById('blend-detail').hidden=true">close ✕</button></div>`
+   +`<p class="hint" style="margin:6px 0"><b>${num(runs.length)}</b> blend runs · <b>${num(total)}</b> lb total · <b>${num(hrs)}</b> blend-hrs. Pounds blended per month:</p>`
+   +`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:200px">${bars}${labs}</svg>`
+   +`<div class="scroll" style="max-height:240px;margin-top:10px"><table><thead><tr><th>Date</th><th>Blender</th><th>lbs</th><th>blend hrs</th></tr></thead><tbody>${list}</tbody></table></div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 /* ---- Section 2: Packing ---- */
@@ -226,6 +253,7 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   const nb=(data.blends||[]).length; RAW.blends=data.blends||[];
   filterBlend();
   $('#blend-q').addEventListener('input',filterBlend);
+  $('#t-blend tbody').addEventListener('click',e=>{ const tr=e.target.closest('tr.clk'); if(!tr) return; showBlend(tr.dataset.blend); });
   wireSort('t-blend',()=>{ const q=$('#blend-q').value.trim().toLowerCase(); return RAW.blends.filter(b=>!q||(''+b.blend).toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q)); },renderBlend);
   $('#blend-foot').innerHTML=`${nb} bulk blends · loaded blend-labor ${m2(data.blend_loaded_rate)}/hr. <span class="illus">Labor only — excludes raw ingredients, blender machine overhead &amp; packaging.</span>`;
   // Section 2
