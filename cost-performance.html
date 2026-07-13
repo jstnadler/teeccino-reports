@@ -5,19 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Production Cost — Unit Labor Cost & Variance</title>
+<title>Production Cost — Cost to Make</title>
 <style>
   :root {
     --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
     --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
-    --series:#2a78d6; --series-100:#cde2fb; --series-250:#86b6ef;
-    --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+    --series:#2a78d6; --good:#0ca30c; --warning:#fab219; --critical:#d03b3b;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
       --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
-      --series:#3987e5; --series-100:#184f95; --series-250:#1c5cab; --good:#0ca30c;
+      --series:#3987e5; --good:#0ca30c;
     }
   }
   * { box-sizing:border-box; }
@@ -25,1237 +24,226 @@
     font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.5; }
   .wrap { max-width:1160px; margin:0 auto; padding:24px 20px 64px; }
   h1 { font-size:24px; margin:8px 0 2px; }
-  .sub { color:var(--ink2); margin:0 0 20px; }
+  .sub { color:var(--ink2); margin:0 0 8px; }
+  .stepbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:var(--muted);
+    font-size:13px; margin:0 0 24px; }
+  .stepbar b { color:var(--ink); }
+  .stepbar .arrow { color:var(--series); font-weight:700; }
   .card { background:var(--surface); border:1px solid var(--border); border-radius:12px;
-    padding:18px 20px; margin-bottom:20px; }
-  .card h2 { font-size:15px; margin:0 0 4px; letter-spacing:.01em; }
-  .card .hint { color:var(--muted); font-size:12px; margin:0 0 14px; }
-  /* honesty banner */
-  .banner { display:flex; align-items:flex-start; gap:10px; border-radius:12px; padding:12px 16px;
-    margin-bottom:20px; font-size:13px; border:1px solid var(--border); }
-  .banner.warn { background:color-mix(in srgb,var(--warning) 14%,var(--surface)); }
-  .banner.ok { background:color-mix(in srgb,var(--good) 12%,var(--surface)); }
-  .banner .ico { font-size:18px; line-height:1.2; }
-  .banner b { color:var(--ink); }
-  /* date-range control */
-  .drange { position:sticky; top:0; z-index:15; display:flex; flex-wrap:wrap; gap:10px 14px;
-    align-items:center; background:color-mix(in srgb,var(--series) 7%,var(--surface));
-    border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:20px;
-    box-shadow:0 1px 0 var(--border); }
-  .drange .ctrl-lbl { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase;
-    letter-spacing:.04em; display:inline-flex; align-items:center; gap:5px; }
-  .drange .seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-  .drange .seg button { font:inherit; padding:6px 11px; border:0; border-right:1px solid var(--border);
-    background:var(--surface); color:var(--ink2); cursor:pointer; }
-  .drange .seg button:last-child { border-right:0; }
-  .drange .seg button.on { background:var(--series); color:#fff; }
-  .drange .custom { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink2); }
-  .drange input[type=date] { font:inherit; padding:6px 8px; border:1px solid var(--border);
-    border-radius:8px; background:var(--surface); color:var(--ink); }
-  .drange .rlabel { margin-left:auto; font-size:12px; color:var(--ink2); font-variant-numeric:tabular-nums; }
-  .drange .rlabel b { color:var(--ink); }
-  /* kpi tiles */
-  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
-  .kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; }
-  .kpi .v { font-size:26px; font-weight:600; letter-spacing:-.01em; }
-  .kpi .l { color:var(--ink2); font-size:12px; margin-top:2px; }
-  .kpi .l small { color:var(--muted); }
-  /* tables */
-  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
-  th,td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--grid); white-space:nowrap; }
-  th:first-child,td:first-child { text-align:left; }
-  /* Description columns (2nd col in these tables) left-justified */
-  #ex-table th:nth-child(2), #ex-table td:nth-child(2),
-  #blend th:nth-child(2), #blend td:nth-child(2),
-  #variance th:nth-child(2), #variance td:nth-child(2) { text-align:left; }
-  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em; }
-  th.sortable { cursor:pointer; user-select:none; white-space:nowrap; }
-  th.sortable:hover { color:var(--ink2); }
-  th.sortable::after { content:"↕"; opacity:.35; margin-left:3px; font-size:10px; }
-  th.sort-asc, th.sort-desc { color:var(--series); }
-  th.sort-asc::after { content:"▲"; opacity:1; }
-  th.sort-desc::after { content:"▼"; opacity:1; }
-  td.desc { color:var(--ink2); max-width:230px; overflow:hidden; text-overflow:ellipsis; }
-  .neg { color:var(--critical); font-weight:600; }
-  .barcell { position:relative; }
-  .bar { display:inline-block; height:9px; border-radius:4px; background:var(--series); vertical-align:middle; }
-  /* trend chart */
-  svg { width:100%; height:240px; display:block; }
-  .axis-lbl { fill:var(--muted); font-size:11px; }
-  .dot { fill:var(--series); stroke:var(--surface); stroke-width:2; }
-  .tip { position:fixed; pointer-events:none; background:var(--ink); color:var(--surface);
-    padding:6px 9px; border-radius:7px; font-size:12px; opacity:0; transition:opacity .08s;
-    font-variant-numeric:tabular-nums; z-index:20; }
-  .foot { color:var(--muted); font-size:12px; margin-top:8px; }
-  .cols { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  @media (max-width:760px){ .cols{ grid-template-columns:1fr; } }
-  .illus { color:var(--muted); font-style:italic; }
-  .empty { color:var(--muted); padding:14px 8px; font-style:italic; }
-  /* glossary */
-  details.gloss { background:var(--surface); border:1px solid var(--border); border-radius:12px;
-    padding:0; margin-bottom:20px; overflow:hidden; }
-  details.gloss > summary { cursor:pointer; list-style:none; padding:18px 20px; font-size:15px;
-    font-weight:600; letter-spacing:.01em; display:flex; align-items:center; gap:8px; }
-  details.gloss > summary::-webkit-details-marker { display:none; }
-  details.gloss > summary::after { content:"▸"; color:var(--muted); margin-left:auto; font-size:13px;
-    transition:transform .12s; }
-  details.gloss[open] > summary::after { transform:rotate(90deg); }
-  details.gloss > summary .hint { font-weight:400; color:var(--muted); font-size:12px; }
-  .gloss-body { padding:0 20px 18px; }
-  .gloss-group { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em;
-    font-weight:600; margin:16px 0 8px; padding-top:12px; border-top:1px solid var(--grid); }
-  .gloss-group:first-child { border-top:none; padding-top:0; margin-top:4px; }
-  dl.terms { margin:0; display:grid; grid-template-columns:200px 1fr; gap:2px 20px; }
-  @media (max-width:640px){ dl.terms{ grid-template-columns:1fr; gap:2px; } dl.terms dd{ margin:0 0 12px; } }
-  dl.terms dt { font-weight:600; color:var(--ink); padding:7px 0; }
-  dl.terms dd { margin:0; padding:7px 0; color:var(--ink2); border-bottom:1px solid var(--grid); }
-  dl.terms dt { border-bottom:1px solid var(--grid); }
-  @media (max-width:640px){ dl.terms dt{ border-bottom:none; padding-bottom:0; } }
-  dl.terms dd:last-child, dl.terms dt:last-child { border-bottom:none; }
-  .fx { display:inline-block; margin-top:3px; font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-    font-size:12px; background:color-mix(in srgb,var(--muted) 12%,transparent); color:var(--ink);
-    padding:1px 6px; border-radius:5px; }
-  /* sku explorer */
-  .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px;
-    background:color-mix(in srgb,var(--series) 6%,var(--surface)); border:1px solid var(--border);
-    border-radius:10px; padding:10px 12px; }
-  .ctrl-lbl { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase;
-    letter-spacing:.04em; display:inline-flex; align-items:center; gap:5px; }
-  .ctrls input, .ctrls select { font:inherit; padding:7px 10px; border:1px solid var(--border);
-    border-radius:8px; background:var(--surface); color:var(--ink); }
-  .ctrls input { flex:1; min-width:220px; }
-  .seg { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-  .seg button { font:inherit; padding:7px 13px; border:0; background:var(--surface); color:var(--ink2); cursor:pointer; }
-  .seg button.on { background:var(--series); color:#fff; }
-  tr.pick { cursor:pointer; }
-  tr.pick:hover td { background:color-mix(in srgb,var(--series) 8%,transparent); }
-  tr.sel td { background:color-mix(in srgb,var(--series) 15%,transparent); }
-  .ex-scroll { max-height:440px; overflow:auto; border:1px solid var(--grid); border-radius:8px; }
-  .ex-scroll table thead th { position:sticky; top:0; background:var(--surface); z-index:1; }
+    padding:18px 20px; margin-bottom:22px; }
+  .card h2 { font-size:18px; margin:0 0 4px; letter-spacing:.01em; }
+  .card .num { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase;
+    letter-spacing:.06em; }
+  .card .hint { color:var(--ink2); font-size:12.5px; margin:2px 0 14px; }
+  .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+  .ctrls input { font:inherit; padding:8px 11px; border:1px solid var(--border);
+    border-radius:8px; background:var(--surface); color:var(--ink); flex:1; min-width:220px; }
   .mtag { color:var(--muted); font-size:11px; }
-  .ex-empty { color:var(--muted); padding:16px 8px; }
-  .legend { display:flex; flex-wrap:wrap; gap:8px 10px; font-size:12px; color:var(--ink2); margin:10px 0 0; }
-  .legend i { display:inline-block; width:20px; height:0; border-top:2px solid var(--series);
-    vertical-align:middle; margin-right:6px; }
-  .legend i.std { border-top:2px dashed var(--muted); }
-  .legend .chip { display:inline-flex; align-items:center; gap:6px; cursor:pointer;
-    padding:3px 9px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
-  .legend .chip:hover { border-color:var(--series); }
-  .legend .chip .sw { width:12px; height:3px; border-radius:2px; display:inline-block; }
-  .legend .chip .sw.dash { height:0; border-top:2px dashed var(--muted); }
-  .legend .chip .x { color:var(--muted); font-size:13px; line-height:1; }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  th,td { text-align:right; padding:7px 9px; border-bottom:1px solid var(--grid); white-space:nowrap; }
+  th:first-child,td:first-child { text-align:left; }
+  th:nth-child(2),td:nth-child(2){ text-align:left; }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em;
+    position:sticky; top:0; background:var(--surface); z-index:1; cursor:pointer; user-select:none; }
+  th::after{ content:"↕"; opacity:.35; margin-left:3px; font-size:10px; }
+  td.desc { color:var(--ink2); max-width:300px; overflow:hidden; text-overflow:ellipsis; }
+  td.big { font-weight:700; font-size:15px; }
+  .scroll { max-height:460px; overflow:auto; border:1px solid var(--grid); border-radius:8px; }
+  .foot { color:var(--muted); font-size:12px; margin-top:10px; }
+  .illus { color:var(--muted); font-style:italic; }
+  .empty { color:var(--muted); padding:16px 8px; font-style:italic; }
+  tr.clk { cursor:pointer; }
+  tr.clk:hover td { background:color-mix(in srgb,var(--series) 8%,transparent); }
+  .detail { margin-top:14px; background:color-mix(in srgb,var(--series) 6%,var(--surface));
+    border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .detail table th, .detail table td { border-bottom:1px solid var(--grid); }
   .linkbtn { background:none; border:0; color:var(--series); cursor:pointer; font:inherit;
     text-decoration:underline; padding:0; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; }
 </style>
 </head>
-<body data-palette="#2a78d6,#1baf7a,#eda100,#008300,#4a3aa7,#e34948,#e87ba4,#eb6834">
-
-<!-- No shared hub nav: this is an intentionally standalone, chrome-less report
-     for wide external sharing. Do NOT re-inject nav.html here (HubSmith). -->
-
+<body>
 <div class="wrap">
-  <h1>Production Cost 🧮</h1>
-  <p class="sub">Cost to operate each machine per hour → unit cost, plus variance, throughput, yield &amp; batch economics — from the production schedule (2025 + live 2026). <b>Every section below responds to the date range you pick.</b> <b>Labor is live</b>; machine overhead (electricity/equipment) uses <b>realistic placeholder estimates</b> until Justin supplies actuals. Materials/packaging not yet included.</p>
-
-  <!-- DATE RANGE — drives the whole page -->
-  <div class="drange" id="daterange">
-    <span class="ctrl-lbl">📅 Date range</span>
-    <div class="seg" id="dr-presets">
-      <button data-p="all" class="on">All</button>
-      <button data-p="2026">2026</button>
-      <button data-p="2025">2025</button>
-      <button data-p="ytd">2026 YTD</button>
-      <button data-p="q90">Last 90 days</button>
-      <button data-p="q30">Last 30 days</button>
-    </div>
-    <span class="custom">from <input type="date" id="dr-from"> to <input type="date" id="dr-to">
-      <button class="linkbtn" id="dr-apply">apply</button></span>
-    <span class="rlabel" id="dr-label"></span>
+  <h1>Production Cost — Cost to Make 🏭</h1>
+  <p class="sub">What it costs Teeccino to <b>make</b> a unit, built from <b>actual production runs</b> (not Acctivate/standard). Blending &amp; packing labor only — raw ingredients and packaging are excluded by design.</p>
+  <div class="stepbar">
+    <b>🌀 Blending</b> <span class="arrow">→</span> <b>📦 Packing</b> <span class="arrow">→</span> <b>🏭 Finished Goods</b> <span>(total cost to make)</span>
   </div>
 
-  <div id="banner" class="banner warn"><span class="ico">⚠️</span><div id="banner-txt">Loading…</div></div>
-
-  <details class="gloss">
-    <summary>📖 Glossary — what each term means &amp; how it's calculated <span class="hint">(new here? start with this)</span></summary>
-    <div class="gloss-body">
-
-      <div class="gloss-group">The foundation</div>
-      <dl class="terms">
-        <dt>Unit</dt>
-        <dd>One finished sellable item (e.g. one bag or one box), as defined by the item's case size in the production schedule. Every "$/unit" figure is the cost to produce <em>one</em> of these.</dd>
-
-        <dt>Date range</dt>
-        <dd>The picker at the top of the page filters <b>every</b> section — KPIs, machines, variance, throughput, yield, batch, trend and the SKU explorer — to production runs whose <em>actual production date</em> falls in the window. Undated rows are excluded whenever a range is active.</dd>
-
-        <dt>Wage rate</dt>
-        <dd>The labor cost of one operator-hour, in dollars. Read from a single config value; every dollar on this page = hours × this rate. When the rate is a placeholder the figures are <span class="illus">illustrative</span> — the banner at the top always states the current status.</dd>
-
-        <dt>Standard (std)</dt>
-        <dd>The <em>planned</em> expectation — how long a job <em>should</em> take, from the schedule's planned figures. The benchmark we measure reality against.</dd>
-
-        <dt>Actual</dt>
-        <dd>What <em>really</em> happened on the floor — measured from actual run time, actual operator count and actual quantity produced.</dd>
-
-        <dt>Scope: labor only (v1)</dt>
-        <dd>Every number here is the <b>labor</b> cost of running the machines. It does <b>not</b> include ingredients, packaging, or facility overhead — those come in later phases once we have a validated cost source.</dd>
-      </dl>
-
-      <div class="gloss-group">Cost &amp; variance</div>
-      <dl class="terms">
-        <dt>Standard labor-hours / unit</dt>
-        <dd>The person-hours a unit <em>should</em> take. Comes straight from the schedule's "Labor Rate" column.
-          <span class="fx">operators ÷ planned units-per-hour</span></dd>
-
-        <dt>Actual labor-hours / unit</dt>
-        <dd>The person-hours a unit <em>actually</em> took.
-          <span class="fx">actual run time × operators ÷ actual units produced</span></dd>
-
-        <dt>Labor $ / unit (std $/u, act $/u)</dt>
-        <dd>Those hours turned into dollars.
-          <span class="fx">labor-hours per unit × wage rate</span></dd>
-
-        <dt>Efficiency variance (var %)</dt>
-        <dd>How far actual ran <em>over</em> (or under) standard, as a percentage. Positive = took longer than planned = money leaking.
-          <span class="fx">(actual − standard) ÷ standard × 100</span></dd>
-
-        <dt>$ over std (in range)</dt>
-        <dd>The total dollars that variance cost across everything produced in the selected window — the size of the leak, not just the rate.
-          <span class="fx">(actual $/u − std $/u) × units produced</span></dd>
-
-        <dt>Items over standard</dt>
-        <dd>How many finished goods ran costlier than their standard (actual &gt; standard). The count worth investigating.</dd>
-
-        <dt>Quantity-weighted</dt>
-        <dd>When averaging across many runs, big runs count more than small ones — so the average reflects where the volume (and money) actually is.
-          <span class="fx">Σ labor-hours ÷ Σ units</span></dd>
-      </dl>
-
-      <div class="gloss-group">Throughput &amp; downtime</div>
-      <dl class="terms">
-        <dt>Run hours</dt>
-        <dd>Clock-hours the machine was running a job.</dd>
-
-        <dt>Operator hours (op hrs)</dt>
-        <dd>Total person-hours worked — run hours multiplied by how many operators were on the line. Two people for 3 hours = 6 operator-hours.</dd>
-
-        <dt>Units per operator-hour (u/op-hr)</dt>
-        <dd>Productivity: how many units one person produces in an hour. Higher = more efficient.
-          <span class="fx">units produced ÷ operator hours</span></dd>
-
-        <dt>Downtime % (DT %)</dt>
-        <dd>Share of running time lost to stoppages (changeovers, jams, breaks).
-          <span class="fx">downtime minutes ÷ total minutes × 100</span></dd>
-
-        <dt>Downtime labor cost (DT $)</dt>
-        <dd>The wages paid to operators while the line was <em>not</em> producing — idle-but-staffed time turned into dollars.
-          <span class="fx">downtime hours × operators × wage rate</span></dd>
-      </dl>
-
-      <div class="gloss-group">Batch economics</div>
-      <dl class="terms">
-        <dt>Setup hours</dt>
-        <dd>The fixed labor to prepare a run <em>before</em> any units come off — estimated from the pattern of many runs (the part of the time that doesn't grow with quantity).</dd>
-
-        <dt>avg → max</dt>
-        <dd>The item's average batch size today vs. the largest batch it has been run at — the headroom for consolidating into fewer, bigger runs.</dd>
-
-        <dt>Batch-consolidation upside (est. $/yr)</dt>
-        <dd>Estimated yearly labor saving if the item ran at its larger batch size, because the fixed setup cost gets spread over more units.
-          <span class="fx">setup cost saved per unit × yearly volume</span></dd>
-      </dl>
-
-      <div class="gloss-group">Yield &amp; scrap</div>
-      <dl class="terms">
-        <dt>Finished-unit scrap</dt>
-        <dd>Whole sellable units thrown away. Rate-able because we know the good-vs-bad count for the same unit of measure.</dd>
-
-        <dt>Finished scrap %</dt>
-        <dd>Share of finished production that was scrapped.
-          <span class="fx">bad finished units ÷ (good + bad) × 100</span></dd>
-
-        <dt>Finished scrap $</dt>
-        <dd>The <em>labor</em> already spent making units that were then thrown away (material cost of the scrap is <b>not</b> included yet).
-          <span class="fx">bad units × labor $/unit</span></dd>
-
-        <dt>Component scrap (count)</dt>
-        <dd>Wasted <em>components</em> — individual tea bags or envelopes, not finished packages. A different unit of measure, so it's shown as a raw count only and <b>never</b> mixed into a finished-good scrap %.</dd>
-      </dl>
-
-      <div class="gloss-group">Machines &amp; data notes</div>
-      <dl class="terms">
-        <dt>Machine / stage</dt>
-        <dd>Each production stage is treated as a machine (WeighRight, AMS, Maisa 1, Maisa 2+3, Assembly, Blending). Costs roll up per machine.</dd>
-
-        <dt>Blending · LB / SB</dt>
-        <dd>The blending stage split by blender (large-batch / small-batch). Blending is <b>base-level</b> (raw blend codes), so it's reported separately and <em>not</em> added into finished-good costs — we don't yet have the recipe map linking a blend to a finished product.</dd>
-
-        <dt>Labor basis [std] / [n/a]</dt>
-        <dd>A tag meaning that stage's cost was estimated from the <em>standard</em> rate because it lacked operator counts to compute an actual. A transparency flag, not an error.</dd>
-
-        <dt>Mis-dated year(s)</dt>
-        <dd>Rows with a date typo (e.g. a "2029" or "1900") in the source. Flagged and excluded from date-filtered views rather than silently dropped.</dd>
-      </dl>
-
-    </div>
-  </details>
-
-  <div class="kpis" id="kpis"></div>
-
-  <div class="card" id="costmodel-card">
-    <h2>🧮 How cost is calculated — cost to operate each machine per hour</h2>
-    <p class="hint">Unit cost = <b>machine-hours per unit</b> × <b>cost to operate per hour</b>. Operating cost/hr = <b>operators × wage</b> (human labor) <b>+ machine overhead/hr</b> (electricity, maintenance, equipment). Because each machine runs a different crew size, its hourly labor already differs — the buildup below shows exactly how. <span id="cm-note" class="illus"></span></p>
-    <div class="ex-scroll">
-      <table id="costmodel"><thead><tr>
-        <th>Machine</th><th>avg ops</th><th>labor $/hr</th><th>+ machine oh $/hr</th><th>= operating $/hr</th><th>mach-hrs / unit</th><th>labor $/u</th><th>oh $/u</th><th>total $/u</th>
-      </tr></thead><tbody></tbody></table>
-    </div>
-    <p class="foot">“avg ops” = average operators per run on that machine (from the schedule). “mach-hrs/unit” = machine run-time per unit produced. Overhead $/hr and its unit share stay $0 until utility/equipment costs are supplied in config.</p>
-  </div>
-
-  <div class="card" id="explorer-card">
-    <h2>🔎 SKU Cost Explorer</h2>
-    <p class="hint">Search any item to see its labor cost <b>per individual unit</b> and <b>per case</b>, filter by the <b>machine</b> it ran on, then click a row to chart how that cost has changed <b>over time</b> (standard vs actual) — within the selected date range. <span class="illus" id="ex-note"></span></p>
-    <div class="ctrls">
-      <span class="ctrl-lbl">🔎 Filter</span>
-      <input id="ex-search" placeholder="Search item # or description… (e.g. 85070, French Roast)" autocomplete="off">
-      <select id="ex-machine" title="Filter by machine"></select>
-      <div class="seg" id="ex-basis">
-        <button data-b="unit" class="on">Per unit</button>
-        <button data-b="case">Per case</button>
-      </div>
-    </div>
-    <p class="hint" style="margin:0 0 8px"><span id="ex-count"></span> · <b>click rows to plot cost over time — pick several to compare</b> <span id="ex-selcount" class="mtag"></span> <button id="ex-clear" class="linkbtn" hidden>clear</button></p>
-    <div class="ex-scroll">
-      <table id="ex-table"><thead><tr>
-        <th>Item</th><th>Description</th><th>Machine(s)</th><th>Case</th><th>std labor $</th><th>act labor $</th><th>mach oh $</th><th>total $</th>
-      </tr></thead><tbody></tbody></table>
-    </div>
-    <div id="ex-chartwrap" hidden style="margin-top:18px">
-      <h3 id="ex-chart-title" style="font-size:14px;margin:0 0 4px"></h3>
-      <svg id="ex-chart" viewBox="0 0 900 260" preserveAspectRatio="none" role="img" aria-label="SKU cost over time"></svg>
-      <div class="legend" id="ex-legend"></div>
-      <div class="foot" id="ex-chart-foot"></div>
-    </div>
-  </div>
-
-  <div class="card" id="bomcogs-card" style="margin-top:20px">
-    <h2>🏭 Cost to Make — per SKU (blending + production labor)</h2>
-    <p class="hint">What it costs to <b>make</b> each unit from a <b>blending + production</b> perspective: <b>blend cost</b> (pounds of BBP × the fully-loaded blend-labor rate) + <b>production labor</b> (weigh/pack/finish). Built from the <b>Acctivate bill of materials</b>; bundles &amp; samplers are <b>rolled up</b> through their component bags. <span class="illus" id="bomcogs-note"></span></p>
-    <div class="ctrls">
-      <span class="ctrl-lbl">🔎 Filter</span>
-      <input id="bom-search" placeholder="Search SKU or product… (e.g. 85070, French Roast)" autocomplete="off">
-      <span class="mtag" id="bom-count"></span>
-    </div>
-    <p class="hint" style="margin:0 0 8px"><b>Click any row for the complete breakdown</b> of that SKU (every blend and labor step, bundles expanded).</p>
-    <div class="ex-scroll">
-      <table id="bomcogs"><thead><tr>
-        <th>SKU</th><th>Product</th><th>blend $</th><th>prod. labor $</th><th>make $/unit</th><th>Shopify $</th>
-      </tr></thead><tbody></tbody></table>
-    </div>
-    <div id="bomcogs-detail" hidden style="margin-top:16px;background:#f2f7f4;border:1px solid #d5e6dd;border-radius:8px;padding:14px 16px"></div>
-    <p class="foot" id="bomcogs-foot"></p>
-  </div>
-
-  <div class="card" style="margin-top:20px">
-    <h2>By production machine / stage</h2>
-    <p class="hint"><b>Machine hours worked, units, and labor cost per stage — for the selected date range.</b> Bar = share of total labor cost. Blending splits by blender (LB/SB). <span class="illus">[std]/[n/a] = labor costed from the standard rate (stage lacks operator counts).</span></p>
-    <table id="machines"><thead><tr>
-      <th>Machine</th><th>runs</th><th>items</th><th>units</th><th>run hrs</th><th>op hrs</th><th>labor $/unit</th><th>labor $ total</th><th>DT %</th><th></th>
-    </tr></thead><tbody></tbody></table>
-  </div>
-
-  <div class="card" id="blend-card">
-    <h2>🌀 Blending — cost to make each bulk blend (BBP)</h2>
-    <p class="hint">Cost to blend one <b>pound</b> = blend-hours × the <b>fully-loaded blend-labor rate (<span id="blend-oh"></span>/hr)</b> — the blender operator’s full cost spread over the pounds he blends. LB = large blender (~2,000 lb batches), SB = small batch. <span class="illus">Labor only — excludes blender machine overhead (electricity/equipment), ingredients, and packaging. Base-level: not yet added to finished-SKU cost.</span></p>
-    <details id="blend-method" style="margin:6px 0 2px;background:#f2f7f4;border:1px solid #d5e6dd;border-radius:8px;padding:8px 12px;font-size:12.5px">
-      <summary style="cursor:pointer;font-weight:700;color:#2f6b52">How we get this number ▾</summary>
-      <div id="blend-method-body" style="margin-top:8px;line-height:1.6"></div>
-    </details>
-    <div class="ctrls">
-      <span class="ctrl-lbl">🔎 Filter</span>
-      <input id="blend-search" placeholder="Search blend # or description… (e.g. 80110, French Roast)" autocomplete="off">
-      <select id="blend-blender" title="Filter by blender"></select>
-      <span class="mtag" id="blend-count"></span>
-    </div>
-    <div class="ex-scroll">
-      <table id="blend"><thead><tr>
-        <th>Blend</th><th>Description</th><th>Blender</th><th>batches</th><th>total lbs</th><th>blend hrs</th><th>blend $/lb</th><th>$ / 2,000-lb batch</th>
-      </tr></thead><tbody></tbody></table>
-    </div>
+  <!-- 1. BLENDING -->
+  <div class="card" id="c-blend">
+    <div class="num">Section 1</div>
+    <h2>🌀 Blending — cost to make each bulk blend</h2>
+    <p class="hint">What it costs to blend one <b>pound</b> of each bulk blend (BBP), at the fully-loaded blend-labor rate (<span id="blendrate"></span>/hr — Jorge's wage plus his absorbed support/idle time), from his <b>actual</b> hours &amp; pounds. LB = large blender, SB = small batch.</p>
+    <div class="ctrls"><input id="blend-q" placeholder="Search blend # or description…" autocomplete="off"><span class="mtag" id="blend-n"></span></div>
+    <div class="scroll"><table id="t-blend"><thead><tr>
+      <th data-k="blend">Blend</th><th data-k="desc">Description</th><th data-k="blender">Blender</th>
+      <th data-k="total_lbs">total lbs</th><th data-k="blend_hours">blend hrs</th><th data-k="cost_per_lb">cost $/lb</th>
+    </tr></thead><tbody></tbody></table></div>
     <p class="foot" id="blend-foot"></p>
   </div>
 
-  <div class="card">
-    <h2>Labor cost per unit over time</h2>
-    <p class="hint">Quantity-weighted, plant-wide, by month, within the selected range. Trend <b>shape</b> is valid regardless of wage; absolute dollars scale with the rate.</p>
-    <svg id="trend" viewBox="0 0 900 240" preserveAspectRatio="none" role="img" aria-label="Labor cost per unit by month"></svg>
-    <div class="foot" id="trend-foot"></div>
+  <!-- 2. PACKING -->
+  <div class="card" id="c-pack">
+    <div class="num">Section 2</div>
+    <h2>📦 Packing — cost to pack &amp; finish each SKU</h2>
+    <p class="hint">The <b>production labor</b> to weigh, pack and finish one unit of each finished good — from <b>actual</b> run hours ($26.06/hr). For bundles/samplers this rolls up the packing of every component bag plus final assembly. <span class="illus">Blend cost is <b>not</b> in this column — it's added in Section 3.</span></p>
+    <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="pack-n"></span></div>
+    <div class="scroll"><table id="t-pack"><thead><tr>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="make_labor">packing $/unit</th>
+    </tr></thead><tbody></tbody></table></div>
+    <p class="foot" id="pack-foot"></p>
   </div>
 
-  <div class="card">
-    <h2>Where labor money leaks — efficiency variance</h2>
-    <p class="hint">Items whose <em>actual</em> labor cost most exceeds the <em>standard</em> (× units produced in range). Bar = total $ over standard.</p>
-    <table id="variance"><thead><tr>
-      <th>Item</th><th>Description</th><th>std $/u</th><th>act $/u</th><th>var %</th><th>$ over std</th><th></th>
-    </tr></thead><tbody></tbody></table>
+  <!-- 3. FINISHED GOODS -->
+  <div class="card" id="c-fg">
+    <div class="num">Section 3</div>
+    <h2>🏭 Finished Goods — total cost to make</h2>
+    <p class="hint"><b>Blend + packing = the total cost to make one unit.</b> Click any SKU for the full breakdown (every blend and labor step; bundles expand into their component bags). <span class="illus" id="fg-note"></span></p>
+    <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="fg-n"></span></div>
+    <div class="scroll"><table id="t-fg"><thead><tr>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="make_blend">blend $</th>
+      <th data-k="make_labor">packing $</th><th data-k="make">make $/unit</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="fg-detail" class="detail" hidden></div>
+    <p class="foot" id="fg-foot"></p>
   </div>
 
-  <div class="cols">
-    <div class="card">
-      <h2>Throughput &amp; downtime</h2>
-      <p class="hint">Ranked by downtime labor cost. u/op-hr = units per operator-hour.</p>
-      <table id="throughput"><thead><tr><th>Item</th><th>u/op-hr</th><th>DT %</th><th>DT $</th></tr></thead><tbody></tbody></table>
-    </div>
-    <div class="card">
-      <h2>Batch economics</h2>
-      <p class="hint">Setup-cost amortization — candidates to consolidate into bigger runs.</p>
-      <table id="batch"><thead><tr><th>Item</th><th>setup h</th><th>avg→max</th><th>est. $/yr</th></tr></thead><tbody></tbody></table>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Yield / scrap</h2>
-    <p class="hint"><b>Finished-unit scrap</b> is rate-able &amp; labor-costed. <b>Component scrap</b> (tea bags/envelopes) is a different unit of measure — shown as raw counts only, never a finished-good %. Material cost of scrap not included.</p>
-    <table id="yield"><thead><tr>
-      <th>Item</th><th>Description</th><th>bad (finished)</th><th>fin. scrap %</th><th>fin. scrap $</th><th>bad (component ct)</th>
-    </tr></thead><tbody></tbody></table>
-  </div>
-
-  <div class="card">
-    <h2>Data quality &amp; freshness</h2>
-    <div id="dq" class="foot"></div>
-  </div>
+  <p class="foot" id="built"></p>
 </div>
 
-<div class="tip" id="tip"></div>
-
 <script>
-const $ = s => document.querySelector(s);
-const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const $=s=>document.querySelector(s);
+const num=n=>n==null?'–':Math.round(n).toLocaleString();
+const m2=n=>n==null?'–':'$'+(+n).toFixed(2);
+const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
+let RAW=null, FG=[];
 
-/* ---------- Generic click-to-sort for any data table ---------- */
-const SORT_STATE = {};
-function _cellVal(td){
-  const raw = (td.textContent||'').trim();
-  if(raw===''||raw==='–'||raw==='—') return {n:null, s:''};
-  const cleaned = raw.replace(/[$,%]/g,'').replace(/,/g,'');
-  const n = parseFloat(cleaned);
-  return {n: (isNaN(n)||!/[0-9]/.test(cleaned)) ? null : n, s: raw.toLowerCase()};
-}
-function sortTable(tableId, col, forceDir){
-  const table = document.getElementById(tableId);
-  if(!table || !table.tBodies[0]) return;
-  const tb = table.tBodies[0];
-  const rows = [...tb.rows].filter(r => !r.querySelector('.ex-empty') && !r.querySelector('.empty') && !r.querySelector('[colspan]'));
-  if(rows.length < 2 && !forceDir) return;
-  const st = SORT_STATE[tableId] || {};
-  const dir = forceDir || (st.col===col && st.dir==='desc' ? 'asc' : 'desc');
-  SORT_STATE[tableId] = {col, dir};
-  rows.sort((a,b)=>{
-    const A=_cellVal(a.cells[col]), B=_cellVal(b.cells[col]);
-    if(A.n==null && B.n==null){ const c=A.s.localeCompare(B.s); return dir==='asc'?c:-c; }
-    if(A.n==null) return 1;
-    if(B.n==null) return -1;
-    return dir==='asc' ? A.n-B.n : B.n-A.n;
-  });
-  rows.forEach(r=>tb.appendChild(r));
-  [...table.tHead.rows[0].cells].forEach((th,i)=>{
-    th.classList.remove('sort-asc','sort-desc');
-    if(i===col) th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
+function sortRows(rows,k,dir){
+  return rows.slice().sort((a,b)=>{
+    let x=a[k],y=b[k];
+    if(typeof x==='string'||typeof y==='string'){ x=(x||'').toString().toLowerCase(); y=(y||'').toString().toLowerCase(); return dir*(x<y?-1:x>y?1:0); }
+    return dir*((x||0)-(y||0));
   });
 }
-function makeSortable(tableId){
-  const table = document.getElementById(tableId);
-  if(!table || !table.tHead) return;
-  [...table.tHead.rows[0].cells].forEach((th,idx)=>{
-    if(!th.textContent.trim()) return;
-    th.classList.add('sortable');
-    th.title = 'Click to sort';
-    th.addEventListener('click', ()=>sortTable(tableId, idx));
+function wireSort(tableId,getRows,render){
+  $(`#${tableId} thead`).addEventListener('click',e=>{
+    const th=e.target.closest('th'); if(!th) return;
+    const k=th.dataset.k; const cur=th.getAttribute('data-dir')==='1'?1:-1; const dir=-cur;
+    $(`#${tableId} thead`).querySelectorAll('th').forEach(t=>t.removeAttribute('data-dir'));
+    th.setAttribute('data-dir',dir===1?'1':'0');
+    render(sortRows(getRows(),k,dir));
   });
 }
-function reapplySort(tableId){
-  const st = SORT_STATE[tableId];
-  if(st) sortTable(tableId, st.col, st.dir);
-}
-const money = n => n==null ? "–" : "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
-const money2 = n => n==null ? "–" : "$"+Number(n).toFixed(2);
-const money4 = n => n==null ? "–" : "$"+Number(n).toFixed(4);
-const num = n => n==null ? "–" : Number(n).toLocaleString();
-const perLabel = pk => { if(!pk) return ''; const y=pk.slice(2,4), m=+pk.slice(6,8);
-  return (MON[m-1]||('M'+m))+"'"+y; };
 
-/* ==================================================================
-   DATA + CLIENT-SIDE AGGREGATION (all sections respect the date range)
-   ================================================================== */
-let RAW=null;                       // loaded fact-table payload
-let RANGE={from:null,to:null};      // active ISO date window (null = unbounded)
-let EX_illus=false;
-
-const NONPROD = ['CLEAN','CHANGE','SETUP','MAINT','BREAK','TEST'];
-const isProduct = it => { if(!it) return false; const u=it.toUpperCase();
-  return !NONPROD.some(j=>u.includes(j)); };
-const inRange = f => {
-  if(!RANGE.from && !RANGE.to) return true;
-  if(!f.d) return false;
-  if(RANGE.from && f.d < RANGE.from) return false;
-  if(RANGE.to && f.d > RANGE.to) return false;
-  return true;
-};
-const pkey = d => { if(!d) return null; const y=+d.slice(0,4);
-  if(y<2024||y>2027) return null; return d.slice(0,4)+'-M'+d.slice(5,7); };
-const idesc = it => (RAW.items[it]&&RAW.items[it].desc) || it;
-const icase = it => (RAW.items[it]&&RAW.items[it].cs) || 1;
-
-/* ---- machine rollup / finalize (mirrors machine_breakdown.py) ---- */
-function machRollup(rows,label){
-  const d={machine:label,runs:0,items:new Set(),units:0,run_hours:0,op_hours:0,
-           downtime_min:0,std_wsum:0,std_wq:0,op_units:0};
-  rows.forEach(r=>{
-    d.runs++; d.items.add(r.i);
-    if(r.q) d.units+=r.q;
-    if(r.t){ d.run_hours+=r.t; if(r.o&&r.q){ d.op_hours+=r.t*r.o; d.op_units+=r.q; } }
-    if(r.dn) d.downtime_min+=r.dn;
-    if(r.s!=null && r.q){ d.std_wsum+=r.s*r.q; d.std_wq+=r.q; }
-  });
-  return d;
-}
-function machFinalize(d,wage){
-  const act=d.op_units? d.op_hours*wage/d.op_units : null;
-  const std=d.std_wq? d.std_wsum/d.std_wq*wage : null;
-  const basis = d.op_units? 'actual' : (std!=null? 'standard':'n/a');
-  const lcu = act!=null? act : std;
-  const tot = d.op_hours? d.op_hours*wage : ((std!=null&&d.units)? std*d.units : null);
-  const dt_pct = d.run_hours? d.downtime_min/(d.run_hours*60)*100 : null;
-  return {machine:d.machine,runs:d.runs,items:d.items.size,units:Math.round(d.units),
-    run_hours:+d.run_hours.toFixed(1),operator_hours:+d.op_hours.toFixed(1),
-    labor_cost_per_unit:lcu!=null?+lcu.toFixed(5):null,labor_basis:basis,
-    labor_cost_total:tot!=null?Math.round(tot):null,
-    downtime_pct:dt_pct!=null?+dt_pct.toFixed(1):null};
-}
-function fitSetup(pts){
-  const n=pts.length; if(n<3) return null;
-  let sx=0,sy=0,sxx=0,sxy=0;
-  pts.forEach(([q,h])=>{ sx+=q; sy+=h; sxx+=q*q; sxy+=q*h; });
-  const denom=n*sxx-sx*sx; if(denom===0) return null;
-  const b=(n*sxy-sx*sy)/denom; const a=(sy-b*sx)/n; return [a,b];
-}
-
-function aggregate(){
-  const wage=RAW.wage_rate;
-  const FIN=new Set(RAW.finished_stages), BASE=new Set(RAW.base_stages);
-  const OHR=RAW.overhead_rates||{};
-  const F=RAW.facts.filter(inRange);
-  const fin=F.filter(f=>FIN.has(f.m));
-  const blend=F.filter(f=>BASE.has(f.m));
-
-  /* ---- per (item,stage) rollup for variance/throughput/yield ---- */
-  const stage={};
-  fin.forEach(r=>{
-    const k=r.i+' '+r.m;
-    const b=stage[k]||(stage[k]={item:r.i,sheet:r.m,std_sum:0,std_n:0,hours:0,units:0,
-                                 op_hours:0,downtime:0,bad_fin:0,bad_cmp:0});
-    if(r.s!=null){ b.std_sum+=r.s; b.std_n++; }
-    if(r.t&&r.o&&r.q){ b.hours+=r.t*r.o; b.units+=r.q; b.op_hours+=r.t*r.o; }
-    if(r.dn) b.downtime+=r.dn;
-    if(r.bf) b.bad_fin+=r.bf;
-    if(r.bc) b.bad_cmp+=r.bc;
-  });
-  const stageArr=Object.values(stage);
-
-  /* variance */
-  const vmap={};
-  stageArr.forEach(b=>{
-    const std=b.std_n? b.std_sum/b.std_n:null;
-    const act=b.units? b.hours/b.units:null;
-    if(std==null||act==null) return;
-    const v=vmap[b.item]||(vmap[b.item]={item:b.item,std:0,act:0,units:0});
-    v.std+=std; v.act+=act; v.units=Math.max(v.units,b.units);
-  });
-  let variance=Object.values(vmap).map(v=>{
-    const vu=(v.act-v.std)*wage;
-    return {item:v.item,desc:idesc(v.item),
-      std_cost_unit:+(v.std*wage).toFixed(5),actual_cost_unit:+(v.act*wage).toFixed(5),
-      variance_unit:+vu.toFixed(5),
-      variance_pct:v.std? +((v.act-v.std)/v.std*100).toFixed(1):null,
-      variance_total:+(vu*v.units).toFixed(2)};
-  });
-  variance.sort((a,b)=>b.variance_total-a.variance_total);
-
-  /* throughput */
-  const tmap={};
-  stageArr.forEach(b=>{
-    const t=tmap[b.item]||(tmap[b.item]={item:b.item,units:0,hours:0,op_hours:0,downtime:0});
-    t.units+=b.units; t.hours+=b.hours; t.op_hours+=b.op_hours; t.downtime+=b.downtime;
-  });
-  let throughput=Object.values(tmap).filter(t=>t.hours).map(t=>{
-    const uph=t.op_hours? t.units/t.op_hours:null;
-    const dtp=t.hours? t.downtime/(t.hours*60)*100:null;
-    const dtc=t.hours? (t.downtime/60)*(t.op_hours/t.hours)*wage:0;
-    return {item:t.item,desc:idesc(t.item),
-      units_per_op_hour:uph!=null?+uph.toFixed(1):null,
-      downtime_pct:dtp!=null?+dtp.toFixed(1):null,downtime_cost:+dtc.toFixed(2)};
-  });
-  throughput.sort((a,b)=>b.downtime_cost-a.downtime_cost);
-
-  /* yield */
-  const smap={};
-  stageArr.forEach(b=>{
-    const s=smap[b.item]||(smap[b.item]={item:b.item,bad_fin:0,bad_cmp:0,good:0,hours:0,units:0});
-    s.bad_fin+=b.bad_fin; s.bad_cmp+=b.bad_cmp; s.good+=b.units; s.hours+=b.hours; s.units+=b.units;
-  });
-  let yields=Object.values(smap).filter(s=>s.bad_fin>0||s.bad_cmp>0).map(s=>{
-    const tot=s.good+s.bad_fin;
-    const rate=(tot&&s.bad_fin)? s.bad_fin/tot*100:null;
-    const lhpu=s.units? s.hours/s.units:null;
-    const labor=(lhpu&&s.bad_fin)? s.bad_fin*lhpu*wage:null;
-    return {item:s.item,desc:idesc(s.item),bad_finished:Math.round(s.bad_fin),
-      bad_component:Math.round(s.bad_cmp),
-      finished_scrap_rate:rate!=null?+rate.toFixed(2):null,
-      finished_scrap_labor:labor!=null?+labor.toFixed(2):null};
-  });
-  yields.sort((a,b)=>((b.finished_scrap_labor||0)-(a.finished_scrap_labor||0))||(b.bad_component-a.bad_component));
-
-  /* batch economics */
-  const bpts={};
-  fin.forEach(r=>{ if(!(r.t&&r.o&&r.q)) return;
-    (bpts[r.i]||(bpts[r.i]=[])).push([r.q,r.t*r.o]); });
-  let batch=[];
-  Object.entries(bpts).forEach(([item,pts])=>{
-    if(pts.length<4) return;
-    const fit=fitSetup(pts); if(!fit||fit[0]<=0) return;
-    const setup=fit[0]; const qtys=pts.map(p=>p[0]);
-    const avg=qtys.reduce((a,b)=>a+b,0)/qtys.length, mx=Math.max(...qtys);
-    const saveU=(setup/avg-setup/mx)*wage;
-    batch.push({item,setup_hours:+setup.toFixed(2),avg_batch:Math.round(avg),
-      max_batch:Math.round(mx),save_per_unit:+saveU.toFixed(5),
-      est_annual_saving:+(saveU*qtys.reduce((a,b)=>a+b,0)).toFixed(2)});
-  });
-  batch.sort((a,b)=>b.est_annual_saving-a.est_annual_saving);
-
-  /* trend (monthly) */
-  const per={};
-  fin.forEach(r=>{ if(!(r.t&&r.o&&r.q)) return; const pk=pkey(r.d); if(!pk) return;
-    const p=per[pk]||(per[pk]={hours:0,units:0}); p.hours+=r.t*r.o; p.units+=r.q; });
-  const trend=Object.keys(per).sort().map(k=>({period:k,units:Math.round(per[k].units),
-    labor_cost_unit:per[k].units? +(per[k].hours/per[k].units*wage).toFixed(5):null}));
-
-  /* machines / stage breakdown (+ blending children) */
-  const machines=[];
-  RAW.finished_stages.forEach(st=>{
-    const rows=fin.filter(f=>f.m===st); if(rows.length) machines.push(machFinalize(machRollup(rows,st),wage));
-  });
-  RAW.base_stages.forEach(st=>{
-    const rows=blend.filter(f=>f.m===st); if(!rows.length) return;
-    const parent=machFinalize(machRollup(rows,st),wage);
-    const subs={}; rows.forEach(r=>{ (subs[r.bl||'unknown']||(subs[r.bl||'unknown']=[])).push(r); });
-    const names={LB:'Blending · Large Blender',SB:'Blending · Small Blender'};
-    parent.children=Object.keys(subs).sort().map(bl=>
-      machFinalize(machRollup(subs[bl],names[bl]||('Blending · '+bl)),wage));
-    machines.push(parent);
-  });
-
-  /* cost-to-operate model per machine */
-  const cm={};
-  fin.forEach(r=>{ if(!isProduct(r.i)) return;
-    const d=cm[r.m]||(cm[r.m]={ops:[],mh:0,units:0});
-    if(r.o) d.ops.push(r.o);
-    if(r.t&&r.q){ d.mh+=r.t; d.units+=r.q; }
-  });
-  const cmOrder=RAW.finished_stages.concat(RAW.base_stages);
-  const cost_model=Object.entries(cm).filter(([,d])=>d.ops.length).map(([m,d])=>{
-    const avg=d.ops.reduce((a,b)=>a+b,0)/d.ops.length;
-    const oh=OHR[m]||0; const laborHr=avg*wage;
-    const mhpu=d.units? d.mh/d.units:null;
-    return {machine:m,avg_operators:+avg.toFixed(2),labor_per_hour:+laborHr.toFixed(2),
-      overhead_per_hour:+oh.toFixed(2),operating_per_hour:+(laborHr+oh).toFixed(2),
-      machine_hours_per_unit:mhpu!=null?+mhpu.toFixed(5):null,
-      labor_per_unit:mhpu!=null?+(mhpu*laborHr).toFixed(5):null,
-      overhead_per_unit:mhpu!=null?+(mhpu*oh).toFixed(5):null,
-      total_per_unit:mhpu!=null?+(mhpu*(laborHr+oh)).toFixed(5):null};
-  }).sort((a,b)=>(cmOrder.indexOf(a.machine))-(cmOrder.indexOf(b.machine)));
-
-  /* SKU explorer (per item combined + by machine, monthly series) */
-  const blank=()=>({std_sum:0,std_n:0,lh:0,mh:0,oh:0,units:0,runs:0,per:{}});
-  const agg={}, itc={};
-  fin.forEach(r=>{ if(!isProduct(r.i)) return;
-    const oh=OHR[r.m]||0;
-    const a=agg[r.i+' '+r.m]||(agg[r.i+' '+r.m]=blank());
-    const C=itc[r.i]||(itc[r.i]={...blank(),machines:new Set()});
-    C.machines.add(r.m); a.runs++; C.runs++;
-    if(r.s!=null){ a.std_sum+=r.s; a.std_n++; C.std_sum+=r.s; C.std_n++; }
-    if(r.t&&r.o&&r.q){ const lh=r.t*r.o, ohv=r.t*oh, pk=pkey(r.d);
-      [a,C].forEach(store=>{ store.lh+=lh; store.mh+=r.t; store.oh+=ohv; store.units+=r.q;
-        if(pk){ const p=store.per[pk]||(store.per[pk]={lh:0,mh:0,oh:0,units:0,std_sum:0,std_n:0});
-          p.lh+=lh; p.mh+=r.t; p.oh+=ohv; p.units+=r.q;
-          if(r.s!=null){ p.std_sum+=r.s; p.std_n++; } } });
-    }
-  });
-  const cost=b=>{ const std=b.std_n? b.std_sum/b.std_n:null; const act=b.units? b.lh/b.units:null;
-    const ovh=b.units? b.oh/b.units:null;
-    return {std_unit:std!=null?+(std*wage).toFixed(5):null,
-      act_unit:act!=null?+(act*wage).toFixed(5):null,oh_unit:ovh!=null?+ovh.toFixed(5):null,
-      total_unit:act!=null?+((act*wage)+(ovh||0)).toFixed(5):null,units:Math.round(b.units)}; };
-  const series=per_=>Object.keys(per_).sort().map(pk=>{ const c=cost(per_[pk]); c.period=pk; return c; });
-  const byItem={};
-  Object.entries(agg).forEach(([k,a])=>{ const [it,m]=k.split(' ');
-    const c=cost(a); c.runs=a.runs; c.series=series(a.per); (byItem[it]||(byItem[it]={}))[m]=c; });
-  const exItems=Object.entries(itc).map(([it,C])=>{ const c=cost(C); c.runs=C.runs; c.series=series(C.per);
-    return {item:it,desc:idesc(it),case_size:icase(it),machines:[...C.machines].sort(),
-      combined:c,by_machine:byItem[it]||{}}; }).sort((a,b)=>a.item<b.item?-1:1);
-
-  /* blending: cost per bulk blend (BBP) */
-  const rate=(RAW.blend_active_rate||0)+(RAW.blend_extra_rate||0);
-  const bacc={};
-  blend.forEach(r=>{ if(!r.i||!r.i.toUpperCase().endsWith('BBP')) return;
-    const d=bacc[r.i]||(bacc[r.i]={desc:idesc(r.i),runs:0,lbs:0,hrs:0,bl:{}});
-    d.runs++; if(r.bl) d.bl[r.bl]=(d.bl[r.bl]||0)+1;
-    if(r.t&&r.q){ d.lbs+=r.q; d.hrs+=r.t; } });
-  let blends=Object.entries(bacc).filter(([,d])=>d.lbs>0).map(([it,d])=>{
-    const total=d.hrs*rate; const blr=Object.keys(d.bl).sort((a,b)=>d.bl[b]-d.bl[a])[0]||null;
-    return {blend:it,desc:d.desc,blender:blr,runs:d.runs,total_lbs:Math.round(d.lbs),
-      blend_hours:+d.hrs.toFixed(2),cost_per_lb:+(total/d.lbs).toFixed(5),
-      cost_per_2000lb:+(total/d.lbs*2000).toFixed(2)}; });
-  blends.sort((a,b)=>b.total_lbs-a.total_lbs);
-
-  /* KPIs */
-  const avgLc = variance.length? variance.reduce((s,v)=>s+v.actual_cost_unit,0)/variance.length : null;
-  const kpis={
-    items_costed:variance.length,
-    avg_labor_cost_unit:avgLc!=null?+avgLc.toFixed(4):null,
-    items_over_std:variance.filter(v=>v.variance_unit>0).length,
-    total_over_std:Math.round(variance.filter(v=>v.variance_total>0).reduce((s,v)=>s+v.variance_total,0)),
-    downtime_labor_cost:Math.round(throughput.reduce((s,t)=>s+t.downtime_cost,0)),
-    batch_upside:Math.round(batch.filter(b=>b.est_annual_saving>0).reduce((s,b)=>s+b.est_annual_saving,0)),
-    scrap_finished_units:Math.round(yields.reduce((s,y)=>s+y.bad_finished,0)),
-    scrap_component_units:Math.round(yields.reduce((s,y)=>s+y.bad_component,0)),
-  };
-
-  return {
-    wage_rate:wage, wage_confirmed:RAW.wage_confirmed, overhead_confirmed:RAW.overhead_confirmed,
-    scope:RAW.scope, kpis, machines, cost_model:{
-      any_overhead_set:RAW.any_overhead_set, overhead_confirmed:RAW.overhead_confirmed, machines:cost_model},
-    blend_cost:{active_rate_per_hour:RAW.blend_active_rate, blends,
-      batches_note:blendNote()},
-    sku_explorer:{machine_list:RAW.finished_stages.slice(), items:exItems,
-      note:"Cost/unit = individual sellable unit; cost/case = cost/unit × case size. "
-        +"'All machines' pools quantity-weighted across the machines an item ran on "
-        +"(parallel machines like Maisa 1 / Maisa 2+3 are NOT double-counted; sequential stages "
-        +"are pooled, not summed — pick a machine for the isolated-stage cost)."},
-    variance_top:variance.slice(0,15), throughput_top:throughput.slice(0,10),
-    yield_top:yields.slice(0,10), batch_top:batch.slice(0,10), trend,
-    data_quality:{rows_finished:fin.length, rows_blending:blend.length,
-      items_finished:variance.length, misdated_years:RAW.misdated_years||[]},
-  };
-}
-function blendNote(){
-  const w=RAW.blend_active_rate||0, e=RAW.blend_extra_rate||0, L=w+e;
-  return "Quantities are in POUNDS (LB blender ~2000 lb/batch; SB smaller). Blend $/lb = blend-hours × the fully-loaded rate $"
-    +L.toFixed(2)+"/hr (wage $"+w+" + $"+e+"/hr of the operator’s support &amp; idle time absorbed). "
-    +"Standard baselined on 2026 Jan–Jun. Labor only — excludes blender machine overhead, ingredients, and packaging. "
-    +"Base-level — not yet added to finished SKUs (needs a recipe map: which blend + pounds per finished unit).";
-}
-
-/* ==================================================================
-   PAINT — render one aggregated snapshot into the page
-   ================================================================== */
-function paint(){
-  const d=aggregate();
-  const ohOk=!!d.overhead_confirmed;
-  const illus=!(d.wage_confirmed && ohOk);
-  EX_illus=illus;
-
-  // banner
-  const b=$('#banner'), bt=$('#banner-txt');
-  if(!d.wage_confirmed){
-    b.className="banner warn"; b.querySelector('.ico').textContent="⚠️";
-    bt.innerHTML=`<b>Wage rate is a placeholder ($${d.wage_rate}/hr) — dollar figures are ILLUSTRATIVE.</b> `
-      +`Ratios, %, hours, trend shape and counts are valid. Confirm the loaded labor rate to make dollars real.`;
-  } else if(!ohOk){
-    b.className="banner warn"; b.querySelector('.ico').textContent="◐";
-    bt.innerHTML=`<b>Labor rate CONFIRMED at $${d.wage_rate}/hr</b> — pure labor $ are real. `
-      +`Machine overhead (electricity/equipment) still uses <b>placeholder estimates</b>, so any figure that includes overhead `
-      +`(operating $/hr, total $/unit) is partly illustrative. Supply the real machine-overhead numbers to finalize.`;
-  } else {
-    b.className="banner ok"; b.querySelector('.ico').textContent="✅";
-    bt.innerHTML=`<b>Wage ($${d.wage_rate}/hr) and machine overhead confirmed.</b> Dollar figures are live. ${d.scope}`;
-  }
-
-  // kpis
-  const k=d.kpis;
-  const tiles=[
-    ["Items costed",num(k.items_costed),"finished goods"],
-    ["Avg labor $/unit",money4(k.avg_labor_cost_unit),illus?"illustrative":""],
-    ["Items over standard",num(k.items_over_std)+" / "+num(k.items_costed),"actual &gt; standard"],
-    ["Labor $ over standard",money(k.total_over_std),(illus?"illustrative · ":"")+"in range"],
-    ["Downtime labor cost",money(k.downtime_labor_cost),illus?"illustrative":"in range"],
-    ["Batch-consolidation upside",money(k.batch_upside),(illus?"illustrative · ":"")+"est./yr"],
-    ["Scrap — finished units",num(k.scrap_finished_units),"rate-able"],
-    ["Scrap — components",num(k.scrap_component_units),"bags/envelopes (ct)"],
-  ];
-  $('#kpis').innerHTML=tiles.map(t=>`<div class="kpi"><div class="v">${t[1]}</div>`
-    +`<div class="l">${t[0]}${t[2]?` <small>· ${t[2]}</small>`:''}</div></div>`).join('');
-
-  // machines
-  const mmax=Math.max(...d.machines.map(m=>m.labor_cost_total||0),1);
-  const mrow=(m,child)=>{
-    const w=Math.max(2,Math.round((m.labor_cost_total||0)/mmax*110));
-    const basis=m.labor_basis&&m.labor_basis!=='actual'?` <small class="illus">[${m.labor_basis}]</small>`:'';
-    const nm=child?`<span style="color:var(--muted)">↳ </span>${m.machine.replace('Blending · ','')}`:`<b>${m.machine}</b>`;
-    return `<tr${child?' style="background:color-mix(in srgb,var(--muted) 6%,transparent)"':''}>`
-      +`<td>${nm}${basis}</td><td>${num(m.runs)}</td><td>${num(m.items)}</td><td>${num(m.units)}</td>`
-      +`<td>${num(Math.round(m.run_hours))}</td><td>${num(Math.round(m.operator_hours))}</td>`
-      +`<td>${money4(m.labor_cost_per_unit)}</td><td>${money(m.labor_cost_total)}</td>`
-      +`<td>${m.downtime_pct==null?'–':m.downtime_pct+'%'}</td>`
-      +`<td class="barcell">${child?'':`<span class="bar" style="width:${w}px"></span>`}</td></tr>`;
-  };
-  $('#machines tbody').innerHTML = d.machines.length
-    ? d.machines.map(m=>{ let h=mrow(m,false); (m.children||[]).forEach(c=>h+=mrow(c,true)); return h; }).join('')
-    : `<tr><td colspan="10" class="empty">No production runs in this date range.</td></tr>`;
-  reapplySort('machines');
-
-  // variance
-  const vmax=Math.max(...d.variance_top.map(v=>v.variance_total||0),1);
-  $('#variance tbody').innerHTML = d.variance_top.length ? d.variance_top.map(v=>{
-    const w=Math.max(2,Math.round((v.variance_total||0)/vmax*120));
-    return `<tr><td>${v.item}</td><td class="desc" title="${v.desc||''}">${v.desc||''}</td>`
-      +`<td>${money4(v.std_cost_unit)}</td><td>${money4(v.actual_cost_unit)}</td>`
-      +`<td class="${v.variance_pct>0?'neg':''}">${v.variance_pct==null?'–':v.variance_pct+'%'}</td>`
-      +`<td class="neg">${money(v.variance_total)}</td>`
-      +`<td class="barcell"><span class="bar" style="width:${w}px"></span></td></tr>`;
-  }).join('') : `<tr><td colspan="7" class="empty">No items with both standard and actual in range.</td></tr>`;
-  reapplySort('variance');
-
-  // throughput
-  $('#throughput tbody').innerHTML = d.throughput_top.length ? d.throughput_top.map(t=>
-    `<tr><td>${t.item}</td><td>${t.units_per_op_hour==null?'–':Math.round(t.units_per_op_hour)}</td>`
-    +`<td>${t.downtime_pct==null?'–':t.downtime_pct+'%'}</td><td>${money(t.downtime_cost)}</td></tr>`).join('')
-    : `<tr><td colspan="4" class="empty">No throughput data in range.</td></tr>`;
-  reapplySort('throughput');
-
-  // batch
-  $('#batch tbody').innerHTML = d.batch_top.length ? d.batch_top.map(bb=>
-    `<tr><td>${bb.item}</td><td>${bb.setup_hours}</td><td>${num(bb.avg_batch)}→${num(bb.max_batch)}</td>`
-    +`<td>${money(bb.est_annual_saving)}</td></tr>`).join('')
-    : `<tr><td colspan="4" class="empty">Not enough runs per item in range to estimate setup.</td></tr>`;
-  reapplySort('batch');
-
-  // yield
-  $('#yield tbody').innerHTML = d.yield_top.length ? d.yield_top.map(y=>
-    `<tr><td>${y.item}</td><td class="desc" title="${y.desc||''}">${y.desc||''}</td>`
-    +`<td>${num(y.bad_finished)}</td><td>${y.finished_scrap_rate==null?'–':y.finished_scrap_rate+'%'}</td>`
-    +`<td>${y.finished_scrap_labor==null?'–':money(y.finished_scrap_labor)}</td>`
-    +`<td>${num(y.bad_component)}</td></tr>`).join('')
-    : `<tr><td colspan="6" class="empty">No scrap recorded in range.</td></tr>`;
-  reapplySort('yield');
-
-  // data quality
-  const dq=d.data_quality;
-  const mis=dq.misdated_years&&dq.misdated_years.length
-    ? `<span class="neg">⚑ mis-dated year(s) in source: ${dq.misdated_years.join(', ')}</span> (excluded from date-filtered views)`
-    : "no date anomalies";
-  const src=(RAW.sources||[]).filter(s=>s.present).map(s=>`${s.file} (${num(s.rows)} rows, updated ${(s.mtime||'').slice(0,10)})`).join(' · ');
-  $('#dq').innerHTML=`Sources: <b>${src||'—'}</b> · built ${(RAW.built_at||'').slice(0,10)}<br>`
-    +`In selected range — finished-good rows: ${num(dq.rows_finished)} · items costed: ${num(dq.items_finished)} · `
-    +`blending rows (base-level, excluded from finished rollups): ${num(dq.rows_blending)}<br>`
-    +`${RAW.n_undated?`<span class="illus">${num(RAW.n_undated)} undated rows are excluded whenever a date range is active.</span><br>`:''}`
-    +`${mis}<br><span class="illus">Blending is base-level and excluded from finished-good rollups.</span>`;
-
-  drawTrend(d.trend, illus);
-  renderCostModel(d);
-  renderBlend(d);
-  EX=d.sku_explorer;
-  refreshExplorer();
-}
-
-/* ---------- Blending ---------- */
-let BLENDS=[];
-function renderBlend(d){
-  const bc=d.blend_cost; BLENDS=(bc&&bc.blends)||[];
-  const card=$('#blend-card');
-  if(!BLENDS.length){ card.style.display='none'; return; }
-  card.style.display='';
-  var _w=(RAW.blend_active_rate||0), _e=(RAW.blend_extra_rate||0), _L=_w+_e, _m=_w?(_L/_w):0;
-  $('#blend-oh').textContent=money2(_L);
-  var _mb=$('#blend-method-body');
-  if(_mb){ _mb.innerHTML='<b>Fully-loaded blend-labor standard.</b> Everything the blender operator is paid, spread over the pounds actually blended.'
-    +'<ol style="margin:6px 0 6px 18px;padding:0">'
-    +'<li><b>Wage:</b> $'+_w+'/hr (blender operator, confirmed).</li>'
-    +'<li><b>Baseline period:</b> 2026 Jan–Jun (6 complete months, confirmed normal volume).</li>'
-    +'<li><b>Paid to operator:</b> ~$33,411 across ~992 paid hours (40 hrs/wk minus holidays).</li>'
-    +'<li><b>Productive blending:</b> only ~316 hrs (~32%) — the rest is weighing, cleaning, inventory, setup &amp; idle. As a dedicated blender, 100% of that cost is a blending cost.</li>'
-    +'<li><b>Absorb it back:</b> $33,411 ÷ ~316 productive blend-hrs = <b>$'+money2(_L)+'/blend-hour</b> ('+_m.toFixed(2)+'× the wage). The added $'+_e+'/hr is the support &amp; idle time loaded onto the pounds.</li>'
-    +'<li><b>Per blend:</b> that blend’s hours × $'+money2(_L)+'/hr ÷ its pounds = the $/lb in the table. Small batches cost more per lb — they use more operator time per pound.</li>'
-    +'</ol><span class="illus">Labor only — excludes blender electricity/equipment, ingredients, packaging. Re-baselined annually.</span>'; }
-  $('#blend-foot').innerHTML=bc.batches_note;
-  filterBlend();
+/* ---- Section 1: Blending ---- */
+function renderBlend(rows){
+  $('#t-blend tbody').innerHTML = rows.length ? rows.map(b=>
+    `<tr><td>${b.blend}</td><td class="desc" title="${(b.desc||'').replace(/"/g,'&quot;')}">${b.desc||''}</td>`
+    +`<td>${b.blender||'–'}</td><td>${num(b.total_lbs)}</td><td>${num(b.blend_hours)}</td><td class="big">${m4(b.cost_per_lb)}</td></tr>`
+  ).join('') : `<tr><td colspan="6" class="empty">No blends match.</td></tr>`;
 }
 function filterBlend(){
-  const q=$('#blend-search').value.trim().toLowerCase();
-  const bl=$('#blend-blender').value;
-  const rows=BLENDS.filter(b=>{
-    if(bl&&bl!=='__all'&&b.blender!==bl) return false;
-    if(q&&!(b.blend.toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q))) return false;
-    return true;
-  });
-  $('#blend-count').textContent=`${rows.length} blend${rows.length===1?'':'s'}`;
-  const body=$('#blend tbody');
-  if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No blends match.</td></tr>`; return; }
-  body.innerHTML=rows.map(b=>
-    `<tr><td>${b.blend}</td><td class="desc" title="${b.desc||''}">${b.desc||''}</td>`
-    +`<td class="mtag">${b.blender||'–'}</td><td>${num(b.runs)}</td><td>${num(b.total_lbs)}</td>`
-    +`<td>${b.blend_hours}</td>`
-    +`<td><b>${money4(b.cost_per_lb)}</b></td><td>${money2(b.cost_per_2000lb)}</td></tr>`).join('');
-  reapplySort('blend');
+  const q=$('#blend-q').value.trim().toLowerCase();
+  const rows=RAW.blends.filter(b=>!q||(''+b.blend).toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q));
+  $('#blend-n').textContent=`${rows.length} of ${RAW.blends.length} blends`;
+  renderBlend(rows);
 }
 
-/* ---------- Cost model ---------- */
-function renderCostModel(d){
-  const cm=d.cost_model;
-  if(!cm||!cm.machines.length){ $('#costmodel tbody').innerHTML=`<tr><td colspan="9" class="empty">No machine data in range.</td></tr>`; return; }
-  const noOh=!cm.any_overhead_set;
-  $('#cm-note').innerHTML=noOh
-    ? `Machine overhead is <b>$0 (not yet set)</b>, so “operating $/hr” currently equals labor only. Drop electricity/maintenance/equipment costs into <code>cost-rates.json</code> and every figure below (and in the explorer) fills in automatically.`
-    : (cm.overhead_confirmed
-        ? `Machine overhead is <b>confirmed</b> — “operating $/hr” includes electricity/maintenance/equipment.`
-        : `Machine overhead shown is a <b>realistic placeholder estimate</b> (electricity/maintenance/equipment), not yet confirmed — replace with actuals to finalize.`);
-  $('#costmodel tbody').innerHTML=cm.machines.map(m=>
-    `<tr><td><b>${m.machine}</b></td><td>${m.avg_operators}</td>`
-    +`<td>${money2(m.labor_per_hour)}</td>`
-    +`<td>${m.overhead_per_hour?money2(m.overhead_per_hour):'<span class="illus">$0 *</span>'}</td>`
-    +`<td><b>${money2(m.operating_per_hour)}</b></td>`
-    +`<td>${m.machine_hours_per_unit==null?'–':m.machine_hours_per_unit.toFixed(5)}</td>`
-    +`<td>${money4(m.labor_per_unit)}</td>`
-    +`<td>${m.overhead_per_unit?money4(m.overhead_per_unit):'<span class="illus">$0</span>'}</td>`
-    +`<td><b>${money4(m.total_per_unit)}</b></td></tr>`).join('');
-  reapplySort('costmodel');
-}
-
-/* ---------- SKU Cost Explorer ---------- */
-let EX=null, EXsel=new Set();
-const EX_PALETTE=(document.body.dataset.palette||'#2a78d6').split(',');
-function refreshExplorer(){
-  if(!EX){ $('#explorer-card').style.display='none'; return; }
-  $('#explorer-card').style.display='';
-  $('#ex-note').textContent=EX.note||'';
-  renderExTable();
-  drawChart();
-}
-const exBasis=()=>$('#ex-basis button.on').dataset.b;
-const exMachine=()=>$('#ex-machine').value;
-function exRow(it){
-  const m=exMachine();
-  if(m==='__all') return {...it.combined,machines:it.machines.join(' + ')};
-  const bm=it.by_machine[m];
-  return bm?{...bm,machines:m}:null;
-}
-function renderExTable(){
-  const q=$('#ex-search').value.trim().toLowerCase();
-  const basis=exBasis();
-  const rows=[];
-  EX.items.forEach(it=>{
-    const r=exRow(it); if(!r) return;
-    if(q&&!(it.item.toLowerCase().includes(q)||(it.desc||'').toLowerCase().includes(q))) return;
-    const cs=it.case_size||1, mult=basis==='case'?cs:1;
-    rows.push({it,r,cs,
-      std:r.std_unit==null?null:r.std_unit*mult,
-      act:r.act_unit==null?null:r.act_unit*mult,
-      oh:r.oh_unit==null?null:r.oh_unit*mult,
-      tot:r.total_unit==null?null:r.total_unit*mult});
-  });
-  rows.sort((x,y)=>((y.tot??y.act??y.std??-1)-(x.tot??x.act??x.std??-1)));
-  const body=$('#ex-table tbody');
-  $('#ex-count').textContent=`${rows.length} SKU${rows.length===1?'':'s'}`+(rows.length>400?' (showing first 400)':'');
-  if(!rows.length){ body.innerHTML=`<tr><td colspan="8" class="ex-empty">No items match your search / machine filter in this date range.</td></tr>`;
-    $('#ex-selcount').textContent=''; $('#ex-clear').hidden=true; return; }
-  body.innerHTML=rows.slice(0,400).map(({it,r,cs,std,act,oh,tot})=>
-    `<tr class="pick ${EXsel.has(it.item)?'sel':''}" data-item="${it.item}">`
-    +`<td>${it.item}</td><td class="desc" title="${it.desc||''}">${it.desc||''}</td>`
-    +`<td class="mtag">${r.machines}</td><td>${num(cs)}</td>`
-    +`<td>${money4(std)}</td><td>${money4(act)}</td>`
-    +`<td>${oh?money4(oh):'<span class="illus">$0</span>'}</td>`
-    +`<td><b>${money4(tot)}</b></td></tr>`).join('');
-  body.querySelectorAll('tr.pick').forEach(tr=>tr.addEventListener('click',()=>{
-    const id=tr.dataset.item;
-    if(EXsel.has(id)) EXsel.delete(id); else EXsel.add(id);
-    renderExTable(); drawChart();
-    if(EXsel.size) $('#ex-chartwrap').scrollIntoView({behavior:'smooth',block:'nearest'});
-  }));
-  const n=EXsel.size;
-  $('#ex-selcount').textContent=n?`· ${n} plotted`:'';
-  $('#ex-clear').hidden=!n;
-  reapplySort('ex-table');
-}
-function drawChart(){
-  const ids=[...EXsel]; const wrap=$('#ex-chartwrap');
-  if(!ids.length||!EX){ wrap.hidden=true; return; }
-  wrap.hidden=false;
-  const m=exMachine(), basis=exBasis();
-  const val=p=>p.total_unit!=null?p.total_unit:(p.act_unit!=null?p.act_unit:null);
-  const mkPts=(s,mult,fn)=>(s||[]).map(p=>({period:p.period,units:p.units,
-      value:fn(p)==null?null:fn(p)*mult})).filter(p=>p.value!=null);
-  const lines=[]; let title,foot;
-  if(ids.length===1){
-    const it=EX.items.find(x=>x.item===ids[0]);
-    if(!it){ wrap.hidden=true; return; }
-    const cs=(it&&it.case_size)||1, mult=basis==='case'?cs:1;
-    const breakdown=it&&m==='__all'&&(it.machines||[]).length>1;
-    if(breakdown){
-      lines.push({key:it.item,label:'All machines (pooled)',color:EX_PALETTE[0].trim(),width:3.5,
-        pts:mkPts(it.combined.series,mult,val)});
-      (it.machines||[]).forEach((mac,i)=>{
-        lines.push({key:it.item+'::'+mac,label:mac,color:EX_PALETTE[(i+1)%EX_PALETTE.length].trim(),
-          pts:mkPts((it.by_machine[mac]||{}).series,mult,val)});
-      });
-      title=`${it.item} — ${it.desc||''} <span class="mtag">· pooled + per-machine · per ${basis} · total operating $</span>`;
-      foot='Bold line = pooled across all machines; thinner lines = each machine it ran on.';
-    } else {
-      const src=m==='__all'?it.combined:(it.by_machine[m]||{series:[]});
-      lines.push({key:it.item,label:(m==='__all'?'All machines':m),color:EX_PALETTE[0].trim(),width:3,
-        pts:mkPts(src.series,mult,val)});
-      const sp=mkPts(src.series,mult,p=>p.std_unit);
-      if(sp.length) lines.push({key:it.item+'__std',label:'standard labor',color:'var(--muted)',dashed:true,pts:sp});
-      title=`${it.item} — ${it.desc||''} <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
-      foot='Dashed = standard labor · solid = actual total operating (labor + machine overhead).';
-    }
-  } else {
-    ids.forEach((id,idx)=>{
-      const it=EX.items.find(x=>x.item===id); if(!it) return;
-      const cs=it.case_size||1, mult=basis==='case'?cs:1;
-      const src=m==='__all'?it.combined:(it.by_machine[m]||{series:[]});
-      lines.push({key:id,label:id,color:EX_PALETTE[idx%EX_PALETTE.length].trim(),pts:mkPts(src.series,mult,val)});
-    });
-    title=`${ids.length} items compared <span class="mtag">· ${m==='__all'?'all machines (pooled)':m} · per ${basis} · total operating $</span>`;
-    foot='Each line = one item’s total operating $ (labor + machine overhead) over time.';
-  }
-  $('#ex-chart-title').innerHTML=title;
-  drawMulti($('#ex-chart'),lines,EX_illus,foot);
-  renderExLegend(lines);
-}
-function renderExLegend(lines){
-  const multi=EXsel.size>1;
-  $('#ex-legend').innerHTML=lines.map(l=>{
-    const removable=multi&&EXsel.has(l.key);
-    return `<span class="chip" ${removable?`data-rm="${l.key}"`:''} title="${removable?'click to remove':''}">`
-      +`<span class="sw ${l.dashed?'dash':''}" style="${l.dashed?'':`background:${l.color}`}"></span>`
-      +`${l.label}${removable?' <span class="x">✕</span>':''}</span>`;
-  }).join('');
-  $('#ex-legend').querySelectorAll('[data-rm]').forEach(c=>c.addEventListener('click',()=>{
-    EXsel.delete(c.dataset.rm); renderExTable(); drawChart();
-  }));
-}
-function drawMulti(svg,lines,illus,footNote){
-  const W=900,H=260,padL=64,padR=16,padT=16,padB=34;
-  const foot=$('#ex-chart-foot');
-  const withPts=lines.filter(l=>l.pts.length);
-  if(!withPts.length){ svg.innerHTML=''; foot.textContent='No production periods recorded for this selection in range.'; return; }
-  const periods=[...new Set(withPts.flatMap(l=>l.pts.map(p=>p.period)))].sort();
-  const idx=Object.fromEntries(periods.map((p,i)=>[p,i]));
-  const n=periods.length;
-  const allv=withPts.flatMap(l=>l.pts.map(p=>p.value));
-  const ymax=(Math.max(...allv,0.0001))*1.15, ymin=0;
-  const X=i=>n===1?padL+(W-padL-padR)/2:padL+(W-padL-padR)*(i/(n-1));
-  const Y=v=>padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
-  let g='';
-  for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
-    g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
-    g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(v<1?3:2)}</text>`; }
-  periods.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${perLabel(p)}</text>`; });
-  withPts.forEach(l=>{
-    const pts=l.pts.map(p=>({i:idx[p.period],v:p.value,u:p.units,per:p.period})).sort((a,b)=>a.i-b.i);
-    const lw=l.width||2;
-    if(pts.length>1){ const dp=pts.map((o,j)=>`${j?'L':'M'}${X(o.i).toFixed(1)},${Y(o.v).toFixed(1)}`).join(' ');
-      g+=`<path d="${dp}" fill="none" stroke="${l.color}" stroke-width="${lw}" ${l.dashed?'stroke-dasharray="5 4"':''}/>`; }
-    pts.forEach(o=>{ g+=`<circle cx="${X(o.i)}" cy="${Y(o.v)}" r="4" fill="${l.color}" stroke="var(--surface)" stroke-width="2" `
-      +`data-p="${o.per}" data-v="${o.v}" data-k="${l.label}" data-u="${o.u}"/>`; });
-  });
-  svg.innerHTML=g;
-  const tip=$('#tip');
-  svg.querySelectorAll('circle').forEach(c=>{
-    c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px'; tip.style.top=(e.clientY-10)+'px';
-      tip.innerHTML=`<b>${c.dataset.k}</b> · ${perLabel(c.dataset.p)}<br>${money4(+c.dataset.v)}${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
-    c.addEventListener('mouseleave',()=>tip.style.opacity=0);
-  });
-  foot.innerHTML=(illus?'<span class="illus">* includes placeholder machine overhead — partly illustrative</span> · ':'')
-               +(footNote||'Each line = one item’s total operating $ over time.');
-}
-function drawTrend(trend,illus){
-  const svg=$('#trend'); const W=900,H=240,padL=64,padR=16,padT=16,padB=32;
-  const pts=trend.filter(p=>p.labor_cost_unit!=null);
-  if(pts.length<2){ svg.innerHTML=''; $('#trend-foot').textContent="Not enough months in range to plot."; return; }
-  const ys=pts.map(p=>p.labor_cost_unit);
-  const ymax=Math.max(...ys)*1.15, ymin=0;
-  const X=i=>padL+(W-padL-padR)*(i/(pts.length-1));
-  const Y=v=>padT+(H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
-  let g="";
-  for(let t=0;t<=4;t++){ const v=ymin+(ymax-ymin)*t/4, y=Y(v);
-    g+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
-    g+=`<text class="axis-lbl" x="${padL-8}" y="${y+4}" text-anchor="end">$${v.toFixed(3)}</text>`; }
-  pts.forEach((p,i)=>{ g+=`<text class="axis-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${perLabel(p.period)}</text>`; });
-  const dpath=pts.map((p,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(p.labor_cost_unit).toFixed(1)}`).join(' ');
-  g+=`<path d="${dpath}" fill="none" stroke="var(--series)" stroke-width="2"/>`;
-  pts.forEach((p,i)=>{ g+=`<circle class="dot" cx="${X(i)}" cy="${Y(p.labor_cost_unit)}" r="4.5"
-     data-p="${p.period}" data-v="${p.labor_cost_unit}" data-u="${p.units}"/>`; });
-  svg.innerHTML=g;
-  const tip=$('#tip');
-  svg.querySelectorAll('.dot').forEach(c=>{
-    c.addEventListener('mousemove',e=>{ tip.style.opacity=1; tip.style.left=(e.clientX+12)+'px';
-      tip.style.top=(e.clientY-10)+'px';
-      tip.innerHTML=`<b>${perLabel(c.dataset.p)}</b><br>${money4(+c.dataset.v)}/unit${illus?' *':''}<br>${(+c.dataset.u).toLocaleString()} units`; });
-    c.addEventListener('mouseleave',()=>tip.style.opacity=0);
-  });
-  $('#trend-foot').innerHTML=illus?'<span class="illus">* dollar level illustrative until wage confirmed</span>':'';
-}
-
-/* ==================================================================
-   DATE-RANGE CONTROLS
-   ================================================================== */
-function shiftDays(iso,days){
-  const [y,m,d]=iso.split('-').map(Number);
-  const dt=new Date(Date.UTC(y,m-1,d)); dt.setUTCDate(dt.getUTCDate()+days);
-  return dt.toISOString().slice(0,10);
-}
-function setRange(from,to,presetBtn){
-  RANGE={from:from||null,to:to||null};
-  $('#dr-presets').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===presetBtn));
-  $('#dr-from').value=from||''; $('#dr-to').value=to||'';
-  const lbl=$('#dr-label');
-  if(!from&&!to) lbl.innerHTML=`<b>All dates</b> · ${RAW.date_min||''} → ${RAW.date_max||''}`;
-  else lbl.innerHTML=`<b>${from||'earliest'}</b> → <b>${to||'latest'}</b>`;
-  paint();
-}
-function initControls(){
-  const today=(RAW.data_today)||(RAW.date_max)||'2026-12-31';
-  const clampMax='2026-12-31', clampMin='2025-01-01';
-  const fEl=$('#dr-from'), tEl=$('#dr-to');
-  fEl.min=clampMin; fEl.max=clampMax; tEl.min=clampMin; tEl.max=clampMax;
-  const presets={
-    all:()=>[null,null],
-    '2026':()=>['2026-01-01','2026-12-31'],
-    '2025':()=>['2025-01-01','2025-12-31'],
-    ytd:()=>['2026-01-01', RAW.date_max&&RAW.date_max<='2026-12-31'?RAW.date_max:today],
-    q90:()=>[shiftDays(today,-90),today],
-    q30:()=>[shiftDays(today,-30),today],
-  };
-  $('#dr-presets').addEventListener('click',e=>{
-    const btn=e.target.closest('button'); if(!btn) return;
-    const [f,t]=presets[btn.dataset.p](); setRange(f,t,btn);
-  });
-  const applyCustom=()=>{
-    const f=fEl.value||null, t=tEl.value||null;
-    setRange(f,t,null);
-  };
-  $('#dr-apply').addEventListener('click',applyCustom);
-  fEl.addEventListener('change',applyCustom);
-  tEl.addEventListener('change',applyCustom);
-
-  // explorer + blend controls — bound ONCE; they read the current aggregated data
-  $('#ex-machine').innerHTML='<option value="__all">All machines (pooled)</option>'
-    + RAW.finished_stages.map(m=>`<option value="${m}">${m}</option>`).join('');
-  $('#ex-search').addEventListener('input',renderExTable);
-  $('#ex-machine').addEventListener('change',()=>{ renderExTable(); drawChart(); });
-  $('#ex-basis').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-    $('#ex-basis').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-    renderExTable(); drawChart(); });
-  $('#ex-clear').addEventListener('click',()=>{ EXsel.clear(); renderExTable(); drawChart(); });
-
-  const blenders=[...new Set(RAW.facts.filter(f=>RAW.base_stages.includes(f.m)&&f.bl).map(f=>f.bl))].sort();
-  $('#blend-blender').innerHTML='<option value="__all">All blenders</option>'
-    + blenders.map(x=>`<option value="${x}">${x}</option>`).join('');
-  $('#blend-search').addEventListener('input',filterBlend);
-  $('#blend-blender').addEventListener('change',filterBlend);
-
-  ['blend','ex-table','costmodel','variance','throughput','batch','yield','machines'].forEach(makeSortable);
-}
-
-/* ---------- Cost to Make (blending + production labor) — static, not date-filtered ---------- */
-let BOMROWS=[];
-function renderBomCogs(){
-  const bc=RAW.bom_cogs, card=$('#bomcogs-card');
-  if(!bc||!bc.items||!bc.items.length){ if(card) card.style.display='none'; return; }
-  card.style.display='';
-  BOMROWS=bc.items;
-  $('#bomcogs-note').innerHTML=`Built from <b>ACTUAL production runs</b> (not Acctivate/standard): actual pack labor $26.06/hr + blend at the fully-loaded $105.85/blend-hr (from Jorge's real hours &amp; pounds). `
-    +`<b>Excludes raw ingredients &amp; packaging</b> — this is the cost to MAKE, not full COGS.`;
-  const built=(bc.built||'').slice(0,10);
-  const nb=BOMROWS.filter(x=>x.is_bundle).length;
-  const est=BOMROWS.filter(x=>x.labor_basis==='partial_standard').length;
-  $('#bomcogs-foot').innerHTML=`<b>${num(bc.matched)}</b> DTC-matched SKUs · mean make cost <b>${money4(bc.mean_make_cost)}</b>/unit · `
-    +`${num(nb)} bundles rolled up through their component bags · <b>${num(BOMROWS.length-est)}</b> from actual runs`
-    +(est?`, <span class="illus">${num(est)} estimated (no production run recorded yet)</span>`:'')+` · built ${built}. `
-    +`<span class="illus">Shopify $ is retail (context only). Cost to make = blending + production labor from real runs; raw materials &amp; packaging excluded by design.</span>`;
-  filterBomCogs();
-}
-function filterBomCogs(){
-  const q=$('#bom-search').value.trim().toLowerCase();
-  const rows=BOMROWS.filter(r=>!q
-    || (r.sku&&(''+r.sku).toLowerCase().includes(q))
-    || (r.title&&r.title.toLowerCase().includes(q)));
-  $('#bom-count').textContent=`${rows.length} of ${BOMROWS.length} SKUs`;
-  $('#bomcogs tbody').innerHTML = rows.length ? rows.map(r=>
-    `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}" style="cursor:pointer">`
-    +`<td>${r.sku||r.fg||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</td>`
+/* ---- Section 2: Packing ---- */
+function packRows(){ return FG.map(x=>({sku:x.sku,title:x.title,make_labor:x.make_labor,is_bundle:x.is_bundle,discontinued:x.discontinued})); }
+function renderPack(rows){
+  $('#t-pack tbody').innerHTML = rows.length ? rows.map(r=>
+    `<tr><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
-    +`<td>${r.make_blend==null?'–':money4(r.make_blend)}</td>`
-    +`<td>${r.make_labor==null?'–':money4(r.make_labor)}</td>`
-    +`<td><b>${r.make==null?'–':money4(r.make)}</b></td>`
-    +`<td>${r.price?money2(r.price):'–'}</td></tr>`).join('')
-    : `<tr><td colspan="6" class="empty">No matching SKUs.</td></tr>`;
-  reapplySort('bomcogs');
+    +`<td class="big">${m4(r.make_labor)}</td></tr>`
+  ).join('') : `<tr><td colspan="3" class="empty">No SKUs match.</td></tr>`;
 }
-function bomLine(l,indent){
-  const pad=`padding-left:${indent*16}px`;
+function filterPack(){
+  const q=$('#pack-q').value.trim().toLowerCase();
+  let rows=packRows().filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q));
+  rows.sort((a,b)=>(b.make_labor||0)-(a.make_labor||0));
+  $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
+  renderPack(rows);
+}
+
+/* ---- Section 3: Finished Goods (total cost to make) ---- */
+function renderFG(rows){
+  $('#t-fg tbody').innerHTML = rows.length ? rows.map(r=>
+    `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}">`
+    +`<td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    +`<td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td></tr>`
+  ).join('') : `<tr><td colspan="5" class="empty">No SKUs match.</td></tr>`;
+}
+function filterFG(){
+  const q=$('#fg-q').value.trim().toLowerCase();
+  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q));
+  rows.sort((a,b)=>(b.make||0)-(a.make||0));
+  $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
+  renderFG(rows);
+}
+function fgLine(l,ind){
+  const pad=`padding-left:${ind*16}px`;
   if(l.type==='blend')
     return `<tr><td style="${pad}">🌀 blend <code>${l.id}</code>${l.fallback?' <span class="illus">(plantwide est.)</span>':''}</td>`
-      +`<td class="desc">${l.desc||''}</td><td>${(+l.lbs).toFixed(3)} lb × ${money4(l.per_lb)}/lb</td><td><b>${money4(l.usd)}</b></td></tr>`;
+      +`<td class="desc">${l.desc||''}</td><td>${(+l.lbs).toFixed(3)} lb × ${m4(l.per_lb)}/lb</td><td>${m4(l.usd)}</td></tr>`;
   if(l.type==='pack_labor'){
-    const calc = l.basis==='actual'
-      ? 'actual production runs'
-      : `${(+l.hours).toFixed(4)} hr × ${money2(l.rate)}/hr <span class="illus">(no run yet — standard est.)</span>`;
-    return `<tr><td style="${pad}">🧑‍🏭 production labor</td><td class="desc">weigh / pack / finish</td>`
-      +`<td>${calc}</td><td><b>${money4(l.usd)}</b></td></tr>`;
+    let c = l.basis==='actual'?'actual runs':l.basis==='actual_via_alias'?`actual runs <span class="illus">(via ${l.alias})</span>`:`${(+l.hours).toFixed(4)} hr × ${m2(l.rate)}/hr <span class="illus">(est.)</span>`;
+    return `<tr><td style="${pad}">📦 packing labor</td><td class="desc">weigh / pack / finish</td><td>${c}</td><td>${m4(l.usd)}</td></tr>`;
   }
   if(l.type==='component'){
-    let h=`<tr><td style="${pad}">📦 contains <code>${l.id}</code> × ${(+l.qty).toFixed(2)}</td>`
-      +`<td class="desc">${l.desc||''}</td><td>make ${money4(l.unit_make_cost)}/ea</td><td><b>${money4(l.usd)}</b></td></tr>`;
-    (l.sub||[]).forEach(s=>{ h+=bomLine(s,indent+1); });
+    let h=`<tr><td style="${pad}">📦 contains <code>${l.id}</code> × ${(+l.qty).toFixed(2)}</td><td class="desc">${l.desc||''}</td>`
+      +`<td>make ${m4(l.unit_make_cost)}/ea</td><td>${m4(l.usd)}</td></tr>`;
+    (l.sub||[]).forEach(s=>h+=fgLine(s,ind+1));
     return h;
   }
   return '';
 }
-function bomShowMath(fg,sku){
-  const r=BOMROWS.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku)) || BOMROWS.find(x=>(''+(x.sku||''))===(''+sku));
-  const box=$('#bomcogs-detail');
+function showFG(fg,sku){
+  const r=FG.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku))||FG.find(x=>(''+(x.sku||''))===(''+sku));
+  const box=$('#fg-detail');
   if(!r||!r.make_breakdown){ box.hidden=true; return; }
-  const lines=r.make_breakdown.map(l=>bomLine(l,0)).join('') || `<tr><td colspan="4" class="empty">No blend or production-labor steps found.</td></tr>`;
+  const lines=r.make_breakdown.map(l=>fgLine(l,0)).join('')||`<tr><td colspan="4" class="empty">No steps.</td></tr>`;
   box.hidden=false;
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">`
-    +`<h3 style="margin:0;font-size:15px">${r.sku||r.fg} — ${r.title||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
-    +`<button class="linkbtn" onclick="document.getElementById('bomcogs-detail').hidden=true">close ✕</button></div>`
-    +`<p class="hint" style="margin:6px 0">Cost to make = 🌀 blend labor (lbs × loaded $/lb) + 🧑‍🏭 production labor (hrs × wage). `
-    +`Bundles expand into 📦 the bags they contain. <span class="illus">Raw ingredients &amp; packaging excluded by design.</span></p>`
-    +`<table style="width:100%;border-collapse:collapse;font-size:12.5px"><thead><tr style="text-align:left">`
-    +`<th>Step</th><th>What</th><th>Calc</th><th>$/unit</th></tr></thead><tbody>${lines}</tbody>`
-    +`<tfoot>`
-    +`<tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${money4(r.make_blend)}</td></tr>`
-    +`<tr><td colspan="3" style="text-align:right">production-labor subtotal</td><td>${money4(r.make_labor)}</td></tr>`
-    +`<tr style="border-top:2px solid #cfe0d7"><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td>`
-    +`<td><b>${money4(r.make)}</b></td></tr></tfoot></table>`;
+    +`<h3 style="margin:0;font-size:15px">${r.sku} — ${r.title||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('fg-detail').hidden=true">close ✕</button></div>`
+    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/unit</th></tr></thead>`
+    +`<tbody>${lines}</tbody><tfoot>`
+    +`<tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend)}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right">packing subtotal</td><td>${m4(r.make_labor)}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td><td class="big">${m4(r.make)}</td></tr>`
+    +`</tfoot></table>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
   RAW=data;
-  initControls();
-  makeSortable('bomcogs');
-  $('#bom-search').addEventListener('input',filterBomCogs);
-  $('#bomcogs tbody').addEventListener('click',e=>{
-    const tr=e.target.closest('tr.clk'); if(!tr) return;
-    bomShowMath(tr.getAttribute('data-fg'),tr.getAttribute('data-sku'));
-  });
-  renderBomCogs();
-  setRange(null,null,$('#dr-presets button[data-p="all"]'));
-}).catch(e=>{ $('#banner-txt').innerHTML="Could not load cost-performance-facts.json — "+e; });
+  const bc=data.bom_cogs||{}; FG=(bc.items||[]);
+  // Section 1
+  $('#blendrate').textContent=m2(data.blend_loaded_rate);
+  const nb=(data.blends||[]).length; RAW.blends=data.blends||[];
+  filterBlend();
+  $('#blend-q').addEventListener('input',filterBlend);
+  wireSort('t-blend',()=>{ const q=$('#blend-q').value.trim().toLowerCase(); return RAW.blends.filter(b=>!q||(''+b.blend).toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q)); },renderBlend);
+  $('#blend-foot').innerHTML=`${nb} bulk blends · loaded blend-labor ${m2(data.blend_loaded_rate)}/hr. <span class="illus">Labor only — excludes raw ingredients, blender machine overhead &amp; packaging.</span>`;
+  // Section 2
+  filterPack();
+  $('#pack-q').addEventListener('input',filterPack);
+  wireSort('t-pack',()=>{ const q=$('#pack-q').value.trim().toLowerCase(); return packRows().filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q)); },renderPack);
+  $('#pack-foot').innerHTML=`Actual pack/finish labor at $26.06/hr, pooled across production runs. <span class="illus">SKUs with no logged run use a standard estimate.</span>`;
+  // Section 3
+  const disc=FG.filter(x=>x.discontinued).length, est=FG.filter(x=>x.labor_basis==='partial_standard'&&!x.discontinued).length, act=FG.filter(x=>x.labor_basis==='actual'&&!x.discontinued).length;
+  $('#fg-note').textContent=`Actual-run based; raw ingredients & packaging excluded by design.`;
+  filterFG();
+  $('#fg-q').addEventListener('input',filterFG);
+  wireSort('t-fg',()=>{ const q=$('#fg-q').value.trim().toLowerCase(); return FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q)); },renderFG);
+  $('#t-fg tbody').addEventListener('click',e=>{ const tr=e.target.closest('tr.clk'); if(!tr) return; showFG(tr.dataset.fg,tr.dataset.sku); });
+  $('#fg-foot').innerHTML=`<b>${num(bc.matched)}</b> SKUs · mean cost to make <b>${m4(bc.mean_make_cost)}</b>/unit · <b>${num(act)}</b> from actual runs`
+    +(est?`, <span class="illus">${num(est)} estimated (mostly bundle assembly)</span>`:'')+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
+  $('#built').textContent=`Source: ${bc.source_file||'production schedule'} · built ${(data.built_at||'').slice(0,10)}.`;
+}).catch(e=>{ $('#c-blend').insertAdjacentHTML('beforebegin','<p class="empty">Could not load cost-performance-facts.json — '+e+'</p>'); });
 </script>
 </body>
 </html>
