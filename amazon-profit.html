@@ -63,6 +63,10 @@
   th.sorth .arr { opacity:.5; font-size:9px; }
   #skuTable tbody tr { cursor:pointer; }
   #skuTable tbody tr:hover { background:#20242e; }
+  .pager { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:12px; font-size:12.5px; color:var(--muted); }
+  .pager .preset { padding:5px 12px; }
+  .pager .preset:disabled { opacity:.4; cursor:default; border-color:var(--line); }
+  .invcontrols select { background:#232734; color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:4px 6px; font-size:12.5px; }
   .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:50;
             padding:24px; overflow:auto; }
   .modal.open { display:block; }
@@ -92,7 +96,7 @@
 </script>
 <div class="wrap">
   <h1><span class="amz">💰 Amazon</span> Profit &amp; Inventory</h1>
-  <div class="sub">NET margin from the Finances API · data 2026-06-09 → 2026-07-07 · generated 2026-07-14 16:14 UTC</div>
+  <div class="sub">NET margin from the Finances API · data 2026-06-09 → 2026-07-07 · generated 2026-07-14 17:41 UTC</div>
 
   <div class="prov">
     <strong>True NET margin</strong> — gross principal minus Amazon fees (FBA, referral, closing)
@@ -141,6 +145,12 @@
     Margin % = net ÷ gross principal.</div>
   <div class="invcontrols">
     <input type="search" id="skuSearch" placeholder="Search SKU or product…" autocomplete="off">
+    <label class="lowtoggle">Rows
+      <select id="skuPageSize">
+        <option value="10">10</option><option value="15" selected>15</option>
+        <option value="25">25</option><option value="50">50</option>
+      </select>
+    </label>
     <span class="invcount" id="skuCount"></span>
   </div>
   <div class="card" style="padding:8px 14px;">
@@ -156,6 +166,11 @@
       <th class="sorth num" data-k="m">Margin</th>
     </tr></thead>
     <tbody id="skuBody"></tbody></table>
+  </div>
+  <div class="pager" id="skuPager">
+    <button class="preset" id="skuPrev">‹ Prev</button>
+    <span id="skuPageInfo"></span>
+    <button class="preset" id="skuNext">Next ›</button>
   </div>
   <details class="tableview" style="margin-top:10px;"><summary>Daily totals table (all SKUs, selected range)</summary>
     <div class="card" style="padding:8px 14px;margin-top:6px;">
@@ -294,8 +309,9 @@
   }
 
   // skuday tuple: [sku,date,units,gross,referral,fba,other,net]
-  var skuSort={key:'n',dir:'desc'};
+  var skuSort={key:'n',dir:'desc'}, skuPage=1;
   var skuSearchEl=document.getElementById('skuSearch');
+  var skuPageSizeEl=document.getElementById('skuPageSize');
   function aggSku(){
     var agg={};
     D.skuday.forEach(function(r){
@@ -313,13 +329,19 @@
     if(q) arr=arr.filter(function(r){return r.sku.toLowerCase().indexOf(q)>=0||r.title.toLowerCase().indexOf(q)>=0;});
     var k=skuSort.key, dir=skuSort.dir==='asc'?1:-1;
     arr.sort(function(a,b){var x=a[k],y=b[k],r; if(typeof x==='string'){r=x.toLowerCase().localeCompare(y.toLowerCase());}else{r=x-y;} return r*dir;});
-    document.getElementById('skuBody').innerHTML = arr.map(function(r){
+    var total=arr.length, ps=+skuPageSizeEl.value, pages=Math.max(1,Math.ceil(total/ps));
+    if(skuPage>pages) skuPage=pages; if(skuPage<1) skuPage=1;
+    var start=(skuPage-1)*ps, pageRows=arr.slice(start,start+ps);
+    document.getElementById('skuBody').innerHTML = pageRows.map(function(r){
       return '<tr data-sku="'+esc(r.sku)+'"><td class="sku">'+esc(r.sku)+'</td><td class="ti">'+esc(r.title)+
         '</td><td>'+num(r.u)+'</td><td>'+money(r.g)+'</td><td class="neg">'+money(r.fba)+
         '</td><td class="neg">'+money(r.ref)+'</td><td class="neg">'+money(r.oth)+
         '</td><td class="pos">'+money(r.n)+'</td><td>'+pct(r.m)+'</td></tr>';
     }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted)">No SKU sales in range.</td></tr>';
-    document.getElementById('skuCount').textContent='showing '+arr.length+' SKUs';
+    document.getElementById('skuCount').textContent=total+' SKUs';
+    document.getElementById('skuPageInfo').textContent = total ? ('Page '+skuPage+' of '+pages+' · '+(start+1)+'–'+Math.min(start+ps,total)+' of '+total) : '—';
+    document.getElementById('skuPrev').disabled = skuPage<=1;
+    document.getElementById('skuNext').disabled = skuPage>=pages;
     document.querySelectorAll('#skuTable th.sorth').forEach(function(th){
       var base=th.getAttribute('data-label')||th.textContent.replace(/[ \u25b2\u25bc]+$/,'');
       th.setAttribute('data-label',base);
@@ -330,9 +352,12 @@
     th.addEventListener('click',function(){ var k=th.dataset.k;
       if(skuSort.key===k){skuSort.dir=skuSort.dir==='asc'?'desc':'asc';}
       else {skuSort.key=k; skuSort.dir=(k==='sku'||k==='title')?'asc':'desc';}
-      renderSkuTable(); });
+      skuPage=1; renderSkuTable(); });
   });
-  skuSearchEl.addEventListener('input',renderSkuTable);
+  skuSearchEl.addEventListener('input',function(){ skuPage=1; renderSkuTable(); });
+  skuPageSizeEl.addEventListener('change',function(){ skuPage=1; renderSkuTable(); });
+  document.getElementById('skuPrev').addEventListener('click',function(){ if(skuPage>1){skuPage--; renderSkuTable();} });
+  document.getElementById('skuNext').addEventListener('click',function(){ skuPage++; renderSkuTable(); });
   document.getElementById('skuBody').addEventListener('click',function(e){
     var tr=e.target.closest('tr[data-sku]'); if(tr) openSku(tr.getAttribute('data-sku'));
   });
@@ -444,6 +469,7 @@
   function apply(){
     var rows=daily.filter(inRange);
     document.getElementById('rangeLabel').textContent = rows.length+' of '+daily.length+' days';
+    skuPage=1;
     renderKPIs(rows); renderComposition(rows); renderMargin(rows); renderSkuTable(); renderDailyTable(rows);
   }
 
