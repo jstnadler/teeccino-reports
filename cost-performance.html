@@ -132,10 +132,10 @@
   <!-- 3a. MACHINE HOURS BY SKU -->
   <div class="card" id="c-mh">
     <h2>⏱️ Machine hours by SKU</h2>
-    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. Click a SKU for the per-machine breakdown.</p>
-    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="mh-n"></span></div>
+    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown.</p>
+    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV (one row per SKU × machine)">⬇ Export CSV</button><span class="mtag" id="mh-n"></span></div>
     <div class="scroll"><table id="t-mh"><thead><tr>
-      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="units">units made</th>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="machines">machine(s)</th><th data-k="units">units made</th>
       <th data-k="hrs">machine hrs</th><th data-k="hper1k">hrs / 1k units</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="mh-detail" class="detail" hidden></div>
@@ -288,17 +288,40 @@ function renderPack(){
 }
 
 /* ---------- Section 3a: Machine hours by SKU ---------- */
-function renderMH(){
+// machines a SKU ran on, ordered by hours desc
+function mhMachines(r){ return Object.entries(r.by||{}).sort((a,b)=>b[1]-a[1]).map(x=>x[0]); }
+function mhFiltered(){
   const q=$('#mh-q').value.trim().toLowerCase();
-  let rows=MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q));
-  rows.sort((a,b)=>b.hrs-a.hrs);
+  return MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q))
+          .sort((a,b)=>b.hrs-a.hrs);
+}
+function renderMH(){
+  const rows=mhFiltered();
   $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
-  $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td><td>${num(r.units)}</td>`
-    +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`).join('')
-    :`<tr><td colspan="5" class="empty">No machine runs in this range.</td></tr>`;
+  $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
+    return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}</td>`
+    +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
+    :`<tr><td colspan="6" class="empty">No machine runs in this range.</td></tr>`;
   const totH=MH.reduce((s,r)=>s+r.hrs,0);
   $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with runs · ${num(totH)} total machine hrs in range.`;
+}
+/* CSV export — one row per SKU × machine so "which machine" is explicit */
+function csvCell(v){ v=(v==null?'':''+v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function downloadCSV(name,rows){
+  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+function exportMH(){
+  const rows=mhFiltered();
+  const out=[['SKU','Product','Machine / stage','machine hrs','SKU total units','SKU total machine hrs','machine hrs / 1k units']];
+  rows.forEach(r=>{ mhMachines(r).forEach(m=>{ const h=r.by[m];
+    out.push([r.sku,r.title||'',m,(+h).toFixed(2),r.units,r.hrs,r.units?((h/r.units)*1000).toFixed(3):'']); }); });
+  const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
+  downloadCSV(`machine-hours-by-sku_${tag}.csv`,out);
 }
 function showMH(sku){
   const r=MH.find(x=>(''+x.sku)===(''+sku)); const box=$('#mh-detail'); if(!r){box.hidden=true;return;}
@@ -384,6 +407,7 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#blend-q').addEventListener('input',renderBlend);
   $('#pack-q').addEventListener('input',renderPack);
   $('#mh-q').addEventListener('input',renderMH);
+  $('#mh-export').addEventListener('click',exportMH);
   $('#fg-q').addEventListener('input',renderFG);
   $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
   $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
