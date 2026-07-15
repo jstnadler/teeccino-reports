@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-15T12:11:52.166553-07:00",
+  "lastUpdated": "2026-07-15T12:16:29.922728-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -731,9 +731,9 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Hardening cost engine (fail-loud+dedupe) & prepping S701 fix for 40061",
-        "source": "interactive",
-        "startedAt": "2026-07-15T19:11:51Z",
+        "summary": "USER CHOSE (for \"Next steps for 40061\"): Fix cell S701 (3 PM) in the 2025 file y",
+        "source": "discord",
+        "startedAt": "2026-07-15T12:11:30-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
@@ -747,10 +747,16 @@
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "40061 cost still .55 after 2026 fix due to (1) engine silently skipping the locked 2026 workbook (fell back to 2025 only), and (2) a DUPLICATE of the same bad row in Production Schedule 2025.xlsx: Maisa 1 row 701, End Time S701 = 1900-01-13 03:00 (should be 15:00/3PM). Fixing S701 drops pooled actual labor 1.19->0.022 hr/u, make cost .55 -> ~/usr/bin/bash.60/unit.",
-        "at": "2026-07-15T19:09:01Z"
+        "summary": "SKU 40061 inflated make cost (.50/u) resolved to /usr/bin/bash.52/u. Root cause: 3AM/3PM End-Time typo -> Actual Time formula = 304.39h, duplicated in the 2025 workbook (Maisa 1!S701) which the engine pools. Hardened production_cost.py: fail-loud on locked workbook, cross-file dedupe (527 dup runs, keep 2026), outlier guard >24h & >5x planned (caught 5 bad rows: 40061/45032/47010/43220L). Re-ran; dataset corrected.",
+        "at": "2026-07-15T19:16:29Z"
       },
       "recentActivity": [
+        {
+          "summary": "SKU 40061 inflated make cost (.50/u) resolved to /usr/bin/bash.52/u. Root cause: 3AM/3PM End-Time typo -> Actual Time formula = 304.39h, duplicated in the 2025 workbook (Maisa 1!S701) which the engine pools. Hardened production_cost.py: fail-loud on locked workbook, cross-file dedupe (527 dup runs, keep 2026), outlier guard >24h & >5x planned (caught 5 bad rows: 40061/45032/47010/43220L). Re-ran; dataset corrected.",
+          "at": "2026-07-15T19:16:29Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "40061 cost still .55 after 2026 fix due to (1) engine silently skipping the locked 2026 workbook (fell back to 2025 only), and (2) a DUPLICATE of the same bad row in Production Schedule 2025.xlsx: Maisa 1 row 701, End Time S701 = 1900-01-13 03:00 (should be 15:00/3PM). Fixing S701 drops pooled actual labor 1.19->0.022 hr/u, make cost .55 -> ~/usr/bin/bash.60/unit.",
           "at": "2026-07-15T19:09:01Z",
@@ -803,12 +809,6 @@
           "summary": "Removed the Section 1/2/3 labels from the cost page; sections read by heading only. Live (absorbed into concurrent commit aa90799; verified 0 labels live).",
           "at": "2026-07-14T17:43:11Z",
           "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "DATA-QUALITY ALERT: 400 data-quality findings (high=144, med=252); 28 in last 14d (15 high). facts_rebuilt=True.",
-          "at": "2026-07-14T13:00:01.360254+00:00",
-          "source": "scheduled",
           "status": "unknown"
         }
       ],
