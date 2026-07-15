@@ -543,6 +543,25 @@ function fgLine(p,ind){
   if(p.t==='comp'){ let h=`<tr><td style="${pad}">📦 contains <code>${l.id}</code> × ${(+l.qty).toFixed(2)}</td><td class="desc">${l.desc||''}</td><td>make ${m4(l.qty?p.usd/l.qty:0)}/ea</td><td>${m4(p.usd)}</td></tr>`; p.subs.forEach(s=>h+=fgLine(s,ind+1)); return h; }
   return '';
 }
+// Complete Acctivate BOM for a SKU (collapsible). Labor lines carry their real $; every
+// material/packaging line is shown at $0.0000 — those costs aren't sourced yet (by design).
+function fgBom(r){
+  const m=r.math||{}; const labor=(m.labor_lines||[]).filter(Boolean);
+  const comps=(m.components||[]).slice()
+    .sort((a,b)=>(''+(a.cls||'')).localeCompare(''+(b.cls||''))||(''+a.id).localeCompare(''+b.id));
+  if(!labor.length && !comps.length) return '';
+  const clsLabel={packaging:'📦 packaging', raw_material:'🌿 raw material', blend:'🌀 blend'};
+  const lrows=labor.map(l=>`<tr><td><code>${l.code||''}</code></td><td class="desc">${l.desc||''}</td>`
+    +`<td>${l.hours!=null?(+l.hours).toFixed(3)+' hr':''}</td><td>labor</td><td>${m4(l.usd||0)}</td></tr>`).join('');
+  const crows=comps.map(c=>`<tr><td><code>${c.id||''}</code></td><td class="desc">${c.desc||''}</td>`
+    +`<td>${c.qty!=null?(+c.qty).toFixed(4):''}</td><td>${clsLabel[c.cls]||c.cls||''}</td>`
+    +`<td class="illus">${m4(0)}</td></tr>`).join('');
+  return `<details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:12.5px">`
+    +`📋 Complete bill of materials — ${labor.length+comps.length} lines `
+    +`<span class="illus">(materials &amp; packaging not yet costed → shown at ${m4(0)})</span></summary>`
+    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Code</th><th>Description</th><th>Qty</th><th>Type</th><th>$/unit</th></tr></thead>`
+    +`<tbody>${lrows}${crows}</tbody></table></details>`;
+}
 function showFG(fg,sku){
   const r=FG.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku))||FG.find(x=>(''+(x.sku||''))===(''+sku));
   const box=$('#fg-detail'); if(!r||!r.priced){box.hidden=true;return;}
@@ -553,7 +572,8 @@ function showFG(fg,sku){
     +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/unit</th></tr></thead><tbody>${lines}</tbody>`
     +`<tfoot><tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend)}</td></tr>`
     +`<tr><td colspan="3" style="text-align:right">packing subtotal</td><td>${m4(r.make_labor)}</td></tr>`
-    +`<tr><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td><td class="big">${m4(r.make)}</td></tr></tfoot></table>`;
+    +`<tr><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td><td class="big">${m4(r.make)}</td></tr></tfoot></table>`
+    +fgBom(r);
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
