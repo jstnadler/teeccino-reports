@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-15T13:07:14.500274-07:00",
+  "lastUpdated": "2026-07-15T13:09:42.148859-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -743,9 +743,9 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Building cost-domain ingest module (parser + DQ rules + prod_runs schema) for DataOps handoff",
+        "summary": "prod-ingest: cost-domain module done; awaiting DataOps harness build",
         "source": "interactive",
-        "startedAt": "2026-07-15T20:07:14Z",
+        "startedAt": "2026-07-15T20:09:41Z",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
@@ -759,10 +759,16 @@
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Workbook reader now copies-then-reads a locked (Excel-open) workbook instead of failing, per Justin's suggestion. Implemented once in costlib._open_workbook so every engine benefits. Records the fallback (COPY_FALLBACKS + read_from_copy_while_locked in output) and warns that a copy reflects last-saved state, so a stale read is never silent. Tested with a simulated lock; feed redeployed (cbd7aa7).",
-        "at": "2026-07-15T19:28:48Z"
+        "summary": "Built the CostSmith-owned cost-domain module for the production-runs ingest pipeline (skills/_lib/prod_ingest.py): parser (wraps costlib), prod_runs column semantics, DQ pure functions (run_key, outlier, misdate, cross-file dedupe tie-break 2026-wins), parse_and_dq() and suggested_ddl(). Self-tested on live workbooks: 8427 parsed -> 7579 kept (848 cross-file dups collapsed), 5 outliers + 4 misdates flagged not dropped, 40061 resolves to 4.39h/2026. Handing harness to DataOps.",
+        "at": "2026-07-15T20:09:41Z"
       },
       "recentActivity": [
+        {
+          "summary": "Built the CostSmith-owned cost-domain module for the production-runs ingest pipeline (skills/_lib/prod_ingest.py): parser (wraps costlib), prod_runs column semantics, DQ pure functions (run_key, outlier, misdate, cross-file dedupe tie-break 2026-wins), parse_and_dq() and suggested_ddl(). Self-tested on live workbooks: 8427 parsed -> 7579 kept (848 cross-file dups collapsed), 5 outliers + 4 misdates flagged not dropped, 40061 resolves to 4.39h/2026. Handing harness to DataOps.",
+          "at": "2026-07-15T20:09:41Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Workbook reader now copies-then-reads a locked (Excel-open) workbook instead of failing, per Justin's suggestion. Implemented once in costlib._open_workbook so every engine benefits. Records the fallback (COPY_FALLBACKS + read_from_copy_while_locked in output) and warns that a copy reflects last-saved state, so a stale read is never silent. Tested with a simulated lock; feed redeployed (cbd7aa7).",
           "at": "2026-07-15T19:28:48Z",
@@ -814,12 +820,6 @@
         {
           "summary": "Added a per-machine filter to the weekly efficiency section (default All machines, multi-select). Deployed (commit 9831d98) and verified live.",
           "at": "2026-07-15T11:10:00-07:00",
-          "source": "discord",
-          "status": "unknown"
-        },
-        {
-          "summary": "Weekly efficiency section: relabeled to plain language (planned/expected hrs) and added a planned-rate plausibility flag + 'vs history' comparison. Deployed (commit 90b86a5) and verified live.",
-          "at": "2026-07-15T10:45:00-07:00",
           "source": "discord",
           "status": "unknown"
         }
