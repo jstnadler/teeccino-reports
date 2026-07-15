@@ -107,8 +107,12 @@
 
   <!-- 1a. WEEKLY PRODUCTION EFFICIENCY -->
   <div class="card" id="c-eff">
-    <h2>📊 Weekly production efficiency — standard vs actual</h2>
+    <h2>📊 Weekly production efficiency — planned vs actual</h2>
     <p class="hint">For each week: how many labor-hours the runs <b>should</b> have taken (<b>expected hrs</b> = the planned rate × units actually made) versus how many they <b>actually</b> took (<b>actual hrs</b> = run time × operators). <b>Efficiency = expected ÷ actual</b> — 100% means we hit plan; under 100% means a run took longer than planned. The gap is priced at the confirmed $26.06/hr wage → the <b>overrun $</b> is real labor money. Finished-goods lines only (blending is its own stage); labor only, no machine overhead. A <b>⚠</b> in a week's detail means that SKU's planned rate looks wrong vs its own history — fix the plan, don't blame the line. Click a week to drill in.</p>
+    <div class="ctrls" style="margin:2px 0 14px;gap:8px">
+      <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series)">Machine</span>
+      <div class="seg" id="eff-mach"></div>
+    </div>
     <div class="summary" id="eff-summary"></div>
     <svg id="eff-chart" viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px"></svg>
     <div class="foot" id="eff-chart-foot"></div>
@@ -190,6 +194,7 @@ const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
 let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
 let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
+let EFFMACH=new Set();   // machine filter for the efficiency section ONLY (empty = all machines)
 
 const active=()=>!!(RANGE.from||RANGE.to);
 const inR=d=>(!RANGE.from||d>=RANGE.from)&&(!RANGE.to||d<=RANGE.to);
@@ -320,6 +325,7 @@ function computeEff(rows,fin){
   const wk={}; let scoredUnits=0, unscoredUnits=0, badDate=0;
   rows.forEach(f=>{
     if(!fin.has(f.m)) return;
+    if(EFFMACH.size && !EFFMACH.has(f.m)) return;   // machine filter (this section only)
     const scorable=f.s>0&&f.t>0&&f.o>0&&f.q>0;
     if(!scorable){ if(f.q) unscoredUnits+=f.q; return; }
     if(!f.d){ badDate++; unscoredUnits+=f.q; return; }
@@ -370,6 +376,7 @@ function renderEff(){
   const seen=new Set(); w.forEach(wk=>Object.values(wk.contrib).forEach(c=>seen.add(c.sku+'|'+c.mac)));
   let nFlag=0; seen.forEach(k=>{ if(STDHIST[k]&&STDHIST[k].flag) nFlag++; });
   let cov='';
+  if(EFFMACH.size) cov+=`<b>Showing ${[...EFFMACH].join(', ')} only.</b> `;
   if(c){ const tot=c.scoredUnits+c.unscoredUnits;
     cov=`Scored <b>${num(c.scoredUnits)}</b> of ${num(tot)} units (${tot?((c.scoredUnits/tot)*100).toFixed(0):0}% — a row is scored only when it has both a planned rate and actual time/operators/quantity).`;
     if(c.badDate) cov+=` <span class="illus">${num(c.badDate)} run(s) excluded for a missing or implausible date.</span>`; }
@@ -551,6 +558,20 @@ function label(){
   el.innerHTML=`<b>${RANGE.from||'…'}</b> → <b>${RANGE.to||'…'}</b>`;
 }
 
+/* machine filter for the efficiency section (multi-select; empty = all) */
+function buildMachButtons(){
+  const stages=RAW.finished_stages||[]; const seg=$('#eff-mach');
+  seg.innerHTML=`<button data-m="__all" class="on">All machines</button>`+stages.map(m=>`<button data-m="${m}">${m}</button>`).join('');
+  seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    const m=b.dataset.m;
+    if(m==='__all') EFFMACH.clear();
+    else { EFFMACH.has(m)?EFFMACH.delete(m):EFFMACH.add(m); }
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',
+      x.dataset.m==='__all' ? EFFMACH.size===0 : EFFMACH.has(x.dataset.m)));
+    recompute();
+  });
+}
+
 fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
   RAW=data;
   $('#blendrate').textContent=m2(RAW.blend_loaded_rate);
@@ -568,6 +589,7 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
   $('#t-fg tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showFG(tr.dataset.fg,tr.dataset.sku);});
   computeStdHist();
+  buildMachButtons();
   label(); recompute();
 }).catch(e=>{ $('#c-act').insertAdjacentHTML('beforebegin','<p class="empty">Could not load cost-performance-facts.json — '+e+'</p>'); });
 </script>
