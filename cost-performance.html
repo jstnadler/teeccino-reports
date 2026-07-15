@@ -105,6 +105,20 @@
     </tr></thead><tbody></tbody></table>
   </div>
 
+  <!-- 1a. WEEKLY PRODUCTION EFFICIENCY -->
+  <div class="card" id="c-eff">
+    <h2>📊 Weekly production efficiency — standard vs actual</h2>
+    <p class="hint">For each week: how many labor-hours the runs <b>should</b> have taken at standard (<b>earned hrs</b> = standard rate × units made) versus how many they <b>actually</b> took (<b>actual hrs</b> = run time × operators). <b>Efficiency = earned ÷ actual</b> — 100% means we hit standard; under 100% means a run took longer than planned. The gap is priced at the confirmed $26.06/hr wage → the <b>overrun $</b> is real labor money. Finished-goods lines only (blending is its own stage); labor only, no machine overhead. Click a week to see which SKUs &amp; machines drove it.</p>
+    <div class="summary" id="eff-summary"></div>
+    <svg id="eff-chart" viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px"></svg>
+    <div class="foot" id="eff-chart-foot"></div>
+    <div class="scroll" style="margin-top:14px"><table id="t-eff"><thead><tr>
+      <th>Week of</th><th>runs</th><th>units</th><th>actual hrs</th><th>earned hrs</th><th>efficiency</th><th>overrun hrs</th><th>overrun $</th><th>DT %</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="eff-detail" class="detail" hidden></div>
+    <p class="foot" id="eff-foot"></p>
+  </div>
+
   <!-- 2. BLENDING -->
   <div class="card" id="c-blend">
     <h2>🌀 Blending — cost to make each bulk blend</h2>
@@ -174,7 +188,7 @@ const num=n=>n==null?'–':Math.round(n).toLocaleString();
 const m2=n=>n==null?'–':'$'+(+n).toFixed(2);
 const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
 let RAW=null, RANGE={from:null,to:null};
-let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[];
+let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
 
 const active=()=>!!(RANGE.from||RANGE.to);
 const inR=d=>(!RANGE.from||d>=RANGE.from)&&(!RANGE.to||d<=RANGE.to);
@@ -190,6 +204,32 @@ function barChart(map,unit){
   const labs=[...new Set([0,Math.floor((keys.length-1)/2),keys.length-1])].map(i=>
     `<text x="${(pad+i*step).toFixed(1)}" y="${H-6}" font-size="10" fill="var(--muted)">${keys[i]}</text>`).join('');
   return {svg:bars+labs, foot:`${keys.length} month(s) · peak ${Math.round(max).toLocaleString()} ${unit}`};
+}
+
+/* ---------- ISO week helpers + efficiency chart ---------- */
+// ISO-8601 week for a "YYYY-MM-DD" string → {key:'2026-W28', mon:'2026-07-06', wk, wy}
+function isoWeek(dstr){
+  const [y,m,dd]=dstr.split('-').map(Number);
+  const th=new Date(Date.UTC(y,m-1,dd)); const day=th.getUTCDay()||7;
+  th.setUTCDate(th.getUTCDate()+4-day);                 // shift to the week's Thursday
+  const ys=new Date(Date.UTC(th.getUTCFullYear(),0,1));
+  const wk=Math.ceil(((th-ys)/86400000+1)/7);
+  const mon=new Date(Date.UTC(y,m-1,dd)); mon.setUTCDate(mon.getUTCDate()-(day-1));
+  return {key:th.getUTCFullYear()+'-W'+String(wk).padStart(2,'0'), mon:mon.toISOString().slice(0,10), wk, wy:th.getUTCFullYear()};
+}
+const effColor=e=>e==null?'var(--muted)':e>=0.95?'var(--good)':e>=0.80?'var(--warning)':'var(--critical)';
+// efficiency% bars around a 100% baseline (capped display at 130%)
+function effChart(weeks){
+  if(!weeks.length) return {svg:'',foot:'No scored weeks in range.'};
+  const W=900,H=180,pad=30,top=14,base=H-24,capV=1.3,step=(W-2*pad)/weeks.length,bw=Math.max(2,step*0.72);
+  const yOf=v=>base-(Math.min(v,capV)/capV)*(base-top);
+  const y100=yOf(1);
+  const bars=weeks.map((w,i)=>{const x=pad+i*step,e=w.eff==null?0:w.eff,yy=yOf(e);
+    return `<rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${bw.toFixed(1)}" height="${(base-yy).toFixed(1)}" rx="1.5" fill="${effColor(w.eff)}"><title>${w.mon}: ${w.eff==null?'n/a':(w.eff*100).toFixed(0)+'% efficiency'} · overrun ${m2(w.overUsd)}</title></rect>`;}).join('');
+  const ref=`<line x1="${pad}" y1="${y100.toFixed(1)}" x2="${W-pad}" y2="${y100.toFixed(1)}" stroke="var(--axis)" stroke-dasharray="4 4"/><text x="${W-pad}" y="${(y100-4).toFixed(1)}" font-size="10" fill="var(--muted)" text-anchor="end">100% = standard</text>`;
+  const labs=[...new Set([0,Math.floor((weeks.length-1)/2),weeks.length-1])].map(i=>
+    `<text x="${(pad+i*step).toFixed(1)}" y="${H-6}" font-size="10" fill="var(--muted)">${weeks[i].mon.slice(5)}</text>`).join('');
+  return {svg:ref+bars+labs, foot:`${weeks.length} week(s) · bar height = efficiency vs 100% standard (green ≥95%, amber ≥80%, red <80%)`};
 }
 
 /* ---------- recompute everything for current range ---------- */
@@ -215,9 +255,10 @@ function recompute(){
   const mhacc={};
   rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=f.q; o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
+  computeEff(rows,fin);
   renderActivity(rows,fin);
-  renderBlend(); renderPack(); renderFG(); renderMH(); renderMachines(rows,fin);
-  $('#blend-detail').hidden=true; $('#mh-detail').hidden=true; $('#fg-detail').hidden=true;
+  renderEff(); renderBlend(); renderPack(); renderFG(); renderMH(); renderMachines(rows,fin);
+  $('#eff-detail').hidden=true; $('#blend-detail').hidden=true; $('#mh-detail').hidden=true; $('#fg-detail').hidden=true;
 }
 function priceNode(l){
   if(l.type==='blend'){ const per=(l.id in BLENDLB)?BLENDLB[l.id]:l.per_lb; return {t:'blend',node:l,per,usd:l.lbs*per}; }
@@ -247,6 +288,90 @@ function renderActivity(rows,fin){
   const order=(RAW.finished_stages||[]); const mrows=order.filter(m=>mac[m]).map(m=>{const a=mac[m];
     return `<tr><td><b>${m}</b></td><td>${num(a.runs)}</td><td>${num(a.items.size)}</td><td>${num(a.units)}</td><td>${num(Math.round(a.rh))}</td><td>${num(Math.round(a.oh))}</td><td>${m2(a.oh*WAGE)}</td><td>${a.rh?((a.dn/(a.rh*60))*100).toFixed(1)+'%':'–'}</td></tr>`;}).join('');
   $('#t-act tbody').innerHTML=mrows||`<tr><td colspan="8" class="empty">No production runs in this range.</td></tr>`;
+}
+
+/* ---------- Section 1a: Weekly production efficiency ---------- */
+// A row is SCORABLE only if it carries a standard (s), actual time (t), operators (o) and units (q).
+// earned hrs = s×q (what standard says the output should cost in labor-hrs);
+// actual hrs = t×o. We SUM hours per week (quantity-weighted) so big runs dominate — never average %.
+function computeEff(rows,fin){
+  const wk={}; let scoredUnits=0, unscoredUnits=0, badDate=0;
+  rows.forEach(f=>{
+    if(!fin.has(f.m)) return;
+    const scorable=f.s>0&&f.t>0&&f.o>0&&f.q>0;
+    if(!scorable){ if(f.q) unscoredUnits+=f.q; return; }
+    if(!f.d){ badDate++; unscoredUnits+=f.q; return; }
+    const yr=+f.d.slice(0,4);
+    if(yr<2024||yr>2027){ badDate++; unscoredUnits+=f.q; return; }   // mis-dated → hygiene bucket, not a fake week
+    const w=isoWeek(f.d), k=w.key;
+    const a=wk[k]||(wk[k]={key:k,mon:w.mon,wk:w.wk,runs:0,units:0,act:0,earn:0,rh:0,dn:0,
+                           items:new Set(),mac:{},contrib:{}});
+    a.runs++; a.units+=f.q; a.act+=f.t*f.o; a.earn+=f.s*f.q; a.rh+=f.t; if(f.dn)a.dn+=f.dn;
+    a.items.add(f.i);
+    // per-machine + per-(sku×machine) accumulation for the accountability drill-down
+    const m=a.mac[f.m]||(a.mac[f.m]={act:0,earn:0,units:0}); m.act+=f.t*f.o; m.earn+=f.s*f.q; m.units+=f.q;
+    const ck=f.i+'|'+f.m, c=a.contrib[ck]||(a.contrib[ck]={sku:f.i,mac:f.m,act:0,earn:0,units:0,runs:0});
+    c.act+=f.t*f.o; c.earn+=f.s*f.q; c.units+=f.q; c.runs++;
+    scoredUnits+=f.q;
+  });
+  const weeks=Object.values(wk).map(a=>{
+    const over=a.act-a.earn;
+    return {...a, eff:a.act>0?a.earn/a.act:null, over, overUsd:over*WAGE,
+            dtPct:a.rh?(a.dn/(a.rh*60))*100:null};
+  }).sort((x,y)=>x.key.localeCompare(y.key));   // chronological for the chart
+  const act=weeks.reduce((s,w)=>s+w.act,0), earn=weeks.reduce((s,w)=>s+w.earn,0);
+  EFF={weeks,
+       tot:{act,earn,over:act-earn,overUsd:(act-earn)*WAGE,eff:act>0?earn/act:null,
+            units:weeks.reduce((s,w)=>s+w.units,0),runs:weeks.reduce((s,w)=>s+w.runs,0)},
+       cov:{scoredUnits,unscoredUnits,badDate}};
+}
+function renderEff(){
+  const t=EFF.tot, w=EFF.weeks, c=EFF.cov;
+  const eff=t&&t.eff!=null?(t.eff*100).toFixed(1)+'%':'–';
+  $('#eff-summary').innerHTML=
+     `<div><b style="color:${effColor(t?t.eff:null)}">${eff}</b> <span>overall efficiency</span></div>`
+    +`<div><b>${num(t?Math.round(t.act):0)}</b> <span>actual labor hrs</span></div>`
+    +`<div><b>${num(t?Math.round(t.earn):0)}</b> <span>earned (standard) hrs</span></div>`
+    +`<div><b>${num(t?Math.round(t.over):0)}</b> <span>overrun hrs</span></div>`
+    +`<div><b>${m2(t?t.overUsd:0)}</b> <span>overrun labor $</span></div>`
+    +`<div><b>${num(w.length)}</b> <span>weeks</span></div>`;
+  const ch=effChart(w); $('#eff-chart').innerHTML=ch.svg; $('#eff-chart-foot').textContent='Weekly efficiency vs standard · '+ch.foot;
+  const rows=[...w].reverse();   // most-recent week first in the table
+  $('#t-eff tbody').innerHTML=rows.length?rows.map(r=>
+     `<tr class="clk" data-eff="${r.key}"><td><b>${r.mon}</b> <span class="mtag">W${r.wk}</span></td>`
+    +`<td>${num(r.runs)}</td><td>${num(r.units)}</td><td>${num(Math.round(r.act))}</td><td>${num(Math.round(r.earn))}</td>`
+    +`<td class="big" style="color:${effColor(r.eff)}">${r.eff==null?'–':(r.eff*100).toFixed(0)+'%'}</td>`
+    +`<td>${num(Math.round(r.over))}</td><td>${m2(r.overUsd)}</td>`
+    +`<td>${r.dtPct==null?'–':r.dtPct.toFixed(1)+'%'}</td></tr>`).join('')
+    :`<tr><td colspan="9" class="empty">No scorable runs in this range.</td></tr>`;
+  let cov='';
+  if(c){ const tot=c.scoredUnits+c.unscoredUnits;
+    cov=`Scored <b>${num(c.scoredUnits)}</b> of ${num(tot)} units (${tot?((c.scoredUnits/tot)*100).toFixed(0):0}% — a row is scored only when it has both a standard rate and actual time/operators/quantity).`;
+    if(c.badDate) cov+=` <span class="illus">${num(c.badDate)} run(s) excluded for a missing or implausible date.</span>`; }
+  $('#eff-foot').innerHTML=cov+` <span class="illus">Labor only at $${WAGE}/hr (confirmed wage); no machine overhead. Blending excluded — see Section 2.</span>`;
+}
+function showEffWeek(key){
+  const w=EFF.weeks.find(x=>x.key===key), box=$('#eff-detail');
+  if(!w){box.hidden=true;return;}
+  // contributors ranked by overrun $ (the accountability view): who cost us the most vs standard
+  const contrib=Object.values(w.contrib).map(c=>{const over=c.act-c.earn;
+     return {...c,over,overUsd:over*WAGE,eff:c.act>0?c.earn/c.act:null};})
+     .sort((a,b)=>b.over-a.over);
+  const macRows=Object.entries(w.mac).map(([m,v])=>{const over=v.act-v.earn;
+     return `<tr><td>${m}</td><td>${num(v.units)}</td><td>${num(Math.round(v.act))}</td><td>${num(Math.round(v.earn))}</td>`
+       +`<td style="color:${effColor(v.act>0?v.earn/v.act:null)}">${v.act>0?((v.earn/v.act)*100).toFixed(0)+'%':'–'}</td><td>${m2(over*WAGE)}</td></tr>`;}).join('');
+  const top=contrib.slice(0,15).map(c=>
+     `<tr><td>${c.sku}</td><td class="desc" title="${((RAW.items[c.sku]||{}).desc||'').replace(/"/g,'&quot;')}">${(RAW.items[c.sku]||{}).desc||''}</td>`
+    +`<td>${c.mac}</td><td>${num(c.units)}</td><td>${num(Math.round(c.act))}</td><td>${num(Math.round(c.earn))}</td>`
+    +`<td style="color:${effColor(c.eff)}">${c.eff==null?'–':(c.eff*100).toFixed(0)+'%'}</td><td class="big">${m2(c.overUsd)}</td></tr>`).join('');
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">Week of ${w.mon} (W${w.wk}) — ${w.eff==null?'–':(w.eff*100).toFixed(0)+'%'} efficiency, ${m2(w.overUsd)} overrun</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('eff-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:8px 0 4px"><b>By machine</b> this week:</p>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Machine</th><th>units</th><th>actual hrs</th><th>earned hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${macRows||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>`
+    +`<p class="hint" style="margin:14px 0 4px"><b>Biggest overruns</b> (SKU × machine, ranked by labor $ over standard — start the accountability conversation here):</p>`
+    +`<div class="scroll" style="max-height:300px"><table style="font-size:12.5px"><thead><tr><th>SKU</th><th>Product</th><th>machine</th><th>units</th><th>actual hrs</th><th>earned hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${top||'<tr><td colspan="8" class="empty">—</td></tr>'}</tbody></table></div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 /* ---------- Section 2: Blending ---------- */
@@ -409,6 +534,7 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#mh-q').addEventListener('input',renderMH);
   $('#mh-export').addEventListener('click',exportMH);
   $('#fg-q').addEventListener('input',renderFG);
+  $('#t-eff tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showEffWeek(tr.dataset.eff);});
   $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
   $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
   $('#t-fg tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showFG(tr.dataset.fg,tr.dataset.sku);});
