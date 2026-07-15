@@ -112,7 +112,7 @@
 </script>
 <div class="wrap">
   <h1><span class="amz">💰 Amazon</span> Profit &amp; Inventory</h1>
-  <div class="sub">NET margin from the Finances API · data 2025-12-11 → 2026-07-07 · generated 2026-07-15 23:08 UTC</div>
+  <div class="sub">NET margin from the Finances API · data 2025-12-11 → 2026-07-07 · generated 2026-07-15 23:15 UTC</div>
 
   <div class="prov">
     <strong>True NET margin</strong> — gross principal minus Amazon fees (FBA, referral, closing)
@@ -233,6 +233,12 @@
   <div class="invcontrols">
     <input type="search" id="invSearch" placeholder="Search SKU or product…" autocomplete="off">
     <label class="lowtoggle"><input type="checkbox" id="lowOnly"> Low stock only</label>
+    <label class="lowtoggle">Rows
+      <select id="invPageSize">
+        <option value="10">10</option><option value="15" selected>15</option>
+        <option value="25">25</option><option value="50">50</option>
+      </select>
+    </label>
     <span class="invcount" id="invCount"></span>
   </div>
   <div class="card" style="padding:8px 14px;">
@@ -246,6 +252,11 @@
       <th class="sorth num" data-k="total">Total</th>
     </tr></thead>
     <tbody id="invBody"></tbody></table>
+  </div>
+  <div class="pager" id="invPager">
+    <button class="preset" id="invPrev">‹ Prev</button>
+    <span id="invPageInfo"></span>
+    <button class="preset" id="invNext">Next ›</button>
   </div>
 
   
@@ -452,9 +463,9 @@
   var INV = D.inventory || [];  // [sku,title,fulfillable,inbound,reserved,unfulfillable,total]
   var IDX = {sku:0,title:1,fulfillable:2,inbound:3,reserved:4,unfulfillable:5,total:6};
   function isLow(r){ return r[2]<50 && r[3]===0 && r[6]>0; }
-  var invSort={key:'fulfillable',dir:'desc'}, lowOnly=false;
+  var invSort={key:'fulfillable',dir:'desc'}, lowOnly=false, invPage=1;
   var searchEl=document.getElementById('invSearch'), lowChk=document.getElementById('lowOnly'),
-      lowCard=document.getElementById('lowCard');
+      lowCard=document.getElementById('lowCard'), invPageSizeEl=document.getElementById('invPageSize');
 
   function renderInventory(){
     if(!INV.length) return;
@@ -470,13 +481,19 @@
       if(typeof x==='string'){ r=x.toLowerCase().localeCompare(y.toLowerCase()); } else { r=x-y; }
       return r*dir;
     });
-    document.getElementById('invBody').innerHTML = rows.map(function(r){
+    var total=rows.length, ps=+invPageSizeEl.value, pages=Math.max(1,Math.ceil(total/ps));
+    if(invPage>pages) invPage=pages; if(invPage<1) invPage=1;
+    var start=(invPage-1)*ps, pageRows=rows.slice(start,start+ps);
+    document.getElementById('invBody').innerHTML = pageRows.map(function(r){
       var low=isLow(r);
       return '<tr><td class="sku">'+esc(r[0])+'</td><td class="ti">'+esc(r[1]||'')+'</td>'+
         '<td'+(low?' class="warn"':'')+'>'+num(r[2])+'</td><td>'+num(r[3])+'</td>'+
         '<td>'+num(r[4])+'</td><td>'+num(r[5])+'</td><td>'+num(r[6])+'</td></tr>';
     }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No SKUs match.</td></tr>';
-    document.getElementById('invCount').textContent='showing '+rows.length+' of '+INV.length+' SKUs';
+    document.getElementById('invCount').textContent=total+' of '+INV.length+' SKUs';
+    document.getElementById('invPageInfo').textContent = total ? ('Page '+invPage+' of '+pages+' · '+(start+1)+'–'+Math.min(start+ps,total)+' of '+total) : '—';
+    document.getElementById('invPrev').disabled = invPage<=1;
+    document.getElementById('invNext').disabled = invPage>=pages;
     // header arrows
     document.querySelectorAll('#invTable th.sorth').forEach(function(th){
       var base=th.getAttribute('data-label')||th.textContent.replace(/[ \u25b2\u25bc]+$/,'');
@@ -489,12 +506,15 @@
       var k=th.dataset.k;
       if(invSort.key===k){ invSort.dir=invSort.dir==='asc'?'desc':'asc'; }
       else { invSort.key=k; invSort.dir=(k==='sku'||k==='title')?'asc':'desc'; }
-      renderInventory();
+      invPage=1; renderInventory();
     });
   });
-  searchEl.addEventListener('input',renderInventory);
+  searchEl.addEventListener('input',function(){ invPage=1; renderInventory(); });
+  invPageSizeEl.addEventListener('change',function(){ invPage=1; renderInventory(); });
+  document.getElementById('invPrev').addEventListener('click',function(){ if(invPage>1){invPage--; renderInventory();} });
+  document.getElementById('invNext').addEventListener('click',function(){ invPage++; renderInventory(); });
   function setLow(on){ lowOnly=on; lowChk.checked=on; lowCard.classList.toggle('active',on);
-    lowCard.setAttribute('aria-pressed',on?'true':'false'); if(on){invSort={key:'fulfillable',dir:'asc'};} renderInventory(); }
+    lowCard.setAttribute('aria-pressed',on?'true':'false'); invPage=1; if(on){invSort={key:'fulfillable',dir:'asc'};} renderInventory(); }
   lowChk.addEventListener('change',function(){ setLow(lowChk.checked); });
   lowCard.addEventListener('click',function(){ setLow(!lowOnly); lowCard.scrollIntoView({behavior:'smooth',block:'start'}); });
   lowCard.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setLow(!lowOnly); } });
