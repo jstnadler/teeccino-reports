@@ -273,9 +273,11 @@ function recompute(){
       total_lbs:Math.round(m.lbs),blend_hours:+m.hrs.toFixed(2),cost_per_lb:+(m.hrs*LOADED/m.lbs).toFixed(5)};}).sort((a,b)=>b.total_lbs-a.total_lbs);
   // cost-to-make (re-priced) for Section 3 & 4
   FG=(RAW.bom_cogs.items||[]).map(it=>{const r=makeOf(it); return {...it,make:r.make,make_blend:r.blend,make_labor:r.pack,priced:r.priced};});
+  // SKU -> size (10ct / 11oz / 25ct / Sampler...) lookup, keyed by every id a row might use
+  const SIZE={}; (RAW.bom_cogs.items||[]).forEach(it=>{ if(it.size){ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k)SIZE[k]=it.size; }); } });
   // machine hours by SKU (3a)
   const mhacc={};
-  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=f.q; o.by[f.m]=(o.by[f.m]||0)+f.t; });
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',size:SIZE[f.i]||'',hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=f.q; o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
   computeEff(rows,fin);
   renderActivity(rows,fin);
@@ -477,7 +479,7 @@ function renderMH(){
   $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
   $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
     return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}</td>`
     +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}</td>`
     +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
     :`<tr><td colspan="6" class="empty">No machine runs in this range.</td></tr>`;
@@ -529,7 +531,7 @@ function renderFG(){
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td></tr>`).join('')
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td></tr>`).join('')
     :`<tr><td colspan="5" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
