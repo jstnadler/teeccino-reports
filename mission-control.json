@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-15T15:13:23.969190-07:00",
+  "lastUpdated": "2026-07-15T15:13:36.383228-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -719,9 +719,9 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Adding complete BOM (materials at $0) to Finished Goods breakout",
-        "source": "interactive",
-        "startedAt": "2026-07-15T22:13:23Z",
+        "summary": "For the finished goods breakout section is it possible to also add the complete ",
+        "source": "discord",
+        "startedAt": "2026-07-15T15:11:27-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
@@ -735,10 +735,16 @@
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Extended the SKU-type badge (25 ct, 11 oz, Sampler, 10 ct, ...) from the Packing table to the other two product tables: Finished Goods and Machine hours. FG rows already carried size; MH rows now resolve it via a sku->size lookup built from bom_cogs.items (all 268 items have a size). Blending (bulk blends by the pound) and the per-machine tables have no finished-product column, so unchanged. JS syntax-checked; deployed (teeccino-reports bb9ad18).",
-        "at": "2026-07-15T21:22:33Z"
+        "summary": "Added a collapsible 'Complete bill of materials' to each SKU's Finished Goods breakout. Labor/blend lines keep real cost; all packaging & raw-material lines shown at $0.0000 (not yet costed, by design). Render-only — the full BOM was already in the feed (bom_cogs.items[].math: labor_lines + exploded components). 268/268 SKUs have a BOM (avg ~24 lines; 40061=18). JS syntax-checked; deployed (teeccino-reports 7d5444f).",
+        "at": "2026-07-15T22:13:36Z"
       },
       "recentActivity": [
+        {
+          "summary": "Added a collapsible 'Complete bill of materials' to each SKU's Finished Goods breakout. Labor/blend lines keep real cost; all packaging & raw-material lines shown at $0.0000 (not yet costed, by design). Render-only — the full BOM was already in the feed (bom_cogs.items[].math: labor_lines + exploded components). 268/268 SKUs have a BOM (avg ~24 lines; 40061=18). JS syntax-checked; deployed (teeccino-reports 7d5444f).",
+          "at": "2026-07-15T22:13:36Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Extended the SKU-type badge (25 ct, 11 oz, Sampler, 10 ct, ...) from the Packing table to the other two product tables: Finished Goods and Machine hours. FG rows already carried size; MH rows now resolve it via a sku->size lookup built from bom_cogs.items (all 268 items have a size). Blending (bulk blends by the pound) and the per-machine tables have no finished-product column, so unchanged. JS syntax-checked; deployed (teeccino-reports bb9ad18).",
           "at": "2026-07-15T21:22:33Z",
@@ -790,12 +796,6 @@
         {
           "summary": "40061 cost still .55 after 2026 fix due to (1) engine silently skipping the locked 2026 workbook (fell back to 2025 only), and (2) a DUPLICATE of the same bad row in Production Schedule 2025.xlsx: Maisa 1 row 701, End Time S701 = 1900-01-13 03:00 (should be 15:00/3PM). Fixing S701 drops pooled actual labor 1.19->0.022 hr/u, make cost .55 -> ~/usr/bin/bash.60/unit.",
           "at": "2026-07-15T19:09:01Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "SKU 40061 (ORG Hazelnut 25CT) inflated make cost traced to a data-entry error: Maisa 1 WO 40169 row (2026-02-12) has Actual Time = 304.39 hrs (should be single-digit). Alone implies ~$31/unit; drives reported $7.47 labor. Corrected make cost ~$1.80/unit vs ~$1.34 standard. At confirmed $26.06/hr; excludes ingredients/packaging/overhead.",
-          "at": "2026-07-15T18:46:47Z",
           "source": "interactive",
           "status": "unknown"
         }
