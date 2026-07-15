@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-15T12:28:20.041147-07:00",
+  "lastUpdated": "2026-07-15T12:28:48.543792-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -731,9 +731,9 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Adding copy-on-lock fallback to workbook reader; redeploying feed",
-        "source": "interactive",
-        "startedAt": "2026-07-15T19:28:19Z",
+        "summary": "if the workbook is open, cant you just make a copy and open that one?",
+        "source": "discord",
+        "startedAt": "2026-07-15T12:25:59-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
@@ -747,10 +747,16 @@
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Refreshed the live cost dashboard feed (cost-performance-facts.json) to match the hardened cost engine. Applied the same fail-loud/dedupe/outlier treatment to build_cost_facts.py: 659 cross-file duplicate runs removed, 5 outlier-time runs flagged (dq=outlier_time, time nulled). 40061 make cost now /usr/bin/bash.52/unit downstream. Committed+pushed to teeccino-reports main (49612d1).",
-        "at": "2026-07-15T19:22:10Z"
+        "summary": "Workbook reader now copies-then-reads a locked (Excel-open) workbook instead of failing, per Justin's suggestion. Implemented once in costlib._open_workbook so every engine benefits. Records the fallback (COPY_FALLBACKS + read_from_copy_while_locked in output) and warns that a copy reflects last-saved state, so a stale read is never silent. Tested with a simulated lock; feed redeployed (cbd7aa7).",
+        "at": "2026-07-15T19:28:48Z"
       },
       "recentActivity": [
+        {
+          "summary": "Workbook reader now copies-then-reads a locked (Excel-open) workbook instead of failing, per Justin's suggestion. Implemented once in costlib._open_workbook so every engine benefits. Records the fallback (COPY_FALLBACKS + read_from_copy_while_locked in output) and warns that a copy reflects last-saved state, so a stale read is never silent. Tested with a simulated lock; feed redeployed (cbd7aa7).",
+          "at": "2026-07-15T19:28:48Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Refreshed the live cost dashboard feed (cost-performance-facts.json) to match the hardened cost engine. Applied the same fail-loud/dedupe/outlier treatment to build_cost_facts.py: 659 cross-file duplicate runs removed, 5 outlier-time runs flagged (dq=outlier_time, time nulled). 40061 make cost now /usr/bin/bash.52/unit downstream. Committed+pushed to teeccino-reports main (49612d1).",
           "at": "2026-07-15T19:22:10Z",
@@ -802,12 +808,6 @@
         {
           "summary": "Weekly efficiency section: relabeled to plain language (planned/expected hrs) and added a planned-rate plausibility flag + 'vs history' comparison. Deployed (commit 90b86a5) and verified live.",
           "at": "2026-07-15T10:45:00-07:00",
-          "source": "discord",
-          "status": "unknown"
-        },
-        {
-          "summary": "Added a 'Weekly production efficiency — standard vs actual' section to the live cost dashboard for production-team accountability review. Deployed (commit 866fd58) and verified live.",
-          "at": "2026-07-15T09:58:00-07:00",
           "source": "discord",
           "status": "unknown"
         }
