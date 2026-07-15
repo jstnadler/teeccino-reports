@@ -427,13 +427,13 @@ function showBlend(id){
   const desc=(RAW.items[id]||{}).desc||''; const mo={}; runs.filter(f=>f.d).forEach(f=>mo[f.d.slice(0,7)]=(mo[f.d.slice(0,7)]||0)+f.q);
   const c=barChart(mo,'lb'); runs.sort((a,b)=>(b.d||'').localeCompare(a.d||''));
   const total=runs.reduce((s,f)=>s+(f.q||0),0),hrs=runs.reduce((s,f)=>s+(f.t||0),0);
-  const list=runs.map(f=>`<tr><td>${f.d||'—'}</td><td>${f.bl||'–'}</td><td>${num(f.q)}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}</td></tr>`).join('');
+  const list=runs.map(f=>`<tr><td>${f.d||'—'}</td><td>${f.bl||'–'}</td><td>${num(f.q)}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}</td><td>${(f.t!=null&&f.q>0)?m4(f.t*LOADED/f.q):'–'}</td></tr>`).join('');
   box.hidden=false;
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${id} — ${desc}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('blend-detail').hidden=true">close ✕</button></div>`
     +`<p class="hint" style="margin:6px 0"><b>${num(runs.length)}</b> runs · <b>${num(total)}</b> lb · <b>${num(hrs)}</b> blend-hrs. Pounds per month:</p>`
     +`<svg viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px">${c.svg}</svg>`
-    +`<div class="scroll" style="max-height:240px;margin-top:10px"><table><thead><tr><th>Date</th><th>Blender</th><th>lbs</th><th>blend hrs</th></tr></thead><tbody>${list}</tbody></table></div>`;
+    +`<div class="scroll" style="max-height:240px;margin-top:10px"><table><thead><tr><th>Date</th><th>Blender</th><th>lbs</th><th>blend hrs</th><th>cost $/lb</th></tr></thead><tbody>${list}</tbody></table></div>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
