@@ -208,7 +208,7 @@ const num=n=>n==null?'–':Math.round(n).toLocaleString();
 const m2=n=>n==null?'–':'$'+(+n).toFixed(2);
 const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
 // pack-config badge: case (multipack), amazon; loose/single get none to keep rows quiet
-const packBadge=r=>r&&r.pack_type==='case'?` <span class="mtag" style="color:var(--warning)" title="Cased multipack — one unit = ${r.pack_count} singles">case ×${r.pack_count}</span>`
+const packBadge=r=>r&&r.pack_type==='case'?` <span class="mtag" style="color:var(--warning)" title="${r.pack_count?('Cased multipack — one unit = '+r.pack_count+' singles'):'Case with unknown pack count — flagged, see CatalogSmith'}">case ×${r.pack_count||'?'}</span>`
   :(r&&r.pack_type==='amazon'?' <span class="mtag" title="Amazon pack variant">AMZN</span>':'');
 let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
@@ -534,7 +534,7 @@ function renderFG(){
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'}>${m4(r.make_per_single!=null?r.make_per_single:r.make)}</td></tr>`).join('')
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&r.make_per_single==null?'pack count unknown — flagged':''}">${m4(r.make_per_single)}</td></tr>`).join('')
     :`<tr><td colspan="6" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
