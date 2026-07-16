@@ -189,11 +189,11 @@
   <!-- 4. FINISHED GOODS -->
   <div class="card" id="c-fg">
     <h2>🏭 Finished Goods — total cost to make</h2>
-    <p class="hint"><b>Blend + packing = total cost to make one unit</b>, for the selected period. Click any SKU for the full breakdown. <span class="illus" id="fg-note"></span></p>
+    <p class="hint"><b>Blend + packing = total cost to make one unit</b>, for the selected period. Click any SKU for the full breakdown. <b>Cases</b> (<span class="mtag" style="color:var(--warning)">case ×N</span>) cost per case; the <b>$/single</b> column divides that by pack count so it's comparable to the loose (L) SKU. <span class="illus" id="fg-note"></span></p>
     <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="blend">blend $</th>
-      <th data-k="pack">packing $</th><th data-k="make">make $/unit</th>
+      <th data-k="pack">packing $</th><th data-k="make">make $/unit</th><th data-k="per" title="Cost per single retail unit. For a case, that's make $ ÷ pack count, so it's comparable to the loose SKU.">$/single</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="fg-detail" class="detail" hidden></div>
     <p class="foot" id="fg-foot"></p>
@@ -207,6 +207,9 @@ const $=s=>document.querySelector(s);
 const num=n=>n==null?'–':Math.round(n).toLocaleString();
 const m2=n=>n==null?'–':'$'+(+n).toFixed(2);
 const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
+// pack-config badge: case (multipack), amazon; loose/single get none to keep rows quiet
+const packBadge=r=>r&&r.pack_type==='case'?` <span class="mtag" style="color:var(--warning)" title="Cased multipack — one unit = ${r.pack_count} singles">case ×${r.pack_count}</span>`
+  :(r&&r.pack_type==='amazon'?' <span class="mtag" title="Amazon pack variant">AMZN</span>':'');
 let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
 let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
@@ -274,10 +277,10 @@ function recompute(){
   // cost-to-make (re-priced) for Section 3 & 4
   FG=(RAW.bom_cogs.items||[]).map(it=>{const r=makeOf(it); return {...it,make:r.make,make_blend:r.blend,make_labor:r.pack,priced:r.priced};});
   // SKU -> size (10ct / 11oz / 25ct / Sampler...) lookup, keyed by every id a row might use
-  const SIZE={}; (RAW.bom_cogs.items||[]).forEach(it=>{ if(it.size){ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k)SIZE[k]=it.size; }); } });
+  const SIZE={}, PACK={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k){ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; } }); });
   // machine hours by SKU (3a)
   const mhacc={};
-  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',size:SIZE[f.i]||'',hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=f.q; o.by[f.m]=(o.by[f.m]||0)+f.t; });
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=f.q; o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
   computeEff(rows,fin);
   renderActivity(rows,fin);
@@ -462,7 +465,7 @@ function renderPack(){
   rows.sort((a,b)=>(b.make_labor||0)-(a.make_labor||0));
   $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>`<tr><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}</td><td class="big">${m4(r.make_labor)}</td></tr>`).join('')
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td class="big">${m4(r.make_labor)}</td></tr>`).join('')
     :`<tr><td colspan="3" class="empty">No SKUs match.</td></tr>`;
 }
 
@@ -479,8 +482,8 @@ function renderMH(){
   $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
   $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
     return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}</td>`
-    +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td>`
+    +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}${r.pack_type==='case'?' <span class="illus" title="These are CASE units — one = '+r.pack_count+' singles">cases</span>':''}</td>`
     +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
     :`<tr><td colspan="6" class="empty">No machine runs in this range.</td></tr>`;
   const totH=MH.reduce((s,r)=>s+r.hrs,0);
@@ -531,8 +534,8 @@ function renderFG(){
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td></tr>`).join('')
-    :`<tr><td colspan="5" class="empty">No SKUs match.</td></tr>`;
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'}>${m4(r.make_per_single!=null?r.make_per_single:r.make)}</td></tr>`).join('')
+    :`<tr><td colspan="6" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
 }
