@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-16T16:25:21.452959-07:00",
+  "lastUpdated": "2026-07-16T16:28:34.493177-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -659,9 +659,9 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Adding $/pack, $/single, $/case columns + units->packs rename to cost dashboard",
-        "source": "interactive",
-        "startedAt": "2026-07-16T23:25:21Z",
+        "summary": "USER CHOSE (for \"How should the Finished Goods table show pack vs case?\"): Show ",
+        "source": "discord",
+        "startedAt": "2026-07-16T16:23:45-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
@@ -675,10 +675,16 @@
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Fixed $/single vs make $/unit mismatch on loose SKUs (e.g. 80110L showed $0.2058 vs $0.2033). Root cause: make $/unit is re-priced live per date range while $/single read a static feed value baked at build time, so they drifted when the blend rate changed. Now $/single is derived from the LIVE make (loose/single = make; case = make ÷ pack_count), so a loose SKU's two columns are always identical. Deployed 0d7d141.",
-        "at": "2026-07-16T22:47:54Z"
+        "summary": "Built the pack/case model. Authoritative packs-per-shipping-case = per-run Case Size column on the production sheets (modal per SKU); verified it matches Item Listing Case Pack Units (80110L=24, 43001L=36, 6-pack=1). Finished Goods now shows $/case = make $/each × case size (80110L=$4.88/case of 24; 40061 tea=$12.42/case). Renamed $/single->$/pack, make $/unit->make $/each, and swept 'units'->'packs' across labels/headers/charts/CSV. Deployed e1080de.",
+        "at": "2026-07-16T23:28:34Z"
       },
       "recentActivity": [
+        {
+          "summary": "Built the pack/case model. Authoritative packs-per-shipping-case = per-run Case Size column on the production sheets (modal per SKU); verified it matches Item Listing Case Pack Units (80110L=24, 43001L=36, 6-pack=1). Finished Goods now shows $/case = make $/each × case size (80110L=$4.88/case of 24; 40061 tea=$12.42/case). Renamed $/single->$/pack, make $/unit->make $/each, and swept 'units'->'packs' across labels/headers/charts/CSV. Deployed e1080de.",
+          "at": "2026-07-16T23:28:34Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Fixed $/single vs make $/unit mismatch on loose SKUs (e.g. 80110L showed $0.2058 vs $0.2033). Root cause: make $/unit is re-priced live per date range while $/single read a static feed value baked at build time, so they drifted when the blend rate changed. Now $/single is derived from the LIVE make (loose/single = make; case = make ÷ pack_count), so a loose SKU's two columns are always identical. Deployed 0d7d141.",
           "at": "2026-07-16T22:47:54Z",
@@ -730,12 +736,6 @@
         {
           "summary": "Added a section jump-nav to the cost-performance dashboard: 7 pill links under the header (Activity, Efficiency, Blending, Packing, Machine hours, By machine, Finished Goods) anchoring to each card. Matches page design tokens; :target scroll-margin offset. Deployed (teeccino-reports 95fb664).",
           "at": "2026-07-15T20:33:56Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Completed the costlib->prod_runs DB cutover (Justin-approved). costlib.SOURCE defaults to 'db'; cost/analysis skills now read the validated SQLite table instead of live-parsing Excel. Parity confirmed (40061=$0.52; 261/268 exact, 7 SKUs shifted <$0.001 via finer run-level dedupe). All 6 costlib engines smoke-tested clean. Feed redeployed from DB (teeccino-reports 0fb83e2). data_quality_check + legacy compute_labor_cost stay on xlsx by design.",
-          "at": "2026-07-15T20:28:37Z",
           "source": "interactive",
           "status": "unknown"
         }
