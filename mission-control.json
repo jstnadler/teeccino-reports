@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-16T16:37:56.286939-07:00",
+  "lastUpdated": "2026-07-16T16:42:47.578209-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -425,8 +425,8 @@
           "status": "success"
         },
         {
-          "summary": "Reverted PDP copy on 2 products to pre-2026-07-09 originals per Justin's order (approved by simbastampede). P1 miraculous-mushrooms-herbal-tea: seo.title+seo.description+descriptionHtml restored (also restores global.title_tag/description_tag). P2 lions-mane-rhodiola-mushroom-herbal-tea: descriptionHtml restored (SEO never changed on 07-09, left untouched). 2 productUpdate calls, 0 userErrors, 6/6 fields post-verified exact.",
-          "at": "2026-07-09T23:42:00Z",
+          "summary": "RESOLVED. 8 ORG export bags: BOM yield unit is a 6-bag master case for all 8 (confirmed by CostSmith via Sage BOM: BAG qty=6 + BOXMASTER 'Master Case for 6 Count' line). 300g four stock as UOM 'cs' (outcome a, relabel). 225G four consume 6x but header reads 'ea' (outcome b, Sage UOM correction ea->cs). Per-bag blend cost = case value / 6 for all 8; my divide-by-6 verdict held. cost-performance.html unblocked and published (commit 4f8f9c0).",
+          "at": "2026-07-09T17:20:00-07:00",
           "source": "discord",
           "status": "success"
         }
@@ -528,12 +528,6 @@
           "summary": "Diagnosed recurring GH Pages build failures as legacy-pipeline infra flakiness; force-rebuilt stuck HEAD green, site now current.",
           "at": "2026-07-10T20:21:49Z",
           "source": "dispatch",
-          "status": "unknown"
-        },
-        {
-          "summary": "Corrected testimonial-moderation.html owner catalogsmith→themesmith in pages.json; rebuilt + redeployed hub.",
-          "at": "2026-07-09T16:42:00-07:00",
-          "source": "discord",
           "status": "unknown"
         },
         {
@@ -641,26 +635,32 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "USER CHOSE (for \"Want this pushed to a remote, or keep it local?\"): Keep it loca",
+        "summary": "It bothers me that 80110 shows as a case x6 but 80110L doesnt show as a case of ",
         "source": "discord",
-        "startedAt": "2026-07-16T16:37:22-07:00",
+        "startedAt": "2026-07-16T16:39:20-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
       "activeSessions": [
         {
-          "task": "USER CHOSE (for \"Want this pushed to a remote, or keep it local?\"): Keep it loca",
+          "task": "It bothers me that 80110 shows as a case x6 but 80110L doesnt show as a case of ",
           "lane": "write",
-          "startedAt": "2026-07-16T16:37:22-07:00",
+          "startedAt": "2026-07-16T16:39:20-07:00",
           "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
         }
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Initialized a LOCAL git repo for the CostSmith workspace (clawd-costsmith); initial commit 3c45c85, 83 files. .gitignore excludes live workbooks (*.xlsx), runtime state (status.json/inbox/outbox/logs/.tmp/_staging), and secrets. Verified no workbook/secret/runtime leaked into the commit. Justin chose local-only — NOT pushed to any remote (cost/business data). Convention saved to memory: commit workspace changes going forward, never push without Justin's approval (private only if ever).",
-        "at": "2026-07-16T23:37:55Z"
+        "summary": "Made the FG case display consistent per Justin. $/case now shows /N = single packs per case for every row (N = pack_count × case_size): six-pack 80110 -> /6, loose 80110L -> /24, 10ct loose -> /36, 25ct tea -> /24. Removed the asymmetric 'case ×N' product badge (only appeared on multipacks); pack count now lives in one place (the $/case column). Kept AMZN marker. Deployed teeccino-reports e29d632.",
+        "at": "2026-07-16T23:42:47Z"
       },
       "recentActivity": [
+        {
+          "summary": "Made the FG case display consistent per Justin. $/case now shows /N = single packs per case for every row (N = pack_count × case_size): six-pack 80110 -> /6, loose 80110L -> /24, 10ct loose -> /36, 25ct tea -> /24. Removed the asymmetric 'case ×N' product badge (only appeared on multipacks); pack count now lives in one place (the $/case column). Kept AMZN marker. Deployed teeccino-reports e29d632.",
+          "at": "2026-07-16T23:42:47Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Initialized a LOCAL git repo for the CostSmith workspace (clawd-costsmith); initial commit 3c45c85, 83 files. .gitignore excludes live workbooks (*.xlsx), runtime state (status.json/inbox/outbox/logs/.tmp/_staging), and secrets. Verified no workbook/secret/runtime leaked into the commit. Justin chose local-only — NOT pushed to any remote (cost/business data). Convention saved to memory: commit workspace changes going forward, never push without Justin's approval (private only if ever).",
           "at": "2026-07-16T23:37:55Z",
@@ -713,12 +713,6 @@
           "summary": "Captured the SKU L-suffix convention (L=loose single, non-L=cased multipack, A=Amazon) after Justin flagged it. Verified against Acctivate BOM: case (80110) is its OWN build (4.13lb blend + 6x BAG80110D + BOXMASTER 'Master Case for 6 Count'), NOT a 6x-loose-SKU rollup; ~6x the product of the loose (80110L). Case count is product-specific (11oz=6, 25ct=24). Cost implication: units NOT comparable across L/non-L; case SKUs currently absent from the costed feed (loose only) so nothing displayed is wrong. Saved to memory; proposed next steps to Justin.",
           "at": "2026-07-16T22:03:29Z",
           "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "DATA-QUALITY ALERT: 400 data-quality findings (high=144, med=252); 32 in last 14d (21 high). facts_rebuilt=True.",
-          "at": "2026-07-16T13:00:02.153763+00:00",
-          "source": "scheduled",
           "status": "unknown"
         }
       ],
