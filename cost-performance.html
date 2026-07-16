@@ -82,7 +82,7 @@
 <body>
 <div class="wrap">
   <h1>Production Cost — Cost to Make 🏭</h1>
-  <p class="sub">What it costs Teeccino to <b>make</b> a unit, from <b>actual production runs</b> (not Acctivate/standard). Blending &amp; packing labor only — raw ingredients and packaging excluded by design.</p>
+  <p class="sub">What it costs Teeccino to <b>make</b> a pack, from <b>actual production runs</b> (not Acctivate/standard). Blending &amp; packing labor only — raw ingredients and packaging excluded by design.</p>
   <div class="stepbar"><b>📅 Activity</b> <span class="arrow">·</span> <b>🌀 Blending</b> <span class="arrow">→</span> <b>📦 Packing</b> <span class="arrow">→</span> <b>🏭 Finished Goods</b></div>
 
   <nav class="pagenav" aria-label="Jump to section">
@@ -112,19 +112,19 @@
   <!-- 1. PRODUCTION ACTIVITY -->
   <div class="card" id="c-act">
     <h2>📅 What happened on the machines</h2>
-    <p class="hint">Everything that ran on the finished-goods lines in the selected period — units made, machine &amp; operator hours, labor cost — with the monthly trend and a per-machine breakdown.</p>
+    <p class="hint">Everything that ran on the finished-goods lines in the selected period — packs made, machine &amp; operator hours, labor cost — with the monthly trend and a per-machine breakdown.</p>
     <div class="summary" id="act-summary"></div>
     <svg id="act-chart" viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px"></svg>
     <div class="foot" id="act-chart-foot"></div>
     <table id="t-act" style="margin-top:14px"><thead><tr>
-      <th>Machine</th><th>runs</th><th>items</th><th>units</th><th>run hrs</th><th>op hrs</th><th>labor $</th><th>DT %</th>
+      <th>Machine</th><th>runs</th><th>items</th><th>packs</th><th>run hrs</th><th>op hrs</th><th>labor $</th><th>DT %</th>
     </tr></thead><tbody></tbody></table>
   </div>
 
   <!-- 1a. WEEKLY PRODUCTION EFFICIENCY -->
   <div class="card" id="c-eff">
     <h2>📊 Weekly production efficiency — planned vs actual</h2>
-    <p class="hint">For each week: how many labor-hours the runs <b>should</b> have taken (<b>expected hrs</b> = the planned rate × units actually made) versus how many they <b>actually</b> took (<b>actual hrs</b> = run time × operators). <b>Efficiency = expected ÷ actual</b> — 100% means we hit plan; under 100% means a run took longer than planned. The gap is priced at the confirmed $26.06/hr wage → the <b>overrun $</b> is real labor money. Finished-goods lines only (blending is its own stage); labor only, no machine overhead. A <b>⚠</b> in a week's detail means that SKU's planned rate looks wrong vs its own history — fix the plan, don't blame the line. Click a week to drill in.</p>
+    <p class="hint">For each week: how many labor-hours the runs <b>should</b> have taken (<b>expected hrs</b> = the planned rate × packs actually made) versus how many they <b>actually</b> took (<b>actual hrs</b> = run time × operators). <b>Efficiency = expected ÷ actual</b> — 100% means we hit plan; under 100% means a run took longer than planned. The gap is priced at the confirmed $26.06/hr wage → the <b>overrun $</b> is real labor money. Finished-goods lines only (blending is its own stage); labor only, no machine overhead. A <b>⚠</b> in a week's detail means that SKU's planned rate looks wrong vs its own history — fix the plan, don't blame the line. Click a week to drill in.</p>
     <div class="ctrls" style="margin:2px 0 14px;gap:8px">
       <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series)">Machine</span>
       <div class="seg" id="eff-mach"></div>
@@ -133,7 +133,7 @@
     <svg id="eff-chart" viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px"></svg>
     <div class="foot" id="eff-chart-foot"></div>
     <div class="scroll" style="margin-top:14px"><table id="t-eff"><thead><tr>
-      <th>Week of</th><th>runs</th><th>units</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun hrs</th><th>overrun $</th><th>DT %</th>
+      <th>Week of</th><th>runs</th><th>packs</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun hrs</th><th>overrun $</th><th>DT %</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="eff-detail" class="detail" hidden></div>
     <p class="foot" id="eff-foot"></p>
@@ -155,10 +155,10 @@
   <!-- 3. PACKING -->
   <div class="card" id="c-pack">
     <h2>📦 Packing — cost to pack &amp; finish each SKU</h2>
-    <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish one unit, from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <span class="illus">Blend cost is added in Section 4.</span></p>
+    <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish one pack, from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <span class="illus">Blend cost is added in Section 4.</span></p>
     <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="pack-n"></span></div>
     <div class="scroll"><table id="t-pack"><thead><tr>
-      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="pack">packing $/unit</th>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="pack">packing $/pack</th>
     </tr></thead><tbody></tbody></table></div>
     <p class="foot" id="pack-foot"></p>
   </div>
@@ -169,8 +169,8 @@
     <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown.</p>
     <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV (one row per SKU × machine)">⬇ Export CSV</button><span class="mtag" id="mh-n"></span></div>
     <div class="scroll"><table id="t-mh"><thead><tr>
-      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="machines">machine(s)</th><th data-k="units">units made</th>
-      <th data-k="hrs">machine hrs</th><th data-k="hper1k">hrs / 1k units</th>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="machines">machine(s)</th><th data-k="units">packs made</th>
+      <th data-k="hrs">machine hrs</th><th data-k="hper1k">hrs / 1k packs</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="mh-detail" class="detail" hidden></div>
     <p class="foot" id="mh-foot"></p>
@@ -181,7 +181,7 @@
     <h2>🏭 By production machine / stage</h2>
     <p class="hint">Totals per packing/finishing machine in the selected period. <span class="illus">Labor only, $26.06/hr; blending is its own stage (Section 2).</span></p>
     <table id="t-machines"><thead><tr>
-      <th>Machine</th><th>runs</th><th>items</th><th>units</th><th>run hrs</th><th>op hrs</th><th>labor $/unit</th><th>labor $ total</th><th>DT %</th>
+      <th>Machine</th><th>runs</th><th>items</th><th>packs</th><th>run hrs</th><th>op hrs</th><th>labor $/pack</th><th>labor $ total</th><th>DT %</th>
     </tr></thead><tbody></tbody></table>
     <p class="foot" id="machines-foot"></p>
   </div>
@@ -189,11 +189,11 @@
   <!-- 4. FINISHED GOODS -->
   <div class="card" id="c-fg">
     <h2>🏭 Finished Goods — total cost to make</h2>
-    <p class="hint"><b>Blend + packing = total cost to make one unit</b>, for the selected period. Click any SKU for the full breakdown. <b>Cases</b> (<span class="mtag" style="color:var(--warning)">case ×N</span>) cost per case; the <b>$/single</b> column divides that by pack count so it's comparable to the loose (L) SKU. <span class="illus" id="fg-note"></span></p>
+    <p class="hint"><b>Blend + packing = total cost to make one pack</b>, for the selected period. Click any SKU for the full breakdown. <b>Cases</b> (<span class="mtag" style="color:var(--warning)">case ×N</span>) cost per case; the <b>$/single</b> column divides that by pack count so it's comparable to the loose (L) SKU. <span class="illus" id="fg-note"></span></p>
     <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="blend">blend $</th>
-      <th data-k="pack">packing $</th><th data-k="make">make $/unit</th><th data-k="per" title="Cost per single retail unit. For a case, that's make $ ÷ pack count, so it's comparable to the loose SKU.">$/single</th>
+      <th data-k="pack">packing $</th><th data-k="make">make $/each</th><th data-k="per" title="Cost per single retail PACK (one bag/box). For a multipack it's make ÷ pack count, comparable to the loose SKU.">$/pack</th><th data-k="case" title="Cost to make one full shipping CASE = make $/each × case size (packs per case, from the production sheet).">$/case</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="fg-detail" class="detail" hidden></div>
     <p class="foot" id="fg-foot"></p>
@@ -211,7 +211,9 @@ const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
 // per single retail unit, derived from the LIVE re-priced make (not the static feed value) so it
 // always matches the make $/unit column across date ranges. Case with unknown count -> null.
 const perSingle=r=> r&&r.pack_type==='case' ? (r.pack_count ? r.make/r.pack_count : null) : (r?r.make:null);
-const packBadge=r=>r&&r.pack_type==='case'?` <span class="mtag" style="color:var(--warning)" title="${r.pack_count?('Cased multipack — one unit = '+r.pack_count+' singles'):'Case with unknown pack count — flagged, see CatalogSmith'}">case ×${r.pack_count||'?'}</span>`
+// cost to make one full shipping case = live make $/each × case size (packs per case)
+const caseCost=r=> (r&&r.case_size) ? r.make*r.case_size : null;
+const packBadge=r=>r&&r.pack_type==='case'?` <span class="mtag" style="color:var(--warning)" title="${r.pack_count?('Cased multipack — one case = '+r.pack_count+' packs'):'Case with unknown pack count — flagged, see CatalogSmith'}">case ×${r.pack_count||'?'}</span>`
   :(r&&r.pack_type==='amazon'?' <span class="mtag" title="Amazon pack variant">AMZN</span>':'');
 let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
@@ -311,10 +313,10 @@ function renderActivity(rows,fin){
     if(f.d&&f.q) mo[f.d.slice(0,7)]=(mo[f.d.slice(0,7)]||0)+f.q;
     const a=mac[f.m]||(mac[f.m]={runs:0,items:new Set(),units:0,rh:0,oh:0,dn:0}); a.runs++; if(f.i)a.items.add(f.i); if(f.q)a.units+=f.q; if(f.t){a.rh+=f.t; if(f.o)a.oh+=f.t*f.o;} if(f.dn)a.dn+=f.dn;
   });
-  $('#act-summary').innerHTML=`<div><b>${num(units)}</b> <span>units made</span></div><div><b>${num(runs)}</b> <span>runs</span></div>`
+  $('#act-summary').innerHTML=`<div><b>${num(units)}</b> <span>packs made</span></div><div><b>${num(runs)}</b> <span>runs</span></div>`
     +`<div><b>${num(Math.round(rh))}</b> <span>machine hrs</span></div><div><b>${num(Math.round(oh))}</b> <span>operator hrs</span></div>`
     +`<div><b>${m2(oh*WAGE)}</b> <span>packing labor</span></div>`;
-  const c=barChart(mo,'units'); $('#act-chart').innerHTML=c.svg; $('#act-chart-foot').textContent='Units produced per month · '+c.foot;
+  const c=barChart(mo,'packs'); $('#act-chart').innerHTML=c.svg; $('#act-chart-foot').textContent='Packs produced per month · '+c.foot;
   const order=(RAW.finished_stages||[]); const mrows=order.filter(m=>mac[m]).map(m=>{const a=mac[m];
     return `<tr><td><b>${m}</b></td><td>${num(a.runs)}</td><td>${num(a.items.size)}</td><td>${num(a.units)}</td><td>${num(Math.round(a.rh))}</td><td>${num(Math.round(a.oh))}</td><td>${m2(a.oh*WAGE)}</td><td>${a.rh?((a.dn/(a.rh*60))*100).toFixed(1)+'%':'–'}</td></tr>`;}).join('');
   $('#t-act tbody').innerHTML=mrows||`<tr><td colspan="8" class="empty">No production runs in this range.</td></tr>`;
@@ -428,9 +430,9 @@ function showEffWeek(key){
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">Week of ${w.mon} (W${w.wk}) — ${w.eff==null?'–':(w.eff*100).toFixed(0)+'%'} efficiency, ${m2(w.overUsd)} overrun</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('eff-detail').hidden=true">close ✕</button></div>`
     +`<p class="hint" style="margin:8px 0 4px"><b>By machine</b> this week:</p>`
-    +`<table style="font-size:12.5px"><thead><tr><th>Machine</th><th>units</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${macRows||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Machine</th><th>packs</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${macRows||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>`
     +`<p class="hint" style="margin:14px 0 4px"><b>Biggest overruns</b> (SKU × machine, ranked by labor $ over plan). <b>vs history</b> = this SKU's all-time efficiency on that machine; a <b style="color:var(--warning)">⚠</b> means the planned rate itself looks wrong (chronic across ≥3 runs) — fix the plan, don't blame the line:</p>`
-    +`<div class="scroll" style="max-height:300px"><table style="font-size:12.5px"><thead><tr><th>SKU</th><th>Product</th><th>machine</th><th>units</th><th>actual hrs</th><th>expected hrs</th><th>this run</th><th>vs history</th><th>overrun $</th></tr></thead><tbody>${top||'<tr><td colspan="9" class="empty">—</td></tr>'}</tbody></table></div>`;
+    +`<div class="scroll" style="max-height:300px"><table style="font-size:12.5px"><thead><tr><th>SKU</th><th>Product</th><th>machine</th><th>packs</th><th>actual hrs</th><th>expected hrs</th><th>this run</th><th>vs history</th><th>overrun $</th></tr></thead><tbody>${top||'<tr><td colspan="9" class="empty">—</td></tr>'}</tbody></table></div>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
@@ -502,7 +504,7 @@ function downloadCSV(name,rows){
 }
 function exportMH(){
   const rows=mhFiltered();
-  const out=[['SKU','Product','Machine / stage','machine hrs','SKU total units','SKU total machine hrs','machine hrs / 1k units']];
+  const out=[['SKU','Product','Machine / stage','machine hrs','SKU total packs','SKU total machine hrs','machine hrs / 1k packs']];
   rows.forEach(r=>{ mhMachines(r).forEach(m=>{ const h=r.by[m];
     out.push([r.sku,r.title||'',m,(+h).toFixed(2),r.units,r.hrs,r.units?((h/r.units)*1000).toFixed(3):'']); }); });
   const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
@@ -537,8 +539,8 @@ function renderFG(){
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td></tr>`).join('')
-    :`<tr><td colspan="6" class="empty">No SKUs match.</td></tr>`;
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td title="${r.case_size?('× case size '+r.case_size):'case size unknown'}">${m4(caseCost(r))}</td></tr>`).join('')
+    :`<tr><td colspan="7" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
 }
@@ -565,7 +567,7 @@ function fgBom(r){
   return `<details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:12.5px">`
     +`📋 Complete bill of materials — ${labor.length+comps.length} lines `
     +`<span class="illus">(materials &amp; packaging not yet costed → shown at ${m4(0)})</span></summary>`
-    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Code</th><th>Description</th><th>Qty</th><th>Type</th><th>$/unit</th></tr></thead>`
+    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Code</th><th>Description</th><th>Qty</th><th>Type</th><th>$/pack</th></tr></thead>`
     +`<tbody>${lrows}${crows}</tbody></table></details>`;
 }
 function showFG(fg,sku){
@@ -575,7 +577,7 @@ function showFG(fg,sku){
   box.hidden=false;
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${r.title||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('fg-detail').hidden=true">close ✕</button></div>`
-    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/unit</th></tr></thead><tbody>${lines}</tbody>`
+    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/pack</th></tr></thead><tbody>${lines}</tbody>`
     +`<tfoot><tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend)}</td></tr>`
     +`<tr><td colspan="3" style="text-align:right">packing subtotal</td><td>${m4(r.make_labor)}</td></tr>`
     +`<tr><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td><td class="big">${m4(r.make)}</td></tr></tfoot></table>`
