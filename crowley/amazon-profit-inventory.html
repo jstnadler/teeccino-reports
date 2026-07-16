@@ -204,7 +204,7 @@
       <th class="sorth num" data-k="u">Units</th>
       <th class="sorth num" data-k="g">Gross</th>
       <th class="sorth num" data-k="fba">FBA</th>
-      <th class="sorth num" data-k="ref">Referral</th>
+      <th class="sorth num" data-k="ref">Commission</th>
       <th class="sorth num" data-k="oth">Other</th>
       <th class="sorth num" data-k="n">Net</th>
       <th class="sorth num" data-k="m">Margin</th>
@@ -235,10 +235,10 @@
       <div class="legend"><span><i class="sw" style="background:var(--blue)"></i>Gross</span><span><i class="sw" style="background:var(--net)"></i>Net</span></div>
       <div id="mChart"></div>
       <div class="grp-title" style="margin-top:14px;">Fee breakdown by day</div>
-      <div class="legend"><span><i class="sw" style="background:var(--fees)"></i>FBA</span><span><i class="sw" style="background:var(--promo)"></i>Referral</span><span><i class="sw" style="background:#6b7280"></i>Other</span></div>
+      <div class="legend"><span><i class="sw" style="background:var(--fees)"></i>FBA</span><span><i class="sw" style="background:var(--promo)"></i>Commission</span><span><i class="sw" style="background:#6b7280"></i>Other</span></div>
       <div id="mFeeChart"></div>
       <details class="tableview" style="margin-top:12px;" open><summary>Per-day table</summary>
-        <table><thead><tr><th>Date</th><th>Units</th><th>Gross</th><th>FBA</th><th>Referral</th><th>Other</th><th>Net</th><th>Margin</th></tr></thead>
+        <table><thead><tr><th>Date</th><th>Units</th><th>Gross</th><th>FBA</th><th>Commission</th><th>Other</th><th>Net</th><th>Margin</th></tr></thead>
         <tbody id="mBody"></tbody></table>
       </details>
     </div>
@@ -511,7 +511,7 @@
       k('Units',num(t.u))+k('Gross',money(t.g))+
       k('Net',money(t.n),pct(m)+' margin',COL.net)+
       k('Total Fees',money(fees),pct(feeRate)+' of gross',COL.fees)+
-      k('FBA',money(t.fba),'',COL.fees)+k('Referral',money(t.ref),'',COL.promo);
+      k('FBA',money(t.fba),'',COL.fees)+k('Commission',money(t.ref),'',COL.promo);
     document.getElementById('mChart').innerHTML=miniBars(rows,[function(r){return r.g;},function(r){return r.n;}],[COL.blue,COL.net]);
     document.getElementById('mFeeChart').innerHTML=miniBars(rows,[function(r){return r.fba;},function(r){return r.ref;},function(r){return r.oth;}],[COL.fees,COL.promo,COL.muted]);
     document.getElementById('mBody').innerHTML=rows.map(function(r){var rm=r.g?100*r.n/r.g:0;
