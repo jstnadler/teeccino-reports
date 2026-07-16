@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-16T15:38:40.673350-07:00",
+  "lastUpdated": "2026-07-16T15:47:55.205959-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -618,12 +618,6 @@
           "status": "unknown"
         },
         {
-          "summary": "Verified 2 CatalogSmith content ships live (herbal-coffee collection, lions-mane product); decaf title/meta live (body citations in flight via ThemeSmith). CORRECTED the relayed mushroom redirect plan — GSC shows it would destroy a live tea ranking; no redirect.",
-          "at": "2026-07-09T22:44:00.491971+00:00",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
           "summary": "Added self-documenting 'How this works' explainer to the testimonial moderation console; updated the generator (source of truth) and republished to teeccino-reports.",
           "at": "2026-07-06T10:10:12.352720",
           "source": "interactive",
@@ -671,26 +665,32 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "Ok So now when I look at finished goods for all the 80110 French Roast Skus... T",
+        "summary": "Hmm so 80110L has a different make $ / Unit than $/Single because of different p",
         "source": "discord",
-        "startedAt": "2026-07-16T15:36:43-07:00",
+        "startedAt": "2026-07-16T15:46:40-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
       "activeSessions": [
         {
-          "task": "Ok So now when I look at finished goods for all the 80110 French Roast Skus... T",
+          "task": "Hmm so 80110L has a different make $ / Unit than $/Single because of different p",
           "lane": "write",
-          "startedAt": "2026-07-16T15:36:43-07:00",
+          "startedAt": "2026-07-16T15:46:40-07:00",
           "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
         }
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Answered Justin on 80110: case per-single ($0.2404) != loose per-unit ($0.2033) is NOT a bug - blend is identical ($0.0505 vs $0.0506); the ~$0.037 gap is 100% actual pack labor (case & loose are separate production operations). Also fixed a display bug: case size showed the pack count twice ('11 oz (APG) x6 case x6'); size now shows base unit only, 'case xN' badge carries the count. Deployed 5825215.",
-        "at": "2026-07-16T22:38:40Z"
+        "summary": "Fixed $/single vs make $/unit mismatch on loose SKUs (e.g. 80110L showed $0.2058 vs $0.2033). Root cause: make $/unit is re-priced live per date range while $/single read a static feed value baked at build time, so they drifted when the blend rate changed. Now $/single is derived from the LIVE make (loose/single = make; case = make ÷ pack_count), so a loose SKU's two columns are always identical. Deployed 0d7d141.",
+        "at": "2026-07-16T22:47:54Z"
       },
       "recentActivity": [
+        {
+          "summary": "Fixed $/single vs make $/unit mismatch on loose SKUs (e.g. 80110L showed $0.2058 vs $0.2033). Root cause: make $/unit is re-priced live per date range while $/single read a static feed value baked at build time, so they drifted when the blend rate changed. Now $/single is derived from the LIVE make (loose/single = make; case = make ÷ pack_count), so a loose SKU's two columns are always identical. Deployed 0d7d141.",
+          "at": "2026-07-16T22:47:54Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Answered Justin on 80110: case per-single ($0.2404) != loose per-unit ($0.2033) is NOT a bug - blend is identical ($0.0505 vs $0.0506); the ~$0.037 gap is 100% actual pack labor (case & loose are separate production operations). Also fixed a display bug: case size showed the pack count twice ('11 oz (APG) x6 case x6'); size now shows base unit only, 'case xN' badge carries the count. Deployed 5825215.",
           "at": "2026-07-16T22:38:40Z",
@@ -742,12 +742,6 @@
         {
           "summary": "Completed the costlib->prod_runs DB cutover (Justin-approved). costlib.SOURCE defaults to 'db'; cost/analysis skills now read the validated SQLite table instead of live-parsing Excel. Parity confirmed (40061=$0.52; 261/268 exact, 7 SKUs shifted <$0.001 via finer run-level dedupe). All 6 costlib engines smoke-tested clean. Feed redeployed from DB (teeccino-reports 0fb83e2). data_quality_check + legacy compute_labor_cost stay on xlsx by design.",
           "at": "2026-07-15T20:28:37Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Validated DataOps' prod_runs table against my module: EXACT parity — 7,579 rows, 0 rows only-in-mine, 0 only-in-db, 0 field mismatches across all columns. DB source data is correct. Added start_time/end_time to the PROD_RUNS_COLUMNS contract to make the DB lossless for the workbook-hygiene DQ check; module re-tested (counts unchanged). Remaining: DataOps --rebuild to add the 2 columns, then I flip costlib.load_rows to the DB behind a full engine-parity re-check.",
-          "at": "2026-07-15T20:17:48Z",
           "source": "interactive",
           "status": "unknown"
         }
