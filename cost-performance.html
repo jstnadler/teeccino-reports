@@ -189,7 +189,7 @@
   <!-- 4. FINISHED GOODS -->
   <div class="card" id="c-fg">
     <h2>🏭 Finished Goods — total cost to make</h2>
-    <p class="hint"><b>Blend + packing = total cost to make one pack</b>, for the selected period. Click any SKU for the full breakdown. <b>Cases</b> (<span class="mtag" style="color:var(--warning)">case ×N</span>) cost per case; the <b>$/single</b> column divides that by pack count so it's comparable to the loose (L) SKU. <span class="illus" id="fg-note"></span></p>
+    <p class="hint"><b>Blend + packing = total cost to make one pack</b>, for the selected period. Click any SKU for the full breakdown. <b>make $/each</b> = cost per produced item; <b>$/pack</b> = per single retail pack (a multipack ÷ its pack count); <b>$/case</b> = a full shipping case (× case size from the production sheet). <span class="illus" id="fg-note"></span></p>
     <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="blend">blend $</th>
@@ -488,7 +488,7 @@ function renderMH(){
   $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
     return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td>`
-    +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}${r.pack_type==='case'?' <span class="illus" title="These are CASE units — one = '+r.pack_count+' singles">cases</span>':''}</td>`
+    +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}${r.pack_type==='case'?' <span class="illus" title="These are CASE counts — 1 = '+r.pack_count+' packs">cases</span>':''}</td>`
     +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
     :`<tr><td colspan="6" class="empty">No machine runs in this range.</td></tr>`;
   const totH=MH.reduce((s,r)=>s+r.hrs,0);
@@ -580,7 +580,7 @@ function showFG(fg,sku){
     +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/pack</th></tr></thead><tbody>${lines}</tbody>`
     +`<tfoot><tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend)}</td></tr>`
     +`<tr><td colspan="3" style="text-align:right">packing subtotal</td><td>${m4(r.make_labor)}</td></tr>`
-    +`<tr><td colspan="3" style="text-align:right"><b>Cost to make / unit</b></td><td class="big">${m4(r.make)}</td></tr></tfoot></table>`
+    +`<tr><td colspan="3" style="text-align:right"><b>Cost to make / each</b></td><td class="big">${m4(r.make)}</td></tr></tfoot></table>`
     +fgBom(r);
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
