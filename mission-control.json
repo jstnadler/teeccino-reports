@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-16T15:27:26.280722-07:00",
+  "lastUpdated": "2026-07-16T15:38:40.673350-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -363,24 +363,6 @@
           "status": "success"
         },
         {
-          "summary": "Shipped campaign-level sections to ad-spend-yoy.html (commit 3a59903, pushed live). §1 Meta-by-campaign + §3 Google expanded live; §2 FB/IG rendered as DataOps-blocked flag and dispatched to DataOps.",
-          "at": "2026-07-09T15:35:00-07:00",
-          "source": "discord",
-          "status": "success"
-        },
-        {
-          "summary": "Converted the Creative Performance dashboard Campaign filter from single-select to a multi-select checkbox-list dropdown; committed + published to live teeccino-reports.",
-          "at": "2026-07-09T15:30:00-07:00",
-          "source": "discord",
-          "status": "success"
-        },
-        {
-          "summary": "Built 3 of 4 campaign-level sections on ad-spend-yoy.html (--no-push, held for Justin review). Section 2 (FB vs IG) blocked on DataOps — publisher_platform not in ingest; rendered as a flag, not faked.",
-          "at": "2026-07-09T15:30:00-07:00",
-          "source": "gateway",
-          "status": "partial"
-        },
-        {
           "summary": "June 2026 authoritative figures for Caroline's CEO dashboard: Meta spend $15,095.76, Google spend $6,899.44 (combined $21,995.20); paid-attributed orders/revenue reported under two lenses (Shopify last-touch vs platform-reported).",
           "at": "2026-07-08",
           "source": "gateway",
@@ -689,26 +671,32 @@
       "workspace": "clawd-costsmith",
       "status": "working",
       "currentTask": {
-        "summary": "DELEGATE RESULT from CatalogSmith (you delegated: \"Adopt the SKU loose/case/amaz",
+        "summary": "Ok So now when I look at finished goods for all the 80110 French Roast Skus... T",
         "source": "discord",
-        "startedAt": "2026-07-16T15:24:16-07:00",
+        "startedAt": "2026-07-16T15:36:43-07:00",
         "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
       },
       "activeBranches": [],
       "activeSessions": [
         {
-          "task": "DELEGATE RESULT from CatalogSmith (you delegated: \"Adopt the SKU loose/case/amaz",
+          "task": "Ok So now when I look at finished goods for all the 80110 French Roast Skus... T",
           "lane": "write",
-          "startedAt": "2026-07-16T15:24:16-07:00",
+          "startedAt": "2026-07-16T15:36:43-07:00",
           "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
         }
       ],
       "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Closed the loop with CatalogSmith on pack families. Added the case_build_equals_loose guard to build_pack_families.py (blend_ratio<=1 + no master/multi-bag => null+flag, never pack_count=1), fixing 80089 (was wrongly pack_count=1). production_cost + feed now carry null pack_count safely (per_single '-', badge 'case x?'). Regenerated + redeployed (teeccino-reports 49bde3f). Canonical map lives at clawd-catalogsmith/data/sku-pack-families.json (join on sku). 80089 needs an Acctivate case-BOM fix - routing to Justin.",
-        "at": "2026-07-16T22:27:25Z"
+        "summary": "Answered Justin on 80110: case per-single ($0.2404) != loose per-unit ($0.2033) is NOT a bug - blend is identical ($0.0505 vs $0.0506); the ~$0.037 gap is 100% actual pack labor (case & loose are separate production operations). Also fixed a display bug: case size showed the pack count twice ('11 oz (APG) x6 case x6'); size now shows base unit only, 'case xN' badge carries the count. Deployed 5825215.",
+        "at": "2026-07-16T22:38:40Z"
       },
       "recentActivity": [
+        {
+          "summary": "Answered Justin on 80110: case per-single ($0.2404) != loose per-unit ($0.2033) is NOT a bug - blend is identical ($0.0505 vs $0.0506); the ~$0.037 gap is 100% actual pack labor (case & loose are separate production operations). Also fixed a display bug: case size showed the pack count twice ('11 oz (APG) x6 case x6'); size now shows base unit only, 'case xN' badge carries the count. Deployed 5825215.",
+          "at": "2026-07-16T22:38:40Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Closed the loop with CatalogSmith on pack families. Added the case_build_equals_loose guard to build_pack_families.py (blend_ratio<=1 + no master/multi-bag => null+flag, never pack_count=1), fixing 80089 (was wrongly pack_count=1). production_cost + feed now carry null pack_count safely (per_single '-', badge 'case x?'). Regenerated + redeployed (teeccino-reports 49bde3f). Canonical map lives at clawd-catalogsmith/data/sku-pack-families.json (join on sku). 80089 needs an Acctivate case-BOM fix - routing to Justin.",
           "at": "2026-07-16T22:27:25Z",
@@ -760,12 +748,6 @@
         {
           "summary": "Validated DataOps' prod_runs table against my module: EXACT parity — 7,579 rows, 0 rows only-in-mine, 0 only-in-db, 0 field mismatches across all columns. DB source data is correct. Added start_time/end_time to the PROD_RUNS_COLUMNS contract to make the DB lossless for the workbook-hygiene DQ check; module re-tested (counts unchanged). Remaining: DataOps --rebuild to add the 2 columns, then I flip costlib.load_rows to the DB behind a full engine-parity re-check.",
           "at": "2026-07-15T20:17:48Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Built the CostSmith-owned cost-domain module for the production-runs ingest pipeline (skills/_lib/prod_ingest.py): parser (wraps costlib), prod_runs column semantics, DQ pure functions (run_key, outlier, misdate, cross-file dedupe tie-break 2026-wins), parse_and_dq() and suggested_ddl(). Self-tested on live workbooks: 8427 parsed -> 7579 kept (848 cross-file dups collapsed), 5 outliers + 4 misdates flagged not dropped, 40061 resolves to 4.39h/2026. Handing harness to DataOps.",
-          "at": "2026-07-15T20:09:41Z",
           "source": "interactive",
           "status": "unknown"
         }
