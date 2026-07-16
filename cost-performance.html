@@ -213,8 +213,12 @@ const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
 const perSingle=r=> r&&r.pack_type==='case' ? (r.pack_count ? r.make/r.pack_count : null) : (r?r.make:null);
 // cost to make one full shipping case = live make $/each × case size (packs per case)
 const caseCost=r=> (r&&r.case_size) ? r.make*r.case_size : null;
-const packBadge=r=>r&&r.pack_type==='case'?` <span class="mtag" style="color:var(--warning)" title="${r.pack_count?('Cased multipack — one case = '+r.pack_count+' packs'):'Case with unknown pack count — flagged, see CatalogSmith'}">case ×${r.pack_count||'?'}</span>`
-  :(r&&r.pack_type==='amazon'?' <span class="mtag" title="Amazon pack variant">AMZN</span>':'');
+// single retail packs contained in this SKU's case = (singles per this SKU's pack) × (packs per shipping case).
+// e.g. loose 80110L: 1×24=24 ; six-pack 80110: 6×1=6 ; loose 10ct 40110L: 1×36=36.
+const singlesPerCase=r=> r ? (r.pack_count||1)*(r.case_size||1) : null;
+// Product-cell badge: only the Amazon channel marker. Pack/case counts live in the $/case "/N"
+// column (consistent for every row) — no more asymmetric "case ×N" badge on some rows only.
+const packBadge=r=> r&&r.pack_type==='amazon' ? ` <span class="mtag" title="Amazon pack variant">AMZN</span>` : '';
 let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
 let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
@@ -539,7 +543,7 @@ function renderFG(){
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td title="${r.case_size?(r.case_size+' packs per shipping case'):'case size unknown'}">${m4(caseCost(r))}${r.case_size>1?' <span class="mtag">/'+r.case_size+'</span>':''}</td></tr>`).join('')
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td title="${singlesPerCase(r)>1?(singlesPerCase(r)+' single packs per case'):'case size unknown'}">${m4(caseCost(r))}${singlesPerCase(r)>1?' <span class="mtag">/'+singlesPerCase(r)+'</span>':''}</td></tr>`).join('')
     :`<tr><td colspan="7" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
