@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-16T15:24:01.345752-07:00",
+  "lastUpdated": "2026-07-16T15:27:26.280722-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -396,26 +396,14 @@
       "emoji": "books",
       "role": "Product Information Management",
       "workspace": "clawd-catalogsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "CONSULT RESULT from CostSmith (you asked: \"Two BOM DQ items for you to eyeball i",
-        "source": "discord",
-        "startedAt": "2026-07-16T15:22:09-07:00",
-        "threadUrl": "https://discord.com/channels/1466925435316076567/1527438175981535332"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
-      "activeSessions": [
-        {
-          "task": "CONSULT RESULT from CostSmith (you asked: \"Two BOM DQ items for you to eyeball i",
-          "lane": "write",
-          "startedAt": "2026-07-16T15:22:09-07:00",
-          "threadUrl": "https://discord.com/channels/1466925435316076567/1527438175981535332"
-        }
-      ],
-      "concurrentTasks": 1,
+      "activeSessions": [],
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Adopted CostSmith's loose/case/amazon pack convention into a canonical PIM SKU-pack-families map (data/sku-pack-families.json): 268 members / 111 families, reconciled with live Shopify identity (86 live, 182 Sage-only) + size labels; 2 DQ flags surfaced to CostSmith.",
-        "at": "2026-07-16T22:26:00Z"
+        "summary": "CONSULT RESULT from CostSmith (you asked: \"Two BOM DQ items for you to eyeball i",
+        "at": "2026-07-16T15:24:15.744121-07:00"
       },
       "recentActivity": [
         {
@@ -699,16 +687,34 @@
       "emoji": "abacus",
       "role": "Production Cost & COGS",
       "workspace": "clawd-costsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "DELEGATE RESULT from CatalogSmith (you delegated: \"Adopt the SKU loose/case/amaz",
+        "source": "discord",
+        "startedAt": "2026-07-16T15:24:16-07:00",
+        "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "DELEGATE RESULT from CatalogSmith (you delegated: \"Adopt the SKU loose/case/amaz",
+          "lane": "write",
+          "startedAt": "2026-07-16T15:24:16-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "Costed the case/amazon SKUs and added per-single normalization. New build_pack_families.py derives loose/case/amazon families + pack counts from BOM (77 cases, 75 at 6-ct via blend ratio). production_cost.py now costs case SKUs from their own BOM (424 rows, was 268) with pack_type/pack_count/make_cost_per_single. Feed carries pack fields. Dashboard: FG gets a $/single column + case ×N / AMZN badges; Packing & Machine-hours show badges; Machine-hours flags case 'units' as cases (units-mixing DQ). Deployed ec4b137. CatalogSmith sync delegated next.",
-        "at": "2026-07-16T22:13:44Z"
+        "summary": "Closed the loop with CatalogSmith on pack families. Added the case_build_equals_loose guard to build_pack_families.py (blend_ratio<=1 + no master/multi-bag => null+flag, never pack_count=1), fixing 80089 (was wrongly pack_count=1). production_cost + feed now carry null pack_count safely (per_single '-', badge 'case x?'). Regenerated + redeployed (teeccino-reports 49bde3f). Canonical map lives at clawd-catalogsmith/data/sku-pack-families.json (join on sku). 80089 needs an Acctivate case-BOM fix - routing to Justin.",
+        "at": "2026-07-16T22:27:25Z"
       },
       "recentActivity": [
+        {
+          "summary": "Closed the loop with CatalogSmith on pack families. Added the case_build_equals_loose guard to build_pack_families.py (blend_ratio<=1 + no master/multi-bag => null+flag, never pack_count=1), fixing 80089 (was wrongly pack_count=1). production_cost + feed now carry null pack_count safely (per_single '-', badge 'case x?'). Regenerated + redeployed (teeccino-reports 49bde3f). Canonical map lives at clawd-catalogsmith/data/sku-pack-families.json (join on sku). 80089 needs an Acctivate case-BOM fix - routing to Justin.",
+          "at": "2026-07-16T22:27:25Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Costed the case/amazon SKUs and added per-single normalization. New build_pack_families.py derives loose/case/amazon families + pack counts from BOM (77 cases, 75 at 6-ct via blend ratio). production_cost.py now costs case SKUs from their own BOM (424 rows, was 268) with pack_type/pack_count/make_cost_per_single. Feed carries pack fields. Dashboard: FG gets a $/single column + case ×N / AMZN badges; Packing & Machine-hours show badges; Machine-hours flags case 'units' as cases (units-mixing DQ). Deployed ec4b137. CatalogSmith sync delegated next.",
           "at": "2026-07-16T22:13:44Z",
@@ -760,12 +766,6 @@
         {
           "summary": "Built the CostSmith-owned cost-domain module for the production-runs ingest pipeline (skills/_lib/prod_ingest.py): parser (wraps costlib), prod_runs column semantics, DQ pure functions (run_key, outlier, misdate, cross-file dedupe tie-break 2026-wins), parse_and_dq() and suggested_ddl(). Self-tested on live workbooks: 8427 parsed -> 7579 kept (848 cross-file dups collapsed), 5 outliers + 4 misdates flagged not dropped, 40061 resolves to 4.39h/2026. Handing harness to DataOps.",
           "at": "2026-07-15T20:09:41Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Workbook reader now copies-then-reads a locked (Excel-open) workbook instead of failing, per Justin's suggestion. Implemented once in costlib._open_workbook so every engine benefits. Records the fallback (COPY_FALLBACKS + read_from_copy_while_locked in output) and warns that a copy reflects last-saved state, so a stale read is never silent. Tested with a simulated lock; feed redeployed (cbd7aa7).",
-          "at": "2026-07-15T19:28:48Z",
           "source": "interactive",
           "status": "unknown"
         }
