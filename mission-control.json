@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-17T12:18:45.834205-07:00",
+  "lastUpdated": "2026-07-17T12:21:35.758627-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -336,26 +336,14 @@
       "emoji": "books",
       "role": "Product Information Management",
       "workspace": "clawd-catalogsmith",
-      "status": "working",
-      "currentTask": {
-        "summary": "Style-token fix in your `sku-display-names.json`: 10 SKUs in the 40xxx tea-bag l",
-        "source": "discord",
-        "startedAt": "2026-07-17T12:12:54-07:00",
-        "threadUrl": "https://discord.com/channels/1466925435316076567/1527754991245463684"
-      },
+      "status": "idle",
+      "currentTask": null,
       "activeBranches": [],
-      "activeSessions": [
-        {
-          "task": "Style-token fix in your `sku-display-names.json`: 10 SKUs in the 40xxx tea-bag l",
-          "lane": "write",
-          "startedAt": "2026-07-17T12:12:54-07:00",
-          "threadUrl": "https://discord.com/channels/1466925435316076567/1527754991245463684"
-        }
-      ],
-      "concurrentTasks": 1,
+      "activeSessions": [],
+      "concurrentTasks": 0,
       "lastActivity": {
-        "summary": "Corrected 10 40010/40060 tea-bag SKUs from \"Instant Herbal Coffee\" to \"Herbal Tea\" in sku-display-names.json (+ root-cause fix in master).",
-        "at": "2026-07-17T19:18:42.631395+00:00"
+        "summary": "Style-token fix in your `sku-display-names.json`: 10 SKUs in the 40xxx tea-bag l",
+        "at": "2026-07-17T12:19:28.180598-07:00"
       },
       "recentActivity": [
         {
@@ -597,16 +585,34 @@
       "emoji": "abacus",
       "role": "Production Cost & COGS",
       "workspace": "clawd-costsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "DELEGATE RESULT from CatalogSmith (you delegated: \"Style-token fix in your `sku-",
+        "source": "discord",
+        "startedAt": "2026-07-17T12:19:29-07:00",
+        "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "DELEGATE RESULT from CatalogSmith (you delegated: \"Style-token fix in your `sku-",
+          "lane": "write",
+          "startedAt": "2026-07-17T12:19:29-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "DELEGATE to CatalogSmith is now RUNNING in its own thread (it may pause there fo",
-        "at": "2026-07-17T12:13:03.418772-07:00"
+        "summary": "Fixed the feed-title contamination CatalogSmith flagged: build_cost_facts no longer overwrites 'title' with the display name — raw warehouse title is preserved, clean name goes in a new 'display_name' field. Dashboard renders display_name (raw title on hover + searchable). Picked up CatalogSmith's corrected tea names (40010/40011/40016/40060/40061/40066 now 'Herbal Tea'). Verified: 40061 title='Hazelnut Roasted Herbal Tea', display_name='Hazelnut - Herbal Tea - 25 ct'. Deployed c753915. CatalogSmith's next clean regen is now unblocked (facts titles are real again).",
+        "at": "2026-07-17T19:21:35Z"
       },
       "recentActivity": [
+        {
+          "summary": "Fixed the feed-title contamination CatalogSmith flagged: build_cost_facts no longer overwrites 'title' with the display name — raw warehouse title is preserved, clean name goes in a new 'display_name' field. Dashboard renders display_name (raw title on hover + searchable). Picked up CatalogSmith's corrected tea names (40010/40011/40016/40060/40061/40066 now 'Herbal Tea'). Verified: 40061 title='Hazelnut Roasted Herbal Tea', display_name='Hazelnut - Herbal Tea - 25 ct'. Deployed c753915. CatalogSmith's next clean regen is now unblocked (facts titles are real again).",
+          "at": "2026-07-17T19:21:35Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "Wired CatalogSmith's canonical display-name map (clawd-catalogsmith/data/sku-display-names.json, names key, 424/424) into the feed. Every SKU permutation of a product now shows one clean name (80110/80110L/80110A -> 'French Roast - Herbal Coffee - 11 oz (APG)'); fallback to raw title if unmapped (0 unmapped). Removed the now-redundant size badge (size is in the name). Deployed eb9c79b. Completes the case-basis + clean-names redesign. Flagged one CatalogSmith naming nit: 40061 (a 25ct TEA bag) is labeled 'Instant Herbal Coffee'.",
           "at": "2026-07-17T18:44:30Z",
@@ -658,12 +664,6 @@
         {
           "summary": "Built the pack/case model. Authoritative packs-per-shipping-case = per-run Case Size column on the production sheets (modal per SKU); verified it matches Item Listing Case Pack Units (80110L=24, 43001L=36, 6-pack=1). Finished Goods now shows $/case = make $/each × case size (80110L=$4.88/case of 24; 40061 tea=$12.42/case). Renamed $/single->$/pack, make $/unit->make $/each, and swept 'units'->'packs' across labels/headers/charts/CSV. Deployed e1080de.",
           "at": "2026-07-16T23:28:34Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Fixed $/single vs make $/unit mismatch on loose SKUs (e.g. 80110L showed $0.2058 vs $0.2033). Root cause: make $/unit is re-priced live per date range while $/single read a static feed value baked at build time, so they drifted when the blend rate changed. Now $/single is derived from the LIVE make (loose/single = make; case = make ÷ pack_count), so a loose SKU's two columns are always identical. Deployed 0d7d141.",
-          "at": "2026-07-16T22:47:54Z",
           "source": "interactive",
           "status": "unknown"
         }
