@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-17T07:55:50.616151-07:00",
+  "lastUpdated": "2026-07-17T11:03:25.306172-07:00",
   "system": {
     "gateway": "agentsmith",
     "version": "1.1"
@@ -132,12 +132,6 @@
           "at": "2026-07-10T18:05:09.483953+00:00",
           "source": "interactive",
           "status": "success"
-        },
-        {
-          "summary": "Built Summer Hydration Sale display: new homepage sale banner section + PDP/card campaign-sale-badge relabeled to 'Summer Hydration Sale' (no auto-hide). Merged to dev.",
-          "at": "2026-07-10T17:46:00Z",
-          "source": "dispatch",
-          "status": "success"
         }
       ],
       "pendingTasks": 0,
@@ -205,12 +199,6 @@
           "summary": "Daily run 2026-07-13 reviewed: exit 0, all dashboards pushed, quality checks clean. Recurring issue: ingest_klaviyo 600s timeout (429 rate-limits) 4 days straight; Klaviyo list data stale since 07-09.",
           "at": "2026-07-13T14:19:30Z",
           "source": "scheduled",
-          "status": "success"
-        },
-        {
-          "summary": "Built SKU serving layer (dim_sku + sku_labor_cost + v_sku_master); loaded CostSmith's 268-row LABOR-ONLY cost, all 268 validated against Shopify mirror.",
-          "at": "2026-07-10T15:30:00Z",
-          "source": "interactive",
           "status": "success"
         },
         {
@@ -585,16 +573,34 @@
       "emoji": "abacus",
       "role": "Production Cost & COGS",
       "workspace": "clawd-costsmith",
-      "status": "idle",
-      "currentTask": null,
+      "status": "working",
+      "currentTask": {
+        "summary": "Planning case-oriented cost page redesign + canonical product names",
+        "source": "interactive",
+        "startedAt": "2026-07-17T18:03:23Z",
+        "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
+      },
       "activeBranches": [],
-      "activeSessions": [],
-      "concurrentTasks": 0,
+      "activeSessions": [
+        {
+          "task": "Alright. Lets make this whole thing more clear to the user on all of the .  We'l",
+          "lane": "write",
+          "startedAt": "2026-07-17T10:59:54-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1527022698213933136"
+        }
+      ],
+      "concurrentTasks": 1,
       "lastActivity": {
-        "summary": "It bothers me that 80110 shows as a case x6 but 80110L doesnt show as a case of ",
-        "at": "2026-07-16T16:42:56.622206-07:00"
+        "summary": "Added a dedicated Case Size column to Finished Goods (single retail packs per production case: 80110=6, 80110L=24, 80110A=24); removed the redundant /N tag from $/case. Deployed c95b7b3. Groundwork for the larger 'production is done by the case' reframe + canonical product-name normalization (pending Justin's scope confirmation; names to come from CatalogSmith).",
+        "at": "2026-07-17T18:03:23Z"
       },
       "recentActivity": [
+        {
+          "summary": "Added a dedicated Case Size column to Finished Goods (single retail packs per production case: 80110=6, 80110L=24, 80110A=24); removed the redundant /N tag from $/case. Deployed c95b7b3. Groundwork for the larger 'production is done by the case' reframe + canonical product-name normalization (pending Justin's scope confirmation; names to come from CatalogSmith).",
+          "at": "2026-07-17T18:03:23Z",
+          "source": "interactive",
+          "status": "unknown"
+        },
         {
           "summary": "DATA-QUALITY ALERT: 389 data-quality findings (high=131, med=254); 22 in last 14d (9 high). facts_rebuilt=True.",
           "at": "2026-07-17T13:00:01.559370+00:00",
@@ -646,12 +652,6 @@
         {
           "summary": "Closed the loop with CatalogSmith on pack families. Added the case_build_equals_loose guard to build_pack_families.py (blend_ratio<=1 + no master/multi-bag => null+flag, never pack_count=1), fixing 80089 (was wrongly pack_count=1). production_cost + feed now carry null pack_count safely (per_single '-', badge 'case x?'). Regenerated + redeployed (teeccino-reports 49bde3f). Canonical map lives at clawd-catalogsmith/data/sku-pack-families.json (join on sku). 80089 needs an Acctivate case-BOM fix - routing to Justin.",
           "at": "2026-07-16T22:27:25Z",
-          "source": "interactive",
-          "status": "unknown"
-        },
-        {
-          "summary": "Costed the case/amazon SKUs and added per-single normalization. New build_pack_families.py derives loose/case/amazon families + pack counts from BOM (77 cases, 75 at 6-ct via blend ratio). production_cost.py now costs case SKUs from their own BOM (424 rows, was 268) with pack_type/pack_count/make_cost_per_single. Feed carries pack fields. Dashboard: FG gets a $/single column + case ×N / AMZN badges; Packing & Machine-hours show badges; Machine-hours flags case 'units' as cases (units-mixing DQ). Deployed ec4b137. CatalogSmith sync delegated next.",
-          "at": "2026-07-16T22:13:44Z",
           "source": "interactive",
           "status": "unknown"
         }
@@ -1428,7 +1428,7 @@
       {
         "name": "DataOps Daily Pipeline",
         "schedule": "6:00 AM daily",
-        "lastRun": "2026-07-17T07:53:47.229625-07:00",
+        "lastRun": "2026-07-17T07:56:05.550018-07:00",
         "status": "healthy"
       },
       {
