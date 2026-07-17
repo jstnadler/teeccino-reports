@@ -609,7 +609,7 @@ function showFG(fg,sku){
   const r=FG.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku))||FG.find(x=>(''+(x.sku||''))===(''+sku));
   const box=$('#fg-detail'); if(!r||!r.priced){box.hidden=true;return;}
   const lines=r.priced.map(p=>fgLine(p,0)).join('')||`<tr><td colspan="4" class="empty">No steps.</td></tr>`;
-  box.hidden=false;
+  box.hidden=false; box.dataset.fg=fg; box.dataset.sku=sku;   // remember which SKU is open (survive a basis toggle)
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('fg-detail').hidden=true">close ✕</button></div>`
     +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/pack</th></tr></thead><tbody>${lines}</tbody>`
@@ -668,7 +668,10 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#mh-export').addEventListener('click',exportMH);
   $('#fg-q').addEventListener('input',renderFG);
   document.querySelectorAll('.basis-seg').forEach(seg=> seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); recompute(); }));
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    const fgd=$('#fg-detail'), reopen=(fgd && !fgd.hidden)?{fg:fgd.dataset.fg,sku:fgd.dataset.sku}:null;  // keep the drill-down open across a toggle
+    recompute();
+    if(reopen) showFG(reopen.fg,reopen.sku); }));
   $('#t-eff tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showEffWeek(tr.dataset.eff);});
   $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
   $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
