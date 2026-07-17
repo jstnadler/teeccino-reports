@@ -192,7 +192,7 @@
     <p class="hint"><b>Blend + packing = total cost to make one pack</b>, for the selected period. Click any SKU for the full breakdown. <b>make $/each</b> = cost per produced item; <b>$/pack</b> = per single retail pack (a multipack ÷ its pack count); <b>$/case</b> = a full shipping case (× case size from the production sheet). <span class="illus" id="fg-note"></span></p>
     <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
-      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="blend">blend $</th>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Single retail packs per production case (production is done by the case).">case size</th><th data-k="blend">blend $</th>
       <th data-k="pack">packing $</th><th data-k="make">make $/each</th><th data-k="per" title="Cost per single retail PACK (one bag/box). For a multipack it's make ÷ pack count, comparable to the loose SKU.">$/pack</th><th data-k="case" title="Cost to make one full shipping CASE = make $/each × case size (packs per case, from the production sheet).">$/case</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="fg-detail" class="detail" hidden></div>
@@ -543,8 +543,8 @@ function renderFG(){
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td title="${singlesPerCase(r)>1?(singlesPerCase(r)+' single packs per case'):'case size unknown'}">${m4(caseCost(r))}${singlesPerCase(r)>1?' <span class="mtag">/'+singlesPerCase(r)+'</span>':''}</td></tr>`).join('')
-    :`<tr><td colspan="7" class="empty">No SKUs match.</td></tr>`;
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${r.size?' <span class="mtag" style="color:var(--series)">'+r.size+'</span>':''}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td class="big">${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td title="${singlesPerCase(r)>1?(singlesPerCase(r)+' single packs per case'):'case size unknown'}">${m4(caseCost(r))}</td></tr>`).join('')
+    :`<tr><td colspan="8" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
 }
