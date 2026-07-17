@@ -189,11 +189,13 @@
   <!-- 4. FINISHED GOODS -->
   <div class="card" id="c-fg">
     <h2>🏭 Finished Goods — total cost to make</h2>
-    <p class="hint"><b>Blend + packing = total cost to make one pack</b>, for the selected period. Click any SKU for the full breakdown. <b>make $/each</b> = cost per produced item; <b>$/pack</b> = per single retail pack (a multipack ÷ its pack count); <b>$/case</b> = a full shipping case (× case size from the production sheet). <span class="illus" id="fg-note"></span></p>
-    <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="fg-n"></span></div>
+    <p class="hint"><b>Blend + packing = total cost to make.</b> Toggle the basis: <b>per case</b> (production is done by the case) or <b>per individual unit</b> (one retail pack). For the selected period; click any SKU for the full breakdown. <span class="illus" id="fg-note"></span></p>
+    <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off">
+      <div class="seg" id="fg-basis"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div>
+      <span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Single retail packs per production case (production is done by the case).">case size</th><th data-k="blend">blend $</th>
-      <th data-k="pack">packing $</th><th data-k="make">make $/each</th><th data-k="per" title="Cost per single retail PACK (one bag/box). For a multipack it's make ÷ pack count, comparable to the loose SKU.">$/pack</th><th data-k="case" title="Cost to make one full shipping CASE = make $/each × case size (packs per case, from the production sheet).">$/case</th>
+      <th data-k="pack">packing $</th><th data-k="make" id="fg-makeh">make $/case</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="fg-detail" class="detail" hidden></div>
     <p class="foot" id="fg-foot"></p>
@@ -229,6 +231,7 @@ let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
 let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
 let EFFMACH=new Set();   // machine filter for the efficiency section ONLY (empty = all machines)
+let FGBASIS='case';      // Finished Goods cost basis: 'case' (default; production is by case) or 'unit'
 
 const active=()=>!!(RANGE.from||RANGE.to);
 const inR=d=>(!RANGE.from||d>=RANGE.from)&&(!RANGE.to||d<=RANGE.to);
@@ -548,9 +551,15 @@ function renderFG(){
   let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
-  $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td>${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td class="big" title="${singlesPerCase(r)>1?('cost to make one full case of '+singlesPerCase(r)+' packs'):'cost per case'}">${m4(caseCost(r))}</td></tr>`).join('')
-    :`<tr><td colspan="8" class="empty">No SKUs match.</td></tr>`;
+  // basis factor applied to per-produced-item costs: per CASE = × case size; per UNIT = ÷ pack count
+  const factor=r=> FGBASIS==='case' ? (r.case_size||1) : 1/(r.pack_count||1);
+  $('#fg-makeh').textContent = FGBASIS==='case' ? 'make $/case' : 'make $/unit';
+  $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>{const k=factor(r);
+    const unknown = FGBASIS==='unit' && r.pack_type==='case' && !r.pack_count;  // multipack w/ unknown count
+    const bl=unknown?null:r.make_blend*k, pk=unknown?null:r.make_labor*k, mk=unknown?null:r.make*k;
+    return `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(bl)}</td><td>${m4(pk)}</td><td class="big" title="${FGBASIS==='case'?('one case = '+(singlesPerCase(r)||'?')+' packs'):'one individual retail pack'}">${m4(mk)}</td></tr>`;}).join('')
+    :`<tr><td colspan="6" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
 }
@@ -640,6 +649,10 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#mh-q').addEventListener('input',renderMH);
   $('#mh-export').addEventListener('click',exportMH);
   $('#fg-q').addEventListener('input',renderFG);
+  $('#fg-basis').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    FGBASIS=b.dataset.b;
+    $('#fg-basis').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    renderFG(); });
   $('#t-eff tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showEffWeek(tr.dataset.eff);});
   $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
   $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
