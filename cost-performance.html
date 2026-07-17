@@ -161,7 +161,7 @@
     <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish one pack, from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <span class="illus">Blend cost is added in Section 4.</span></p>
     <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="pack-n"></span></div>
     <div class="scroll"><table id="t-pack"><thead><tr>
-      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="pack" id="pk-h">packing $/pack</th>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Single retail packs per production case">case size</th><th data-k="pack" id="pk-h">packing $/pack</th>
     </tr></thead><tbody></tbody></table></div>
     <p class="foot" id="pack-foot"></p>
   </div>
@@ -173,7 +173,7 @@
     <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown.</p>
     <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV (one row per SKU × machine)">⬇ Export CSV</button><span class="mtag" id="mh-n"></span></div>
     <div class="scroll"><table id="t-mh"><thead><tr>
-      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="machines">machine(s)</th><th data-k="units" id="mh-vol">cases made</th>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Single retail packs per production case">case size</th><th data-k="machines">machine(s)</th><th data-k="units" id="mh-vol">cases made</th>
       <th data-k="hrs">machine hrs</th><th data-k="hper1k" id="mh-per1k">hrs / 1k cases</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="mh-detail" class="detail" hidden></div>
@@ -310,7 +310,7 @@ function recompute(){
   // machine hours by SKU (3a)
   const Bmh=secBasis('mh'); setTxt('mh-vol',BWs(Bmh)+' made'); setTxt('mh-per1k','hrs / 1k '+BWs(Bmh));
   const mhacc={};
-  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',display_name:DISP[f.i]||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=volB(f,Bmh); o.by[f.m]=(o.by[f.m]||0)+f.t; });
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',display_name:DISP[f.i]||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,case_size:csz(f.i),hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=volB(f,Bmh); o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
   computeEff(rows,fin);
   renderActivity(rows,fin);
@@ -498,8 +498,8 @@ function renderPack(){
   rows.sort((a,b)=>(b.make_labor||0)-(a.make_labor||0));
   $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>`<tr><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td class="big">${m4(r.make_labor*factorB(r,Bp))}</td></tr>`).join('')
-    :`<tr><td colspan="3" class="empty">No SKUs match.</td></tr>`;
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td class="big">${m4(r.make_labor*factorB(r,Bp))}</td></tr>`).join('')
+    :`<tr><td colspan="4" class="empty">No SKUs match.</td></tr>`;
 }
 
 /* ---------- Section 3a: Machine hours by SKU ---------- */
@@ -515,10 +515,10 @@ function renderMH(){
   $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
   $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
     return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td>`
     +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}</td>`
     +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
-    :`<tr><td colspan="6" class="empty">No machine runs in this range.</td></tr>`;
+    :`<tr><td colspan="7" class="empty">No machine runs in this range.</td></tr>`;
   const totH=MH.reduce((s,r)=>s+r.hrs,0);
   $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with runs · ${num(totH)} total machine hrs in range.`;
 }
