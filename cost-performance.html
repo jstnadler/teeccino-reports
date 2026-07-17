@@ -219,6 +219,8 @@ const singlesPerCase=r=> r ? (r.pack_count||1)*(r.case_size||1) : null;
 // packs-per-production-case for an item (Col O), and cases from a run's pack qty. Production is
 // counted by the case, so volumes are shown in CASES = pack qty ÷ case size.
 const csz=i=> (RAW&&RAW.case_sizes&&RAW.case_sizes[i])||1;
+// clean product name (CatalogSmith) with fallback to the raw warehouse title.
+const pname=r=> (r&&(r.display_name||r.title))||'';
 const casesOf=f=> f&&f.q ? f.q/csz(f.i) : 0;
 // Product-cell badge: only the Amazon channel marker. Pack/case counts live in the $/case "/N"
 // column (consistent for every row) — no more asymmetric "case ×N" badge on some rows only.
@@ -290,10 +292,10 @@ function recompute(){
   // cost-to-make (re-priced) for Section 3 & 4
   FG=(RAW.bom_cogs.items||[]).map(it=>{const r=makeOf(it); return {...it,make:r.make,make_blend:r.blend,make_labor:r.pack,priced:r.priced};});
   // SKU -> size (10ct / 11oz / 25ct / Sampler...) lookup, keyed by every id a row might use
-  const SIZE={}, PACK={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k){ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; } }); });
+  const SIZE={}, PACK={}, DISP={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k){ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; if(it.display_name)DISP[k]=it.display_name; } }); });
   // machine hours by SKU (3a)
   const mhacc={};
-  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=casesOf(f); o.by[f.m]=(o.by[f.m]||0)+f.t; });
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',display_name:DISP[f.i]||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=casesOf(f); o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
   computeEff(rows,fin);
   renderActivity(rows,fin);
@@ -474,11 +476,11 @@ function showBlend(id){
 /* ---------- Section 3: Packing ---------- */
 function renderPack(){
   const q=$('#pack-q').value.trim().toLowerCase();
-  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q));
+  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
   rows.sort((a,b)=>(b.make_labor||0)-(a.make_labor||0));
   $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>`<tr><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${packBadge(r)}</td><td class="big">${m4(r.make_labor)}</td></tr>`).join('')
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td class="big">${m4(r.make_labor)}</td></tr>`).join('')
     :`<tr><td colspan="3" class="empty">No SKUs match.</td></tr>`;
 }
 
@@ -487,7 +489,7 @@ function renderPack(){
 function mhMachines(r){ return Object.entries(r.by||{}).sort((a,b)=>b[1]-a[1]).map(x=>x[0]); }
 function mhFiltered(){
   const q=$('#mh-q').value.trim().toLowerCase();
-  return MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q))
+  return MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q))
           .sort((a,b)=>b.hrs-a.hrs);
 }
 function renderMH(){
@@ -495,7 +497,7 @@ function renderMH(){
   $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
   $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
     return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${packBadge(r)}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td>`
     +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${num(r.units)}</td>`
     +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
     :`<tr><td colspan="6" class="empty">No machine runs in this range.</td></tr>`;
@@ -514,7 +516,7 @@ function exportMH(){
   const rows=mhFiltered();
   const out=[['SKU','Product','Machine / stage','machine hrs','SKU total cases','SKU total machine hrs','machine hrs / 1k cases']];
   rows.forEach(r=>{ mhMachines(r).forEach(m=>{ const h=r.by[m];
-    out.push([r.sku,r.title||'',m,(+h).toFixed(2),r.units,r.hrs,r.units?((h/r.units)*1000).toFixed(3):'']); }); });
+    out.push([r.sku,pname(r),m,(+h).toFixed(2),r.units,r.hrs,r.units?((h/r.units)*1000).toFixed(3):'']); }); });
   const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
   downloadCSV(`machine-hours-by-sku_${tag}.csv`,out);
 }
@@ -522,7 +524,7 @@ function showMH(sku){
   const r=MH.find(x=>(''+x.sku)===(''+sku)); const box=$('#mh-detail'); if(!r){box.hidden=true;return;}
   const machs=Object.entries(r.by).sort((a,b)=>b[1]-a[1]);
   box.hidden=false;
-  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${r.title||''}</h3>`
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('mh-detail').hidden=true">close ✕</button></div>`
     +`<p class="hint" style="margin:6px 0"><b>${num(r.hrs)}</b> machine hrs · <b>${num(r.units)}</b> cases. By machine:</p>`
     +`<table style="font-size:12.5px"><thead><tr><th>Machine / stage</th><th>machine hrs</th><th>share</th></tr></thead><tbody>`
@@ -543,11 +545,11 @@ function renderMachines(rows,fin){
 /* ---------- Section 4: Finished Goods ---------- */
 function renderFG(){
   const q=$('#fg-q').value.trim().toLowerCase();
-  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(r.title||'').toLowerCase().includes(q));
+  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
   $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||''}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td>${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td class="big" title="${singlesPerCase(r)>1?('cost to make one full case of '+singlesPerCase(r)+' packs'):'cost per case'}">${m4(caseCost(r))}</td></tr>`).join('')
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(r.make_blend)}</td><td>${m4(r.make_labor)}</td><td>${m4(r.make)}</td><td${r.pack_type==='case'?'':' class="illus"'} title="${r.pack_type==='case'&&perSingle(r)==null?'pack count unknown — flagged':''}">${m4(perSingle(r))}</td><td class="big" title="${singlesPerCase(r)>1?('cost to make one full case of '+singlesPerCase(r)+' packs'):'cost per case'}">${m4(caseCost(r))}</td></tr>`).join('')
     :`<tr><td colspan="8" class="empty">No SKUs match.</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
@@ -583,7 +585,7 @@ function showFG(fg,sku){
   const box=$('#fg-detail'); if(!r||!r.priced){box.hidden=true;return;}
   const lines=r.priced.map(p=>fgLine(p,0)).join('')||`<tr><td colspan="4" class="empty">No steps.</td></tr>`;
   box.hidden=false;
-  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${r.title||''}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('fg-detail').hidden=true">close ✕</button></div>`
     +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/pack</th></tr></thead><tbody>${lines}</tbody>`
     +`<tfoot><tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend)}</td></tr>`
