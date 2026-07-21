@@ -158,11 +158,12 @@
   <div class="card" id="c-pack">
     <h2>📦 Packing — cost to pack &amp; finish each SKU</h2>
     <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">show:</span><div class="seg basis-seg" data-sec="pack"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
-    <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish one pack, from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <span class="illus">Blend cost is added in Section 4.</span></p>
+    <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish one pack, from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <b>Click a SKU</b> to see every production run behind it in the selected date range. <span class="illus">Blend cost is added in Section 4.</span></p>
     <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="pack-n"></span></div>
     <div class="scroll"><table id="t-pack"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Single retail packs per production case">case size</th><th data-k="pack" id="pk-h">packing $/pack</th>
     </tr></thead><tbody></tbody></table></div>
+    <div id="pack-detail" class="detail" hidden></div>
     <p class="foot" id="pack-foot"></p>
   </div>
 
@@ -316,7 +317,7 @@ function recompute(){
   computeEff(rows,fin);
   renderActivity(rows,fin);
   renderEff(); renderBlend(); renderPack(); renderFG(); renderMH(); renderMachines(rows,fin);
-  $('#eff-detail').hidden=true; $('#blend-detail').hidden=true; $('#mh-detail').hidden=true; $('#fg-detail').hidden=true;
+  $('#eff-detail').hidden=true; $('#blend-detail').hidden=true; $('#mh-detail').hidden=true; $('#fg-detail').hidden=true; $('#pack-detail').hidden=true;
 }
 function priceNode(l){
   if(l.type==='blend'){ const per=(l.id in BLENDLB)?BLENDLB[l.id]:l.per_lb; return {t:'blend',node:l,per,usd:l.lbs*per}; }
@@ -498,9 +499,58 @@ function renderPack(){
   let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
   rows.sort((a,b)=>(b.make_labor||0)-(a.make_labor||0));
   $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
-  $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>`<tr><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
+  $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td class="big">${m4(r.make_labor*factorB(r,Bp))}</td></tr>`).join('')
     :`<tr><td colspan="4" class="empty">No SKUs match.</td></tr>`;
+}
+// The production item#(s) whose packing runs drive this SKU's packing cost. A simple SKU maps to
+// one item; a bundle/sampler rolls up its component bags, so it can map to several. Collected from
+// the same make_breakdown the packing $ was computed from, so the runs match the number shown.
+function packItems(r){
+  const set=new Set();
+  (function walk(ls){(ls||[]).forEach(l=>{
+    if(l&&l.type==='pack_labor'&&l.item!=null) set.add(''+l.item);
+    else if(l&&l.type==='component') walk(l.sub);
+  });})(r&&r.make_breakdown);
+  if(!set.size){ if(r&&r.fg!=null)set.add(''+r.fg); if(r&&r.sku!=null)set.add(''+r.sku); }  // fallback for minimal breakdowns
+  return set;
+}
+// Drill-down: every finished-stage production run behind a packing SKU, within the active date range.
+function showPack(sku){
+  const r=FG.find(x=>(''+(x.sku||''))===(''+sku)); const box=$('#pack-detail');
+  if(!r){box.hidden=true;return;}
+  const items=packItems(r), fin=finSet();
+  const runs=fRows().filter(f=>fin.has(f.m)&&items.has(''+f.i))
+                    .sort((a,b)=>(''+(b.d||'')).localeCompare(''+(a.d||'')));  // newest first
+  const rangeTxt=active()?`${RANGE.from||'start'} → ${RANGE.to||'end'}`:'all time';
+  box.hidden=false;
+  if(!runs.length){
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}</h3>`
+      +`<button class="linkbtn" onclick="document.getElementById('pack-detail').hidden=true">close ✕</button></div>`
+      +`<p class="hint" style="margin:6px 0">No production runs for this SKU in <b>${rangeTxt}</b>.`
+      +` <span class="illus">(pack item${items.size>1?'s':''}: ${[...items].join(', ')})</span></p>`;
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+  let tRuns=0,tPacks=0,tMh=0,tOh=0,tLab=0;
+  const rowsH=runs.map(f=>{
+    const q=f.q||0, oh=(f.t!=null&&f.o!=null)?f.t*f.o:null, lab=oh!=null?oh*WAGE:null;
+    const perPack=(lab!=null&&q)?lab/q:null;
+    tRuns++; tPacks+=q; if(f.t!=null)tMh+=f.t; if(oh!=null)tOh+=oh; if(lab!=null)tLab+=lab;
+    const flag=f.dq?` <span class="mtag" title="Run time looked physically impossible (End-Time typo) — time excluded, packs kept">⚠ time</span>`:'';
+    return `<tr><td>${f.d||'–'}</td><td>${f.m}</td><td><code>${f.i}</code></td><td>${num(q)}</td>`
+      +`<td>${f.o!=null?f.o:'–'}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}${flag}</td>`
+      +`<td>${lab!=null?m2(lab):'–'}</td><td>${m4(perPack)}</td></tr>`;
+  }).join('');
+  const wAvg=tPacks?tLab/tPacks:null;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('pack-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:6px 0"><b>${num(tRuns)}</b> run${tRuns===1?'':'s'} · <b>${num(tPacks)}</b> packs made · <b>${num(tMh)}</b> machine hrs · <b>${m2(tLab)}</b> packing labor`
+    +` <span class="illus">· ${rangeTxt}${items.size>1?` · rolls up items ${[...items].join(', ')}`:''}</span></p>`
+    +`<div class="scroll"><table style="font-size:12.5px"><thead><tr><th>Date</th><th>Machine / stage</th><th>Item&nbsp;#</th><th>packs made</th><th>ops</th><th>machine hrs</th><th>labor $</th><th>$/pack</th></tr></thead>`
+    +`<tbody>${rowsH}</tbody>`
+    +`<tfoot><tr><td colspan="3" style="text-align:right"><b>total / weighted avg</b></td><td>${num(tPacks)}</td><td>–</td><td>${(+tMh).toFixed(2)}</td><td>${m2(tLab)}</td><td class="big">${m4(wAvg)}</td></tr></tfoot></table></div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 /* ---------- Section 3a: Machine hours by SKU ---------- */
@@ -675,6 +725,7 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
     if(reopen) showFG(reopen.fg,reopen.sku); }));
   $('#t-eff tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showEffWeek(tr.dataset.eff);});
   $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
+  $('#t-pack tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showPack(tr.dataset.pack);});
   $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
   $('#t-fg tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showFG(tr.dataset.fg,tr.dataset.sku);});
   computeStdHist();
