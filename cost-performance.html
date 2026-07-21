@@ -243,6 +243,7 @@ const setTxt=(id,t)=>{const e=document.getElementById(id); if(e)e.textContent=t;
 const packBadge=r=> r&&r.pack_type==='amazon' ? ` <span class="mtag" title="Amazon pack variant">AMZN</span>` : '';
 let RAW=null, RANGE={from:null,to:null};
 let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
+let PRODITEMS=new Set();   // production item#s with ≥1 finished-stage run in the active range (drives "no runs this period")
 let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
 let EFFMACH=new Set();   // machine filter for the efficiency section ONLY (empty = all machines)
 
@@ -300,6 +301,10 @@ function recompute(){
       if(f.t&&f.q){ const a=bl[f.i]||(bl[f.i]=[0,0]); a[0]+=f.t; a[1]+=f.q; m.hrs+=f.t; m.lbs+=f.q; } }
   });
   PACKBY={}; for(const k in pk) PACKBY[k]=pk[k][0]/pk[k][1]*WAGE;
+  // Any finished-stage run in range counts as production (even a time-flagged one), so the Packing
+  // table can say "no runs this period" instead of falling back to an all-time cost for SKUs that
+  // didn't run. Keyed by production item# — matches the drill-down's run set.
+  PRODITEMS=new Set(); rows.forEach(f=>{ if(fin.has(f.m)&&f.i!=null) PRODITEMS.add(''+f.i); });
   BLENDLB={}; for(const k in bl) BLENDLB[k]=bl[k][0]*LOADED/bl[k][1];
   // blend rows for Section 2
   BLENDS=Object.keys(blMeta).filter(k=>blMeta[k].lbs>0).map(k=>{const m=blMeta[k];
@@ -493,15 +498,28 @@ function showBlend(id){
 }
 
 /* ---------- Section 3: Packing ---------- */
+// Did this SKU actually run in the selected period? True iff any of its pack item#s had a
+// finished-stage run in range. When false, we DON'T show a packing $ (which would otherwise
+// silently fall back to the all-time cost) — we say so instead.
+function packHasRuns(r){ for(const it of packItems(r)){ if(PRODITEMS.has(''+it)) return true; } return false; }
 function renderPack(){
   const Bp=secBasis('pack'); setTxt('pk-h','packing $/'+BW1s(Bp));
   const q=$('#pack-q').value.trim().toLowerCase();
   let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
-  rows.sort((a,b)=>(b.make_labor||0)-(a.make_labor||0));
+  const hasRun=new Map(); rows.forEach(r=>hasRun.set(r,packHasRuns(r)));
+  // Rows with runs first (by cost desc); no-run rows sink to the bottom with no cost shown.
+  rows.sort((a,b)=>{const ha=hasRun.get(a),hb=hasRun.get(b); if(ha!==hb)return ha?-1:1; return (b.make_labor||0)-(a.make_labor||0);});
+  const noRun=rows.filter(r=>!hasRun.get(r)).length;
   $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
-  $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>`<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td class="big">${m4(r.make_labor*factorB(r,Bp))}</td></tr>`).join('')
+  $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>{const hr=hasRun.get(r);
+    const cell=hr ? `<span class="big">${m4(r.make_labor*factorB(r,Bp))}</span>`
+      : `<span class="illus" title="No production runs for this SKU in the selected period. Widen the date range or pick a period when it ran.">no runs this period</span>`;
+    return `<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${cell}</td></tr>`;}).join('')
     :`<tr><td colspan="4" class="empty">No SKUs match.</td></tr>`;
+  $('#pack-foot').innerHTML=noRun
+    ? `<span class="illus">${num(noRun)} of ${num(rows.length)} SKU(s) had no production runs in this period — shown at the bottom with no cost (a $/pack would only be an all-time figure, not this period's).</span>`
+    : '';
 }
 // The production item#(s) whose packing runs drive this SKU's packing cost. A simple SKU maps to
 // one item; a bundle/sampler rolls up its component bags, so it can map to several. Collected from
