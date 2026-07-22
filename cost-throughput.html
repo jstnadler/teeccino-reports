@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Throughput — Teeccino Reports</title>
+<meta name="description" content="Units produced per machine-hour / minute by packing line and product family. Owner: CostSmith.">
+<style>
+  /* ── HubSmith chrome for cost-throughput.html ─────────────────────────────
+     Owner of THIS wrapper (head/body shell, nav include, breadcrumb, footer):
+     HubSmith. The <main> body section is CostSmith's (data-driven dashboard).
+     Do not edit inside .cts-root except by CostSmith handoff.
+     Base path is /teeccino-reports/ (github.io serving; no custom domain as of
+     2026-07-09). Nav/owner-badge inject via the shared fragment + nav-boot.js. */
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f4f1;
+    color: #0b0b0b;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .page-wrap { max-width: 1040px; margin: 0 auto; padding: 20px 24px 8px; }
+  .crumbs { font-size: 12.5px; color: #8a8984; margin: 4px 0 14px; }
+  .crumbs a { color: #52514e; text-decoration: none; }
+  .crumbs a:hover { color: #2a78d6; text-decoration: underline; }
+  .crumbs .sep { margin: 0 6px; color: #b8b7b2; }
+  main { max-width: 1040px; margin: 0 auto; padding: 0 24px 40px; }
+  footer.hub-foot {
+    max-width: 1040px; margin: 0 auto; padding: 20px 24px 40px;
+    border-top: 1px solid #e6e6e3; color: #8a8984; font-size: 12px;
+  }
+  footer.hub-foot a { color: #52514e; text-decoration: none; }
+  footer.hub-foot a:hover { text-decoration: underline; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) body { background: #141413; color: #fff; }
+    :root:not([data-theme="light"]) .crumbs { color: #8f8e86; }
+    :root:not([data-theme="light"]) .crumbs a { color: #c3c2b7; }
+    :root:not([data-theme="light"]) footer.hub-foot { border-top-color: #33322f; color: #8f8e86; }
+    :root:not([data-theme="light"]) footer.hub-foot a { color: #c3c2b7; }
+  }
+  :root[data-theme="dark"] body { background: #141413; color: #fff; }
+  :root[data-theme="dark"] .crumbs { color: #8f8e86; }
+  :root[data-theme="dark"] .crumbs a { color: #c3c2b7; }
+  :root[data-theme="dark"] footer.hub-foot { border-top-color: #33322f; color: #8f8e86; }
+  :root[data-theme="dark"] footer.hub-foot a { color: #c3c2b7; }
+</style>
+</head>
+<body>
+
+<!-- Shared top nav (HubSmith-owned). Fetched + injected; nav-boot.js re-runs on inject. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var slot = document.getElementById('hub-nav');
+      slot.innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+      slot.querySelectorAll('script').forEach(function (s) {
+        var n = document.createElement('script');
+        if (s.src) { n.src = s.src; } else { n.textContent = s.textContent; }
+        document.head.appendChild(n);
+      });
+    })
+    .catch(function () { /* nav is progressive enhancement; page still works without it */ });
+</script>
+
+<div class="page-wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/teeccino-reports/index.html">Reports</a>
+    <span class="sep">›</span>
+    <a href="/teeccino-reports/index.html#operations">Operations</a>
+    <span class="sep">›</span>
+    <span aria-current="page">Production Throughput</span>
+  </nav>
+</div>
+
+<main>
+<!-- ==================================================================
+  CostSmith-owned dashboard body. Pasted verbatim from
+  clawd-costsmith/data/cost-throughput-section.html. Reads the repo-root
+  feed cost-throughput-facts.json (relative path — resolves on both the
+  github.io base path and any future custom-domain root). HubSmith does
+  not edit inside .cts-root; changes route to CostSmith.
+=================================================================== -->
+<section class="cts-root" aria-label="Production throughput">
+  <style>
+    .cts-root{
+      color-scheme:light;
+      --surface-1:#fcfcfb; --surface-2:#f4f4f1; --border:#e6e6e3;
+      --ink:#0b0b0b; --ink-2:#52514e; --muted:#8a8984;
+      --s1:#2a78d6; --s2:#eb6834; --s3:#008300; --s4:#4a3aa7; --s5:#e34948; --s6:#eda100;
+      font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink);
+    }
+    :root[data-theme="dark"] .cts-root{
+      color-scheme:dark; --surface-1:#1a1a19; --surface-2:#242422; --border:#33322f;
+      --ink:#fff; --ink-2:#c3c2b7; --muted:#8f8e86;
+      --s1:#3987e5; --s2:#d95926; --s3:#2e9e2e; --s4:#9085e9; --s5:#e66767; --s6:#c98500;
+    }
+    @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cts-root{
+      color-scheme:dark; --surface-1:#1a1a19; --surface-2:#242422; --border:#33322f;
+      --ink:#fff; --ink-2:#c3c2b7; --muted:#8f8e86;
+      --s1:#3987e5; --s2:#d95926; --s3:#2e9e2e; --s4:#9085e9; --s5:#e66767; --s6:#c98500;
+    }}
+    .cts-root h2{font-size:20px;margin:0 0 2px;font-weight:700}
+    .cts-sub{color:var(--ink-2);margin:0 0 4px;max-width:72ch}
+    .cts-scope{color:var(--muted);font-size:12px;margin:0 0 16px}
+    .cts-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;margin:0 0 14px;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
+    .cts-field{display:flex;flex-direction:column;gap:3px}
+    .cts-field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .cts-field select{font:inherit;padding:6px 8px;background:var(--surface-1);color:var(--ink);border:1px solid var(--border);border-radius:7px;min-width:150px}
+    .cts-chartwrap{border:1px solid var(--border);border-radius:10px;background:var(--surface-1);padding:12px 8px 6px}
+    .cts-svg{width:100%;height:auto;display:block}
+    .cts-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 6px 2px;font-size:12.5px}
+    .cts-legend span{display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
+    .cts-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+    .cts-tblwrap{overflow-x:auto}
+    .cts-tbl{width:100%;border-collapse:collapse;margin-top:14px;font-size:12.5px}
+    .cts-tbl th,.cts-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+    .cts-tbl th:first-child,.cts-tbl td:first-child{text-align:left;position:sticky;left:0;background:var(--surface-1)}
+    .cts-tbl thead th{color:var(--ink-2);font-weight:600;border-bottom:2px solid var(--border)}
+    .cts-note{color:var(--muted);font-size:12px;margin-top:10px;max-width:80ch}
+    .cts-dot{fill:var(--surface-1);stroke-width:2}
+  </style>
+
+  <h2>Production Throughput</h2>
+  <p class="cts-sub">Units produced per machine-hour / minute / operator-hour, by packing line and product family. Higher = faster. Slice by metric, family, line, single SKU, and year.</p>
+  <p class="cts-scope" id="cts-scope">Loading…</p>
+
+  <div class="cts-controls">
+    <div class="cts-field"><label for="cts-metric">Metric</label>
+      <select id="cts-metric"></select></div>
+    <div class="cts-field"><label for="cts-view">View</label>
+      <select id="cts-view">
+        <option value="family">By product family</option>
+        <option value="line">By packing line</option>
+        <option value="sku">By single SKU</option>
+      </select></div>
+    <div class="cts-field"><label for="cts-year">Year</label>
+      <select id="cts-year"></select></div>
+    <div class="cts-field" id="cts-skuwrap" style="display:none"><label for="cts-sku">SKU</label>
+      <select id="cts-sku"></select></div>
+  </div>
+
+  <div class="cts-chartwrap">
+    <svg class="cts-svg" id="cts-svg" viewBox="0 0 900 380" role="img" aria-label="Throughput trend chart"></svg>
+    <div class="cts-legend" id="cts-legend"></div>
+  </div>
+
+  <div class="cts-tblwrap"><table class="cts-tbl" id="cts-tbl"><thead></thead><tbody></tbody></table></div>
+  <p class="cts-note" id="cts-note"></p>
+</section>
+
+<script>
+(function(){
+  var ROOT=document.currentScript.previousElementSibling;
+  var FEED="cost-throughput-facts.json";
+  var PAL=["--s1","--s2","--s3","--s4","--s5","--s6"];
+  var METRIC_LABELS={units_per_machine_hour:"Units / machine-hour",units_per_minute:"Units / minute",units_per_operator_hour:"Units / operator-hour"};
+  var $=function(id){return ROOT.querySelector("#"+id)};
+  var D=null, IDX={fam:{},line:{},sku:{}}, skuMeta={};
+  var state={metric:"units_per_machine_hour",view:"family",year:"2026",sku:null};
+
+  function cssv(v){return getComputedStyle(ROOT).getPropertyValue(v).trim()}
+  function fmt(x){return (x==null)?"–":(Math.abs(x)<10?(+x).toFixed(2):Math.round(x).toLocaleString())}
+  function monthsForYear(){var ms=D.dims.months; return state.year==="all"?ms:ms.filter(function(m){return m.slice(0,4)===state.year});}
+  function mlabel(m){return m.slice(2);} // "2026-01" -> "26-01"
+
+  function buildIndex(list,keyName){
+    var o={}; list.forEach(function(r){ var k=r[keyName]; (o[k]=o[k]||{})[r.month]=r; }); return o;
+  }
+
+  function seriesForView(){
+    var out=[];
+    if(state.view==="family"){
+      // default families of interest first, then any others present
+      var order=["APG","Tea","Instant","Sampler"];
+      var present=D.dims.families.slice().sort(function(a,b){return order.indexOf(a)-order.indexOf(b)});
+      present.forEach(function(f){ if(IDX.fam[f]) out.push({name:f,byMonth:IDX.fam[f]}); });
+    }else if(state.view==="line"){
+      D.dims.lines.forEach(function(l){ if(IDX.line[l]) out.push({name:l,byMonth:IDX.line[l]}); });
+    }else{
+      var s=IDX.sku[state.sku]; var meta=skuMeta[state.sku]||{};
+      if(s) out.push({name:(state.sku+" "+(meta.desc||"")).slice(0,40),byMonth:s});
+    }
+    return out;
+  }
+
+  function render(){
+    var m=state.metric, MS=monthsForYear(), S=seriesForView();
+    var maxY=0;
+    S.forEach(function(s){ MS.forEach(function(mo){ var c=s.byMonth[mo]; if(c&&c[m]!=null) maxY=Math.max(maxY,c[m]); }); });
+    if(maxY<=0) maxY=1;
+    var W=900,H=380,padL=64,padR=18,padT=18,padB=46, iw=W-padL-padR, ih=H-padT-padB;
+    var x=function(i){return padL+(MS.length<2?iw/2:iw*i/(MS.length-1))};
+    var y=function(v){return padT+ih*(1-v/(maxY*1.1))};
+    var g=["<g font-family='system-ui' font-size='11'>"];
+    for(var k=0;k<=4;k++){var vy=maxY*1.1*k/4,py=y(vy);
+      g.push("<line x1='"+padL+"' y1='"+py+"' x2='"+(W-padR)+"' y2='"+py+"' stroke='"+cssv('--border')+"'/>");
+      g.push("<text x='"+(padL-8)+"' y='"+(py+4)+"' text-anchor='end' fill='"+cssv('--muted')+"'>"+fmt(vy)+"</text>");
+    }
+    var step=MS.length>13?2:1;
+    MS.forEach(function(mo,i){ if(i%step===0||i===MS.length-1) g.push("<text x='"+x(i)+"' y='"+(H-padB+22)+"' text-anchor='middle' fill='"+cssv('--muted')+"' font-size='10'>"+mlabel(mo)+"</text>"); });
+    S.forEach(function(s,si){
+      var col=cssv(PAL[si%PAL.length]),pts=[];
+      MS.forEach(function(mo,i){ var c=s.byMonth[mo]; if(c&&c[m]!=null) pts.push([x(i),y(c[m]),c[m],mo]); });
+      if(pts.length>1) g.push("<polyline fill='none' stroke='"+col+"' stroke-width='2' points='"+pts.map(function(p){return p[0]+","+p[1]}).join(" ")+"'/>");
+      pts.forEach(function(p){ g.push("<circle class='cts-dot' cx='"+p[0]+"' cy='"+p[1]+"' r='3.5' stroke='"+col+"'><title>"+s.name+" — "+p[3]+": "+fmt(p[2])+"</title></circle>"); });
+    });
+    g.push("</g>");
+    $("cts-svg").innerHTML=g.join("");
+    $("cts-legend").innerHTML=S.map(function(s,si){return "<span><i style='background:"+cssv(PAL[si%PAL.length])+"'></i>"+s.name+"</span>"}).join("")||"<span style='color:var(--muted)'>No data for this selection.</span>";
+    var th="<tr><th>Series</th>"+MS.map(function(mo){return "<th>"+mlabel(mo)+"</th>"}).join("")+"</tr>";
+    var tb=S.map(function(s){return "<tr><td>"+s.name+"</td>"+MS.map(function(mo){var c=s.byMonth[mo];return "<td>"+(c?fmt(c[m]):"–")+"</td>"}).join("")+"</tr>"}).join("");
+    $("cts-tbl").querySelector("thead").innerHTML=th;
+    $("cts-tbl").querySelector("tbody").innerHTML=tb;
+    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A 'unit' = one pack in that SKU's own pack size (a 10-ct box ≠ a 5-lb bag) — compare within a SKU or line, not across families. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial.";
+  }
+
+  function initControls(){
+    $("cts-metric").innerHTML=D.dims.metrics.map(function(mt){return "<option value='"+mt+"'>"+(METRIC_LABELS[mt]||mt)+"</option>"}).join("");
+    var yrs=D.dims.years.slice();
+    $("cts-year").innerHTML="<option value='all'>All ("+yrs[0]+"–"+yrs[yrs.length-1]+")</option>"+yrs.map(function(y){return "<option value='"+y+"'"+(y==="2026"?" selected":"")+">"+y+"</option>"}).join("");
+    if(yrs.indexOf("2026")<0) state.year=yrs[yrs.length-1];
+    // SKU picker: skus with >=2 months, most months first
+    var monthsCount={}; D.by_sku_month.forEach(function(r){monthsCount[r.sku]=(monthsCount[r.sku]||0)+1;});
+    var opts=D.by_sku.map(function(s){return {sku:s.sku,label:s.sku+" — "+(s.desc||"").slice(0,34)+" ["+(s.lines||[]).join("/")+"]",mc:monthsCount[s.sku]||0}})
+      .filter(function(o){return o.mc>=2}).sort(function(a,b){return b.mc-a.mc});
+    $("cts-sku").innerHTML=opts.map(function(o){return "<option value='"+o.sku+"'>"+o.label+"</option>"}).join("");
+    state.sku=opts.length?opts[0].sku:null;
+  }
+
+  fetch(FEED).then(function(r){return r.json()}).then(function(d){
+    D=d;
+    IDX.fam=buildIndex(d.by_family_month,"family");
+    IDX.line=buildIndex(d.by_line_month,"line");
+    IDX.sku=buildIndex(d.by_sku_month,"sku");
+    d.by_sku.forEach(function(s){skuMeta[s.sku]=s});
+    var meta=d._meta||{};
+    $("cts-scope").textContent="Throughput only • source built "+((meta.source_built_at||d.source_built_at||"")+"").slice(0,10)+" • "+d.dims.months.length+" months ("+d.dims.years.join(", ")+") • "+d.by_sku.length+" SKUs";
+    initControls();
+    $("cts-metric").onchange=function(){state.metric=this.value;render()};
+    $("cts-view").onchange=function(){state.view=this.value;$("cts-skuwrap").style.display=this.value==="sku"?"":"none";render()};
+    $("cts-year").onchange=function(){state.year=this.value;render()};
+    $("cts-sku").onchange=function(){state.sku=this.value;render()};
+    render();
+  }).catch(function(e){ $("cts-scope").textContent="Could not load "+FEED+" — "+e; });
+})();
+</script>
+</main>
+
+<footer class="hub-foot">
+  Production Throughput · maintained by CostSmith · data feed
+  <a href="/teeccino-reports/cost-throughput-facts.json">cost-throughput-facts.json</a> ·
+  <a href="/teeccino-reports/index.html">← All Reports</a>
+</footer>
+
+</body>
+</html>
