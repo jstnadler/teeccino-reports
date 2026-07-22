@@ -111,7 +111,7 @@
       agentsmith: 'AgentSmith', dataops: 'DataOps', catalogsmith: 'CatalogSmith',
       adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
       assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
-      labsmith: 'LabSmith', searchsmith: 'SearchSmith'
+      labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith'
     };
     var esc = function (str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -159,7 +159,7 @@
       agentsmith: 'AgentSmith', dataops: 'DataOps', catalogsmith: 'CatalogSmith',
       adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
       assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
-      labsmith: 'LabSmith', searchsmith: 'SearchSmith'
+      labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith'
     };
     var esc = function (str) {
       return String(str == null ? '' : str)
