@@ -158,7 +158,7 @@ function renderCalendar(env) {
   let h = '';
   // Source caption: when the full workbook lineup is ingested, say so + count.
   if (ps && ps.ingested === true) {
-    const tc = ps.tierCounts ? ` · ${esc(tc0(ps.tierCounts.major))} major / ${esc(tc0(ps.tierCounts.minor))} minor` : '';
+    const tc = ps.tierCounts ? ` · ${esc(ps.tierCounts.major ?? 0)} major / ${esc(ps.tierCounts.minor ?? 0)} minor` : '';
     h += `<div style="color:#64748b;font-size:0.85em;margin-bottom:8px">Full ${ps.count ? esc(ps.count)+'-promo ' : ''}lineup${tc}${ps.sheet ? ' · source: '+esc(ps.file || '')+(ps.sheet?' ('+esc(ps.sheet)+')':'') : ''}</div>`;
   }
   if (promos.length) {
@@ -194,7 +194,9 @@ function renderCalendar(env) {
         ? `<details style="margin-top:4px"><summary style="cursor:pointer;color:#64748b;font-size:0.85em">detail</summary>`
           + `<pre style="white-space:pre-wrap;color:#94a3b8;font-size:0.82em;margin:6px 0 0">${esc(p.detail)}</pre></details>`
         : '';
-      h += `<tr><td><strong>${esc(p.name)}</strong>${detail}</td><td><span class="pill ${esc(p.phase)}">${esc(p.phase)}</span></td>`
+      const slot = p.slot ? `<div style="font-size:0.75em;color:#64748b;margin-top:2px">${esc(p.slot)}</div>` : '';
+      h += `<tr><td><strong>${esc(p.name)}</strong>${slot}${detail}</td><td>${tierPill}</td>`
+        + `<td><span class="pill ${esc(p.phase)}">${esc(p.phase)}</span></td>`
         + `<td>${dates}</td><td>${scope}</td><td>${adv}</td><td>${fn}</td>`
         + `<td>${gift}</td></tr>`;
     }
