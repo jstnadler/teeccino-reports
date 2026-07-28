@@ -158,18 +158,36 @@ function renderCalendar(env) {
   let h = '';
   // Source caption: when the full workbook lineup is ingested, say so + count.
   if (ps && ps.ingested === true) {
-    h += `<div style="color:#64748b;font-size:0.85em;margin-bottom:8px">Full ${ps.count ? esc(ps.count)+'-promo ' : ''}lineup${ps.sheet ? ' · source: '+esc(ps.file || '')+(ps.sheet?' ('+esc(ps.sheet)+')':'') : ''}</div>`;
+    const tc = ps.tierCounts ? ` · ${esc(tc0(ps.tierCounts.major))} major / ${esc(tc0(ps.tierCounts.minor))} minor` : '';
+    h += `<div style="color:#64748b;font-size:0.85em;margin-bottom:8px">Full ${ps.count ? esc(ps.count)+'-promo ' : ''}lineup${tc}${ps.sheet ? ' · source: '+esc(ps.file || '')+(ps.sheet?' ('+esc(ps.sheet)+')':'') : ''}</div>`;
   }
   if (promos.length) {
-    h += '<table><thead><tr><th>Promo</th><th>Phase</th><th>Timing</th><th>Scope</th><th>Advertised</th><th>Functional</th><th>Free gift</th></tr></thead><tbody>';
+    h += '<table><thead><tr><th>Promo</th><th>Tier</th><th>Phase</th><th>Timing</th><th>Scope</th><th>Advertised</th><th>Functional</th><th>Free gift</th></tr></thead><tbody>';
     for (const p of promos) {
-      const adv = p.advertisedRate ? `OTP ${esc(p.advertisedRate.otp)} · SUB ${esc(p.advertisedRate.sub)}` : '—';
-      const fn = p.functionalRate ? `OTP ${esc(p.functionalRate.otp)}% · SUB ${esc(p.functionalRate.sub)}%` : '—';
+      // A minor with no subscription lever carries sub:null DELIBERATELY (spec §3.1).
+      // Render it as "no sub lever", never as the string "null".
+      const adv = p.advertisedRate
+        ? `OTP ${esc(p.advertisedRate.otp)}` + (p.advertisedRate.sub != null ? ` · SUB ${esc(p.advertisedRate.sub)}` : ` · <span style="color:#64748b">no sub lever</span>`)
+        : '—';
+      const fn = p.functionalRate
+        ? `OTP ${esc(p.functionalRate.otp)}%` + (p.functionalRate.sub != null ? ` · SUB ${esc(p.functionalRate.sub)}%` : ` · <span style="color:#64748b">no sub lever</span>`)
+        : '—';
       // Prefer parsed dates; fall back to the verbatim human timing line; else —.
-      const dates = (p.startsAt || p.endsAt)
+      // endsAt = calendar INTENT. shopifyEndsAt (when recorded) = what Shopify actually
+      // holds; null there is the SAFE state (no silent auto-expire teardown).
+      let dates = (p.startsAt || p.endsAt)
         ? `${esc(p.startsAt || '?')} → ${esc(p.endsAt || '—')}`
         : (p.timing ? esc(p.timing) : '—');
-      const scope = p.scope ? esc(p.scope) : '—';
+      if ('shopifyEndsAt' in p) {
+        dates += p.shopifyEndsAt == null
+          ? `<div style="font-size:0.78em;margin-top:3px"><span class="pill done">Shopify endsAt null (safe)</span></div>`
+          : `<div style="font-size:0.78em;margin-top:3px"><span class="pill blocked">Shopify endsAt ${esc(p.shopifyEndsAt)} ⚠</span></div>`;
+      }
+      const tierPill = p.tier
+        ? `<span class="pill ${p.tier === 'major' ? 'active' : 'pending'}">${esc(p.tier)}</span>`
+          + (p.declared ? `<div style="font-size:0.72em;color:#64748b;margin-top:3px">declared</div>` : '')
+        : '<span style="color:#64748b">—</span>';
+      const scope = p.scope ? esc(p.scope) : (p.tier === 'major' ? '<span style="color:#64748b">sitewide</span>' : '—');
       const gift = p.freeGiftThreshold ? money(p.freeGiftThreshold) : '—';
       // Expose the verbatim workbook detail without cluttering the row.
       const detail = p.detail
