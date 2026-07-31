@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stay.ai Break-Even Matrix — Teeccino Reports</title>
+<link rel="stylesheet" href="provenance-banner.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+         background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); min-height:100vh;
+         color:#e6e6e6; padding:20px; padding-top:70px; }
+  .container { max-width:1400px; margin:0 auto; }
+  h1 { font-size:1.9em; background:linear-gradient(135deg,#D4A843,#8B6914);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+  .sub { color:#888; margin-bottom:16px; font-size:.95em; }
+  .section { margin:34px 0; }
+  .section-title { font-size:1.18em; color:#D4A843; margin-bottom:6px; font-weight:600;
+                    border-bottom:1px solid rgba(212,168,67,0.3); padding-bottom:6px; }
+  .section-note { color:#8b8b8b; font-size:.86em; margin:8px 0 16px; line-height:1.6; }
+
+  .verdict-banner { background:rgba(208,59,59,0.10); border:1px solid rgba(208,59,59,0.45);
+      border-left:4px solid #d03b3b; border-radius:10px; padding:18px 20px; margin-bottom:22px; }
+  .verdict-banner h2 { font-size:1.15em; color:#ff8f8f; margin-bottom:8px; }
+  .verdict-banner p { color:#cfcfcf; font-size:.92em; line-height:1.65; }
+  .verdict-banner strong { color:#fff; }
+
+  .hero-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:14px; margin-bottom:16px; }
+  .hero-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+                border-radius:10px; padding:16px 18px; }
+  .hero-label { font-size:.74em; text-transform:uppercase; letter-spacing:1px; color:#8b8b8b; margin-bottom:8px; }
+  .hero-value { font-size:1.55em; font-weight:700; color:#fff; }
+  .hero-sub { font-size:.8em; color:#7d7d7d; margin-top:6px; line-height:1.5; }
+  .hero-card.good { border-color:rgba(12,163,12,0.5); }
+  .hero-card.good .hero-value { color:#5ee45e; }
+  .hero-card.bad  { border-color:rgba(208,59,59,0.5); }
+  .hero-card.bad .hero-value { color:#ff8f8f; }
+
+  .grid-pair { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  @media (max-width:1050px) { .grid-pair { grid-template-columns:1fr; } }
+  .grid-panel { background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.08);
+                 border-radius:10px; padding:16px; }
+  .grid-panel h3 { font-size:.95em; color:#e6e6e6; margin-bottom:2px; }
+  .grid-panel .gp-note { font-size:.78em; color:#7d7d7d; margin-bottom:12px; }
+
+  table.grid { width:100%; border-collapse:separate; border-spacing:2px; }
+  table.grid th { font-size:.72em; text-transform:uppercase; letter-spacing:.5px;
+                   color:#9a9a9a; font-weight:600; padding:6px 4px; text-align:center; }
+  table.grid th.corner { text-align:left; color:#6e6e6e; font-size:.66em; white-space:nowrap; }
+  table.grid th.rowhead { text-align:right; color:#c3c2b7; white-space:nowrap; font-size:.78em;
+                           font-variant-numeric:tabular-nums; padding-right:10px; }
+  td.cell { border-radius:4px; padding:10px 8px; text-align:center; cursor:default;
+             transition:transform .1s ease, box-shadow .1s ease; }
+  td.cell:hover { transform:scale(1.035); box-shadow:0 0 0 2px rgba(255,255,255,.35); position:relative; z-index:2; }
+  td.cell .cv { display:block; font-size:1.0em; font-weight:700; font-variant-numeric:tabular-nums; }
+  td.cell .cs { display:block; font-size:.66em; margin-top:3px; }
+  td.pbcell { background:rgba(255,255,255,0.05); }
+  td.pbcell .cs { color:#8b8b8b; }
+  td.pbcell.pb-ok { background:rgba(12,163,12,0.16); border:1px solid rgba(12,163,12,.5); }
+  td.pbcell.pb-ok .cv { color:#5ee45e; }
+  td.pbcell.pb-bad { background:rgba(250,178,25,0.12); border:1px solid rgba(250,178,25,.4); }
+  td.pbcell.pb-bad .cv { color:#ffc94d; }
+  td.pbcell.pb-never { background:rgba(208,59,59,0.12); border:1px solid rgba(208,59,59,.4); }
+  td.pbcell.pb-never .cv { color:#ff8f8f; }
+  .verdict { display:block; margin-top:6px; font-size:.6em; font-weight:700; letter-spacing:.6px; }
+  .verdict.v-no { color:#ff8f8f; }
+  .verdict.v-yes { color:#5ee45e; }
+
+  .legend-row { display:flex; gap:18px; flex-wrap:wrap; font-size:.78em; color:#8b8b8b; margin-top:12px; align-items:center; }
+  .legend-row .sw { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-2px; }
+
+  .chart-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+                 border-radius:10px; padding:18px; height:400px; margin-bottom:14px; }
+
+  .table-scroll { overflow-x:auto; }
+  table.data { width:100%; border-collapse:collapse; background:rgba(255,255,255,0.03); border-radius:8px; overflow:hidden; }
+  table.data th, table.data td { padding:7px 9px; text-align:left; font-size:.8em;
+                                  border-bottom:1px solid rgba(255,255,255,0.06); white-space:nowrap; }
+  table.data th { background:rgba(212,168,67,0.12); color:#D4A843; font-weight:600; font-size:.7em;
+                   text-transform:uppercase; letter-spacing:.5px; position:sticky; top:0; }
+  table.data td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  table.data td.strong { font-weight:700; color:#fff; }
+  table.data td.pos { color:#5ee45e; }
+  table.data td.neg { color:#ff8f8f; }
+  table.data tr:hover td { background:rgba(255,255,255,0.045); }
+
+  .assump { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+             border-radius:8px; padding:15px 18px; font-size:.85em; color:#a5a5a5; line-height:1.75; }
+  .assump code { color:#D4A843; }
+  .assump strong { color:#e6e6e6; }
+  details.toggle summary { cursor:pointer; color:#D4A843; font-size:.85em; margin-bottom:10px; }
+</style>
+</head>
+<body>
+
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+    });
+</script>
+
+<div class="container">
+  <h1>Stay.ai Break-Even Matrix</h1>
+  <p class="sub">What Stay.ai can cost before leaving pays — and where to go. Generated 2026-07-31 13:35.
+     Model window: T12M to 2026-07-30.</p>
+
+  <div class="verdict-banner">
+    <h2>Verdict — 0 of 32 cells make building rational</h2>
+    <p>Building a subscription platform from scratch is <strong>never</strong> rational at any Stay.ai
+    price in this matrix, because the relevant comparison is not Stay.ai — it is the
+    <strong>free</strong> alternative. Shopify Subscriptions is $0 capex and $0 license, and the
+    contracts, the payment vault, and the billing calendar already live in Shopify
+    (Stay.ai only supplies the layer above). A from-scratch build carries
+    $20,000–$40,000/yr of opex <em>forever</em> — so against the
+    free option its payback is negative in every cell, at every fee, at every rev-share, on
+    either base, before and after 20% growth. Even measured only against Stay.ai (ignoring the
+    free option entirely), the best case in the whole matrix is
+    <strong>4.9 years</strong>, and just
+    0 of 32 cells clear a 3-year bar.
+    <br><br>The live decision is therefore <strong>Stay.ai vs the free swap</strong>, worth
+    $3,588–$32,211/yr today. That decision is not blocked on price —
+    it is blocked on the Shopify support ticket confirming contract re-parenting.</p>
+  </div>
+
+  <div class="hero-grid">
+    <div class="hero-card">
+      <div class="hero-label">T12M subscription revenue</div>
+      <div class="hero-value">$674,104</div>
+      <div class="hero-sub">Merch subtotal $661,187 · collected total
+        $674,104 (incl. $42,500 shipping,
+        net of $29,400 discounts).
+        DB cross-check: $675,464 (+0.2%).</div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-label">Stay.ai annual cost range</div>
+      <div class="hero-value">$3,588 – $32,211</div>
+      <div class="hero-sub">Across all 32 modelled cells — i.e.
+        <strong>$1.44–$14.64
+        per active contract per year</strong> on ~2,200–2,500
+        contracts, or 0.53%–4.78%
+        of subscription revenue.</div>
+    </div>
+    <div class="hero-card bad">
+      <div class="hero-label">Build from scratch</div>
+      <div class="hero-value">Never pays back</div>
+      <div class="hero-sub">$60,000–$120,000 capex +
+        $20,000–$40,000/yr opex. Against the $0 alternative the
+        annual saving is negative, so there is no payback period at any Stay.ai price.</div>
+    </div>
+    <div class="hero-card good">
+      <div class="hero-label">Shopify Subscriptions swap</div>
+      <div class="hero-value">Pays back day one</div>
+      <div class="hero-sub">$0 capex license, $0/yr license. Saves the entire Stay.ai bill —
+        $3,588–$32,211/yr. Migration is effort + churn risk, not licence spend.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">1 · Stay.ai total annual cost — platform fee × rev-share × base</div>
+    <p class="section-note">
+      <code>annual cost = platform fee × 12 + rev-share × base</code>. Both bases are shown because
+      vendors differ on what they bill against. <strong>The base choice barely matters</strong>: at the
+      worst cell (3%) the two bases differ by only $388/yr — 1.2% of the
+      largest bill. The rev-share <em>rate</em> is what moves the number: going 0% → 3% adds
+      $20,223/yr, which is more than the entire $999/mo platform fee
+      ($11,988/yr). <strong>Negotiate the percentage, not the base.</strong>
+      Hover any cell for the fee/rev-share split and per-contract cost.
+    </p>
+    <div class="grid-pair">
+      <div class="grid-panel">
+        <h3>Base A — Merch subtotal ($661,187)</h3>
+        <div class="gp-note">Product line-item subtotal. Excludes shipping. The base most vendors quote.</div>
+        <table class="grid" id="grid-subtotal"><thead><tr><th class="corner">Platform fee ↓ / Rev-share →</th><th>0%</th><th>1%</th><th>2%</th><th>3%</th></tr></thead><tbody><tr><th class="rowhead">$299/mo</th><td class="cell" style="background:#184f95;color:#ffffff" title="$3,588 platform + $0 rev-share &#10;0.54% of sub revenue &#10;$1.44–$1.63 per active contract/yr"><span class="cv">$3,588</span><span class="cs" style="color:#ffffff;opacity:.72">0.54% of sub rev</span></td><td class="cell" style="background:#256abf;color:#ffffff" title="$3,588 platform + $6,612 rev-share &#10;1.54% of sub revenue &#10;$4.08–$4.64 per active contract/yr"><span class="cv">$10,200</span><span class="cs" style="color:#ffffff;opacity:.72">1.54% of sub rev</span></td><td class="cell" style="background:#3987e5;color:#ffffff" title="$3,588 platform + $13,224 rev-share &#10;2.54% of sub revenue &#10;$6.72–$7.64 per active contract/yr"><span class="cv">$16,812</span><span class="cs" style="color:#ffffff;opacity:.72">2.54% of sub rev</span></td><td class="cell" style="background:#6da7ec;color:#0b0b0b" title="$3,588 platform + $19,836 rev-share &#10;3.54% of sub revenue &#10;$9.37–$10.65 per active contract/yr"><span class="cv">$23,424</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.54% of sub rev</span></td></tr><tr><th class="rowhead">$499/mo</th><td class="cell" style="background:#184f95;color:#ffffff" title="$5,988 platform + $0 rev-share &#10;0.91% of sub revenue &#10;$2.40–$2.72 per active contract/yr"><span class="cv">$5,988</span><span class="cs" style="color:#ffffff;opacity:.72">0.91% of sub rev</span></td><td class="cell" style="background:#2a78d6;color:#ffffff" title="$5,988 platform + $6,612 rev-share &#10;1.91% of sub revenue &#10;$5.04–$5.73 per active contract/yr"><span class="cv">$12,600</span><span class="cs" style="color:#ffffff;opacity:.72">1.91% of sub rev</span></td><td class="cell" style="background:#5598e7;color:#0b0b0b" title="$5,988 platform + $13,224 rev-share &#10;2.91% of sub revenue &#10;$7.68–$8.73 per active contract/yr"><span class="cv">$19,212</span><span class="cs" style="color:#0b0b0b;opacity:.72">2.91% of sub rev</span></td><td class="cell" style="background:#86b6ef;color:#0b0b0b" title="$5,988 platform + $19,836 rev-share &#10;3.91% of sub revenue &#10;$10.33–$11.74 per active contract/yr"><span class="cv">$25,824</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.91% of sub rev</span></td></tr><tr><th class="rowhead">$799/mo</th><td class="cell" style="background:#256abf;color:#ffffff" title="$9,588 platform + $0 rev-share &#10;1.45% of sub revenue &#10;$3.84–$4.36 per active contract/yr"><span class="cv">$9,588</span><span class="cs" style="color:#ffffff;opacity:.72">1.45% of sub rev</span></td><td class="cell" style="background:#3987e5;color:#ffffff" title="$9,588 platform + $6,612 rev-share &#10;2.45% of sub revenue &#10;$6.48–$7.36 per active contract/yr"><span class="cv">$16,200</span><span class="cs" style="color:#ffffff;opacity:.72">2.45% of sub rev</span></td><td class="cell" style="background:#6da7ec;color:#0b0b0b" title="$9,588 platform + $13,224 rev-share &#10;3.45% of sub revenue &#10;$9.12–$10.37 per active contract/yr"><span class="cv">$22,812</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.45% of sub rev</span></td><td class="cell" style="background:#9ec5f4;color:#0b0b0b" title="$9,588 platform + $19,836 rev-share &#10;4.45% of sub revenue &#10;$11.77–$13.37 per active contract/yr"><span class="cv">$29,424</span><span class="cs" style="color:#0b0b0b;opacity:.72">4.45% of sub rev</span></td></tr><tr><th class="rowhead">$999/mo</th><td class="cell" style="background:#2a78d6;color:#ffffff" title="$11,988 platform + $0 rev-share &#10;1.81% of sub revenue &#10;$4.80–$5.45 per active contract/yr"><span class="cv">$11,988</span><span class="cs" style="color:#ffffff;opacity:.72">1.81% of sub rev</span></td><td class="cell" style="background:#5598e7;color:#0b0b0b" title="$11,988 platform + $6,612 rev-share &#10;2.81% of sub revenue &#10;$7.44–$8.45 per active contract/yr"><span class="cv">$18,600</span><span class="cs" style="color:#0b0b0b;opacity:.72">2.81% of sub rev</span></td><td class="cell" style="background:#86b6ef;color:#0b0b0b" title="$11,988 platform + $13,224 rev-share &#10;3.81% of sub revenue &#10;$10.08–$11.46 per active contract/yr"><span class="cv">$25,212</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.81% of sub rev</span></td><td class="cell" style="background:#9ec5f4;color:#0b0b0b" title="$11,988 platform + $19,836 rev-share &#10;4.81% of sub revenue &#10;$12.73–$14.47 per active contract/yr"><span class="cv">$31,824</span><span class="cs" style="color:#0b0b0b;opacity:.72">4.81% of sub rev</span></td></tr></tbody></table>
+      </div>
+      <div class="grid-panel">
+        <h3>Base B — Collected total ($674,104)</h3>
+        <div class="gp-note">Everything charged to the card: subtotal + $42.5K shipping, net of $29.4K discounts.</div>
+        <table class="grid" id="grid-collected"><thead><tr><th class="corner">Platform fee ↓ / Rev-share →</th><th>0%</th><th>1%</th><th>2%</th><th>3%</th></tr></thead><tbody><tr><th class="rowhead">$299/mo</th><td class="cell" style="background:#184f95;color:#ffffff" title="$3,588 platform + $0 rev-share &#10;0.53% of sub revenue &#10;$1.44–$1.63 per active contract/yr"><span class="cv">$3,588</span><span class="cs" style="color:#ffffff;opacity:.72">0.53% of sub rev</span></td><td class="cell" style="background:#256abf;color:#ffffff" title="$3,588 platform + $6,741 rev-share &#10;1.53% of sub revenue &#10;$4.13–$4.70 per active contract/yr"><span class="cv">$10,329</span><span class="cs" style="color:#ffffff;opacity:.72">1.53% of sub rev</span></td><td class="cell" style="background:#3987e5;color:#ffffff" title="$3,588 platform + $13,482 rev-share &#10;2.53% of sub revenue &#10;$6.83–$7.76 per active contract/yr"><span class="cv">$17,070</span><span class="cs" style="color:#ffffff;opacity:.72">2.53% of sub rev</span></td><td class="cell" style="background:#6da7ec;color:#0b0b0b" title="$3,588 platform + $20,223 rev-share &#10;3.53% of sub revenue &#10;$9.52–$10.82 per active contract/yr"><span class="cv">$23,811</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.53% of sub rev</span></td></tr><tr><th class="rowhead">$499/mo</th><td class="cell" style="background:#184f95;color:#ffffff" title="$5,988 platform + $0 rev-share &#10;0.89% of sub revenue &#10;$2.40–$2.72 per active contract/yr"><span class="cv">$5,988</span><span class="cs" style="color:#ffffff;opacity:.72">0.89% of sub rev</span></td><td class="cell" style="background:#2a78d6;color:#ffffff" title="$5,988 platform + $6,741 rev-share &#10;1.89% of sub revenue &#10;$5.09–$5.79 per active contract/yr"><span class="cv">$12,729</span><span class="cs" style="color:#ffffff;opacity:.72">1.89% of sub rev</span></td><td class="cell" style="background:#5598e7;color:#0b0b0b" title="$5,988 platform + $13,482 rev-share &#10;2.89% of sub revenue &#10;$7.79–$8.85 per active contract/yr"><span class="cv">$19,470</span><span class="cs" style="color:#0b0b0b;opacity:.72">2.89% of sub rev</span></td><td class="cell" style="background:#86b6ef;color:#0b0b0b" title="$5,988 platform + $20,223 rev-share &#10;3.89% of sub revenue &#10;$10.48–$11.91 per active contract/yr"><span class="cv">$26,211</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.89% of sub rev</span></td></tr><tr><th class="rowhead">$799/mo</th><td class="cell" style="background:#256abf;color:#ffffff" title="$9,588 platform + $0 rev-share &#10;1.42% of sub revenue &#10;$3.84–$4.36 per active contract/yr"><span class="cv">$9,588</span><span class="cs" style="color:#ffffff;opacity:.72">1.42% of sub rev</span></td><td class="cell" style="background:#3987e5;color:#ffffff" title="$9,588 platform + $6,741 rev-share &#10;2.42% of sub revenue &#10;$6.53–$7.42 per active contract/yr"><span class="cv">$16,329</span><span class="cs" style="color:#ffffff;opacity:.72">2.42% of sub rev</span></td><td class="cell" style="background:#6da7ec;color:#0b0b0b" title="$9,588 platform + $13,482 rev-share &#10;3.42% of sub revenue &#10;$9.23–$10.49 per active contract/yr"><span class="cv">$23,070</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.42% of sub rev</span></td><td class="cell" style="background:#9ec5f4;color:#0b0b0b" title="$9,588 platform + $20,223 rev-share &#10;4.42% of sub revenue &#10;$11.92–$13.55 per active contract/yr"><span class="cv">$29,811</span><span class="cs" style="color:#0b0b0b;opacity:.72">4.42% of sub rev</span></td></tr><tr><th class="rowhead">$999/mo</th><td class="cell" style="background:#2a78d6;color:#ffffff" title="$11,988 platform + $0 rev-share &#10;1.78% of sub revenue &#10;$4.80–$5.45 per active contract/yr"><span class="cv">$11,988</span><span class="cs" style="color:#ffffff;opacity:.72">1.78% of sub rev</span></td><td class="cell" style="background:#5598e7;color:#0b0b0b" title="$11,988 platform + $6,741 rev-share &#10;2.78% of sub revenue &#10;$7.49–$8.51 per active contract/yr"><span class="cv">$18,729</span><span class="cs" style="color:#0b0b0b;opacity:.72">2.78% of sub rev</span></td><td class="cell" style="background:#86b6ef;color:#0b0b0b" title="$11,988 platform + $13,482 rev-share &#10;3.78% of sub revenue &#10;$10.19–$11.58 per active contract/yr"><span class="cv">$25,470</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.78% of sub rev</span></td><td class="cell" style="background:#9ec5f4;color:#0b0b0b" title="$11,988 platform + $20,223 rev-share &#10;4.78% of sub revenue &#10;$12.88–$14.64 per active contract/yr"><span class="cv">$32,211</span><span class="cs" style="color:#0b0b0b;opacity:.72">4.78% of sub rev</span></td></tr></tbody></table>
+      </div>
+    </div>
+    <div class="legend-row">
+      <span>Annual cost:</span>
+      <span><span class="sw" style="background:#184f95"></span>$3,588 (low)</span>
+      <span><span class="sw" style="background:#3987e5"></span>mid</span>
+      <span><span class="sw" style="background:#9ec5f4"></span>$32,211 (high)</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">2 · Payback on a from-scratch build — and the alternative that beats it</div>
+    <p class="section-note">
+      Each cell shows <strong>years to pay back a from-scratch build against that Stay.ai bill</strong>,
+      best case ($60,000 capex / $20,000/yr opex) with the worst case
+      ($120,000 / $40,000/yr) underneath.
+      The <strong>BUILD / DON'T BUILD</strong> badge is judged against the <em>best available</em>
+      alternative, not against Stay.ai — and the best available alternative is Shopify Subscriptions at
+      $0/yr. Since a build's opex floor ($20,000/yr) is above $0 forever, the badge reads
+      DON'T BUILD in all 32 cells. Both bases produce identical badges; the collected-total grid is
+      shown (the subtotal grid differs by under $388/yr and changes no verdict).
+      Grid values below use Base B.
+    </p>
+    <div class="grid-panel">
+      <h3>Build payback vs Stay.ai — collected-total base</h3>
+      <div class="gp-note">Green = pays back within 3 yrs · Amber = pays back, too slowly · Red = 10+ yrs or never</div>
+      <table class="grid" id="grid-payback"><thead><tr><th class="corner">Platform fee ↓ / Rev-share →</th><th>0%</th><th>1%</th><th>2%</th><th>3%</th></tr></thead><tbody><tr><th class="rowhead">$299/mo</th><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): 16 yrs &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">16 yrs</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td></tr><tr><th class="rowhead">$499/mo</th><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-bad" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): 9.7 yrs &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">9.7 yrs</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td></tr><tr><th class="rowhead">$799/mo</th><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): 20 yrs &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">20 yrs</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-bad" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): 6.1 yrs &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">6.1 yrs</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td></tr><tr><th class="rowhead">$999/mo</th><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): Never &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">Never</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-never" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): 11 yrs &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">11 yrs</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td><td class="cell pbcell pb-bad" title="Build payback vs Stay.ai — best case ($60K capex / $20K opex): 4.9 yrs &#10;worst case ($120K capex / $40K opex): never &#10;vs the BEST alternative (Shopify Subs @ $0/yr): never — building costs $20,000–$40,000/yr more than doing nothing."><span class="cv">4.9 yrs</span><span class="cs">worst case never</span><span class="verdict v-no">✘ DON'T BUILD</span></td></tr></tbody></table>
+    </div>
+    <div class="legend-row">
+      <span><span class="sw" style="background:rgba(12,163,12,.5)"></span>✔ within 3 yrs</span>
+      <span><span class="sw" style="background:rgba(250,178,25,.5)"></span>slow payback</span>
+      <span><span class="sw" style="background:rgba(208,59,59,.5)"></span>10+ yrs / never</span>
+      <span>Shopify swap payback in every cell: <strong style="color:#5ee45e">immediate</strong> ($0 capex, saves the whole bill)</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">3 · Sensitivity — what growth does to the answer</div>
+    <p class="section-note">
+      Subscription revenue is growing: <strong>962 → 1,485
+      monthly sub orders</strong> (2025-07 → 2026-07,
+      <strong>+54%</strong>), and the last-3-month run-rate annualises to
+      $709,613 (+5% vs T12M). The requested
+      <strong>+20%</strong> scenario is therefore conservative relative to the observed order growth.
+      <br><br><strong>Growth moves the answer the wrong way for Stay.ai and does not rescue the build.</strong>
+      At +20%, a rev-share deal gets $4,045/yr more expensive at 3%
+      (worst cell $32,211 → $36,256), while a flat-fee-only deal is
+      unchanged. Growth strengthens the case for the free swap and for a <em>flat-fee-only</em>
+      renegotiation — but the build's opex floor is flat, so it still never clears $0.
+      Lines below hold rev-share at 2% on the collected-total base.
+    </p>
+    <div class="chart-wrap"><canvas id="sensChart"></canvas></div>
+    <div class="grid-pair">
+      <div class="grid-panel">
+        <h3>Cost matrix at +20% subscription revenue — collected total ($808,925)</h3>
+        <div class="gp-note">Range widens to $3,588 – $36,256. Verdicts unchanged: 0 of 32 cells favour building.</div>
+        <table class="grid" id="grid-grown"><thead><tr><th class="corner">Platform fee ↓ / Rev-share →</th><th>0%</th><th>1%</th><th>2%</th><th>3%</th></tr></thead><tbody><tr><th class="rowhead">$299/mo</th><td class="cell" style="background:#184f95;color:#ffffff" title="$3,588 platform + $0 rev-share &#10;0.44% of sub revenue &#10;$1.44–$1.63 per active contract/yr"><span class="cv">$3,588</span><span class="cs" style="color:#ffffff;opacity:.72">0.44% of sub rev</span></td><td class="cell" style="background:#256abf;color:#ffffff" title="$3,588 platform + $8,089 rev-share &#10;1.44% of sub revenue &#10;$4.67–$5.31 per active contract/yr"><span class="cv">$11,677</span><span class="cs" style="color:#ffffff;opacity:.72">1.44% of sub rev</span></td><td class="cell" style="background:#3987e5;color:#ffffff" title="$3,588 platform + $16,178 rev-share &#10;2.44% of sub revenue &#10;$7.91–$8.98 per active contract/yr"><span class="cv">$19,766</span><span class="cs" style="color:#ffffff;opacity:.72">2.44% of sub rev</span></td><td class="cell" style="background:#6da7ec;color:#0b0b0b" title="$3,588 platform + $24,268 rev-share &#10;3.44% of sub revenue &#10;$11.14–$12.66 per active contract/yr"><span class="cv">$27,856</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.44% of sub rev</span></td></tr><tr><th class="rowhead">$499/mo</th><td class="cell" style="background:#184f95;color:#ffffff" title="$5,988 platform + $0 rev-share &#10;0.74% of sub revenue &#10;$2.40–$2.72 per active contract/yr"><span class="cv">$5,988</span><span class="cs" style="color:#ffffff;opacity:.72">0.74% of sub rev</span></td><td class="cell" style="background:#2a78d6;color:#ffffff" title="$5,988 platform + $8,089 rev-share &#10;1.74% of sub revenue &#10;$5.63–$6.40 per active contract/yr"><span class="cv">$14,077</span><span class="cs" style="color:#ffffff;opacity:.72">1.74% of sub rev</span></td><td class="cell" style="background:#5598e7;color:#0b0b0b" title="$5,988 platform + $16,178 rev-share &#10;2.74% of sub revenue &#10;$8.87–$10.08 per active contract/yr"><span class="cv">$22,166</span><span class="cs" style="color:#0b0b0b;opacity:.72">2.74% of sub rev</span></td><td class="cell" style="background:#86b6ef;color:#0b0b0b" title="$5,988 platform + $24,268 rev-share &#10;3.74% of sub revenue &#10;$12.10–$13.75 per active contract/yr"><span class="cv">$30,256</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.74% of sub rev</span></td></tr><tr><th class="rowhead">$799/mo</th><td class="cell" style="background:#256abf;color:#ffffff" title="$9,588 platform + $0 rev-share &#10;1.19% of sub revenue &#10;$3.84–$4.36 per active contract/yr"><span class="cv">$9,588</span><span class="cs" style="color:#ffffff;opacity:.72">1.19% of sub rev</span></td><td class="cell" style="background:#3987e5;color:#ffffff" title="$9,588 platform + $8,089 rev-share &#10;2.19% of sub revenue &#10;$7.07–$8.04 per active contract/yr"><span class="cv">$17,677</span><span class="cs" style="color:#ffffff;opacity:.72">2.19% of sub rev</span></td><td class="cell" style="background:#6da7ec;color:#0b0b0b" title="$9,588 platform + $16,178 rev-share &#10;3.19% of sub revenue &#10;$10.31–$11.71 per active contract/yr"><span class="cv">$25,766</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.19% of sub rev</span></td><td class="cell" style="background:#9ec5f4;color:#0b0b0b" title="$9,588 platform + $24,268 rev-share &#10;4.19% of sub revenue &#10;$13.54–$15.39 per active contract/yr"><span class="cv">$33,856</span><span class="cs" style="color:#0b0b0b;opacity:.72">4.19% of sub rev</span></td></tr><tr><th class="rowhead">$999/mo</th><td class="cell" style="background:#2a78d6;color:#ffffff" title="$11,988 platform + $0 rev-share &#10;1.48% of sub revenue &#10;$4.80–$5.45 per active contract/yr"><span class="cv">$11,988</span><span class="cs" style="color:#ffffff;opacity:.72">1.48% of sub rev</span></td><td class="cell" style="background:#5598e7;color:#0b0b0b" title="$11,988 platform + $8,089 rev-share &#10;2.48% of sub revenue &#10;$8.03–$9.13 per active contract/yr"><span class="cv">$20,077</span><span class="cs" style="color:#0b0b0b;opacity:.72">2.48% of sub rev</span></td><td class="cell" style="background:#86b6ef;color:#0b0b0b" title="$11,988 platform + $16,178 rev-share &#10;3.48% of sub revenue &#10;$11.27–$12.80 per active contract/yr"><span class="cv">$28,166</span><span class="cs" style="color:#0b0b0b;opacity:.72">3.48% of sub rev</span></td><td class="cell" style="background:#9ec5f4;color:#0b0b0b" title="$11,988 platform + $24,268 rev-share &#10;4.48% of sub revenue &#10;$14.50–$16.48 per active contract/yr"><span class="cv">$36,256</span><span class="cs" style="color:#0b0b0b;opacity:.72">4.48% of sub rev</span></td></tr></tbody></table>
+      </div>
+      <div class="grid-panel">
+        <h3>Monthly subscription orders — the growth being modelled</h3>
+        <div class="gp-note">Last 13 months from calc_daily_shopify. This is the trend the +20% scenario approximates.</div>
+        <div style="height:300px"><canvas id="growthChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">4 · Full model — all 32 cells</div>
+    <p class="section-note">Table view of every cell across both bases. Payback columns are years;
+      "never" means the alternative is not cheaper, so there is no payback.</p>
+    <div class="table-scroll">
+      <table class="data">
+        <thead><tr>
+          <th>Base</th><th>Fee/mo</th><th>Rev-share</th><th>Fee $/yr</th><th>Rev-share $/yr</th>
+          <th>Stay.ai total/yr</th><th>% of sub rev</th><th>$/contract/yr</th>
+          <th>Build payback best</th><th>Build payback worst</th><th>Build vs Shopify</th>
+          <th>Swap saving/yr</th><th>Rational to build?</th>
+        </tr></thead>
+        <tbody><tr><td>Merch subtotal</td><td class="num">$299</td><td class="num">0%</td><td class="num">$3,588</td><td class="num">$0</td><td class="num strong">$3,588</td><td class="num">0.54%</td><td class="num">$1.44–$1.63</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$3,588</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$299</td><td class="num">1%</td><td class="num">$3,588</td><td class="num">$6,612</td><td class="num strong">$10,200</td><td class="num">1.54%</td><td class="num">$4.08–$4.64</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$10,200</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$299</td><td class="num">2%</td><td class="num">$3,588</td><td class="num">$13,224</td><td class="num strong">$16,812</td><td class="num">2.54%</td><td class="num">$6.72–$7.64</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$16,812</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$299</td><td class="num">3%</td><td class="num">$3,588</td><td class="num">$19,836</td><td class="num strong">$23,424</td><td class="num">3.54%</td><td class="num">$9.37–$10.65</td><td class="num">17.5</td><td class="num">never</td><td class="num">never</td><td class="num pos">$23,424</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$499</td><td class="num">0%</td><td class="num">$5,988</td><td class="num">$0</td><td class="num strong">$5,988</td><td class="num">0.91%</td><td class="num">$2.40–$2.72</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$5,988</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$499</td><td class="num">1%</td><td class="num">$5,988</td><td class="num">$6,612</td><td class="num strong">$12,600</td><td class="num">1.91%</td><td class="num">$5.04–$5.73</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$12,600</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$499</td><td class="num">2%</td><td class="num">$5,988</td><td class="num">$13,224</td><td class="num strong">$19,212</td><td class="num">2.91%</td><td class="num">$7.68–$8.73</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$19,212</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$499</td><td class="num">3%</td><td class="num">$5,988</td><td class="num">$19,836</td><td class="num strong">$25,824</td><td class="num">3.91%</td><td class="num">$10.33–$11.74</td><td class="num">10.3</td><td class="num">never</td><td class="num">never</td><td class="num pos">$25,824</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$799</td><td class="num">0%</td><td class="num">$9,588</td><td class="num">$0</td><td class="num strong">$9,588</td><td class="num">1.45%</td><td class="num">$3.84–$4.36</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$9,588</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$799</td><td class="num">1%</td><td class="num">$9,588</td><td class="num">$6,612</td><td class="num strong">$16,200</td><td class="num">2.45%</td><td class="num">$6.48–$7.36</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$16,200</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$799</td><td class="num">2%</td><td class="num">$9,588</td><td class="num">$13,224</td><td class="num strong">$22,812</td><td class="num">3.45%</td><td class="num">$9.12–$10.37</td><td class="num">21.3</td><td class="num">never</td><td class="num">never</td><td class="num pos">$22,812</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$799</td><td class="num">3%</td><td class="num">$9,588</td><td class="num">$19,836</td><td class="num strong">$29,424</td><td class="num">4.45%</td><td class="num">$11.77–$13.37</td><td class="num">6.4</td><td class="num">never</td><td class="num">never</td><td class="num pos">$29,424</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$999</td><td class="num">0%</td><td class="num">$11,988</td><td class="num">$0</td><td class="num strong">$11,988</td><td class="num">1.81%</td><td class="num">$4.80–$5.45</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$11,988</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$999</td><td class="num">1%</td><td class="num">$11,988</td><td class="num">$6,612</td><td class="num strong">$18,600</td><td class="num">2.81%</td><td class="num">$7.44–$8.45</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$18,600</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$999</td><td class="num">2%</td><td class="num">$11,988</td><td class="num">$13,224</td><td class="num strong">$25,212</td><td class="num">3.81%</td><td class="num">$10.08–$11.46</td><td class="num">11.5</td><td class="num">never</td><td class="num">never</td><td class="num pos">$25,212</td><td class="neg">NO</td></tr><tr><td>Merch subtotal</td><td class="num">$999</td><td class="num">3%</td><td class="num">$11,988</td><td class="num">$19,836</td><td class="num strong">$31,824</td><td class="num">4.81%</td><td class="num">$12.73–$14.47</td><td class="num">5.1</td><td class="num">never</td><td class="num">never</td><td class="num pos">$31,824</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$299</td><td class="num">0%</td><td class="num">$3,588</td><td class="num">$0</td><td class="num strong">$3,588</td><td class="num">0.53%</td><td class="num">$1.44–$1.63</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$3,588</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$299</td><td class="num">1%</td><td class="num">$3,588</td><td class="num">$6,741</td><td class="num strong">$10,329</td><td class="num">1.53%</td><td class="num">$4.13–$4.70</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$10,329</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$299</td><td class="num">2%</td><td class="num">$3,588</td><td class="num">$13,482</td><td class="num strong">$17,070</td><td class="num">2.53%</td><td class="num">$6.83–$7.76</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$17,070</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$299</td><td class="num">3%</td><td class="num">$3,588</td><td class="num">$20,223</td><td class="num strong">$23,811</td><td class="num">3.53%</td><td class="num">$9.52–$10.82</td><td class="num">15.7</td><td class="num">never</td><td class="num">never</td><td class="num pos">$23,811</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$499</td><td class="num">0%</td><td class="num">$5,988</td><td class="num">$0</td><td class="num strong">$5,988</td><td class="num">0.89%</td><td class="num">$2.40–$2.72</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$5,988</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$499</td><td class="num">1%</td><td class="num">$5,988</td><td class="num">$6,741</td><td class="num strong">$12,729</td><td class="num">1.89%</td><td class="num">$5.09–$5.79</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$12,729</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$499</td><td class="num">2%</td><td class="num">$5,988</td><td class="num">$13,482</td><td class="num strong">$19,470</td><td class="num">2.89%</td><td class="num">$7.79–$8.85</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$19,470</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$499</td><td class="num">3%</td><td class="num">$5,988</td><td class="num">$20,223</td><td class="num strong">$26,211</td><td class="num">3.89%</td><td class="num">$10.48–$11.91</td><td class="num">9.7</td><td class="num">never</td><td class="num">never</td><td class="num pos">$26,211</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$799</td><td class="num">0%</td><td class="num">$9,588</td><td class="num">$0</td><td class="num strong">$9,588</td><td class="num">1.42%</td><td class="num">$3.84–$4.36</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$9,588</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$799</td><td class="num">1%</td><td class="num">$9,588</td><td class="num">$6,741</td><td class="num strong">$16,329</td><td class="num">2.42%</td><td class="num">$6.53–$7.42</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$16,329</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$799</td><td class="num">2%</td><td class="num">$9,588</td><td class="num">$13,482</td><td class="num strong">$23,070</td><td class="num">3.42%</td><td class="num">$9.23–$10.49</td><td class="num">19.5</td><td class="num">never</td><td class="num">never</td><td class="num pos">$23,070</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$799</td><td class="num">3%</td><td class="num">$9,588</td><td class="num">$20,223</td><td class="num strong">$29,811</td><td class="num">4.42%</td><td class="num">$11.92–$13.55</td><td class="num">6.1</td><td class="num">never</td><td class="num">never</td><td class="num pos">$29,811</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$999</td><td class="num">0%</td><td class="num">$11,988</td><td class="num">$0</td><td class="num strong">$11,988</td><td class="num">1.78%</td><td class="num">$4.80–$5.45</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$11,988</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$999</td><td class="num">1%</td><td class="num">$11,988</td><td class="num">$6,741</td><td class="num strong">$18,729</td><td class="num">2.78%</td><td class="num">$7.49–$8.51</td><td class="num">never</td><td class="num">never</td><td class="num">never</td><td class="num pos">$18,729</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$999</td><td class="num">2%</td><td class="num">$11,988</td><td class="num">$13,482</td><td class="num strong">$25,470</td><td class="num">3.78%</td><td class="num">$10.19–$11.58</td><td class="num">11.0</td><td class="num">never</td><td class="num">never</td><td class="num pos">$25,470</td><td class="neg">NO</td></tr><tr><td>Collected total</td><td class="num">$999</td><td class="num">3%</td><td class="num">$11,988</td><td class="num">$20,223</td><td class="num strong">$32,211</td><td class="num">4.78%</td><td class="num">$12.88–$14.64</td><td class="num">4.9</td><td class="num">never</td><td class="num">never</td><td class="num pos">$32,211</td><td class="neg">NO</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">5 · Assumptions, method & what this does not price</div>
+    <div class="assump">
+      <strong>Inputs (confirmed by Justin 2026-07-31).</strong>
+      T12M subscription revenue $674,104 · merch subtotal
+      $661,187 · collected total $674,104
+      (incl. $42,500 shipping, net of $29,400
+      discounts) · ~2,200–2,500 active
+      contracts · sub AOV $44.26.<br>
+
+      <strong>Independent DB cross-check.</strong> <code>calc_daily_shopify</code> over the T12M window
+      ending 2026-07-30: sub revenue $675,464
+      (+0.2% vs confirmed), 15,255 sub orders,
+      AOV $44.28 (confirmed $44.26),
+      13,818 recurring + 1,437 first-time.
+      The confirmed inputs hold — the model uses them, not the DB figures, so the two stay independent.<br>
+
+      <strong>Formula.</strong> <code>Stay.ai annual = fee × 12 + rev-share × base</code>.
+      <code>payback = capex ÷ (alternative-avoided-cost − new opex)</code>; where that denominator is
+      ≤ 0 there is no payback and the cell reads "never".<br>
+
+      <strong>Build alternative.</strong> $60,000–$120,000 capex,
+      $20,000–$40,000/yr opex. Opex is treated as perpetual — a
+      subscription biller is not a build-once asset (PCI scope, dunning, card-updater, tax, plan
+      migrations, on-call for a recurring-billing system against $674,104/yr).<br>
+
+      <strong>Shopify Subscriptions alternative.</strong> $0 capex licence, $0/yr licence, per the
+      brief. Shopify already owns the contracts, the payment vault, the billing-cycle calendar and
+      checkout; Stay.ai supplies only the layer above — which is why the swap is a layer swap, not a
+      rebuild.<br>
+
+      <strong>What this model does NOT price.</strong> (1) <em>Migration effort</em> — theme cleanup
+      across 18 legacy templates, the account-portal link, and a <code>global.js</code> null-guard;
+      real but one-off and small. (2) <em>Churn risk during cutover</em> — the exit plan's risk register
+      puts 5% churn at ≈$30K in year one and $50–90K in LTV, which is the single largest number in this
+      whole analysis and dwarfs every licence-fee cell; it argues for a canary batch, not for staying.
+      (3) <em>Feature loss</em> — Stay.ai's churn flows, swap UX and pause reasons have no direct Shopify
+      Subscriptions equivalent; if those drive retention their value is a real offset that this
+      licence-only model omits. (4) <em>Shopify payment/transaction fees</em> — unchanged by the choice,
+      so excluded on both sides. (5) <em>Contract re-parenting feasibility</em> — the whole swap is
+      blocked on a Shopify support ticket; if re-parenting and payment-method reuse are both impossible,
+      the swap is off the table and this becomes a straight Stay.ai renegotiation.<br>
+
+      <strong>How to read the verdict.</strong> "Rational to build" is judged against the best available
+      alternative, which is the free one. Judging a build against Stay.ai alone is the classic error —
+      it flatters the build by pretending the free option does not exist.
+    </div>
+  </div>
+
+  <div id="provenance-mount"></div>
+  <script>
+  window.PROVENANCE_CONFIG = {
+    pageTitle: "Stay.ai Break-Even Matrix",
+    owner: "DataOps",
+    master: { label: "Analytics DB + confirmed inputs", path: "C:\\temp\\analytics\\teeccino_analytics.db", rowGrain: "Scenario cell (fee x rev-share x base)" },
+    sources: [
+      { label: "Confirmed baseline (Justin, 2026-07-31)", note: "T12M sub revenue, bases, contract count, sub AOV" },
+      { label: "calc_daily_shopify", note: "Independent cross-check of sub revenue / orders / AOV" },
+      { label: "stayai-exit-plan.md (ThemeSmith)", note: "Migration scope, blocker, risk register" }
+    ]
+  };
+  </script>
+  <script src="provenance-banner.js"></script>
+</div>
+
+<script>
+const gridColor = 'rgba(255,255,255,0.06)';
+const tickColor = '#8b8b8b';
+const money = v => '$' + Math.round(v).toLocaleString();
+
+new Chart(document.getElementById('sensChart'), {
+  type: 'line',
+  data: { labels: ["+0%", "+5%", "+10%", "+15%", "+20%", "+25%", "+30%", "+35%", "+40%"], datasets: [{label:'$299/mo + 2%',data:[17070, 17744, 18418, 19092, 19766, 20441, 21115, 21789, 22463],borderColor:'#3987e5',backgroundColor:'#3987e5',borderWidth:2,pointRadius:4,pointHoverRadius:8,tension:0.15},{label:'$499/mo + 2%',data:[19470, 20144, 20818, 21492, 22166, 22841, 23515, 24189, 24863],borderColor:'#d95926',backgroundColor:'#d95926',borderWidth:2,pointRadius:4,pointHoverRadius:8,tension:0.15},{label:'$799/mo + 2%',data:[23070, 23744, 24418, 25092, 25766, 26441, 27115, 27789, 28463],borderColor:'#199e70',backgroundColor:'#199e70',borderWidth:2,pointRadius:4,pointHoverRadius:8,tension:0.15},{label:'$999/mo + 2%',data:[25470, 26144, 26818, 27492, 28166, 28841, 29515, 30189, 30863],borderColor:'#c98500',backgroundColor:'#c98500',borderWidth:2,pointRadius:4,pointHoverRadius:8,tension:0.15},{label:'Build — opex floor ($20K/yr, forever)',data:[20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000],borderColor:'#e66767',borderWidth:2,borderDash:[6,4],pointRadius:0,tension:0},{label:'Shopify Subscriptions ($0/yr)',data:[0, 0, 0, 0, 0, 0, 0, 0, 0],borderColor:'#0ca30c',borderWidth:2,borderDash:[2,3],pointRadius:0,tension:0}] },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    interaction: { mode:'index', intersect:false },
+    plugins: {
+      legend: { labels: { color:'#c3c2b7', boxWidth:14, padding:14, font:{size:11} } },
+      title: { display:true, color:'#c3c2b7', font:{size:12,weight:'normal'},
+                text:'Stay.ai annual cost vs subscription-revenue growth (rev-share held at 2%, collected-total base)' },
+      tooltip: { callbacks: { label: c => c.dataset.label + ': ' + money(c.parsed.y) + '/yr' } }
+    },
+    scales: {
+      x: { ticks:{color:tickColor}, grid:{color:gridColor},
+            title:{display:true,text:'Subscription revenue growth',color:tickColor} },
+      y: { beginAtZero:true, ticks:{color:tickColor, callback:money}, grid:{color:gridColor},
+            title:{display:true,text:'Total annual cost',color:tickColor} }
+    }
+  }
+});
+
+new Chart(document.getElementById('growthChart'), {
+  type: 'bar',
+  data: { labels: ["2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"], datasets: [{
+    label:'Subscription orders', data: [962, 1020, 1089, 1110, 1301, 1130, 1293, 1316, 1419, 1381, 1305, 1380, 1485],
+    backgroundColor:'#3987e5', borderRadius:4, borderSkipped:false
+  }] },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins: { legend:{display:false},
+      tooltip: { callbacks: { label: c => c.parsed.y.toLocaleString() + ' sub orders' } } },
+    scales: {
+      x: { ticks:{color:tickColor, maxRotation:60, minRotation:60, font:{size:9}}, grid:{display:false} },
+      y: { beginAtZero:true, ticks:{color:tickColor}, grid:{color:gridColor},
+            title:{display:true,text:'Monthly sub orders',color:tickColor} }
+    }
+  }
+});
+</script>
+</body>
+</html>
