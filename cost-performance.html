@@ -235,6 +235,14 @@ const casesOf=f=> f&&f.q ? f.q/csz(f.i) : 0;
 const volB=(f,b)=> (!f||!f.q)?0:(b==='unit'? f.q : f.q/csz(f.i));
 const factorB=(r,b)=> b==='unit'? 1/((r.pack_count)||1) : ((r.case_size)||1);
 const secBasis=sec=>{const el=document.querySelector('.basis-seg[data-sec="'+sec+'"] button.on'); return el?el.dataset.b:'case';};
+// Pack config keyed by PRODUCTION item# (filled in recompute). Run rows are recorded in produced
+// packs, so a drill-down needs this to restate a run in the basis the section is showing:
+//   per unit  = produced packs × singles-per-pack   (one individual retail pack)
+//   per case  = produced packs ÷ packs-per-case     (one shipping case)
+let PACKINFO={};
+const pcOf=i=>{const p=PACKINFO[''+i]; return (p&&p.pack_count)||1;};
+const pcUnknown=i=>{const p=PACKINFO[''+i]; return !!(p&&p.pack_type==='case'&&!p.pack_count);};
+const runVol=(f,b)=>{ if(!f||!f.q) return 0; if(b!=='unit') return f.q/csz(f.i); return pcUnknown(f.i)?null:f.q*pcOf(f.i); };
 const BWs=b=> b==='unit'?'units':'cases';
 const BW1s=b=> b==='unit'?'unit':'case';
 const setTxt=(id,t)=>{const e=document.getElementById(id); if(e)e.textContent=t;};
@@ -314,6 +322,7 @@ function recompute(){
   FG=(RAW.bom_cogs.items||[]).map(it=>{const r=makeOf(it); return {...it,make:r.make,make_blend:r.blend,make_labor:r.pack,priced:r.priced};});
   // SKU -> size (10ct / 11oz / 25ct / Sampler...) lookup, keyed by every id a row might use
   const SIZE={}, PACK={}, DISP={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k){ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; if(it.display_name)DISP[k]=it.display_name; } }); });
+  PACKINFO=PACK;   // production item# -> {pack_type,pack_count}; used by the basis-aware drill-downs
   // machine hours by SKU (3a)
   const Bmh=secBasis('mh'); setTxt('mh-vol',BWs(Bmh)+' made'); setTxt('mh-per1k','hrs / 1k '+BWs(Bmh));
   const mhacc={};
@@ -335,7 +344,9 @@ function makeOf(it){
   const make=priced.reduce((s,x)=>s+x.usd,0);
   let blend=0,pack=0;
   (function tb(ps,mult){ps.forEach(x=>{ if(x.t==='blend')blend+=x.usd*mult; else if(x.t==='pack')pack+=x.usd*mult; else if(x.t==='comp')tb(x.subs,mult*x.qty);});})(priced,1);
-  return {make:+make.toFixed(4),blend:+blend.toFixed(4),pack:+pack.toFixed(4),priced};
+  // keep 6 dp internally: these get multiplied by case size (up to ×36), so rounding to the
+  // displayed 4 dp first made the table disagree with the drill-down by a few hundredths of a cent
+  return {make:+make.toFixed(6),blend:+blend.toFixed(6),pack:+pack.toFixed(6),priced};
 }
 
 /* ---------- Section 1: Production Activity ---------- */
@@ -512,8 +523,10 @@ function renderPack(){
   const noRun=rows.filter(r=>!hasRun.get(r)).length;
   $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
   $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>{const hr=hasRun.get(r);
-    const cell=hr ? `<span class="big">${m4(r.make_labor*factorB(r,Bp))}</span>`
-      : `<span class="illus" title="No production runs for this SKU in the selected period. Widen the date range or pick a period when it ran.">no runs this period</span>`;
+    const unknown = Bp==='unit' && r.pack_type==='case' && !r.pack_count;   // multipack, count unknown
+    const cell=!hr ? `<span class="illus" title="No production runs for this SKU in the selected period. Widen the date range or pick a period when it ran.">no runs this period</span>`
+      : unknown ? `<span class="illus" title="Multipack with an unknown number of individual packs — a per-unit cost can't be derived. Switch to Per case.">pack count unknown</span>`
+      : `<span class="big">${m4(r.make_labor*factorB(r,Bp))}</span>`;
     return `<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${cell}</td></tr>`;}).join('')
     :`<tr><td colspan="4" class="empty">No SKUs match.</td></tr>`;
@@ -538,10 +551,11 @@ function showPack(sku){
   const r=FG.find(x=>(''+(x.sku||''))===(''+sku)); const box=$('#pack-detail');
   if(!r){box.hidden=true;return;}
   const items=packItems(r), fin=finSet();
+  const Bp=secBasis('pack'), volW=BWs(Bp), volW1=BW1s(Bp);   // follow the section's Per case / Per unit toggle
   const runs=fRows().filter(f=>fin.has(f.m)&&items.has(''+f.i))
                     .sort((a,b)=>(''+(b.d||'')).localeCompare(''+(a.d||'')));  // newest first
   const rangeTxt=active()?`${RANGE.from||'start'} → ${RANGE.to||'end'}`:'all time';
-  box.hidden=false;
+  box.hidden=false; box.dataset.sku=sku;   // remember which SKU is open (survive a basis toggle)
   if(!runs.length){
     box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}</h3>`
       +`<button class="linkbtn" onclick="document.getElementById('pack-detail').hidden=true">close ✕</button></div>`
@@ -550,24 +564,62 @@ function showPack(sku){
     box.scrollIntoView({behavior:'smooth',block:'nearest'});
     return;
   }
-  let tRuns=0,tPacks=0,tMh=0,tOh=0,tLab=0;
+  let tRuns=0,tVol=0,tMh=0,tOh=0,tLab=0,nUnk=0;
+  // costed subtotals = runs that reported BOTH output and labor. The weighted average is computed on
+  // these only, so it reconciles with the Packing table. Runs that logged time but no quantity are
+  // reported separately as a data-quality note instead of silently inflating the $/unit.
+  let cVol=0,cLab=0,oRuns=0,oLab=0,oMh=0;
+  const byItem={};
   const rowsH=runs.map(f=>{
-    const q=f.q||0, oh=(f.t!=null&&f.o!=null)?f.t*f.o:null, lab=oh!=null?oh*WAGE:null;
-    const perPack=(lab!=null&&q)?lab/q:null;
-    tRuns++; tPacks+=q; if(f.t!=null)tMh+=f.t; if(oh!=null)tOh+=oh; if(lab!=null)tLab+=lab;
+    // restate the run's produced-pack qty in the selected basis (cases, or individual retail units)
+    const vol=runVol(f,Bp), oh=(f.t!=null&&f.o!=null)?f.t*f.o:null, lab=oh!=null?oh*WAGE:null;
+    const perVol=(lab!=null&&vol)?lab/vol:null;
+    tRuns++; if(vol==null)nUnk++; else tVol+=vol;
+    if(f.t!=null)tMh+=f.t; if(oh!=null)tOh+=oh; if(lab!=null)tLab+=lab;
+    if(vol&&lab!=null){ cVol+=vol; cLab+=lab; const a=byItem[f.i]||(byItem[f.i]={vol:0,lab:0,runs:0}); a.vol+=vol; a.lab+=lab; a.runs++; }
+    else if(lab!=null&&!vol){ oRuns++; oLab+=lab; if(f.t!=null)oMh+=f.t; }   // time logged, no quantity
     const flag=f.dq?` <span class="mtag" title="Run time looked physically impossible (End-Time typo) — time excluded, packs kept">⚠ time</span>`:'';
-    return `<tr><td>${f.d||'–'}</td><td>${f.m}</td><td><code>${f.i}</code></td><td>${num(q)}</td>`
+    const volTd=vol==null
+      ? `<td class="illus" title="Multipack with an unknown number of individual packs — can't convert this run to units.">?</td>`
+      : `<td title="${num(f.q)} produced pack(s)${Bp==='unit'?` × ${pcOf(f.i)} per pack`:` ÷ ${csz(f.i)} per case`}">${num(vol)}</td>`;
+    return `<tr><td>${f.d||'–'}</td><td>${f.m}</td><td><code>${f.i}</code></td>${volTd}`
       +`<td>${f.o!=null?f.o:'–'}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}${flag}</td>`
-      +`<td>${lab!=null?m2(lab):'–'}</td><td>${m4(perPack)}</td></tr>`;
+      +`<td>${lab!=null?m2(lab):'–'}</td><td>${m4(perVol)}</td></tr>`;
   }).join('');
-  const wAvg=tPacks?tLab/tPacks:null;
+  const multi=Object.keys(byItem).length>1;   // bundle: rolls up its own runs + component runs
+  const wAvg=(!multi&&cVol)?cLab/cVol:null;   // only meaningful when every run counts the same thing
+  // Bundles mix units of measure (finished bundles vs component bags/boxes) — never add those volumes
+  // into one $/unit. Show each item on its own line instead and point at the table for the SKU figure.
+  const itemTbl=!multi?'':`<p class="hint" style="margin:10px 0 4px"><b>By production item</b> `
+    +`<span class="illus">— this SKU rolls up more than one item, and their volumes are different things `
+    +`(finished ${volW} vs component bags/boxes), so they are NOT added into a single $/${volW1}. `
+    +`The SKU's cost per ${volW1} is the one in the table above.</span></p>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Item&nbsp;#</th><th>Description</th><th>runs</th><th>${volW} made</th><th>labor $</th><th>$/${volW1}</th></tr></thead><tbody>`
+    +Object.entries(byItem).sort((a,b)=>b[1].lab-a[1].lab).map(([i,a])=>
+      `<tr><td><code>${i}</code></td><td class="desc">${(RAW.items[i]||{}).desc||''}</td><td>${num(a.runs)}</td>`
+      +`<td>${num(a.vol)}</td><td>${m2(a.lab)}</td><td>${m4(a.vol?a.lab/a.vol:null)}</td></tr>`).join('')
+    +`</tbody></table>`;
+  const notes=[];
+  if(oRuns) notes.push(`<b>${oRuns}</b> run${oRuns===1?'':'s'} logged time but no quantity `
+    +`(${(+oMh).toFixed(2)} machine hrs, ${m2(oLab)} labor) — counted in the labor total, excluded from the $/${volW1} average.`);
+  if(nUnk) notes.push(`<b>${nUnk}</b> run${nUnk===1?'':'s'} on a multipack with an unknown pack count — can't be converted to units.`);
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('pack-detail').hidden=true">close ✕</button></div>`
-    +`<p class="hint" style="margin:6px 0"><b>${num(tRuns)}</b> run${tRuns===1?'':'s'} · <b>${num(tPacks)}</b> packs made · <b>${num(tMh)}</b> machine hrs · <b>${m2(tLab)}</b> packing labor`
-    +` <span class="illus">· ${rangeTxt}${items.size>1?` · rolls up items ${[...items].join(', ')}`:''}</span></p>`
-    +`<div class="scroll"><table style="font-size:12.5px"><thead><tr><th>Date</th><th>Machine / stage</th><th>Item&nbsp;#</th><th>packs made</th><th>ops</th><th>machine hrs</th><th>labor $</th><th>$/pack</th></tr></thead>`
+    +`<p class="hint" style="margin:6px 0"><b>${num(tRuns)}</b> run${tRuns===1?'':'s'} · `
+    +(multi?`output <b>by item below</b>`:`<b>${num(tVol)}</b> ${volW} made`)
+    +` · <b>${num(tMh)}</b> machine hrs · <b>${m2(tLab)}</b> packing labor`
+    +` <span class="illus">· ${rangeTxt} · showing <b>per ${volW1}</b>${multi?` · rolls up items ${[...items].join(', ')}`:''}</span></p>`
+    +`<div class="scroll"><table style="font-size:12.5px"><thead><tr><th>Date</th><th>Machine / stage</th><th>Item&nbsp;#</th><th>${volW} made</th><th>ops</th><th>machine hrs</th><th>labor $</th><th>$/${volW1}</th></tr></thead>`
     +`<tbody>${rowsH}</tbody>`
-    +`<tfoot><tr><td colspan="3" style="text-align:right"><b>total / weighted avg</b></td><td>${num(tPacks)}</td><td>–</td><td>${(+tMh).toFixed(2)}</td><td>${m2(tLab)}</td><td class="big">${m4(wAvg)}</td></tr></tfoot></table></div>`;
+    +`<tfoot><tr><td colspan="3" style="text-align:right"><b>total${multi?'':' / weighted avg'}</b></td>`
+    +(multi?`<td class="illus" title="Different items, different units of measure — not additive. See the by-item table below.">n/a</td>`:`<td>${num(tVol)}</td>`)
+    +`<td>–</td><td>${(+tMh).toFixed(2)}</td><td>${m2(tLab)}</td>`
+    +(multi
+      ? `<td class="illus" title="Mixed units of measure across items — see the by-item table below.">n/a</td>`
+      : `<td class="big" title="Weighted average over the ${num(cVol)} ${volW} that reported both output and labor.">${m4(wAvg)}</td>`)
+    +`</tr></tfoot></table></div>`
+    +itemTbl
+    +(notes.length?`<p class="foot" style="margin-top:8px">${notes.map(n=>'⚠ '+n).join('<br>')}</p>`:'');
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
@@ -613,7 +665,7 @@ function showMH(sku){
   box.hidden=false;
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('mh-detail').hidden=true">close ✕</button></div>`
-    +`<p class="hint" style="margin:6px 0"><b>${num(r.hrs)}</b> machine hrs · <b>${num(r.units)}</b> cases. By machine:</p>`
+    +`<p class="hint" style="margin:6px 0"><b>${num(r.hrs)}</b> machine hrs · <b>${num(r.units)}</b> ${BWs(secBasis('mh'))}. By machine:</p>`
     +`<table style="font-size:12.5px"><thead><tr><th>Machine / stage</th><th>machine hrs</th><th>share</th></tr></thead><tbody>`
     +machs.map(([m,h])=>`<tr><td>${m}</td><td>${num(+h.toFixed(2))}</td><td>${r.hrs?((h/r.hrs)*100).toFixed(0):0}%</td></tr>`).join('')+`</tbody></table>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -738,9 +790,12 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#fg-q').addEventListener('input',renderFG);
   document.querySelectorAll('.basis-seg').forEach(seg=> seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
     seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-    const fgd=$('#fg-detail'), reopen=(fgd && !fgd.hidden)?{fg:fgd.dataset.fg,sku:fgd.dataset.sku}:null;  // keep the drill-down open across a toggle
+    // keep an open drill-down open across a toggle — and re-render it on the new basis
+    const fgd=$('#fg-detail'), reFG=(fgd && !fgd.hidden)?{fg:fgd.dataset.fg,sku:fgd.dataset.sku}:null;
+    const pkd=$('#pack-detail'), rePack=(pkd && !pkd.hidden)?pkd.dataset.sku:null;
     recompute();
-    if(reopen) showFG(reopen.fg,reopen.sku); }));
+    if(reFG) showFG(reFG.fg,reFG.sku);
+    if(rePack) showPack(rePack); }));
   $('#t-eff tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showEffWeek(tr.dataset.eff);});
   $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
   $('#t-pack tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showPack(tr.dataset.pack);});
