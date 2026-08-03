@@ -85,7 +85,10 @@ p{max-width:74ch}
 code,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;background:var(--faint);padding:2px 6px;border-radius:4px;color:var(--chestnut);white-space:nowrap}
 
 /* ---------- swatches ---------- */
-.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px;margin:16px 0 8px}
+.sw-grid{display:grid;grid-template-columns:1fr;gap:14px;margin:16px 0 8px}
+@media(min-width:560px){.sw-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:750px){.sw-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:1200px){.sw-grid{grid-template-columns:repeat(4,1fr)}}
 .sw{border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:#fff}
 .sw .chip{height:82px;display:flex;align-items:flex-end;padding:8px 10px}
 .sw .chip b{font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.9);color:#121212}
@@ -374,8 +377,17 @@ footer .shell{display:block;max-width:1440px}
     <div class="sw-grid" id="sw-accent"></div>
 
     <div class="note warn">
-      <strong>Contrast note.</strong> Berry <code>#B5404C</code> on white is <span class="ratio" id="berry-ratio">—</span> — it passes AA for normal text but not AAA. Chestnut <code>#6b3327</code> on white is <span class="ratio" id="chest-ratio">—</span> (AAA). Where a long run of body-adjacent text needs a brand color, chestnut is the safer choice; berry is for headings and buttons, which are large or reversed-out.
+      <strong>Contrast note.</strong> Every ratio above is a <em>text</em> contrast reading — the color used as type against the surface named. A "fail" on a color that is only ever used as a <em>fill</em> (gold, for instance) is not automatically a defect; what matters is the label sitting on it. See the component pairings below.
+      <br><br>
+      Berry <code>#B5404C</code> on white is <span class="ratio" id="berry-ratio">—</span> — it passes AA for normal text but not AAA. Chestnut <code>#6b3327</code> on white is <span class="ratio" id="chest-ratio">—</span> (AAA). Where a long run of body-adjacent text needs a brand color, chestnut is the safer choice; berry is for headings and buttons, which are large or reversed-out.
     </div>
+
+    <h3>Component pairings — label on fill</h3>
+    <p class="lede">The reading that actually governs accessibility: the label color against the fill it sits on, as the theme ships them today.</p>
+    <div class="tblwrap"><table id="pair-table">
+      <thead><tr><th>Component</th><th>Fill</th><th>Label</th><th>Contrast</th><th>Where</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
   </section>
 
   <!-- ============ SCHEMES ============ -->
@@ -599,6 +611,7 @@ footer .shell{display:block;max-width:1440px}
     <h2>Known gaps &amp; drift</h2>
     <p class="lede">Honest inventory. These are open items in the system as of this compile — documented here so a spec doesn't unknowingly build on top of them.</p>
     <ul class="tight">
+      <li><strong>The bundle gold pill fails WCAG AA.</strong> <code>component-pdp-bundle.css</code> sets <code>background:#C79A4E; color:#fff</code> in two places (lines 27 and 179) — that is <strong>2.57:1</strong>, well under the 4.5:1 floor for small text, and the pill is small uppercase type at <code>1rem</code>/<code>1.2rem</code>. Swapping the label to chestnut <code>#6b3327</code> gets 3.83:1 (still only AA-large); darkening the fill is the real fix. Verified against the theme 2026-08-03 — this is a live defect, not a hypothetical.</li>
       <li><strong>No <code>--color-error</code> token exists.</strong> Error text currently borrows <code>--color-button</code>, so a destructive/error message renders in the same hue as the primary action — a semantic collision. Needs a dedicated token.</li>
       <li><strong>Eyebrow treatment has drifted three ways.</strong> Live in the PDP CSS: Faricy Medium 1.3rem/0.12em, Montserrat 1.2rem/0.18em, and Assistant 1.1rem/0.2em — all doing the same job. One canonical eyebrow spec should win.</li>
       <li><strong>Off-palette green in the cart.</strong> <code>.tc-cart__savings</code> uses <code>#1f7a1f</code>, which is neither brand green (<code>#3BAF4A</code> / <code>#2C7A38</code>).</li>
@@ -687,6 +700,26 @@ for(const k of ['primary','neutral','accent','campaign']){
 }
 document.getElementById('berry-ratio').innerHTML=ratioHTML('#B5404C','#ffffff');
 document.getElementById('chest-ratio').innerHTML=ratioHTML('#6b3327','#ffffff');
+
+/* ---------- component pairings (label on fill, as shipped) ---------- */
+const PAIRS=[
+ ['Primary CTA (berry schemes)','#B5404C','#ffffff','background-1 · 2 of 21 schemes'],
+ ['Primary CTA (chestnut schemes)','#6b3327','#ffffff','11 of 21 schemes — the majority'],
+ ['Button on dark/brown schemes','#e1b77e','#6b3327','accent-2, inverse, olive, teal bands'],
+ ['Campaign pill','#812856','#ffffff','campaign_sale_accent — PDP + card + shop-all'],
+ ['Merch badge (FOTM / NEW / SALE)','#0f7480','#ffffff','theme badge settings'],
+ ['Bundle gold pill','#C79A4E','#ffffff','component-pdp-bundle.css lines 27 &amp; 179'],
+ ['"Included" chip','#eaf1f0','#2F7A72','bundle PDP — teal on 14% teal tint']
+];
+document.querySelector('#pair-table tbody').innerHTML=PAIRS.map(p=>{
+ const r=ratio(p[2],p[1]),[g,c]=grade(r);
+ const flag = r<4.5 ? ' <span class="tag hot">below AA</span>' : '';
+ return '<tr><td><strong style="font-family:var(--heading);font-size:12.5px">'+p[0]+'</strong>'+flag+'</td>'+
+  '<td>'+cellSw(p[1])+'</td><td>'+cellSw(p[2])+'</td>'+
+  '<td><span class="'+c+'" style="font-weight:700">'+r.toFixed(2)+':1 · '+g+'</span></td>'+
+  '<td style="white-space:normal;color:var(--muted);font-size:11.5px">'+p[3]+'</td></tr>';
+}).join('');
+function cellSw(h){return '<span class="dot" style="background:'+h+'"></span><span class="cell">'+h+'</span>'}
 
 /* ---------- schemes ---------- */
 const SCHEMES=[
