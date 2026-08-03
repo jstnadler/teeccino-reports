@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Ads Performance &mdash; Teeccino</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#0f1115; --card:#1a1d24; --ink:#e8eaed; --muted:#9aa0a6;
+    --line:#2a2e37; --grid:#22262e; --input-bg:#232734;
+    --hover-bg:#20242e;
+    --s1:#3987e5; --s2:#d95926;
+    --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.5; }
+  .wrap { max-width:1280px; margin:0 auto; padding:28px 20px 64px; }
+  h1 { font-size:22px; margin:0 0 4px; font-weight:650; }
+  .sub { color:var(--muted); font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:18px 20px; margin:16px 0; }
+  /* ---- one filter row above everything it scopes ---- */
+  .filters { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:18px 0 4px; }
+  .filters .lab { color:var(--muted); font-size:12px; text-transform:uppercase;
+    letter-spacing:.06em; margin-right:2px; }
+  button.f { background:var(--input-bg); color:var(--ink); border:1px solid var(--line);
+    border-radius:7px; padding:6px 12px; font:inherit; font-size:13px; cursor:pointer;
+    min-height:32px; }
+  button.f:hover { background:var(--hover-bg); }
+  button.f[aria-pressed="true"] { border-color:var(--s1); color:var(--s1); font-weight:600; }
+  button.f:focus-visible { outline:2px solid var(--s1); outline-offset:2px; }
+  /* ---- stat tiles ---- */
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tl { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+  /* proportional figures on stat values (never tabular-nums at display size) */
+  .tv { font-size:26px; font-weight:640; margin:4px 0 2px; }
+  .ts { color:var(--muted); font-size:12px; }
+  /* ---- charts ---- */
+  .chead { display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+    flex-wrap:wrap; margin-bottom:2px; }
+  .ctitle { font-size:15px; font-weight:620; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+  .lg { display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:12px; }
+  .sw { width:11px; height:11px; border-radius:3px; flex:none; }
+  .plot { width:100%; height:auto; display:block; overflow:visible; }
+  /* small multiples: separate panels, own scales, shared x range */
+  .mult { display:grid; gap:10px; }
+  .mtitle { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:12px;
+    margin:2px 0 -4px 2px; }
+  .tv-toggle { background:none; border:none; color:var(--muted); font:inherit; font-size:12px;
+    cursor:pointer; text-decoration:underline; padding:2px 4px; }
+  .tv-toggle:hover { color:var(--ink); }
+  /* ---- tables ---- */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { padding:7px 10px; border-bottom:1px solid var(--line); text-align:left; }
+  th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    font-weight:600; white-space:nowrap; }
+  th.s { cursor:pointer; user-select:none; }
+  th.s:hover { color:var(--ink); }
+  /* tabular-nums ONLY where digits align vertically */
+  td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.nm { font-weight:500; }
+  td.sub { color:var(--muted); font-size:12px; }
+  tbody tr:hover { background:var(--hover-bg); }
+  .pill { display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:999px;
+    font-size:12px; font-weight:600; border:1px solid transparent; }
+  .pill.good { color:var(--good); border-color:var(--good); }
+  .pill.bad  { color:var(--crit); border-color:var(--crit); }
+  .pill.warn { color:var(--warn); border-color:var(--warn); }
+  .note { color:var(--muted); font-size:12.5px; margin:8px 0 0; }
+  .hidden { display:none; }
+  /* tooltip */
+  #tt { position:fixed; pointer-events:none; z-index:50; background:var(--card);
+    border:1px solid var(--line); border-radius:8px; padding:8px 11px; font-size:12.5px;
+    box-shadow:0 6px 22px rgba(0,0,0,.34); display:none; min-width:150px; }
+  #tt .d { color:var(--muted); margin-bottom:5px; font-size:11.5px; }
+  #tt .r { display:flex; justify-content:space-between; gap:14px; }
+  #tt .r b { font-variant-numeric:tabular-nums; }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Amazon Ads Performance</h1>
+  <div class="sub">Sponsored Products + Sponsored Brands &middot; Reporting API v3 &middot;
+    2026-04-30 &rarr; 2026-08-03 (96 days) &middot; built 2026-08-03 21:17 UTC</div>
+
+  <div class="filters" role="group" aria-label="Date range">
+    <span class="lab">Range</span>
+    <button class="f" data-days="14"  aria-pressed="false">14d</button>
+    <button class="f" data-days="30"  aria-pressed="false">30d</button>
+    <button class="f" data-days="60"  aria-pressed="false">60d</button>
+    <button class="f" data-days="0"   aria-pressed="true">All 96d</button>
+  </div>
+
+  <div class="tiles" id="tiles"><div class="tile"><div class="tl">Ad spend</div><div class="tv">$164,526</div><div class="ts">96 days</div></div>
+<div class="tile"><div class="tl">Ad sales</div><div class="tv">$744,612</div><div class="ts">attributed</div></div>
+<div class="tile"><div class="tl">ACOS</div><div class="tv">22.1%</div><div class="ts">spend &divide; ad sales</div></div>
+<div class="tile"><div class="tl">ROAS</div><div class="tv">4.53&times;</div><div class="ts">reciprocal of ACOS</div></div>
+<div class="tile"><div class="tl">TACOS</div><div class="tv">6.21%</div><div class="ts">spend &divide; <em>total</em> Amazon sales</div></div>
+<div class="tile"><div class="tl">Ad orders</div><div class="tv">44,847</div><div class="ts">$1.13 CPC</div></div></div>
+
+  <div class="card">
+    <div class="chead">
+      <div class="ctitle">Spend &amp; attributed ad sales</div>
+      <div class="legend">
+        <button class="tv-toggle" data-tv="tblMoney">table view</button>
+      </div>
+    </div>
+    <div class="mult">
+      <div>
+        <div class="mtitle"><span class="sw" style="background:var(--s1)"></span>Ad spend</div>
+        <svg id="cSpend" class="plot" viewBox="0 0 1200 250" preserveAspectRatio="xMidYMid meet"
+             role="img" aria-label="Daily ad spend in dollars"></svg>
+      </div>
+      <div>
+        <div class="mtitle"><span class="sw" style="background:var(--s2)"></span>Attributed ad sales</div>
+        <svg id="cSales" class="plot" viewBox="0 0 1200 250" preserveAspectRatio="xMidYMid meet"
+             role="img" aria-label="Daily attributed ad sales in dollars"></svg>
+      </div>
+    </div>
+    <div id="tblMoney" class="hidden"></div>
+    <p class="note">Shown as small multiples rather than one plot: ad sales run ~7&times; spend, so a
+      shared axis flattened the spend line into noise. Each panel keeps its own scale and the same
+      x range &mdash; and no information is lost, because the spend-to-sales <em>ratio</em> is exactly
+      what the ACOS chart below plots. Ad sales are Amazon&rsquo;s attributed sales for clicks on these
+      ads, not total Amazon revenue.</p>
+  </div>
+
+  <div class="card">
+    <div class="chead">
+      <div class="ctitle">Efficiency &mdash; ACOS vs TACOS</div>
+      <div class="legend">
+        <span class="lg"><span class="sw" style="background:var(--s1)"></span>ACOS</span>
+        <span class="lg"><span class="sw" style="background:var(--s2)"></span>TACOS</span>
+        <button class="tv-toggle" data-tv="tblEff">table view</button>
+      </div>
+    </div>
+    <svg id="cEff" class="plot" viewBox="0 0 1200 330" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-label="Daily ACOS and TACOS, both percentages"></svg>
+    <div id="tblEff" class="hidden"></div>
+    <p class="note">Both are percentages, so they share one axis. <b>ACOS</b> = spend &divide;
+      <em>ad-attributed</em> sales (how the ads themselves perform). <b>TACOS</b> = spend &divide;
+      <em>total</em> Amazon sales (how much of the whole channel ad spend consumes) &mdash; the
+      cross-table metric Amazon&rsquo;s own console can&rsquo;t show, since total sales come from SP-API.
+      ROAS is deliberately not plotted: it is the exact reciprocal of ACOS.</p>
+  </div>
+
+  <div class="card">
+    <div class="chead"><div class="ctitle">Monthly ACOS</div></div>
+    <svg id="cMonth" class="plot" viewBox="0 0 1200 260" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-label="ACOS by month"></svg>
+    <p class="note"><span class="pill bad">&uarr; 11.0 pts worse</span> ACOS moved 2026-04 &rarr; 2026-08</p>
+  </div>
+
+  <div class="card">
+    <div class="ctitle" style="margin-bottom:8px">By ad product</div>
+    <table>
+      <thead><tr><th>Product</th><th class="n">Campaigns</th><th class="n">Days</th>
+        <th class="n">Spend</th><th class="n">Ad sales</th><th class="n">ACOS</th>
+        <th class="n">ROAS</th><th>Coverage</th></tr></thead>
+      <tbody><tr><td class="nm">Products</td><td class="n">129</td><td class="n">96</td><td class="n">$161,424</td><td class="n">$711,294</td><td class="n">22.7%</td><td class="n">4.41&times;</td><td class="n sub">2026-04-30 &rarr; 2026-08-03</td></tr>
+<tr><td class="nm">Brands</td><td class="n">7</td><td class="n">36</td><td class="n">$3,102</td><td class="n">$33,318</td><td class="n">9.3%</td><td class="n">10.74&times;</td><td class="n sub">2026-06-29 &rarr; 2026-08-03</td></tr></tbody>
+    </table>
+    <p class="note">Sponsored Display returns zero rows &mdash; Teeccino runs no SD campaigns.
+      Coverage differs by product because Amazon&rsquo;s report retention is per-report-type
+      (SP reaches ~95 days, SB far less), so SB history is permanently shallower.</p>
+  </div>
+
+  <div class="card">
+    <div class="ctitle" style="margin-bottom:8px">By month</div>
+    <table>
+      <thead><tr><th>Month</th><th class="n">Days</th><th class="n">Spend</th>
+        <th class="n">Ad sales</th><th class="n">ACOS</th><th class="n">ROAS</th>
+        <th class="n">TACOS</th></tr></thead>
+      <tbody><tr><td class="nm">2026-04</td><td class="n">1</td><td class="n">$1,701</td><td class="n">$9,076</td><td class="n">18.7%</td><td class="n">5.34&times;</td><td class="n">5.54%</td></tr>
+<tr><td class="nm">2026-05</td><td class="n">31</td><td class="n">$50,443</td><td class="n">$245,335</td><td class="n">20.6%</td><td class="n">4.86&times;</td><td class="n">5.67%</td></tr>
+<tr><td class="nm">2026-06</td><td class="n">30</td><td class="n">$56,969</td><td class="n">$255,213</td><td class="n">22.3%</td><td class="n">4.48&times;</td><td class="n">6.95%</td></tr>
+<tr><td class="nm">2026-07</td><td class="n">31</td><td class="n">$51,081</td><td class="n">$220,412</td><td class="n">23.2%</td><td class="n">4.31&times;</td><td class="n">5.94%</td></tr>
+<tr><td class="nm">2026-08</td><td class="n">3</td><td class="n">$4,333</td><td class="n">$14,576</td><td class="n">29.7%</td><td class="n">3.36&times;</td><td class="n">8.42%</td></tr></tbody>
+    </table>
+    <p class="note">Partial months (first and last) have fewer days &mdash; compare the rates, not the totals.</p>
+  </div>
+
+  <div class="card">
+    <div class="chead">
+      <div class="ctitle">Campaigns <span class="sub">(<span id="campCount"></span> with spend)</span></div>
+      <div class="legend"><span class="lg">click a column to sort</span>
+        <button class="tv-toggle" id="campMore"></button></div>
+    </div>
+    <table id="camp">
+      <thead><tr>
+        <th class="s" data-k="name">Campaign</th>
+        <th class="s" data-k="product">Product</th>
+        <th class="s n" data-k="spend">Spend</th>
+        <th class="s n" data-k="ad_sales">Ad sales</th>
+        <th class="s n" data-k="acos">ACOS</th>
+        <th class="s n" data-k="roas">ROAS</th>
+        <th class="s n" data-k="cpc">CPC</th>
+        <th class="s n" data-k="ctr">CTR</th>
+        <th class="s n" data-k="cvr">CVR</th>
+        <th class="s n" data-k="ad_orders">Orders</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="note">CVR = ad orders &divide; clicks. Campaign totals span the full loaded window and
+      are not affected by the range filter above (campaign-level dates are rolled up at build time).</p>
+  </div>
+
+  <p class="note">Source: <code>raw_amazon_ads_campaigns</code> + <code>calc_daily_amazon_ads</code>
+    (Amazon Advertising API, Reporting v3, profile 35319265126281 / US).
+    TACOS joins ad spend to SP-API total Amazon sales in <code>calc_daily_amazon_net</code>.
+    Owned by DataOps; paid-ad strategy is AdSmith&rsquo;s lane.</p>
+</div>
+
+<div id="tt" role="tooltip" aria-live="polite"></div>
+
+<script>
+const DATA = {"min_date": "2026-04-30", "max_date": "2026-08-03", "days": 96, "daily": [{"date": "2026-04-30", "spend": 1700.8, "ad_sales": 9076.42, "total_sales": 30704.579999999998, "acos": 18.73866568536934, "tacos": 5.539238771544832, "clicks": 1562, "impressions": 225384, "ad_orders": 518}, {"date": "2026-05-01", "spend": 1705.52, "ad_sales": 8608.59, "total_sales": 30587.01, "acos": 19.811839104894066, "tacos": 5.575961821701435, "clicks": 1530, "impressions": 203569, "ad_orders": 482}, {"date": "2026-05-02", "spend": 1503.08, "ad_sales": 7417.35, "total_sales": 29599.399999999998, "acos": 20.26438013576277, "tacos": 5.07807590694406, "clicks": 1345, "impressions": 185873, "ad_orders": 421}, {"date": "2026-05-03", "spend": 1514.43, "ad_sales": 7806.02, "total_sales": 24611.7, "acos": 19.400795796065086, "tacos": 6.15329294603786, "clicks": 1376, "impressions": 181207, "ad_orders": 456}, {"date": "2026-05-04", "spend": 1614.62, "ad_sales": 8126.46, "total_sales": 28398.3, "acos": 19.86867590562188, "tacos": 5.685622026670611, "clicks": 1459, "impressions": 202221, "ad_orders": 467}, {"date": "2026-05-05", "spend": 1526.35, "ad_sales": 8537.42, "total_sales": 32145.34, "acos": 17.878352007983676, "tacos": 4.748277666374038, "clicks": 1389, "impressions": 190320, "ad_orders": 475}, {"date": "2026-05-06", "spend": 1604.75, "ad_sales": 7935.18, "total_sales": 33299.68, "acos": 20.223233751471295, "tacos": 4.819115378886524, "clicks": 1462, "impressions": 216950, "ad_orders": 463}, {"date": "2026-05-07", "spend": 1712.71, "ad_sales": 7996.03, "total_sales": 32429.53, "acos": 21.419504429072926, "tacos": 5.281328468220169, "clicks": 1521, "impressions": 198476, "ad_orders": 468}, {"date": "2026-05-08", "spend": 1626.02, "ad_sales": 8040.16, "total_sales": 29573.53, "acos": 20.223726891007143, "tacos": 5.498227638026303, "clicks": 1513, "impressions": 213482, "ad_orders": 485}, {"date": "2026-05-09", "spend": 1694.89, "ad_sales": 8055.04, "total_sales": 30281.75, "acos": 21.04136044017162, "tacos": 5.597067540680443, "clicks": 1540, "impressions": 215270, "ad_orders": 454}, {"date": "2026-05-10", "spend": 1706.92, "ad_sales": 7966.12, "total_sales": 26405.46, "acos": 21.427244379949084, "tacos": 6.464269132217352, "clicks": 1529, "impressions": 231003, "ad_orders": 450}, {"date": "2026-05-11", "spend": 1701.36, "ad_sales": 8717.31, "total_sales": 28595.079999999998, "acos": 19.517029909456014, "tacos": 5.949834726813145, "clicks": 1606, "impressions": 194834, "ad_orders": 483}, {"date": "2026-05-12", "spend": 1716.18, "ad_sales": 7615.72, "total_sales": 32751.78, "acos": 22.53470453220444, "tacos": 5.239959477011631, "clicks": 1596, "impressions": 237910, "ad_orders": 448}, {"date": "2026-05-13", "spend": 1702.79, "ad_sales": 7100.85, "total_sales": 31686.219999999998, "acos": 23.980086891006007, "tacos": 5.373913328885553, "clicks": 1555, "impressions": 283015, "ad_orders": 421}, {"date": "2026-05-14", "spend": 1706.55, "ad_sales": 8508.33, "total_sales": 28497.969999999998, "acos": 20.05740256901178, "tacos": 5.988321273410001, "clicks": 1594, "impressions": 248357, "ad_orders": 497}, {"date": "2026-05-15", "spend": 1613.15, "ad_sales": 7205.92, "total_sales": 35671.979999999996, "acos": 22.38645447076848, "tacos": 4.522176789738053, "clicks": 1507, "impressions": 251538, "ad_orders": 431}, {"date": "2026-05-16", "spend": 1609.52, "ad_sales": 6955.44, "total_sales": 17794.829999999998, "acos": 23.140448339716826, "tacos": 9.04487426966147, "clicks": 1500, "impressions": 272275, "ad_orders": 393}, {"date": "2026-05-17", "spend": 1611.1, "ad_sales": 9062.36, "total_sales": 27320.06, "acos": 17.777929810777767, "tacos": 5.897131997513914, "clicks": 1498, "impressions": 255559, "ad_orders": 508}, {"date": "2026-05-18", "spend": 1609.95, "ad_sales": 7922.48, "total_sales": 25950.04, "acos": 20.321288283466796, "tacos": 6.204036679712247, "clicks": 1540, "impressions": 267013, "ad_orders": 454}, {"date": "2026-05-19", "spend": 1607.52, "ad_sales": 8004.08, "total_sales": 28591.489999999998, "acos": 20.08375728378527, "tacos": 5.622372251323734, "clicks": 1473, "impressions": 240661, "ad_orders": 465}, {"date": "2026-05-20", "spend": 1615.15, "ad_sales": 8101.22, "total_sales": 29373.63, "acos": 19.93712058183829, "tacos": 5.498639425906842, "clicks": 1510, "impressions": 238547, "ad_orders": 452}, {"date": "2026-05-21", "spend": 1616.61, "ad_sales": 7069.11, "total_sales": 31190.64, "acos": 22.868649660282554, "tacos": 5.182997206854364, "clicks": 1486, "impressions": 261392, "ad_orders": 421}, {"date": "2026-05-22", "spend": 1601.91, "ad_sales": 8258.61, "total_sales": 29625.64, "acos": 19.39684765353976, "tacos": 5.407174326022999, "clicks": 1488, "impressions": 250206, "ad_orders": 514}, {"date": "2026-05-23", "spend": 1607.45, "ad_sales": 7488.38, "total_sales": 27771.55, "acos": 21.46592453908589, "tacos": 5.788117695987441, "clicks": 1484, "impressions": 238461, "ad_orders": 446}, {"date": "2026-05-24", "spend": 1611.37, "ad_sales": 7565.26, "total_sales": 26503.06, "acos": 21.299598427549085, "tacos": 6.079939448501418, "clicks": 1493, "impressions": 249237, "ad_orders": 463}, {"date": "2026-05-25", "spend": 1614.67, "ad_sales": 6611.7300000000005, "total_sales": 22471.71, "acos": 24.421293670491686, "tacos": 7.185345485501549, "clicks": 1492, "impressions": 265431, "ad_orders": 414}, {"date": "2026-05-26", "spend": 1615.54, "ad_sales": 8253.08, "total_sales": 31067.329999999998, "acos": 19.57499503215769, "tacos": 5.200125018789835, "clicks": 1480, "impressions": 251408, "ad_orders": 482}, {"date": "2026-05-27", "spend": 1615.83, "ad_sales": 8147.72, "total_sales": 28735.079999999998, "acos": 19.831682973887172, "tacos": 5.623196455343086, "clicks": 1506, "impressions": 291099, "ad_orders": 483}, {"date": "2026-05-28", "spend": 1605.82, "ad_sales": 7798.79, "total_sales": 26389.55, "acos": 20.59063008492343, "tacos": 6.085060184808002, "clicks": 1496, "impressions": 346378, "ad_orders": 486}, {"date": "2026-05-29", "spend": 1616.59, "ad_sales": 8690.4, "total_sales": 27691.59, "acos": 18.602020620454756, "tacos": 5.837837408397279, "clicks": 1528, "impressions": 378745, "ad_orders": 513}, {"date": "2026-05-30", "spend": 1612.21, "ad_sales": 8341.64, "total_sales": 30449.48, "acos": 19.327254592622076, "tacos": 5.294704540110373, "clicks": 1517, "impressions": 356212, "ad_orders": 495}, {"date": "2026-05-31", "spend": 1621.96, "ad_sales": 7428.17, "total_sales": 23758.989999999998, "acos": 21.8352568667653, "tacos": 6.8267211695446655, "clicks": 1512, "impressions": 348409, "ad_orders": 475}, {"date": "2026-06-01", "spend": 1620.91, "ad_sales": 7733.82, "total_sales": 24555.1, "acos": 20.958724149256124, "tacos": 6.6011134143212615, "clicks": 1458, "impressions": 366328, "ad_orders": 468}, {"date": "2026-06-02", "spend": 1643.27, "ad_sales": 8511.13, "total_sales": 27962.579999999998, "acos": 19.307307020336903, "tacos": 5.876675185193927, "clicks": 1496, "impressions": 362331, "ad_orders": 514}, {"date": "2026-06-03", "spend": 1622.17, "ad_sales": 8648.92, "total_sales": 30378.34, "acos": 18.755752163275876, "tacos": 5.339890198081923, "clicks": 1513, "impressions": 420017, "ad_orders": 516}, {"date": "2026-06-04", "spend": 1642.81, "ad_sales": 7991.13, "total_sales": 30575.2, "acos": 20.557918592239144, "tacos": 5.373014730893011, "clicks": 1483, "impressions": 334193, "ad_orders": 486}, {"date": "2026-06-05", "spend": 1635.05, "ad_sales": 7488.41, "total_sales": 30707.72, "acos": 21.83440810532543, "tacos": 5.324556821541944, "clicks": 1489, "impressions": 276876, "ad_orders": 450}, {"date": "2026-06-06", "spend": 1647.79, "ad_sales": 7777.68, "total_sales": 28512.77, "acos": 21.18613776858909, "tacos": 5.779129842523192, "clicks": 1541, "impressions": 252375, "ad_orders": 473}, {"date": "2026-06-07", "spend": 1628.54, "ad_sales": 7277.4800000000005, "total_sales": 27239.05, "acos": 22.37780110697659, "tacos": 5.978696026476695, "clicks": 1463, "impressions": 283388, "ad_orders": 438}, {"date": "2026-06-08", "spend": 1654.72, "ad_sales": 7420.67, "total_sales": 24375.989999999998, "acos": 22.298795122273326, "tacos": 6.7883191616012315, "clicks": 1556, "impressions": 244296, "ad_orders": 451}, {"date": "2026-06-09", "spend": 1588.24, "ad_sales": 6892.45, "total_sales": 29262.53, "acos": 23.04318493423964, "tacos": 5.427555307077003, "clicks": 1407, "impressions": 179712, "ad_orders": 433}, {"date": "2026-06-10", "spend": 1626.61, "ad_sales": 7481.76, "total_sales": 30061.1, "acos": 21.74100746348453, "tacos": 5.411012903719425, "clicks": 1445, "impressions": 178186, "ad_orders": 430}, {"date": "2026-06-11", "spend": 1427.36, "ad_sales": 7027.41, "total_sales": 29443.76, "acos": 20.311323802083557, "tacos": 4.847750423179648, "clicks": 1304, "impressions": 179126, "ad_orders": 430}, {"date": "2026-06-12", "spend": 1468.91, "ad_sales": 6672.3, "total_sales": 28491.12, "acos": 22.015047285044137, "tacos": 5.155676575719031, "clicks": 1316, "impressions": 179441, "ad_orders": 408}, {"date": "2026-06-13", "spend": 1721.58, "ad_sales": 8206.02, "total_sales": 27701.41, "acos": 20.979476043197554, "tacos": 6.214773905010611, "clicks": 1539, "impressions": 213217, "ad_orders": 493}, {"date": "2026-06-14", "spend": 1939.09, "ad_sales": 8573.13, "total_sales": 25582.39, "acos": 22.61822694861737, "tacos": 7.579784375111161, "clicks": 1757, "impressions": 222307, "ad_orders": 519}, {"date": "2026-06-15", "spend": 1640.76, "ad_sales": 7689.4, "total_sales": 25287.76, "acos": 21.33794574349104, "tacos": 6.488356422237478, "clicks": 1512, "impressions": 182405, "ad_orders": 471}, {"date": "2026-06-16", "spend": 1682.83, "ad_sales": 8481.64, "total_sales": 30876.14, "acos": 19.84085624949892, "tacos": 5.450260298081302, "clicks": 1598, "impressions": 198694, "ad_orders": 519}, {"date": "2026-06-17", "spend": 1632.43, "ad_sales": 7317.22, "total_sales": 30259.579999999998, "acos": 22.309428990791584, "tacos": 5.394754322432764, "clicks": 1464, "impressions": 192500, "ad_orders": 441}, {"date": "2026-06-18", "spend": 1632.24, "ad_sales": 7790.18, "total_sales": 27716.86, "acos": 20.952532547386582, "tacos": 5.888978765992973, "clicks": 1463, "impressions": 184338, "ad_orders": 461}, {"date": "2026-06-19", "spend": 1640.81, "ad_sales": 7306.22, "total_sales": 26764.75, "acos": 22.45771411208532, "tacos": 6.130488795897589, "clicks": 1432, "impressions": 214613, "ad_orders": 462}, {"date": "2026-06-20", "spend": 1629.02, "ad_sales": 7127.38, "total_sales": 26723.71, "acos": 22.855803956011886, "tacos": 6.09578535315643, "clicks": 1420, "impressions": 233126, "ad_orders": 419}, {"date": "2026-06-21", "spend": 1637.35, "ad_sales": 6681.74, "total_sales": 24300.27, "acos": 24.50484454648041, "tacos": 6.737990977054987, "clicks": 1389, "impressions": 213460, "ad_orders": 401}, {"date": "2026-06-22", "spend": 2265.53, "ad_sales": 9017.710000000001, "total_sales": 23439.52, "acos": 25.123118840592568, "tacos": 9.665428302286054, "clicks": 1908, "impressions": 283363, "ad_orders": 567}, {"date": "2026-06-23", "spend": 3670.64, "ad_sales": 17474.37, "total_sales": 28621.39, "acos": 21.00585028244223, "tacos": 12.824813889192663, "clicks": 3069, "impressions": 465491, "ad_orders": 1114}, {"date": "2026-06-24", "spend": 3499.13, "ad_sales": 14698.62, "total_sales": 27241.61, "acos": 23.80584027616198, "tacos": 12.844798820627709, "clicks": 2889, "impressions": 391864, "ad_orders": 947}, {"date": "2026-06-25", "spend": 3343.67, "ad_sales": 13659.31, "total_sales": 28133.11, "acos": 24.479054944942316, "tacos": 11.885177287544819, "clicks": 2666, "impressions": 356679, "ad_orders": 893}, {"date": "2026-06-26", "spend": 3200.23, "ad_sales": 13383.31, "total_sales": 26096.079999999998, "acos": 23.912096484352528, "tacos": 12.263259462723905, "clicks": 2559, "impressions": 421478, "ad_orders": 873}, {"date": "2026-06-27", "spend": 1616.03, "ad_sales": 5991.35, "total_sales": 24176.13, "acos": 26.972719003229656, "tacos": 6.684403169572632, "clicks": 1296, "impressions": 260459, "ad_orders": 363}, {"date": "2026-06-28", "spend": 1617.39, "ad_sales": 5739.06, "total_sales": 24003.22, "acos": 28.18214132627991, "tacos": 6.738220955355156, "clicks": 1291, "impressions": 223305, "ad_orders": 332}, {"date": "2026-06-29", "spend": 1691.19, "ad_sales": 7098.58, "total_sales": 22238.31, "acos": 23.824342333255384, "tacos": 7.604849469226753, "clicks": 1423, "impressions": 209882, "ad_orders": 424}, {"date": "2026-06-30", "spend": 1702.28, "ad_sales": 8054.52, "total_sales": 29036.72, "acos": 21.13446859651475, "tacos": 5.8625078865657, "clicks": 1506, "impressions": 207284, "ad_orders": 488}, {"date": "2026-07-01", "spend": 1704.04, "ad_sales": 7925.74, "total_sales": 27559.88, "acos": 21.50007444099857, "tacos": 6.183045789749447, "clicks": 1491, "impressions": 202989, "ad_orders": 486}, {"date": "2026-07-02", "spend": 1707.16, "ad_sales": 8156.99, "total_sales": 34177.82, "acos": 20.9287984906197, "tacos": 4.994935311848445, "clicks": 1477, "impressions": 179271, "ad_orders": 488}, {"date": "2026-07-03", "spend": 1688.3799999999999, "ad_sales": 7491.32, "total_sales": 36863.04, "acos": 22.53781710032411, "tacos": 4.580143146088874, "clicks": 1435, "impressions": 181041, "ad_orders": 445}, {"date": "2026-07-04", "spend": 1677.81, "ad_sales": 6385.51, "total_sales": 40021.8, "acos": 26.2752701037192, "tacos": 4.1922402290751535, "clicks": 1458, "impressions": 172055, "ad_orders": 388}, {"date": "2026-07-05", "spend": 1704.5, "ad_sales": 7681.0199999999995, "total_sales": 34230.71, "acos": 22.191063166089922, "tacos": 4.979446818368652, "clicks": 1426, "impressions": 149824, "ad_orders": 469}, {"date": "2026-07-06", "spend": 1637.59, "ad_sales": 7877.42, "total_sales": 32310.829999999998, "acos": 20.78840534083494, "tacos": 5.0682387298624025, "clicks": 1392, "impressions": 160098, "ad_orders": 476}, {"date": "2026-07-07", "spend": 1622.66, "ad_sales": 7017.45, "total_sales": 35840.62, "acos": 23.123214272990904, "tacos": 4.527432840168501, "clicks": 1388, "impressions": 163208, "ad_orders": 421}, {"date": "2026-07-08", "spend": 1650.13, "ad_sales": 7400.8, "total_sales": 30606.63, "acos": 22.296643606096637, "tacos": 5.391413559741794, "clicks": 1402, "impressions": 175487, "ad_orders": 460}, {"date": "2026-07-09", "spend": 1625.65, "ad_sales": 6892.18, "total_sales": 30059.2, "acos": 23.586876721153537, "tacos": 5.408161228509075, "clicks": 1392, "impressions": 169370, "ad_orders": 420}, {"date": "2026-07-10", "spend": 1604.72, "ad_sales": 7373.99, "total_sales": 29588.55, "acos": 21.76189552738748, "tacos": 5.423449273452062, "clicks": 1363, "impressions": 166435, "ad_orders": 431}, {"date": "2026-07-11", "spend": 1615.37, "ad_sales": 7145.25, "total_sales": 26460.28, "acos": 22.607606451838635, "tacos": 6.104886267265502, "clicks": 1333, "impressions": 168677, "ad_orders": 435}, {"date": "2026-07-12", "spend": 1626.31, "ad_sales": 6037.66, "total_sales": 5690.55, "acos": 26.936097759728106, "tacos": 28.579135584433843, "clicks": 1301, "impressions": 141443, "ad_orders": 365}, {"date": "2026-07-13", "spend": 1639.14, "ad_sales": 7579.66, "total_sales": 22067.05, "acos": 21.625508268180894, "tacos": 7.42799785200106, "clicks": 1407, "impressions": 164990, "ad_orders": 448}, {"date": "2026-07-14", "spend": 1643.53, "ad_sales": 6806.48, "total_sales": 33093.35, "acos": 24.146548583114914, "tacos": 4.966345202283843, "clicks": 1373, "impressions": 178887, "ad_orders": 397}, {"date": "2026-07-15", "spend": 1654.95, "ad_sales": 7512.04, "total_sales": 28506.61, "acos": 22.030633489704528, "tacos": 5.805495637678419, "clicks": 1440, "impressions": 161328, "ad_orders": 452}, {"date": "2026-07-16", "spend": 1619.09, "ad_sales": 7429.18, "total_sales": 25941.75, "acos": 21.793656904261304, "tacos": 6.241252035811, "clicks": 1344, "impressions": 183582, "ad_orders": 444}, {"date": "2026-07-17", "spend": 1627.99, "ad_sales": 6820.3, "total_sales": 28626.04, "acos": 23.869771124437342, "tacos": 5.687094687214858, "clicks": 1401, "impressions": 161479, "ad_orders": 425}, {"date": "2026-07-18", "spend": 1650.73, "ad_sales": 7297.52, "total_sales": 26628.14, "acos": 22.62042447297164, "tacos": 6.1991937852211985, "clicks": 1448, "impressions": 174722, "ad_orders": 451}, {"date": "2026-07-19", "spend": 1629.14, "ad_sales": 7154.61, "total_sales": 23238.5, "acos": 22.770493430110097, "tacos": 7.010521333132517, "clicks": 1468, "impressions": 167656, "ad_orders": 452}, {"date": "2026-07-20", "spend": 1628.18, "ad_sales": 6935.21, "total_sales": 21751.44, "acos": 23.477010789867936, "tacos": 7.485389473064772, "clicks": 1447, "impressions": 162722, "ad_orders": 430}, {"date": "2026-07-21", "spend": 1635.43, "ad_sales": 7568.62, "total_sales": 28627.17, "acos": 21.608034225525923, "tacos": 5.712859496764787, "clicks": 1449, "impressions": 164969, "ad_orders": 450}, {"date": "2026-07-22", "spend": 1648.56, "ad_sales": 8046.28, "total_sales": 26587.42, "acos": 20.48847417688671, "tacos": 6.20052641437191, "clicks": 1473, "impressions": 184321, "ad_orders": 481}, {"date": "2026-07-23", "spend": 1633.01, "ad_sales": 7387.47, "total_sales": 25808.02, "acos": 22.10513206821821, "tacos": 6.327529194413209, "clicks": 1469, "impressions": 188607, "ad_orders": 436}, {"date": "2026-07-24", "spend": 1626.42, "ad_sales": 6401.83, "total_sales": 25772.93, "acos": 25.405548101089845, "tacos": 6.310574699888604, "clicks": 1445, "impressions": 183954, "ad_orders": 396}, {"date": "2026-07-25", "spend": 1624.79, "ad_sales": 6188.5, "total_sales": 25072.56, "acos": 26.25498909267189, "tacos": 6.480351428015328, "clicks": 1428, "impressions": 179715, "ad_orders": 390}, {"date": "2026-07-26", "spend": 1660.65, "ad_sales": 6754.55, "total_sales": 22859.77, "acos": 24.585649673183262, "tacos": 7.264508785521464, "clicks": 1496, "impressions": 179747, "ad_orders": 403}, {"date": "2026-07-27", "spend": 1637.78, "ad_sales": 6801.63, "total_sales": 21924.6, "acos": 24.079228067389728, "tacos": 7.470056466252521, "clicks": 1490, "impressions": 199763, "ad_orders": 440}, {"date": "2026-07-28", "spend": 1650.7, "ad_sales": 6791.17, "total_sales": 26447.989999999998, "acos": 24.306562786677407, "tacos": 6.241306050100594, "clicks": 1486, "impressions": 190034, "ad_orders": 422}, {"date": "2026-07-29", "spend": 1642.59, "ad_sales": 6415.31, "total_sales": 29039.739999999998, "acos": 25.604218658178638, "tacos": 5.656352295165178, "clicks": 1493, "impressions": 190917, "ad_orders": 392}, {"date": "2026-07-30", "spend": 1612.91, "ad_sales": 6256.7, "total_sales": 27027.67, "acos": 25.77892499240814, "tacos": 5.967625030200532, "clicks": 1458, "impressions": 191650, "ad_orders": 387}, {"date": "2026-07-31", "spend": 1751.17, "ad_sales": 6879.5, "total_sales": 27913.06, "acos": 25.454902245802746, "tacos": 6.27365828038918, "clicks": 1553, "impressions": 209304, "ad_orders": 430}, {"date": "2026-08-01", "spend": 1754.41, "ad_sales": 6434.3, "total_sales": 26749.51, "acos": 27.26652471908366, "tacos": 6.55866219605518, "clicks": 1570, "impressions": 216524, "ad_orders": 387}, {"date": "2026-08-02", "spend": 1780.5, "ad_sales": 5879.9, "total_sales": 24718.47, "acos": 30.281127230054935, "tacos": 7.203115726822897, "clicks": 1571, "impressions": 195704, "ad_orders": 354}, {"date": "2026-08-03", "spend": 798.49, "ad_sales": 2261.64, "total_sales": 0.0, "acos": 35.30579579420244, "tacos": null, "clicks": 674, "impressions": 88496, "ad_orders": 129}], "totals": {"spend": 164526.38, "ad_sales": 744612.04, "total_sales": 2651499.9, "ad_orders": 44847.0, "clicks": 145980.0, "impressions": 21870145.0, "acos": 22.09558416487598, "roas": 4.5257911831525135, "tacos": 6.205030594193121, "cpc": 1.1270474037539389, "ctr": 0.6674852864487181}, "monthly": [{"month": "2026-04", "days": 1, "spend": 1700.8, "ad_sales": 9076.42, "total_sales": 30704.579999999998, "acos": 18.73866568536934, "roas": 5.336559266227658, "tacos": 5.539238771544832}, {"month": "2026-05", "days": 31, "spend": 50442.52, "ad_sales": 245334.97, "total_sales": 889219.4, "acos": 20.56067261833892, "roas": 4.86365411561516, "tacos": 5.672674257894059}, {"month": "2026-06", "days": 30, "spend": 56968.58, "ad_sales": 255212.92, "total_sales": 819764.22, "acos": 22.32198119123436, "roas": 4.479889089740345, "tacos": 6.949386007601064}, {"month": "2026-07", "days": 31, "spend": 51081.08, "ad_sales": 220411.89, "total_sales": 860343.72, "acos": 23.17528332976955, "roas": 4.314941853226283, "tacos": 5.937287483193345}, {"month": "2026-08", "days": 3, "spend": 4333.4, "ad_sales": 14575.84, "total_sales": 51467.979999999996, "acos": 29.7300189903292, "roas": 3.3636036368671256, "tacos": 8.419603800265719}], "products": [{"product": "SPONSORED_PRODUCTS", "days": 96, "campaigns": 129, "min_date": "2026-04-30", "max_date": "2026-08-03", "spend": 161424.01, "ad_sales": 711293.64, "acos": 22.69442617257199, "roas": 4.40636829676081}, {"product": "SPONSORED_BRANDS", "days": 36, "campaigns": 7, "min_date": "2026-06-29", "max_date": "2026-08-03", "spend": 3102.37, "ad_sales": 33318.4, "acos": 9.311281454091432, "roas": 10.739660324203754}], "campaigns": [{"name": "Teeccino_Herbal Tea_All_CAT_[Tea - Single KW Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 10596.12, "ad_sales": 37536.15, "acos": 28.229107140716348, "roas": 3.5424428941914585, "clicks": 8892, "ad_orders": 2603, "impressions": 3019431, "cpc": 1.191646423751687, "ctr": 0.2944925716136583, "cvr": 29.273504273504273}, {"name": "Teeccino_APGs_Top Sellers_CAT_[Coffee - Single KW Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 7941.82, "ad_sales": 19727.37, "acos": 40.2578752261452, "roas": 2.4839860384647348, "clicks": 4923, "ad_orders": 1142, "impressions": 1600892, "cpc": 1.6132073938655291, "ctr": 0.30751605979666335, "cvr": 23.197237456835264}, {"name": "WWB_Hibiscus Loose Leaf_Hibiscus_CAT_[Hibiscus - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 6761.4, "ad_sales": 25005.11, "acos": 27.040073009076945, "roas": 3.698214866743574, "clicks": 6761, "ad_orders": 2186, "impressions": 207789, "cpc": 1.000059162845733, "ctr": 3.253781480251601, "cvr": 32.33249519301879}, {"name": "Teeccino_APGs_All Flavors_AUTO_[Catch All]_SP", "product": "SPONSORED_PRODUCTS", "spend": 4726.74, "ad_sales": 20608.52, "acos": 22.935853714871325, "roas": 4.359985952263083, "clicks": 4443, "ad_orders": 1166, "impressions": 928061, "cpc": 1.0638622552329506, "ctr": 0.47874008281783204, "cvr": 26.243529146972765}, {"name": "WWB_Dandelion Root_Dandelion Root_CAT_[Dandelion - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3847.59, "ad_sales": 16720.42, "acos": 23.01132387822794, "roas": 4.345686520653188, "clicks": 2241, "ad_orders": 717, "impressions": 275980, "cpc": 1.7169076305220885, "ctr": 0.8120153634321328, "cvr": 31.994645247657296}, {"name": "WWB_Peppermint Loose Leaf_Peppermint_CAT_[Peppermint - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3554.49, "ad_sales": 14475.92, "acos": 24.554501544634125, "roas": 4.0725729992207045, "clicks": 2591, "ad_orders": 913, "impressions": 82412, "cpc": 1.3718602856040139, "ctr": 3.1439596175314275, "cvr": 35.23736009262833}, {"name": "Teeccino_Coffee APG_All_CAT_[Coffee Alternative - Single KW]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3372.69, "ad_sales": 9128.32, "acos": 36.94754346911589, "roas": 2.7065398835944006, "clicks": 1721, "ad_orders": 523, "impressions": 395533, "cpc": 1.9597269029633935, "ctr": 0.435109080658251, "cvr": 30.389308541545613}, {"name": "Teeccino_Mushroom Coffee_All_CAT_[Mushroom Coffee - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3331.28, "ad_sales": 7092.58, "acos": 46.96852203288507, "roas": 2.129085516678274, "clicks": 1560, "ad_orders": 357, "impressions": 131871, "cpc": 2.1354358974358973, "ctr": 1.1829742703096207, "cvr": 22.884615384615383}, {"name": "Teeccino_APGs_Top Sellers_CAT_[Caffeine Free - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3294.33, "ad_sales": 9496.46, "acos": 34.69008451570375, "roas": 2.8826680994314473, "clicks": 2189, "ad_orders": 562, "impressions": 518545, "cpc": 1.5049474645957057, "ctr": 0.42214272628219346, "cvr": 25.673823663773412}, {"name": "Teeccino_All Products_High AOV_BR_[Branded Shelf]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3289.7, "ad_sales": 118840.33, "acos": 2.7681680116505905, "roas": 36.12497492172539, "clicks": 8382, "ad_orders": 5064, "impressions": 613816, "cpc": 0.3924719637318062, "ctr": 1.3655558017386318, "cvr": 60.4151753758053}, {"name": "WWB_Burdock Root_Burdock_CAT_[Burdock - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3275.78, "ad_sales": 14965.29, "acos": 21.889184907208612, "roas": 4.56846613630952, "clicks": 3610, "ad_orders": 969, "impressions": 136337, "cpc": 0.9074182825484766, "ctr": 2.6478505468068096, "cvr": 26.842105263157894}, {"name": "WWB_Lemon Balm_Lemon Balm Leaves_CAT_[Lemon Balm - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3129.76, "ad_sales": 16525.47, "acos": 18.939007483599557, "roas": 5.280107739890599, "clicks": 3120, "ad_orders": 1054, "impressions": 282952, "cpc": 1.003128205128205, "ctr": 1.1026605219259804, "cvr": 33.782051282051285}, {"name": "Teeccino_Instants_All Instants_AUTO_[Instants - Auto]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3102.7599999999998, "ad_sales": 8308.84, "acos": 37.3428781875689, "roas": 2.6778867846691337, "clicks": 2502, "ad_orders": 515, "impressions": 556186, "cpc": 1.2401119104716225, "ctr": 0.4498495107751723, "cvr": 20.58353317346123}, {"name": "WWB_Hibiscus Loose Leaf_Hibiscus_CAT_[Hibiscus - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3030.98, "ad_sales": 12180.27, "acos": 24.884341644314944, "roas": 4.018591346693149, "clicks": 3291, "ad_orders": 1090, "impressions": 300795, "cpc": 0.920990580370708, "ctr": 1.0941006333216976, "cvr": 33.12063202673959}, {"name": "Teeccino_Instants_All Instants_CAT_[Instants - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2975.52, "ad_sales": 7336.25, "acos": 40.55914125063895, "roas": 2.465535435822982, "clicks": 1883, "ad_orders": 497, "impressions": 568413, "cpc": 1.580201805629315, "ctr": 0.33127321155568223, "cvr": 26.394052044609666}, {"name": "WWB_All Commodities_All_AUTO_[Catch All]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2862.93, "ad_sales": 20897.62, "acos": 13.699789736821705, "roas": 7.299382101553304, "clicks": 5531, "ad_orders": 1409, "impressions": 3504727, "cpc": 0.5176152594467546, "ctr": 0.15781543041726218, "cvr": 25.474597721930934}, {"name": "Teeccino_Dandelion Tea_All_CAT_[Dandelion Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2834.82, "ad_sales": 8600.84, "acos": 32.959803926128146, "roas": 3.033998631306397, "clicks": 1774, "ad_orders": 560, "impressions": 233544, "cpc": 1.5979819616685458, "ctr": 0.7595999040865961, "cvr": 31.567080045095828}, {"name": "Teeccino_Dandelion Coffee_Dandelion Coffee_CAT_[Dandelion Coffee - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2581.71, "ad_sales": 7869.7, "acos": 32.80569780296581, "roas": 3.048250965445383, "clicks": 1572, "ad_orders": 443, "impressions": 84655, "cpc": 1.6423091603053435, "ctr": 1.8569487921563994, "cvr": 28.18066157760814}, {"name": "Teeccino_APGs_Top Sellers_CAT_[Chicory - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2551.72, "ad_sales": 12584.99, "acos": 20.275900100039806, "roas": 4.931963538319252, "clicks": 2112, "ad_orders": 744, "impressions": 317526, "cpc": 1.2082007575757574, "ctr": 0.6651423820411557, "cvr": 35.22727272727273}, {"name": "Teeccino_Instants_Mushroom_CAT_[Mushroom - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2523.8, "ad_sales": 4397.87, "acos": 57.38687137182318, "roas": 1.7425588398446785, "clicks": 1315, "ad_orders": 239, "impressions": 217711, "cpc": 1.919239543726236, "ctr": 0.6040117403346639, "cvr": 18.174904942965778}, {"name": "WWB_Orange Peel_Orange Peel_CAT_[Orange Peel - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2510.34, "ad_sales": 7065.23, "acos": 35.530902744850486, "roas": 2.81445142889011, "clicks": 1722, "ad_orders": 410, "impressions": 87134, "cpc": 1.4578048780487807, "ctr": 1.976266440195561, "cvr": 23.80952380952381}, {"name": "Teeccino_Instants_Dandelion Blend_CAT_[Dandelion - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2443.6, "ad_sales": 5961.09, "acos": 40.992503048939035, "roas": 2.4394704534293665, "clicks": 1385, "ad_orders": 341, "impressions": 189586, "cpc": 1.7643321299638988, "ctr": 0.7305391748335848, "cvr": 24.620938628158846}, {"name": "WWB_Red Rooibos_Red Rooibos_CAT_[Red Rooibos - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2341.65, "ad_sales": 7222.09, "acos": 32.42343975220469, "roas": 3.0841884995622744, "clicks": 1801, "ad_orders": 609, "impressions": 42657, "cpc": 1.3001943364797335, "ctr": 4.222050308272968, "cvr": 33.814547473625765}, {"name": "WWB_Lavender Flowers_Lavender Flowers_CAT_[Lavender - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2307.5, "ad_sales": 8972.39, "acos": 25.71778533924629, "roas": 3.8883596966413867, "clicks": 2839, "ad_orders": 805, "impressions": 131384, "cpc": 0.8127861923212398, "ctr": 2.160841502770505, "cvr": 28.355054596688976}, {"name": "Teeccino_APGs_Top Sellers_COMP_[Coffee Alternative Brands - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2288.98, "ad_sales": 6271.64, "acos": 36.497311707942416, "roas": 2.73992782811558, "clicks": 1484, "ad_orders": 373, "impressions": 123532, "cpc": 1.5424393530997305, "ctr": 1.2013081630670595, "cvr": 25.13477088948787}, {"name": "WWB_Licorice Root_Licorice Root_CAT_[Licorice - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2281.39, "ad_sales": 6333.35, "acos": 36.02185257407217, "roas": 2.776092645273277, "clicks": 1827, "ad_orders": 410, "impressions": 84442, "cpc": 1.2487082649151613, "ctr": 2.163615262547074, "cvr": 22.441160372194854}, {"name": "WWB_Holy Basil_All_CAT_[Holy Basil Tulsi - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2263.04, "ad_sales": 11307.57, "acos": 20.01349538406572, "roas": 4.996628429015837, "clicks": 2108, "ad_orders": 737, "impressions": 80088, "cpc": 1.0735483870967741, "ctr": 2.6321046848466687, "cvr": 34.96204933586338}, {"name": "WWB_French Chicory_Chicory_CAT_[Chicory - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1977.17, "ad_sales": 29988.46, "acos": 6.593102813548946, "roas": 15.167365476919029, "clicks": 3435, "ad_orders": 1814, "impressions": 240964, "cpc": 0.5755953420669578, "ctr": 1.4255241446855131, "cvr": 52.809315866084425}, {"name": "WWB_Vietnamese Cinnamon_Vietnamese Cinnamon_CAT_[Cinnamon - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1967.1100000000001, "ad_sales": 4083.36, "acos": 48.1738078445202, "roas": 2.075816807397654, "clicks": 1359, "ad_orders": 285, "impressions": 421603, "cpc": 1.447468727005151, "ctr": 0.3223411598114814, "cvr": 20.97130242825607}, {"name": "WWB_Chia Seeds_Ground Chia Seeds_CAT_[Chia Seeds - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1913.21, "ad_sales": 8925.35, "acos": 21.43568599550718, "roas": 4.6651177863381434, "clicks": 1449, "ad_orders": 499, "impressions": 31881, "cpc": 1.3203657694962043, "ctr": 4.545026818481227, "cvr": 34.437543133195305}, {"name": "Teeccino_Instants_Dandelion Blend_COMP_[Dandy Blend - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1910.66, "ad_sales": 4627.95, "acos": 41.28523428299788, "roas": 2.4221734897888685, "clicks": 1314, "ad_orders": 262, "impressions": 124102, "cpc": 1.4540791476407915, "ctr": 1.058806465649224, "cvr": 19.939117199391173}, {"name": "WWB_Chia Seeds_Ground Chia Seeds_CAT_[Chia Seeds - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1741.92, "ad_sales": 7131.46, "acos": 24.425853892470826, "roas": 4.094022687609075, "clicks": 1463, "ad_orders": 403, "impressions": 224861, "cpc": 1.1906493506493507, "ctr": 0.6506241633720388, "cvr": 27.54613807245386}, {"name": "Teeccino_Herbal Tea_All_CAT_[Herbal Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1704.46, "ad_sales": 5275.26, "acos": 32.31044536193477, "roas": 3.0949743613813174, "clicks": 1532, "ad_orders": 426, "impressions": 321160, "cpc": 1.1125718015665798, "ctr": 0.4770207996014448, "cvr": 27.806788511749346}, {"name": "WWB_Lemon Grass_Lemon Grass_CAT_[Lemon Grass - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1663.0, "ad_sales": 5141.860000000001, "acos": 32.342381939609396, "roas": 3.0919182200841857, "clicks": 1482, "ad_orders": 334, "impressions": 97793, "cpc": 1.122132253711201, "ctr": 1.5154458908101807, "cvr": 22.53711201079622}, {"name": "WWB_Dandelion Root_Dandelion Root_CAT_[Dandelion - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1613.52, "ad_sales": 7503.5, "acos": 21.503565002998602, "roas": 4.650391690217661, "clicks": 1164, "ad_orders": 330, "impressions": 106536, "cpc": 1.3861855670103094, "ctr": 1.092588420815499, "cvr": 28.350515463917525}, {"name": "WWB_Schisandra Berries_Schisandra Berries_CAT_[Schisandra - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1606.27, "ad_sales": 5823.04, "acos": 27.584732373468153, "roas": 3.625193771906342, "clicks": 762, "ad_orders": 156, "impressions": 49063, "cpc": 2.107965879265092, "ctr": 1.5531051912846747, "cvr": 20.47244094488189}, {"name": "WWB_Barley_Barley_CAT_[Barley - Single KW Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1599.63, "ad_sales": 4941.2, "acos": 32.37331012709463, "roas": 3.0889643229996935, "clicks": 1700, "ad_orders": 350, "impressions": 127793, "cpc": 0.9409588235294118, "ctr": 1.3302763062139553, "cvr": 20.58823529411765}, {"name": "WWB_Holy Basil_All_CAT_[Holy Basil Tulsi - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1596.17, "ad_sales": 6409.6, "acos": 24.902802046929605, "roas": 4.015612372115752, "clicks": 1273, "ad_orders": 417, "impressions": 122676, "cpc": 1.2538648860958366, "ctr": 1.037692784244677, "cvr": 32.757266300078555}, {"name": "Teeccino_Herbal Tea_Top Sellers_CAT_[Caffeine Free Teas - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1504.46, "ad_sales": 2254.4900000000002, "acos": 66.7317220302596, "roas": 1.4985376812942852, "clicks": 1046, "ad_orders": 198, "impressions": 189260, "cpc": 1.4382982791586998, "ctr": 0.5526788544858924, "cvr": 18.92925430210325}, {"name": "WWB_Licorice Root_Licorice Root_CAT_[Licorice - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1482.65, "ad_sales": 5030.04, "acos": 29.475908740288347, "roas": 3.392601085893501, "clicks": 1447, "ad_orders": 317, "impressions": 118149, "cpc": 1.024637180373186, "ctr": 1.224724712016183, "cvr": 21.907394609536972}, {"name": "Teeccino_Mushroom Tea_Sampler_CAT_[Single KW Push - Mushroom Tea]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1466.18, "ad_sales": 1883.36, "acos": 77.84916319768924, "roas": 1.2845353230844778, "clicks": 681, "ad_orders": 140, "impressions": 45563, "cpc": 2.1529809104258444, "ctr": 1.4946338037442661, "cvr": 20.558002936857562}, {"name": "Teeccino_Dandelion Tea_Sampler_CAT_[Single KW Push - Dandelion Tea]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1463.1299999999999, "ad_sales": 1697.98, "acos": 86.1688594683094, "roas": 1.1605120529276278, "clicks": 640, "ad_orders": 143, "impressions": 165214, "cpc": 2.286140625, "ctr": 0.3873763724623821, "cvr": 22.34375}, {"name": "WWB_Lemon Grass_Lemon Grass_CAT_[Lemon Grass - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1448.3, "ad_sales": 4932.52, "acos": 29.36227323964221, "roas": 3.4057308568666715, "clicks": 1445, "ad_orders": 329, "impressions": 128359, "cpc": 1.0022837370242215, "ctr": 1.1257488761987862, "cvr": 22.768166089965398}, {"name": "WWB_Chicory_Instant Chicory_COMP_[PAT - Anthony Instant Chicory]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1420.57, "ad_sales": 7246.84, "acos": 19.602613000976977, "roas": 5.101360721400565, "clicks": 1564, "ad_orders": 448, "impressions": 55628, "cpc": 0.9082928388746803, "ctr": 2.81153375997699, "cvr": 28.644501278772378}, {"name": "WWB_Astragalus Root_Astragalus Root_CAT_[Astragalus - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1410.99, "ad_sales": 4897.22, "acos": 28.812060720163682, "roas": 3.4707687510187886, "clicks": 1191, "ad_orders": 312, "impressions": 28606, "cpc": 1.1847103274559194, "ctr": 4.163462210725022, "cvr": 26.19647355163728}, {"name": "WWB_Carob Powder_Carob Powder_CAT_[Carob - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1344.91, "ad_sales": 3467.62, "acos": 38.784814945120864, "roas": 2.578328661397417, "clicks": 960, "ad_orders": 247, "impressions": 49876, "cpc": 1.4009479166666667, "ctr": 1.9247734381265538, "cvr": 25.729166666666668}, {"name": "WWB_Barley_Barley_CAT_[Barley - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1330.39, "ad_sales": 3918.66, "acos": 33.95012580831202, "roas": 2.9454971850359666, "clicks": 1110, "ad_orders": 280, "impressions": 117729, "cpc": 1.1985495495495497, "ctr": 0.9428433096348393, "cvr": 25.225225225225227}, {"name": "Teeccino_Dandelion Tea_All_CAT_[Dandelion Top KWs - Exact]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1291.25, "ad_sales": 4119.94, "acos": 31.341475846735634, "roas": 3.190660212971926, "clicks": 624, "ad_orders": 242, "impressions": 410214, "cpc": 2.0693108974358974, "ctr": 0.15211572496306805, "cvr": 38.782051282051285}, {"name": "Teeccino_Instants_Lattes_CAT_[Latte - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1204.95, "ad_sales": 1980.22, "acos": 60.84929957277474, "roas": 1.6434042906344661, "clicks": 654, "ad_orders": 99, "impressions": 186866, "cpc": 1.8424311926605506, "ctr": 0.3499834105722817, "cvr": 15.137614678899082}, {"name": "Teeccino_Mushroom Tea_All_CAT_[Mushroom Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1159.67, "ad_sales": 3478.7799999999997, "acos": 33.33553717107722, "roas": 2.9998016677158152, "clicks": 686, "ad_orders": 194, "impressions": 74601, "cpc": 1.6904810495626823, "ctr": 0.9195587190520235, "cvr": 28.279883381924197}, {"name": "WWB_Astragalus Root_Astragalus Root_CAT_[Astragalus - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1136.81, "ad_sales": 4856.91, "acos": 23.40603387750648, "roas": 4.272402600258618, "clicks": 980, "ad_orders": 310, "impressions": 45596, "cpc": 1.1600102040816327, "ctr": 2.149311343100272, "cvr": 31.632653061224488}, {"name": "WWB_Vietnamese Cinnamon_Vietnamese Cinnamon_CAT_[Cinnamon - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1126.84, "ad_sales": 3093.33, "acos": 36.42805649575053, "roas": 2.745136842852579, "clicks": 712, "ad_orders": 223, "impressions": 188375, "cpc": 1.582640449438202, "ctr": 0.37796947577969475, "cvr": 31.320224719101123}, {"name": "WWB_Red Rooibos_Red Rooibos_CAT_[Red Rooibos - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1104.58, "ad_sales": 3227.49, "acos": 34.22411843259003, "roas": 2.921916022379547, "clicks": 915, "ad_orders": 277, "impressions": 97439, "cpc": 1.207191256830601, "ctr": 0.9390490460698488, "cvr": 30.273224043715846}, {"name": "WWB_White Sage_White Sage_CAT_[White Sage - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1090.87, "ad_sales": 3946.14, "acos": 27.643976138707696, "roas": 3.617424624382374, "clicks": 1197, "ad_orders": 198, "impressions": 158862, "cpc": 0.9113366750208854, "ctr": 0.7534841560599765, "cvr": 16.541353383458645}, {"name": "Teeccino|Herbal Tea|Brand|SB-KW", "product": "SPONSORED_BRANDS", "spend": 1078.01, "ad_sales": 14362.25, "acos": 7.505857369144807, "roas": 13.322928358735076, "clicks": 1914, "ad_orders": 1159, "impressions": 40002, "cpc": 0.5632236154649948, "ctr": 4.784760761961902, "cvr": 60.553814002089865}, {"name": "Teeccino_Instants_Cacao+5_CAT_[Cacao - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1049.35, "ad_sales": 1145.02, "acos": 91.64468742904053, "roas": 1.0911707247343594, "clicks": 513, "ad_orders": 56, "impressions": 164067, "cpc": 2.0455165692007795, "ctr": 0.3126771379985006, "cvr": 10.916179337231968}, {"name": "WWB_Date Sugar_All_CAT_[Date Sugar - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1042.26, "ad_sales": 3439.38, "acos": 30.303717530485144, "roas": 3.2999251626273676, "clicks": 1114, "ad_orders": 250, "impressions": 102082, "cpc": 0.9356014362657091, "ctr": 1.0912795595697578, "cvr": 22.44165170556553}, {"name": "WWB_Cacao Nibs_Cacao Nibs_CAT_[Cacao Nibs - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1036.82, "ad_sales": 1528.34, "acos": 67.839616839185, "roas": 1.4740649293030612, "clicks": 537, "ad_orders": 63, "impressions": 51220, "cpc": 1.9307635009310986, "ctr": 1.0484185864896525, "cvr": 11.731843575418994}, {"name": "WWB_Cacao Nibs_Cacao Nibs_CAT_[Cacao Nibs - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1021.89, "ad_sales": 1319.44, "acos": 77.44876614321227, "roas": 1.291176153989177, "clicks": 848, "ad_orders": 52, "impressions": 119684, "cpc": 1.205058962264151, "ctr": 0.7085324688345978, "cvr": 6.132075471698113}, {"name": "Teeccino|Herbal Coffee|Brand|SB-KW", "product": "SPONSORED_BRANDS", "spend": 1009.34, "ad_sales": 15584.78, "acos": 6.476446892416832, "roas": 15.440565121762736, "clicks": 1523, "ad_orders": 870, "impressions": 48168, "cpc": 0.662731451083388, "ctr": 3.161850190998173, "cvr": 57.124097176625085}, {"name": "WWB_Star Anise_Star Anise_CAT_[Star Anise - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 906.85, "ad_sales": 1737.62, "acos": 52.189201321347596, "roas": 1.9161051993163145, "clicks": 679, "ad_orders": 112, "impressions": 24951, "cpc": 1.3355670103092785, "ctr": 2.721333814275981, "cvr": 16.49484536082474}, {"name": "Teeccino Miraculous Mushrooms Adapt & Protect|B0F4Y75TVB|Brand|SP-PAT|TM", "product": "SPONSORED_PRODUCTS", "spend": 867.6, "ad_sales": 12057.99, "acos": 7.195229055588867, "roas": 13.898098201936376, "clicks": 1211, "ad_orders": 613, "impressions": 53046, "cpc": 0.7164327002477292, "ctr": 2.2829242544206916, "cvr": 50.619322873658135}, {"name": "WWB_Lemon Balm_Lemon Balm Leaves_CAT_[Lemon Balm - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 821.1800000000001, "ad_sales": 6108.41, "acos": 13.443432906435554, "roas": 7.438576195231252, "clicks": 1030, "ad_orders": 402, "impressions": 38428, "cpc": 0.7972621359223302, "ctr": 2.6803372540855626, "cvr": 39.029126213592235}, {"name": "WWB_Peppermint Loose Leaf_Peppermint_CAT_[Peppermint - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 792.09, "ad_sales": 3594.6, "acos": 22.035553329994993, "roas": 4.538120668105897, "clicks": 646, "ad_orders": 222, "impressions": 80143, "cpc": 1.2261455108359134, "ctr": 0.8060591692349924, "cvr": 34.36532507739938}, {"name": "WWB_French Chicory_Chicory_CAT_[Chicory - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 774.89, "ad_sales": 15334.08, "acos": 5.053384356935663, "roas": 19.788718398740468, "clicks": 1781, "ad_orders": 919, "impressions": 130976, "cpc": 0.4350870297585626, "ctr": 1.359791106767652, "cvr": 51.60022459292532}, {"name": "Teeccino_Instants_Matcha_AUTO_[Matcha - Auto]_SP", "product": "SPONSORED_PRODUCTS", "spend": 695.0600000000001, "ad_sales": 565.8299999999999, "acos": 122.8390152519308, "roas": 0.8140736051563892, "clicks": 326, "ad_orders": 27, "impressions": 219533, "cpc": 2.1320858895705523, "ctr": 0.1484970368919479, "cvr": 8.282208588957054}, {"name": "Teeccino_Mushroom Tea_Ashwagandha Tea_CAT_[Ashwagandha Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 691.61, "ad_sales": 1710.84, "acos": 40.42517126090108, "roas": 2.4737062795506137, "clicks": 345, "ad_orders": 102, "impressions": 79812, "cpc": 2.0046666666666666, "ctr": 0.43226582468801683, "cvr": 29.565217391304348}, {"name": "Teeccino_New Releases_Branded Shelf_BR_[New Release - Branded]_SP", "product": "SPONSORED_PRODUCTS", "spend": 684.16, "ad_sales": 8354.11, "acos": 8.189501933778702, "roas": 12.210754794200188, "clicks": 826, "ad_orders": 434, "impressions": 62634, "cpc": 0.8282808716707022, "ctr": 1.3187725516492639, "cvr": 52.54237288135593}, {"name": "Teeccino_Instants_Mocha_CAT_[Instants - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 681.51, "ad_sales": 1006.32, "acos": 67.72299069878369, "roas": 1.4766034247479862, "clicks": 382, "ad_orders": 67, "impressions": 98291, "cpc": 1.7840575916230366, "ctr": 0.388641889898363, "cvr": 17.539267015706805}, {"name": "WWB_Date Sugar_All_CAT_[Date Sugar - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 676.27, "ad_sales": 2330.5, "acos": 29.018236429950655, "roas": 3.4461088026971476, "clicks": 763, "ad_orders": 168, "impressions": 55198, "cpc": 0.8863302752293578, "ctr": 1.3822964600166672, "cvr": 22.01834862385321}, {"name": "Teeccino_Instants_Matcha_BR_[Matcha - Branded PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 669.68, "ad_sales": 3897.88, "acos": 17.180621260787916, "roas": 5.820511288973839, "clicks": 530, "ad_orders": 220, "impressions": 63719, "cpc": 1.2635471698113208, "ctr": 0.8317770209827524, "cvr": 41.509433962264154}, {"name": "WWB_WWB Teas_Lemon Balm Tea_CAT_[WWB Lemon Balm - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 662.1, "ad_sales": 2204.68, "acos": 30.031569207322608, "roas": 3.3298293309167795, "clicks": 669, "ad_orders": 207, "impressions": 104976, "cpc": 0.9896860986547086, "ctr": 0.6372885230909923, "cvr": 30.94170403587444}, {"name": "Teeccino_APGs_Top Sellers_COMP_[Coffee Alternative Brands]_SP", "product": "SPONSORED_PRODUCTS", "spend": 657.32, "ad_sales": 1765.33, "acos": 37.234964567531286, "roas": 2.6856477819022695, "clicks": 534, "ad_orders": 104, "impressions": 93013, "cpc": 1.2309363295880151, "ctr": 0.574113295990883, "cvr": 19.475655430711612}, {"name": "WWB_White Sage_White Sage_CAT_[White Sage - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 648.77, "ad_sales": 1779.11, "acos": 36.46598580188971, "roas": 2.742281548160365, "clicks": 566, "ad_orders": 91, "impressions": 76590, "cpc": 1.1462367491166077, "ctr": 0.738999869434652, "cvr": 16.07773851590106}, {"name": "Teeccino_Holiday_Overstock_AUTO_[Holiday - AUTO]_SP", "product": "SPONSORED_PRODUCTS", "spend": 627.86, "ad_sales": 8308.32, "acos": 7.55700310050648, "roas": 13.23275889529513, "clicks": 815, "ad_orders": 495, "impressions": 117234, "cpc": 0.7703803680981596, "ctr": 0.695190814951294, "cvr": 60.736196319018404}, {"name": "iHerb_Teeccino_Herbal Teas_All Herbal Teas_CAT_[Tea - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 626.54, "ad_sales": 1812.82, "acos": 34.56162222393839, "roas": 2.8933827050148433, "clicks": 1430, "ad_orders": 216, "impressions": 124304, "cpc": 0.4381398601398601, "ctr": 1.150405457587849, "cvr": 15.104895104895105}, {"name": "WWB_Carob Powder_Carob Powder_CAT_[Carob - Single KW Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 556.47, "ad_sales": 1702.79, "acos": 32.6798959354941, "roas": 3.059985264255036, "clicks": 438, "ad_orders": 116, "impressions": 25399, "cpc": 1.2704794520547946, "ctr": 1.7244773416276231, "cvr": 26.484018264840184}, {"name": "Teeccino_Coffee APG_All_CAT_[Coffee Substitute - Single KW]_SP", "product": "SPONSORED_PRODUCTS", "spend": 538.51, "ad_sales": 1373.61, "acos": 39.20399531162412, "roas": 2.550760431561159, "clicks": 379, "ad_orders": 76, "impressions": 78375, "cpc": 1.4208707124010553, "ctr": 0.4835725677830941, "cvr": 20.052770448548813}, {"name": "WWB_Dried Elderberries_Elderberries_CAT_[Elderberries - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 536.11, "ad_sales": 633.6899999999999, "acos": 84.60130347646326, "roas": 1.1820148850049428, "clicks": 183, "ad_orders": 25, "impressions": 21434, "cpc": 2.9295628415300548, "ctr": 0.8537837081272744, "cvr": 13.66120218579235}, {"name": "WWB_Dried Elderberries_Elderberries_CAT_[Elderberries - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 502.13, "ad_sales": 673.72, "acos": 74.53096241762157, "roas": 1.3417242546750843, "clicks": 162, "ad_orders": 25, "impressions": 30856, "cpc": 3.099567901234568, "ctr": 0.5250194451646357, "cvr": 15.432098765432098}, {"name": "Teeccino_Herbal Tea_Samplers_CAT_[Tea Category - BMM]_SBV", "product": "SPONSORED_BRANDS", "spend": 493.63, "ad_sales": 1654.02, "acos": 29.844258231460323, "roas": 3.3507282782650973, "clicks": 467, "ad_orders": 111, "impressions": 37326, "cpc": 1.0570235546038544, "ctr": 1.2511386165139582, "cvr": 23.768736616702355}, {"name": "Teeccino_Instants_Dandelion Blend_COMP_[Dandy Blend - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 493.46999999999997, "ad_sales": 1118.96, "acos": 44.10077214556374, "roas": 2.2675339939611328, "clicks": 331, "ad_orders": 65, "impressions": 44906, "cpc": 1.490845921450151, "ctr": 0.737095265666058, "cvr": 19.637462235649547}, {"name": "WWB_Turmeric_Turmeric_CAT_[Turmeric - Broad Single KW]_SP", "product": "SPONSORED_PRODUCTS", "spend": 469.21, "ad_sales": 1931.21, "acos": 24.29616665199538, "roas": 4.115875620724196, "clicks": 313, "ad_orders": 87, "impressions": 23525, "cpc": 1.499073482428115, "ctr": 1.330499468650372, "cvr": 27.79552715654952}, {"name": "iHerb_Teeccino_Herbal Tea_All_CAT_[Tea - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 463.2, "ad_sales": 2467.57, "acos": 18.771503949229402, "roas": 5.32722366148532, "clicks": 1913, "ad_orders": 235, "impressions": 244107, "cpc": 0.2421327757449033, "ctr": 0.7836727336782641, "cvr": 12.284370099320439}, {"name": "WWB_Ramon Seeds_Ramon Seeds_CAT_[Ramon Seeds - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 446.57, "ad_sales": 1566.1799999999998, "acos": 28.513325415980287, "roas": 3.5071321405378773, "clicks": 281, "ad_orders": 60, "impressions": 15963, "cpc": 1.5892170818505338, "ctr": 1.7603207417152165, "cvr": 21.352313167259787}, {"name": "Teeccino_APGs_Top Sellers_CAT_[Chicory - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 430.51, "ad_sales": 3303.38, "acos": 13.032409229334801, "roas": 7.673178323383894, "clicks": 491, "ad_orders": 197, "impressions": 64942, "cpc": 0.8768024439918534, "ctr": 0.7560592528717933, "cvr": 40.122199592668025}, {"name": "WWB_Star Anise_Star Anise_CAT_[Star Anise - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 428.54, "ad_sales": 1125.46, "acos": 38.07687523323796, "roas": 2.626265926167919, "clicks": 299, "ad_orders": 73, "impressions": 58196, "cpc": 1.4332441471571906, "ctr": 0.5137810158773799, "cvr": 24.414715719063544}, {"name": "Teeccino_APGs_Samplers_CAT_[Coffee Category - BMM]_SBV", "product": "SPONSORED_BRANDS", "spend": 425.42, "ad_sales": 1014.55, "acos": 41.9318909861515, "roas": 2.384819707583094, "clicks": 300, "ad_orders": 69, "impressions": 20448, "cpc": 1.4180666666666668, "ctr": 1.4671361502347418, "cvr": 23.0}, {"name": "Teeccino_Instants_Mushroom_COMP_[MUDWTR - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 415.8, "ad_sales": 555.31, "acos": 74.87709567628893, "roas": 1.3355218855218853, "clicks": 169, "ad_orders": 27, "impressions": 25047, "cpc": 2.460355029585799, "ctr": 0.6747315047710305, "cvr": 15.976331360946746}, {"name": "Teeccino_Instants_Cacao+5_COMP_[Mushroom Coffee - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 414.75, "ad_sales": 452.08, "acos": 91.74261192709255, "roas": 1.0900060277275467, "clicks": 188, "ad_orders": 24, "impressions": 37250, "cpc": 2.206117021276596, "ctr": 0.5046979865771812, "cvr": 12.76595744680851}, {"name": "Teeccino_Herbal Tea_Coconut Tea_CAT_[Coconut Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 394.29, "ad_sales": 1360.55, "acos": 28.980191834184705, "roas": 3.4506327829769963, "clicks": 201, "ad_orders": 70, "impressions": 31364, "cpc": 1.9616417910447763, "ctr": 0.6408621349317689, "cvr": 34.82587064676617}, {"name": "Teeccino_APGs_Bulk Bags_CAT_[Bulk Bags Business - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 338.84000000000003, "ad_sales": 299.31, "acos": 113.20704286525675, "roas": 0.883337268327234, "clicks": 140, "ad_orders": 16, "impressions": 34238, "cpc": 2.4202857142857144, "ctr": 0.4089023891582452, "cvr": 11.428571428571429}, {"name": "Teeccino_Herbal Tea_Sampler_CAT_[Single KW Push - Herbal Tea]_SP", "product": "SPONSORED_PRODUCTS", "spend": 275.73, "ad_sales": 659.11, "acos": 41.833684817405285, "roas": 2.3904181626953904, "clicks": 174, "ad_orders": 44, "impressions": 39482, "cpc": 1.5846551724137932, "ctr": 0.4407071576921129, "cvr": 25.28735632183908}, {"name": "Teeccino_Mushroom Tea_Ashwagandha Tea_CAT_[Ashwagandha Tea - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 267.14, "ad_sales": 441.19, "acos": 60.549876470454905, "roas": 1.651531032417459, "clicks": 104, "ad_orders": 32, "impressions": 9985, "cpc": 2.568653846153846, "ctr": 1.041562343515273, "cvr": 30.76923076923077}, {"name": "Teeccino_Instants_Matcha_CAT_[Matcha - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 265.42, "ad_sales": 347.71, "acos": 76.33372638117973, "roas": 1.3100369226132167, "clicks": 98, "ad_orders": 17, "impressions": 46726, "cpc": 2.7083673469387755, "ctr": 0.20973333904036295, "cvr": 17.346938775510203}, {"name": "Teeccino_All Products_Excess Inventory_BR_[Excess Inventory Oct 25 - Branded PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 238.98, "ad_sales": 4877.53, "acos": 4.899611073637682, "roas": 20.40978324545987, "clicks": 438, "ad_orders": 242, "impressions": 67926, "cpc": 0.5456164383561644, "ctr": 0.6448193622471513, "cvr": 55.25114155251141}, {"name": "Teeccino_Dark Chocolate_All Products_CAT_[Prebiotic - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 201.78, "ad_sales": 536.02, "acos": 37.64411775680012, "roas": 2.656457528000793, "clicks": 119, "ad_orders": 33, "impressions": 14811, "cpc": 1.6956302521008404, "ctr": 0.8034568901492134, "cvr": 27.73109243697479}, {"name": "iHerb_Teeccino_APGs_Top Sellers_CAT_[Coffee - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 182.53, "ad_sales": 1776.67, "acos": 10.273714308228314, "roas": 9.733578041965705, "clicks": 1180, "ad_orders": 129, "impressions": 57486, "cpc": 0.1546864406779661, "ctr": 2.0526736944647395, "cvr": 10.932203389830509}, {"name": "WWB_WWB Teas_Rooibos_CAT_[WWB Rooibos - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 146.25, "ad_sales": 289.49, "acos": 50.519879788593734, "roas": 1.9794188034188034, "clicks": 93, "ad_orders": 25, "impressions": 12884, "cpc": 1.5725806451612903, "ctr": 0.721825520024837, "cvr": 26.881720430107528}, {"name": "WWB_Maca Root_Maca_CAT_[Maca - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 143.84, "ad_sales": 374.74, "acos": 38.383946202700535, "roas": 2.6052558398220245, "clicks": 110, "ad_orders": 23, "impressions": 5730, "cpc": 1.3076363636363637, "ctr": 1.9197207678883073, "cvr": 20.90909090909091}, {"name": "Teeccino_Instants_Matcha_CAT_[Matcha - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 121.37, "ad_sales": 174.4, "acos": 69.59288990825688, "roas": 1.4369284007580128, "clicks": 56, "ad_orders": 7, "impressions": 18007, "cpc": 2.167321428571429, "ctr": 0.3109901704892542, "cvr": 12.5}, {"name": "Teeccino_Mushroom Tea_Chaga Tea_RANK_[Chaga Tea - Exact]_SP", "product": "SPONSORED_PRODUCTS", "spend": 117.96, "ad_sales": 341.34, "acos": 34.55791879064862, "roas": 2.8936927772126144, "clicks": 67, "ad_orders": 23, "impressions": 5775, "cpc": 1.7605970149253731, "ctr": 1.1601731601731602, "cvr": 34.32835820895522}, {"name": "WWB_Orange Peel_Orange Peel_CAT_[Orange Peel - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 111.56, "ad_sales": 678.5899999999999, "acos": 16.43997111657997, "roas": 6.082735747579777, "clicks": 106, "ad_orders": 39, "impressions": 21818, "cpc": 1.0524528301886793, "ctr": 0.48583738197818316, "cvr": 36.79245283018868}, {"name": "WWB_Schisandra Berries_Schisandra Berries_CAT_[Schisandra - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 102.24, "ad_sales": 279.88, "acos": 36.52994140345863, "roas": 2.737480438184664, "clicks": 56, "ad_orders": 8, "impressions": 8608, "cpc": 1.8257142857142856, "ctr": 0.6505576208178439, "cvr": 14.285714285714286}, {"name": "Teeccino_Herbal Tea_Vanilla Nut_CAT_[Vanilla Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 89.62, "ad_sales": 305.55, "acos": 29.33071510391098, "roas": 3.4093952242802947, "clicks": 60, "ad_orders": 17, "impressions": 12117, "cpc": 1.4936666666666667, "ctr": 0.49517207229512256, "cvr": 28.333333333333332}, {"name": "WWB_All Products_High AOV_BR_[Branded Shelf]_SP", "product": "SPONSORED_PRODUCTS", "spend": 87.14, "ad_sales": 2203.66, "acos": 3.954330522857428, "roas": 25.288730778058294, "clicks": 168, "ad_orders": 96, "impressions": 11041, "cpc": 0.5186904761904761, "ctr": 1.5216013042296894, "cvr": 57.142857142857146}, {"name": "Teeccino_Instants_Matcha_COMP_[Matcha Mushroom Comps - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 75.97, "ad_sales": 66.07, "acos": 114.98410776449222, "roas": 0.8696854021324206, "clicks": 28, "ad_orders": 3, "impressions": 4323, "cpc": 2.713214285714286, "ctr": 0.6476983576220218, "cvr": 10.714285714285714}, {"name": "WWB_Maca Root_Maca_CAT_[Maca - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 67.97, "ad_sales": 224.85, "acos": 30.22904158327774, "roas": 3.3080770928350742, "clicks": 51, "ad_orders": 15, "impressions": 8613, "cpc": 1.3327450980392157, "ctr": 0.5921281783350749, "cvr": 29.41176470588235}, {"name": "Teeccino_Holiday_Irish Cream_CAT_[Irish Cream - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 55.11, "ad_sales": 183.85999999999999, "acos": 29.973893179593173, "roas": 3.3362366176737432, "clicks": 54, "ad_orders": 14, "impressions": 7628, "cpc": 1.0205555555555554, "ctr": 0.7079181961195595, "cvr": 25.925925925925927}, {"name": "WWB_Dried Elderberries_Elderberries_CAT_[Elderberries - SB]_SB", "product": "SPONSORED_BRANDS", "spend": 52.87, "ad_sales": 14.98, "acos": 352.93724966622165, "roas": 0.28333648571968983, "clicks": 31, "ad_orders": 1, "impressions": 23841, "cpc": 1.7054838709677418, "ctr": 0.1300281028480349, "cvr": 3.225806451612903}, {"name": "WWB_Commodities_Ramon Seed Flour_AUTO_[Ramon Seed Flour - AUTO]_SP", "product": "SPONSORED_PRODUCTS", "spend": 49.940000000000005, "ad_sales": 179.92, "acos": 27.75678079146288, "roas": 3.602723267921505, "clicks": 44, "ad_orders": 8, "impressions": 5070, "cpc": 1.135, "ctr": 0.8678500986193294, "cvr": 18.181818181818183}, {"name": "iHerb_Teeccino_Dandelion Tea_All Dandelion Teas_CAT_[Dandelion Tea - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 47.55, "ad_sales": 554.39, "acos": 8.576994534533451, "roas": 11.659095688748685, "clicks": 317, "ad_orders": 47, "impressions": 16750, "cpc": 0.15, "ctr": 1.8925373134328358, "cvr": 14.826498422712934}, {"name": "Teeccino_Instants_Mushroom_COMP_[Four Sigmatics - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 45.980000000000004, "ad_sales": 28.34, "acos": 162.24417784050812, "roas": 0.6163549369290996, "clicks": 26, "ad_orders": 3, "impressions": 6910, "cpc": 1.7684615384615385, "ctr": 0.37626628075253254, "cvr": 11.538461538461538}, {"name": "Teeccino_APGs_Top Sellers_CAT_[Coffee - Single KW Broad]_SB", "product": "SPONSORED_BRANDS", "spend": 43.1, "ad_sales": 687.8199999999999, "acos": 6.266174289785119, "roas": 15.958700696055683, "clicks": 102, "ad_orders": 37, "impressions": 13787, "cpc": 0.42254901960784313, "ctr": 0.7398273736128237, "cvr": 36.27450980392157}, {"name": "iHerb_Teeccino_Mushroom APGs_Mushroom APGs_CAT_[Mushroom Coffee - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 42.9, "ad_sales": 653.01, "acos": 6.569577801258786, "roas": 15.221678321678322, "clicks": 249, "ad_orders": 47, "impressions": 4835, "cpc": 0.172289156626506, "ctr": 5.14994829369183, "cvr": 18.87550200803213}, {"name": "WWB_Dandelion Powder_Dandelion Powder_CAT_[Dandelion - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 41.8, "ad_sales": 153.82, "acos": 27.17461968534651, "roas": 3.6799043062200956, "clicks": 25, "ad_orders": 7, "impressions": 1637, "cpc": 1.672, "ctr": 1.5271838729383018, "cvr": 28.0}, {"name": "Teeccino_Holiday_Gingerbread_CAT_[Gingerbread - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 41.07, "ad_sales": 129.13, "acos": 31.80515759312321, "roas": 3.144144144144144, "clicks": 33, "ad_orders": 7, "impressions": 3830, "cpc": 1.2445454545454546, "ctr": 0.8616187989556136, "cvr": 21.21212121212121}, {"name": "iHerb_Teeccino_APGs_Top Sellers_CAT_[Caffeine Free - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 39.47, "ad_sales": 95.08, "acos": 41.51241060159865, "roas": 2.408918165695465, "clicks": 117, "ad_orders": 7, "impressions": 17777, "cpc": 0.33735042735042736, "ctr": 0.6581537942284975, "cvr": 5.982905982905983}, {"name": "WWB_Dandelion Powder_Dandelion Powder_CAT_[Dandelion Powder - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 37.44, "ad_sales": 99.94999999999999, "acos": 37.45872936468235, "roas": 2.6696047008547006, "clicks": 21, "ad_orders": 4, "impressions": 2593, "cpc": 1.7828571428571427, "ctr": 0.8098727342846124, "cvr": 19.047619047619047}, {"name": "Teeccino_Holiday_Candy Cane_CAT_[Candy Cane - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 30.98, "ad_sales": 13.59, "acos": 227.9617365710081, "roas": 0.4386701097482246, "clicks": 17, "ad_orders": 1, "impressions": 11156, "cpc": 1.8223529411764705, "ctr": 0.152384367156687, "cvr": 5.882352941176471}, {"name": "iHerb_Teeccino_APGs_Top Sellers_CAT_[Chicory - Broad]_SP", "product": "SPONSORED_PRODUCTS", "spend": 27.47, "ad_sales": 733.97, "acos": 3.742659781734948, "roas": 26.718966144885332, "clicks": 180, "ad_orders": 49, "impressions": 3178, "cpc": 0.15261111111111111, "ctr": 5.663939584644431, "cvr": 27.22222222222222}, {"name": "WWB_Tagless Tea_Peppermint_CAT_[Peppermint - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 20.9, "ad_sales": 0.0, "acos": null, "roas": 0.0, "clicks": 14, "ad_orders": 0, "impressions": 4717, "cpc": 1.4928571428571427, "ctr": 0.2967988128047488, "cvr": 0.0}, {"name": "Teeccino_Holiday Teas_All Flavors_CAT_[Holiday Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 16.38, "ad_sales": 39.66, "acos": 41.30105900151286, "roas": 2.421245421245421, "clicks": 15, "ad_orders": 3, "impressions": 2590, "cpc": 1.0919999999999999, "ctr": 0.5791505791505791, "cvr": 20.0}, {"name": "Teeccino_Instants_Mushroom_COMP_[Ryze - PAT]_SP", "product": "SPONSORED_PRODUCTS", "spend": 14.530000000000001, "ad_sales": 0.0, "acos": null, "roas": 0.0, "clicks": 9, "ad_orders": 0, "impressions": 1337, "cpc": 1.6144444444444446, "ctr": 0.6731488406881077, "cvr": 0.0}, {"name": "iHerb_Teeccino_Instants_All Instants_CAT_[Instant - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 13.57, "ad_sales": 69.14, "acos": 19.6268440844663, "roas": 5.095062638172439, "clicks": 67, "ad_orders": 6, "impressions": 2750, "cpc": 0.20253731343283582, "ctr": 2.4363636363636365, "cvr": 8.955223880597014}, {"name": "WWB_Cinnamon_5LB_AUTO_[5LB Cinnamon - Auto]_SP", "product": "SPONSORED_PRODUCTS", "spend": 11.75, "ad_sales": 59.99, "acos": 19.586597766294382, "roas": 5.105531914893617, "clicks": 8, "ad_orders": 1, "impressions": 3713, "cpc": 1.46875, "ctr": 0.21545919741448963, "cvr": 12.5}, {"name": "iHerb_Teeccino_Dandelion APGs_Dandelion Coffee_CAT_[Dandelion Coffee - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 8.719999999999999, "ad_sales": 665.47, "acos": 1.3103520819871668, "roas": 76.31536697247708, "clicks": 58, "ad_orders": 42, "impressions": 636, "cpc": 0.15034482758620688, "ctr": 9.119496855345911, "cvr": 72.41379310344827}, {"name": "iHerb_Instants_All Products_CAT_[Instant Coffee - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 7.0, "ad_sales": 61.38, "acos": 11.40436624307592, "roas": 8.768571428571429, "clicks": 31, "ad_orders": 6, "impressions": 862, "cpc": 0.22580645161290322, "ctr": 3.5962877030162415, "cvr": 19.35483870967742}, {"name": "iHerb_Teeccino_Dandelion Tea_All_CAT_[Dandelion Tea - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 3.15, "ad_sales": 12.59, "acos": 25.019857029388405, "roas": 3.996825396825397, "clicks": 21, "ad_orders": 1, "impressions": 920, "cpc": 0.15, "ctr": 2.282608695652174, "cvr": 4.761904761904762}, {"name": "iHerb_APGs_Top Sellers_CAT_[Coffee Alt - Exact]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2.85, "ad_sales": 88.76, "acos": 3.2109058134294726, "roas": 31.143859649122806, "clicks": 19, "ad_orders": 6, "impressions": 442, "cpc": 0.15, "ctr": 4.298642533936651, "cvr": 31.57894736842105}, {"name": "Teeccino_Holiday Coffee_All Flavors_CAT_[Holiday Coffee - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 2.7, "ad_sales": 0.0, "acos": null, "roas": 0.0, "clicks": 2, "ad_orders": 0, "impressions": 626, "cpc": 1.35, "ctr": 0.3194888178913738, "cvr": 0.0}, {"name": "iHerb_Dark Chocolate_All Products_CAT_[Prebiotic - BMM]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1.88, "ad_sales": 0.0, "acos": null, "roas": 0.0, "clicks": 4, "ad_orders": 0, "impressions": 622, "cpc": 0.47, "ctr": 0.6430868167202572, "cvr": 0.0}, {"name": "iHerb_Teeccino_Mushroom Tea_All Mushroom Teas_CAT_[Mushroom Tea - Top KWs]_SP", "product": "SPONSORED_PRODUCTS", "spend": 1.05, "ad_sales": 16.09, "acos": 6.525792417650715, "roas": 15.323809523809523, "clicks": 7, "ad_orders": 1, "impressions": 209, "cpc": 0.15, "ctr": 3.349282296650718, "cvr": 14.285714285714286}]};
+const CSS = getComputedStyle(document.documentElement);
+const S1 = CSS.getPropertyValue('--s1').trim(), S2 = CSS.getPropertyValue('--s2').trim();
+const MUT = CSS.getPropertyValue('--muted').trim(), GRID = CSS.getPropertyValue('--grid').trim();
+const LINE = CSS.getPropertyValue('--line').trim(), CARD = CSS.getPropertyValue('--card').trim();
+const NS = 'http://www.w3.org/2000/svg';
+
+let rows = DATA.daily.slice();
+
+const fmtMoney = v => v==null ? '\u2014' : '$'+Math.round(v).toLocaleString();
+const fmtPct   = (v,d=1) => v==null ? '\u2014' : v.toFixed(d)+'%';
+const el = (n,a={}) => { const e=document.createElementNS(NS,n);
+  for (const k in a) e.setAttribute(k,a[k]); return e; };
+
+/* ---------- tooltip (enhances; every value also in the table view) ---------- */
+const tt = document.getElementById('tt');
+function showTT(x,y,date,items) {
+  tt.innerHTML = '<div class="d">'+date+'</div>' + items.map(i =>
+    '<div class="r"><span class="lg"><span class="sw" style="background:'+i.c+'"></span>'+
+    i.k+'</span><b>'+i.v+'</b></div>').join('');
+  tt.style.display='block';
+  const r = tt.getBoundingClientRect();
+  tt.style.left = Math.min(x+14, innerWidth-r.width-10)+'px';
+  tt.style.top  = Math.max(8, y-r.height-12)+'px';
+}
+const hideTT = () => { tt.style.display='none'; };
+
+/* ---------- shared line-chart renderer (ONE y axis, always) ---------- */
+function lineChart(svgId, series, fmt, aria) {
+  const svg = document.getElementById(svgId);
+  svg.replaceChildren();
+  const W=1200, H=+svg.getAttribute('viewBox').split(' ')[3];
+  const P={t:16,r:18,b:38,l:64};
+  const iw=W-P.l-P.r, ih=H-P.t-P.b;
+  if (!rows.length) return;
+
+  const vals = series.flatMap(s => rows.map(r=>r[s.k]).filter(v=>v!=null));
+  if (!vals.length) return;
+  let max = Math.max(...vals), min = Math.min(0, Math.min(...vals));
+  // headroom so the top mark never touches the frame
+  max = max*1.08 || 1;
+  const X = i => P.l + (rows.length===1 ? iw/2 : i*iw/(rows.length-1));
+  const Y = v => P.t + ih - (v-min)/(max-min)*ih;
+
+  // gridlines + y ticks -- SOLID hairlines, one shade off the surface (never dashed)
+  const ticks=5;
+  for (let i=0;i<=ticks;i++) {
+    const v=min+(max-min)*i/ticks, y=Y(v);
+    svg.appendChild(el('line',{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:GRID,'stroke-width':1}));
+    const tx=el('text',{x:P.l-9,y:y+4,fill:MUT,'font-size':11,'text-anchor':'end'});
+    tx.style.fontVariantNumeric='tabular-nums';   // axis ticks align vertically
+    tx.textContent=fmt(v,0); svg.appendChild(tx);
+  }
+  // baseline
+  svg.appendChild(el('line',{x1:P.l,x2:W-P.r,y1:Y(min),y2:Y(min),stroke:LINE,'stroke-width':1}));
+
+  // x labels: ~6, first/last always
+  const step=Math.max(1,Math.ceil(rows.length/6));
+  rows.forEach((r,i)=>{
+    if (i%step && i!==rows.length-1) return;
+    const tx=el('text',{x:X(i),y:H-14,fill:MUT,'font-size':11,'text-anchor':'middle'});
+    tx.style.fontVariantNumeric='tabular-nums';
+    tx.textContent=r.date.slice(5); svg.appendChild(tx);
+  });
+
+  // 2px lines
+  series.forEach(s=>{
+    let dstr='', open=false;
+    rows.forEach((r,i)=>{
+      const v=r[s.k];
+      if (v==null) { open=false; return; }
+      dstr += (open?' L ':' M ')+X(i)+' '+Y(v); open=true;
+    });
+    svg.appendChild(el('path',{d:dstr.trim(),fill:'none',stroke:s.c,'stroke-width':2,
+      'stroke-linejoin':'round','stroke-linecap':'round'}));
+    // selective direct label: endpoint only (never a number on every point)
+    for (let i=rows.length-1;i>=0;i--) {
+      if (rows[i][s.k]!=null) {
+        const g=el('circle',{cx:X(i),cy:Y(rows[i][s.k]),r:4.5,fill:s.c,
+          stroke:CARD,'stroke-width':2});   // 2px surface ring, not a border
+        svg.appendChild(g);
+        const lb=el('text',{x:X(i)-8,y:Y(rows[i][s.k])-11,fill:s.c,'font-size':11.5,
+          'text-anchor':'end','font-weight':600});
+        lb.textContent=fmt(rows[i][s.k]); svg.appendChild(lb);
+        break;
+      }
+    }
+  });
+
+  // crosshair + hover band (hit target >> mark)
+  const cross=el('line',{y1:P.t,y2:P.t+ih,stroke:MUT,'stroke-width':1,opacity:0});
+  svg.appendChild(cross);
+  const dots=series.map(s=>{
+    const c=el('circle',{r:5,fill:s.c,stroke:CARD,'stroke-width':2,opacity:0});
+    svg.appendChild(c); return c;
+  });
+  const hit=el('rect',{x:P.l,y:P.t,width:iw,height:ih,fill:'transparent',
+    tabindex:0,role:'application','aria-label':aria});
+  svg.appendChild(hit);
+
+  let cur=-1;
+  function focusIdx(i,cx,cy) {
+    if (i<0||i>=rows.length) return;
+    cur=i; const r=rows[i];
+    cross.setAttribute('x1',X(i)); cross.setAttribute('x2',X(i));
+    cross.setAttribute('opacity',.55);
+    series.forEach((s,si)=>{
+      const v=r[s.k];
+      if (v==null) { dots[si].setAttribute('opacity',0); return; }
+      dots[si].setAttribute('cx',X(i)); dots[si].setAttribute('cy',Y(v));
+      dots[si].setAttribute('opacity',1);
+    });
+    showTT(cx,cy,r.date,series.map(s=>({c:s.c,k:s.n,v:fmt(r[s.k])})));
+  }
+  function clear() { cross.setAttribute('opacity',0);
+    dots.forEach(d=>d.setAttribute('opacity',0)); hideTT(); }
+
+  hit.addEventListener('pointermove',ev=>{
+    const b=svg.getBoundingClientRect();
+    const px=(ev.clientX-b.left)*W/b.width;
+    let i=Math.round((px-P.l)/(iw||1)*(rows.length-1));
+    i=Math.max(0,Math.min(rows.length-1,i));
+    focusIdx(i,ev.clientX,ev.clientY);
+  });
+  hit.addEventListener('pointerleave',clear);
+  // keyboard focus shows the same as hover
+  hit.addEventListener('focus',()=>{ const b=svg.getBoundingClientRect();
+    focusIdx(rows.length-1,b.left+b.width-90,b.top+70); });
+  hit.addEventListener('blur',clear);
+  hit.addEventListener('keydown',ev=>{
+    if (ev.key!=='ArrowLeft'&&ev.key!=='ArrowRight') return;
+    ev.preventDefault();
+    const b=svg.getBoundingClientRect();
+    const ni=Math.max(0,Math.min(rows.length-1,(cur<0?rows.length-1:cur)+(ev.key==='ArrowRight'?1:-1)));
+    focusIdx(ni, b.left+b.width*(X(ni)/W), b.top+70);
+  });
+}
+
+/* ---------- monthly ACOS bars: ONE series -> ONE color (slot 1) ---------- */
+function monthChart() {
+  const svg=document.getElementById('cMonth'); svg.replaceChildren();
+  const m=DATA.monthly.filter(x=>x.acos!=null);
+  const W=1200,H=260,P={t:22,r:18,b:44,l:64};
+  const iw=W-P.l-P.r, ih=H-P.t-P.b;
+  if (!m.length) return;
+  const max=Math.max(...m.map(x=>x.acos))*1.18;
+  const Y=v=>P.t+ih-v/max*ih;
+  for (let i=0;i<=4;i++) {
+    const v=max*i/4,y=Y(v);
+    svg.appendChild(el('line',{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:GRID,'stroke-width':1}));
+    const tx=el('text',{x:P.l-9,y:y+4,fill:MUT,'font-size':11,'text-anchor':'end'});
+    tx.style.fontVariantNumeric='tabular-nums';
+    tx.textContent=v.toFixed(0)+'%'; svg.appendChild(tx);
+  }
+  svg.appendChild(el('line',{x1:P.l,x2:W-P.r,y1:Y(0),y2:Y(0),stroke:LINE,'stroke-width':1}));
+  // thin marks: saturated fills belong on small marks, never wide blocks
+  const slot=iw/m.length, bw=Math.min(46,slot-14);   // >=2px surface gap between bars
+  m.forEach((x,i)=>{
+    const cx=P.l+slot*i+slot/2, y=Y(x.acos), h=Y(0)-y;
+    // 4px rounded data-end anchored to the baseline
+    const r=el('path',{d:`M ${cx-bw/2} ${Y(0)} L ${cx-bw/2} ${y+4} Q ${cx-bw/2} ${y} ${cx-bw/2+4} ${y}`+
+      ` L ${cx+bw/2-4} ${y} Q ${cx+bw/2} ${y} ${cx+bw/2} ${y+4} L ${cx+bw/2} ${Y(0)} Z`,
+      fill:S1});
+    svg.appendChild(r);
+    // only ~5 bars, so labelling each is selective, not "a number on every point"
+    const lb=el('text',{x:cx,y:y-8,fill:CSS.getPropertyValue('--ink').trim(),'font-size':12,
+      'text-anchor':'middle','font-weight':620});
+    lb.textContent=x.acos.toFixed(1)+'%'; svg.appendChild(lb);
+    const xl=el('text',{x:cx,y:H-24,fill:MUT,'font-size':11.5,'text-anchor':'middle'});
+    xl.textContent=x.month; svg.appendChild(xl);
+    const dl=el('text',{x:cx,y:H-10,fill:MUT,'font-size':10.5,'text-anchor':'middle'});
+    dl.textContent=x.days+'d'; svg.appendChild(dl);
+    const hit=el('rect',{x:cx-slot/2,y:P.t,width:slot,height:ih,fill:'transparent'});
+    hit.addEventListener('pointermove',ev=>showTT(ev.clientX,ev.clientY,x.month,[
+      {c:S1,k:'ACOS',v:fmtPct(x.acos)},
+      {c:MUT,k:'Spend',v:fmtMoney(x.spend)},
+      {c:MUT,k:'Ad sales',v:fmtMoney(x.ad_sales)},
+      {c:MUT,k:'TACOS',v:fmtPct(x.tacos,2)}]));
+    hit.addEventListener('pointerleave',hideTT);
+    svg.appendChild(hit);
+  });
+}
+
+/* ---------- table-view twins ---------- */
+function buildTV(id, cols) {
+  const box=document.getElementById(id);
+  box.innerHTML='<table><thead><tr><th>Date</th>'+
+    cols.map(c=>'<th class="n">'+c.n+'</th>').join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr><td class="nm">'+r.date+'</td>'+
+      cols.map(c=>'<td class="n">'+c.f(r[c.k])+'</td>').join('')+'</tr>').join('')+
+    '</tbody></table>';
+}
+document.querySelectorAll('.tv-toggle').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const box=document.getElementById(b.dataset.tv);
+    const svg=box.previousElementSibling;
+    const on=box.classList.toggle('hidden');
+    svg.classList.toggle('hidden',!on);
+    b.textContent = on ? 'table view' : 'chart view';
+  });
+});
+
+/* ---------- stat tiles recompute against the filtered slice ---------- */
+function renderTiles() {
+  const s=k=>rows.reduce((a,r)=>a+(r[k]||0),0);
+  const spend=s('spend'), sales=s('ad_sales'), tot=s('total_sales'),
+        clicks=s('clicks'), imps=s('impressions'), ords=s('ad_orders');
+  const set=(i,v,sub)=>{
+    const t=document.querySelectorAll('#tiles .tile')[i];
+    t.querySelector('.tv').innerHTML=v;
+    if (sub!=null) t.querySelector('.ts').innerHTML=sub;
+  };
+  set(0,fmtMoney(spend),rows.length+' days');
+  set(1,fmtMoney(sales),'attributed');
+  set(2,sales?fmtPct(100*spend/sales):'\u2014',null);
+  set(3,spend?(sales/spend).toFixed(2)+'&times;':'\u2014',null);
+  set(4,tot?fmtPct(100*spend/tot,2):'\u2014',null);
+  set(5,Math.round(ords).toLocaleString(),clicks?('$'+(spend/clicks).toFixed(2)+' CPC'):'\u2014');
+}
+
+function drawAll() {
+  renderTiles();
+  // small multiples: one series each, own scale, same x range (never a shared/dual axis)
+  lineChart('cSpend',[{k:'spend',n:'Ad spend',c:S1}],
+    fmtMoney,'Daily ad spend. Arrow keys move by day.');
+  lineChart('cSales',[{k:'ad_sales',n:'Ad sales',c:S2}],
+    fmtMoney,'Daily attributed ad sales. Arrow keys move by day.');
+  lineChart('cEff',[{k:'acos',n:'ACOS',c:S1},{k:'tacos',n:'TACOS',c:S2}],
+    v=>fmtPct(v,1),'Daily ACOS and TACOS. Arrow keys move by day.');
+  buildTV('tblMoney',[{k:'spend',n:'Spend',f:fmtMoney},{k:'ad_sales',n:'Ad sales',f:fmtMoney},
+    {k:'ad_orders',n:'Orders',f:v=>v==null?'\u2014':v.toLocaleString()}]);
+  buildTV('tblEff',[{k:'acos',n:'ACOS',f:v=>fmtPct(v,1)},{k:'tacos',n:'TACOS',f:v=>fmtPct(v,2)},
+    {k:'total_sales',n:'Total Amazon sales',f:fmtMoney}]);
+}
+
+/* ---------- filters: one row, all charts re-render on the same slice ---------- */
+document.querySelectorAll('button.f').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('button.f').forEach(o=>o.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    const n=+b.dataset.days;
+    rows = n>0 ? DATA.daily.slice(-n) : DATA.daily.slice();
+    drawAll();
+  });
+});
+
+/* ---------- campaign table: color follows the entity, sort never repaints ---------- */
+const CAMP=DATA.campaigns.slice();
+const CAP=25;                 // 133 rows unrendered would make the page ~7000px tall
+let campAll=false;
+let sk='spend', sdir=-1;
+function drawCamp() {
+  const tb=document.querySelector('#camp tbody');
+  const s=CAMP.slice().sort((a,b)=>{
+    const x=a[sk], y=b[sk];
+    if (x==null&&y==null) return 0;
+    if (x==null) return 1;
+    if (y==null) return -1;
+    return (typeof x==='string') ? sdir*x.localeCompare(y) : sdir*(x-y);
+  });
+  const shown = campAll ? s : s.slice(0,CAP);
+  const btn=document.getElementById('campMore');
+  if (btn) btn.textContent = campAll
+    ? 'show top '+CAP : 'show all '+CAMP.length+' campaigns';
+  document.getElementById('campCount').textContent =
+    campAll ? CAMP.length+' of '+CAMP.length : shown.length+' of '+CAMP.length;
+  tb.innerHTML=shown.map(c=>{
+    // ACOS status: icon + label, never colour alone
+    let badge='';
+    if (c.acos!=null) {
+      if (c.acos>=40) badge='<span class="pill bad">\u25B2 high</span>';
+      else if (c.acos>=30) badge='<span class="pill warn">\u25B3 watch</span>';
+    }
+    return '<tr><td class="nm">'+c.name+'</td>'+
+      '<td class="sub">'+c.product.replace('SPONSORED_','')+'</td>'+
+      '<td class="n">'+fmtMoney(c.spend)+'</td>'+
+      '<td class="n">'+fmtMoney(c.ad_sales)+'</td>'+
+      '<td class="n">'+fmtPct(c.acos)+' '+badge+'</td>'+
+      '<td class="n">'+(c.roas==null?'\u2014':c.roas.toFixed(2)+'\u00D7')+'</td>'+
+      '<td class="n">'+(c.cpc==null?'\u2014':'$'+c.cpc.toFixed(2))+'</td>'+
+      '<td class="n">'+fmtPct(c.ctr,2)+'</td>'+
+      '<td class="n">'+fmtPct(c.cvr,1)+'</td>'+
+      '<td class="n">'+(c.ad_orders||0).toLocaleString()+'</td></tr>';
+  }).join('');
+}
+document.querySelectorAll('#camp th.s').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k=th.dataset.k;
+    if (k===sk) sdir=-sdir; else { sk=k; sdir=(k==='name'||k==='product')?1:-1; }
+    drawCamp();
+  });
+});
+
+document.getElementById('campMore').addEventListener('click',()=>{
+  campAll=!campAll; drawCamp();
+});
+
+drawAll(); monthChart(); drawCamp();
+</script>
+</body>
+</html>
