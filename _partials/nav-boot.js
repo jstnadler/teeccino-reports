@@ -19,7 +19,12 @@
      0) Share mode (?share=1) — clean externally-shareable view.
      1) Active-link highlight in the nav.
      1.5) Report ownership badge ("Maintained by {Agent}") from pages.json `owner`.
-     2) Dynamic body padding-top sync to the real (possibly wrapped) nav height.
+     2) Dynamic body padding-top sync to the real (possibly wrapped) nav height,
+        AND publication of that height as the CSS custom property --hub-nav-h on
+        <html> so pages with their own sticky sub-chrome (e.g. the style guide's
+        full-height sticky TOC sidebar at >=990px, which is position:sticky
+        top:24px) can offset against the fixed nav instead of sliding under it.
+        Namespaced name; additive only — it never overrides a page's own tokens.
    ──────────────────────────────────────────────────────────────────────────── */
 (function () {
   if (window.__hubNavBootstrapped) return;
@@ -67,6 +72,10 @@
       '#share-footer .share-sub { display: block; margin-top: 4px; color: #cbd5e1; font-size: 0.92em; }';
     document.head.appendChild(s);
     document.body.classList.remove('has-hub-nav');
+    /* No fixed nav in share mode → zero the nav-height allowance so pages that
+       offset sticky sub-chrome against it don't leave a phantom gap. Inline
+       style on <html> outranks any stylesheet fallback the page declares. */
+    document.documentElement.style.setProperty('--hub-nav-h', '0px');
     if (!document.getElementById('share-footer')) {
       var f = document.createElement('div');
       f.id = 'share-footer';
@@ -111,7 +120,8 @@
       agentsmith: 'AgentSmith', dataops: 'DataOps', catalogsmith: 'CatalogSmith',
       adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
       assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
-      labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith'
+      labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith',
+      designsmith: 'DesignSmith'
     };
     var esc = function (str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -159,7 +169,8 @@
       agentsmith: 'AgentSmith', dataops: 'DataOps', catalogsmith: 'CatalogSmith',
       adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
       assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
-      labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith'
+      labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith',
+      designsmith: 'DesignSmith'
     };
     var esc = function (str) {
       return String(str == null ? '' : str)
@@ -306,7 +317,14 @@
   var CLEARANCE = 8;
   function sync() {
     var h = nav.offsetHeight;
-    if (h > 0) document.body.style.setProperty('padding-top', (h + CLEARANCE) + 'px', 'important');
+    if (h > 0) {
+      document.body.style.setProperty('padding-top', (h + CLEARANCE) + 'px', 'important');
+      /* Publish the live nav height for pages with their own sticky sub-chrome.
+         Inline on <html>, so a page's stylesheet fallback (e.g.
+         `html{--hub-nav-h:76px}`) applies pre-JS and this takes over once the
+         real height is measured — including after wraps, zoom, and font load. */
+      document.documentElement.style.setProperty('--hub-nav-h', h + 'px');
+    }
   }
   sync();
   var pending = false;
