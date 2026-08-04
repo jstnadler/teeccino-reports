@@ -190,8 +190,8 @@
   <div class="card" id="c-mh">
     <h2>⏱️ Machine hours by SKU</h2>
     <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="mh"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
-    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown. Volume and the hours-per-1k rate follow the switch above — the <b>CSV export always contains both</b> (per case and per unit columns side by side).</p>
-    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV — one row per SKU × machine, with per-case AND per-unit volume and hrs/1k columns side by side (ignores the toggle)">⬇ Export CSV</button><span class="mtag" id="mh-n"></span></div>
+    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown. Volume and the hours-per-1k rate follow the switch above — the <b>CSV export always contains both</b> (per case and per unit columns side by side). Rows here are a <b>rollup over the whole period</b> — for <b>dated, per-run</b> detail use <b>Export runs</b>.</p>
+    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV — one row per SKU × machine, with per-case AND per-unit volume and hrs/1k columns side by side (ignores the toggle)">⬇ Export CSV</button><button class="linkbtn" id="mh-export-runs" title="Download the underlying run log — ONE ROW PER RUN with its date, machine, item, quantity, operators, hours, labor $ and efficiency vs plan. Use this when you need dates; the rollup above spans the whole period.">⬇ Export runs (dated)</button><span class="mtag" id="mh-n"></span></div>
     <div class="scroll"><table id="t-mh"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="machines">machine(s)</th><th data-k="units" id="mh-vol">cases made</th>
       <th data-k="hrs">machine hrs</th><th data-k="hper1k" id="mh-per1k">hrs / 1k cases</th>
@@ -253,9 +253,26 @@ const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
      cases = run qty ÷ case_size          units = run qty × units-per-run-item
    ===================================================================================== */
 // units contained in one of the things a production run counts (1 for a loose bag, 6 for a 6-pack)
-let PACKINFO={};   // production item# -> {pack_type, pack_count}; filled in recompute()
-const upi=i=>{const p=PACKINFO[''+i]; return (p&&p.pack_count)||1;};                        // units per run item
-const upiUnknown=i=>{const p=PACKINFO[''+i]; return !!(p&&p.pack_type==='case'&&!p.pack_count);};
+let PACKINFO={}, DISPMAP={};   // production item# -> {pack_type, pack_count} / display name; filled in recompute()
+/* Item #s are hand-typed into the workbook, so one item shows up as 'NTB0110' and 'ntb0110',
+   'TB602'/'tb602', 'Clean'/'CLEAN'/'cLEAN'. CANONICAL id = trimmed + upper-cased. Every lookup
+   tries the raw key first, then the canonical one — a lowercase variant then still finds its case
+   size / pack config instead of silently falling back to 1. */
+const canonId=i=>(''+i).trim().toUpperCase();
+const upi=i=>{const p=PACKINFO[''+i]||PACKINFO[canonId(i)]; return (p&&p.pack_count)||1;};    // units per run item
+const upiUnknown=i=>{const p=PACKINFO[''+i]||PACKINFO[canonId(i)]; return !!(p&&p.pack_type==='case'&&!p.pack_count);};
+/* Not every "Item #" is a product. The schedule also logs machine cleaning, allergen tests,
+   tooling changeovers and free-text labor notes in the same column. They are real machine hours but
+   they belong to NO SKU, so they must not sit in a per-SKU table inflating the SKU count — and must
+   not be dropped either. Classified, bucketed, and reported separately. Matched on the CANONICAL id
+   so 'Clean'/'CLEAN'/'cLEAN' are one bucket. Anything unmatched is production. */
+const NONPROD_RULES=[
+  [/^(AIR |DEEP )?CLEAN/,                                                    'Cleaning / allergen test'],
+  [/^(DIFFERENT TOOLING|CONVERTING JOBS|DISSAMBLING JOBS)/,                  'Changeover / tooling'],
+  [/^(GO TO |HANDPACK|HELP |ASSIST |WORK ON OTHER|RUNNING AMY|QUICK NOTE|ASSEMBLY$)/, 'Unallocated labor note'],
+];
+function runClass(i){ const c=canonId(i); for(const [rx,lab] of NONPROD_RULES) if(rx.test(c)) return lab; return null; }
+const isProd=i=>runClass(i)===null;
 // UNITS PER CASE for a catalog row = (units per its pack) × (packs per shipping case).
 // e.g. loose 80110L: 1×24=24 ; 6-pack 80110: 6×1=6 ; loose 10ct 40110L: 1×36=36.
 const unitsPerCase=r=> r ? (r.pack_count||1)*(r.case_size||1) : null;
@@ -266,7 +283,7 @@ const perSingle=r=> r&&r.pack_type==='case' ? (r.pack_count ? r.make/r.pack_coun
 // cost of ONE CASE = cost of what a run counts × how many of those go in a case
 const caseCost=r=> (r&&r.case_size) ? r.make*r.case_size : null;
 // units per shipping case for a production item# (Item Listing col H, "Case Pack Units")
-const csz=i=> (RAW&&RAW.case_sizes&&RAW.case_sizes[i])||1;
+const csz=i=> (RAW&&RAW.case_sizes&&(RAW.case_sizes[i]!=null?RAW.case_sizes[i]:RAW.case_sizes[canonId(i)]))||1;
 // clean product name (CatalogSmith) with fallback to the raw warehouse title.
 const pname=r=> (r&&(r.display_name||r.title))||'';
 const casesOf=f=> f&&f.q ? f.q/csz(f.i) : 0;
@@ -289,7 +306,7 @@ const setTxt=(id,t)=>{const e=document.getElementById(id); if(e)e.textContent=t;
 // column (consistent for every row) — no more asymmetric "case ×N" badge on some rows only.
 const packBadge=r=> r&&r.pack_type==='amazon' ? ` <span class="mtag" title="Amazon pack variant">AMZN</span>` : '';
 let RAW=null, RANGE={from:null,to:null};
-let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], EFF={weeks:[],tot:null,cov:null};
+let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], MHNP={}, EFF={weeks:[],tot:null,cov:null};
 let PRODITEMS=new Set();   // production item#s with ≥1 finished-stage run in the active range (drives "no runs this period")
 let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
 let EFFMACH=new Set();   // machine filter for the efficiency section ONLY (empty = all machines)
@@ -360,14 +377,33 @@ function recompute(){
   // cost-to-make (re-priced) for Section 3 & 4
   FG=(RAW.bom_cogs.items||[]).map(it=>{const r=makeOf(it); return {...it,make:r.make,make_blend:r.blend,make_labor:r.pack,priced:r.priced};});
   // SKU -> size (10ct / 11oz / 25ct / Sampler...) lookup, keyed by every id a row might use
-  const SIZE={}, PACK={}, DISP={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k=>{ if(k){ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; if(it.display_name)DISP[k]=it.display_name; } }); });
+  // Registered under the raw key AND the canonical (upper-cased) key, so a lowercase Item # variant
+  // in the schedule still resolves its size / pack config / display name.
+  const SIZE={}, PACK={}, DISP={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k0=>{ if(k0) [''+k0,canonId(k0)].forEach(k=>{ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; if(it.display_name)DISP[k]=it.display_name; }); }); });
   PACKINFO=PACK;   // production item# -> {pack_type,pack_count}; used by the basis-aware drill-downs
+  DISPMAP=DISP;    // production item# -> clean display name; used by the run-level CSV export
   // machine hours by SKU (3a)
   const Bmh=secBasis('mh'); setTxt('mh-vol',BWs(Bmh)+' made'); setTxt('mh-per1k','hrs / 1k '+BWs(Bmh));
   const mhacc={};
+  // Grouped by CANONICAL Item # so hand-typed case variants ('NTB0110'/'ntb0110') are one SKU.
   // `units` follows the section toggle (drives the table); uCase/uUnit hold BOTH bases at once so the
   // CSV export can put per-case and per-unit side by side regardless of which way the toggle is set.
-  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',display_name:DISP[f.i]||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,case_size:csz(f.i),hrs:0,units:0,uCase:0,uUnit:0,uUnitUnknown:false,by:{}}); o.hrs+=f.t;
+  // Non-production rows (cleaning / changeover / labor notes) go to their own bucket, never the SKU table.
+  MHNP={};
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return;
+    const cls=runClass(f.i);
+    if(cls){ const b=MHNP[cls]||(MHNP[cls]={label:cls,hrs:0,runs:0,ids:new Set(),by:{}});
+      b.hrs+=f.t; b.runs++; b.ids.add(canonId(f.i)); b.by[f.m]=(b.by[f.m]||0)+f.t; return; }
+    const k=canonId(f.i);
+    const o=mhacc[k]||(mhacc[k]={sku:k,title:'',display_name:'',size:'',pack_type:undefined,pack_count:undefined,case_size:1,hrs:0,units:0,uCase:0,uUnit:0,uUnitUnknown:false,runs:0,first:null,last:null,by:{}});
+    // meta filled from whichever id variant actually carries it (raw first, then canonical)
+    if(!o.title) o.title=((RAW.items[f.i]||RAW.items[k]||{}).desc)||'';
+    if(!o.display_name) o.display_name=DISP[f.i]||DISP[k]||'';
+    if(!o.size) o.size=SIZE[f.i]||SIZE[k]||'';
+    if(o.pack_type===undefined){ const p=PACK[f.i]||PACK[k]; if(p){o.pack_type=p.pack_type; o.pack_count=p.pack_count;} }
+    if(o.case_size===1) o.case_size=csz(f.i);
+    o.hrs+=f.t; o.runs++;
+    if(f.d){ if(!o.first||f.d<o.first)o.first=f.d; if(!o.last||f.d>o.last)o.last=f.d; }
     if(f.q){ o.units+=volB(f,Bmh); o.uCase+=volB(f,'case'); const uu=runVol(f,'unit'); if(uu==null) o.uUnitUnknown=true; else o.uUnit+=uu; }
     o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
@@ -686,7 +722,12 @@ function renderMH(){
     +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
     :`<tr><td colspan="7" class="empty">No machine runs in this range.</td></tr>`;
   const totH=MH.reduce((s,r)=>s+r.hrs,0);
-  $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with runs · ${num(totH)} total machine hrs in range.`;
+  // Non-SKU machine time is reported, not hidden — it is real capacity, just not attributable to a product.
+  const np=Object.values(MHNP).sort((a,b)=>b.hrs-a.hrs), npH=np.reduce((s,b)=>s+b.hrs,0);
+  $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with runs · ${num(totH)} machine hrs on products in range.`
+    +(np.length?`<br>Plus <b>${num(npH)}</b> machine hrs (${num(np.reduce((s,b)=>s+b.runs,0))} runs) logged to something that is <b>not a product</b> — `
+      +np.map(b=>`${b.label.toLowerCase()} <b>${num(b.hrs)}</b> hrs`).join(' · ')
+      +`. Excluded from the SKU table above (it belongs to no SKU); included in the CSV exports with a <i>run type</i> column.`:'');
 }
 /* CSV export — one row per SKU × machine so "which machine" is explicit */
 function csvCell(v){ v=(v==null?'':''+v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
@@ -700,19 +741,57 @@ function downloadCSV(name,rows){
 // so one download answers either question. cases × units/case = units, exactly, on every row.
 function exportMH(){
   const rows=mhFiltered();
-  const out=[['SKU','Product','units / case','Machine / stage','machine hrs on this machine',
+  const out=[['SKU','Product','Run type','runs','first run','last run','units / case',
+              'Machine / stage','machine hrs on this machine',
               '% of SKU machine hrs','SKU total machine hrs',
               'SKU total cases made','SKU total units made',
               'machine hrs / 1k cases','machine hrs / 1k units']];
   rows.forEach(r=>{
     const upc=unitsPerCase(r), uC=r.uCase||0, uU=r.uUnitUnknown?null:(r.uUnit||0);
     mhMachines(r).forEach(m=>{ const h=r.by[m];
-      out.push([r.sku, pname(r), upc||'', m, (+h).toFixed(2),
+      out.push([r.sku, pname(r), 'Production', r.runs, r.first||'', r.last||'', upc||'', m, (+h).toFixed(2),
         r.hrs?((h/r.hrs)*100).toFixed(1):'', r.hrs,
         uC?+uC.toFixed(4):'', uU?Math.round(uU):'',   // 4dp so cases × units/case = units reconciles even at 1200 units/case
         uC?((h/uC)*1000).toFixed(3):'', uU?((h/uU)*1000).toFixed(3):'']); }); });
+  // Non-SKU machine time, labelled — so the CSV's hours still reconcile to the plant total and
+  // nothing disappears just because it isn't a product.
+  if(!$('#mh-q').value.trim()) Object.values(MHNP).sort((a,b)=>b.hrs-a.hrs).forEach(b=>{
+    Object.entries(b.by).sort((x,y)=>y[1]-x[1]).forEach(([m,h])=>{
+      out.push([`(${b.label})`, `${b.ids.size} code${b.ids.size===1?'':'s'}: ${[...b.ids].sort().join(' / ')}`,
+        b.label, b.runs, '', '', '', m, (+h).toFixed(2),
+        b.hrs?((h/b.hrs)*100).toFixed(1):'', +b.hrs.toFixed(2), '', '', '', '']); }); });
   const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
   downloadCSV(`machine-hours-by-sku_per-case-and-per-unit_${tag}.csv`,out);
+}
+
+/* Run-level export — ONE ROW PER RUN, with its date. The rollup above is one row per SKU × machine
+   across the whole selected period, so a row there can span dozens of runs over months and has no
+   single date to show. This is the underlying run log: every field is per-run.
+   Labor $ = operator hours × confirmed $26.06/hr wage — LABOR ONLY, no materials/packaging/overhead. */
+function exportRuns(){
+  const q=$('#mh-q').value.trim().toLowerCase(), fin=finSet();
+  const nameOf=i=>DISPMAP[i]||DISPMAP[canonId(i)]||((RAW.items[i]||RAW.items[canonId(i)]||{}).desc)||'';
+  const rows=fRows().filter(f=>fin.has(f.m))
+    .filter(f=>!q||(''+f.i).toLowerCase().includes(q)||nameOf(f.i).toLowerCase().includes(q))
+    .sort((a,b)=>(a.d?0:1)-(b.d?0:1)||(a.d||'').localeCompare(b.d||'')||(''+a.m).localeCompare(''+b.m));  // undated runs last, not first
+  const out=[['Date','ISO week','Month','Machine / stage','Item #','Product','Run type','units / case',
+              'cases made','units made','operators','machine hrs','operator hrs','labor $',
+              'labor $ / case','labor $ / unit','planned hrs per unit','expected operator hrs',
+              'efficiency vs plan','downtime min','bad finished units','bad component units','data-quality flag']];
+  rows.forEach(f=>{
+    const cls=runClass(f.i), upc=csz(f.i)*upi(f.i);
+    const cases=f.q?f.q/csz(f.i):null, units=(f.q&&!upiUnknown(f.i))?f.q*upi(f.i):null;
+    const oh=(f.t!=null&&f.o)?f.t*f.o:null, lab=oh!=null?oh*WAGE:null, exp=(f.s&&f.q)?f.s*f.q:null;
+    out.push([f.d||'', f.d?isoWeek(f.d).key:'', f.d?f.d.slice(0,7):'', f.m, f.i,
+      cls?`(${cls})`:nameOf(f.i), cls||'Production',
+      cls?'':upc, cls?'':(cases!=null?+cases.toFixed(4):''), cls?'':(units!=null?Math.round(units):''),
+      f.o==null?'':f.o, f.t==null?'':+f.t.toFixed(2), oh==null?'':+oh.toFixed(2), lab==null?'':lab.toFixed(2),
+      (!cls&&lab!=null&&cases)?(lab/cases).toFixed(4):'', (!cls&&lab!=null&&units)?(lab/units).toFixed(4):'',
+      f.s==null?'':f.s, exp==null?'':+exp.toFixed(2), (exp!=null&&oh)?(exp/oh).toFixed(3):'',
+      f.dn==null?'':f.dn, f.bf==null?'':f.bf, f.bc==null?'':f.bc, f.dq||(f.d?'':'undated_run')]);
+  });
+  const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
+  downloadCSV(`machine-runs-detail_${tag}.csv`,out);
 }
 function showMH(sku){
   const r=MH.find(x=>(''+x.sku)===(''+sku)); const box=$('#mh-detail'); if(!r){box.hidden=true;return;}
@@ -851,6 +930,7 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#pack-q').addEventListener('input',renderPack);
   $('#mh-q').addEventListener('input',renderMH);
   $('#mh-export').addEventListener('click',exportMH);
+  $('#mh-export-runs').addEventListener('click',exportRuns);
   $('#fg-q').addEventListener('input',renderFG);
   document.querySelectorAll('.basis-seg').forEach(seg=>{   // one shared explanation of the two bases
     const bc=seg.querySelector('[data-b="case"]'), bu=seg.querySelector('[data-b="unit"]');
