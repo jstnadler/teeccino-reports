@@ -190,8 +190,8 @@
   <div class="card" id="c-mh">
     <h2>⏱️ Machine hours by SKU</h2>
     <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="mh"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
-    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown. Volume and the hours-per-1k rate follow the switch above.</p>
-    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV (one row per SKU × machine)">⬇ Export CSV</button><span class="mtag" id="mh-n"></span></div>
+    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown. Volume and the hours-per-1k rate follow the switch above — the <b>CSV export always contains both</b> (per case and per unit columns side by side).</p>
+    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV — one row per SKU × machine, with per-case AND per-unit volume and hrs/1k columns side by side (ignores the toggle)">⬇ Export CSV</button><span class="mtag" id="mh-n"></span></div>
     <div class="scroll"><table id="t-mh"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="machines">machine(s)</th><th data-k="units" id="mh-vol">cases made</th>
       <th data-k="hrs">machine hrs</th><th data-k="hper1k" id="mh-per1k">hrs / 1k cases</th>
@@ -365,7 +365,11 @@ function recompute(){
   // machine hours by SKU (3a)
   const Bmh=secBasis('mh'); setTxt('mh-vol',BWs(Bmh)+' made'); setTxt('mh-per1k','hrs / 1k '+BWs(Bmh));
   const mhacc={};
-  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',display_name:DISP[f.i]||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,case_size:csz(f.i),hrs:0,units:0,by:{}}); o.hrs+=f.t; if(f.q)o.units+=volB(f,Bmh); o.by[f.m]=(o.by[f.m]||0)+f.t; });
+  // `units` follows the section toggle (drives the table); uCase/uUnit hold BOTH bases at once so the
+  // CSV export can put per-case and per-unit side by side regardless of which way the toggle is set.
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return; const o=mhacc[f.i]||(mhacc[f.i]={sku:f.i,title:(RAW.items[f.i]||{}).desc||'',display_name:DISP[f.i]||'',size:SIZE[f.i]||'',pack_type:(PACK[f.i]||{}).pack_type,pack_count:(PACK[f.i]||{}).pack_count,case_size:csz(f.i),hrs:0,units:0,uCase:0,uUnit:0,uUnitUnknown:false,by:{}}); o.hrs+=f.t;
+    if(f.q){ o.units+=volB(f,Bmh); o.uCase+=volB(f,'case'); const uu=runVol(f,'unit'); if(uu==null) o.uUnitUnknown=true; else o.uUnit+=uu; }
+    o.by[f.m]=(o.by[f.m]||0)+f.t; });
   MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
   computeEff(rows,fin);
   renderActivity(rows,fin);
@@ -692,14 +696,23 @@ function downloadCSV(name,rows){
   const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
+// The CSV carries BOTH bases side by side (per case AND per unit) — it does not follow the toggle,
+// so one download answers either question. cases × units/case = units, exactly, on every row.
 function exportMH(){
   const rows=mhFiltered();
-  const B=secBasis('mh'), W=BWs(B);
-  const out=[['SKU','Product','Machine / stage','machine hrs','SKU total '+W,'SKU total machine hrs','machine hrs / 1k '+W]];
-  rows.forEach(r=>{ mhMachines(r).forEach(m=>{ const h=r.by[m];
-    out.push([r.sku,pname(r),m,(+h).toFixed(2),r.units,r.hrs,r.units?((h/r.units)*1000).toFixed(3):'']); }); });
+  const out=[['SKU','Product','units / case','Machine / stage','machine hrs on this machine',
+              '% of SKU machine hrs','SKU total machine hrs',
+              'SKU total cases made','SKU total units made',
+              'machine hrs / 1k cases','machine hrs / 1k units']];
+  rows.forEach(r=>{
+    const upc=unitsPerCase(r), uC=r.uCase||0, uU=r.uUnitUnknown?null:(r.uUnit||0);
+    mhMachines(r).forEach(m=>{ const h=r.by[m];
+      out.push([r.sku, pname(r), upc||'', m, (+h).toFixed(2),
+        r.hrs?((h/r.hrs)*100).toFixed(1):'', r.hrs,
+        uC?+uC.toFixed(4):'', uU?Math.round(uU):'',   // 4dp so cases × units/case = units reconciles even at 1200 units/case
+        uC?((h/uC)*1000).toFixed(3):'', uU?((h/uU)*1000).toFixed(3):'']); }); });
   const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
-  downloadCSV(`machine-hours-by-sku_${secBasis('mh')==='unit'?'per-unit':'per-case'}_${tag}.csv`,out);
+  downloadCSV(`machine-hours-by-sku_per-case-and-per-unit_${tag}.csv`,out);
 }
 function showMH(sku){
   const r=MH.find(x=>(''+x.sku)===(''+sku)); const box=$('#mh-detail'); if(!r){box.hidden=true;return;}
