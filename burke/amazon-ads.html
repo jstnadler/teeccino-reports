@@ -132,7 +132,161 @@
 
   <h1>Amazon Ads Performance</h1>
   <div class="sub">Sponsored Products + Sponsored Brands &middot; Reporting API v3 &middot;
-    2026-04-30 &rarr; 2026-08-05 (98 days) &middot; built 2026-08-05 21:51 UTC</div>
+    2026-04-30 &rarr; 2026-08-05 (98 days) &middot; built 2026-08-05 22:33 UTC</div>
+
+
+<style>
+/* findings_band.py -- self-contained. Scoped to .fb-* so it drops into four
+   structurally different builders without touching their stylesheets. */
+.fb-band{--fb-crit:#D4405E;--fb-crit-ink:#ff6b81;
+  --fb-warn:#B08D1C;--fb-warn-ink:#e0b544;
+  --fb-info:#3B82E0;--fb-info-ink:#7bb0f0;
+  /* Tier surfaces are alpha over the HOST page background, so the recessed/raised
+     relationship holds on all three themes without hardcoding a surface per
+     theme -- and so it survives a future theme being added. */
+  --fb-tier1-bg:rgba(0,0,0,.30);
+  --fb-tier2-bg:rgba(255,255,255,.055);
+  --fb-hatch:rgba(255,255,255,.035);
+  --fb-ink:#e8eaed;
+  --fb-muted:#9aa0a6;
+  --fb-line:#2f3540;
+  margin:0 0 26px;font:14px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  color:var(--fb-ink)}
+.fb-band *{box-sizing:border-box}
+.fb-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 10px}
+.fb-hd h2{margin:0;font-size:16px;letter-spacing:.02em;text-transform:uppercase}
+.fb-hd .fb-sub{color:var(--fb-muted);font-size:12px}
+/* ---- the two tiers. Different background, different border treatment,
+       different label. They must never be mistakable for each other. ---- */
+/* The tier distinction must survive a colorblind reader, a greyscale print and a
+   forced-colors mode, so it is carried by FOUR independent channels, not by hue:
+     surface  -- tier 1 recessed (darker), tier 2 raised (lighter)
+     border   -- solid vs dashed
+     texture  -- tier 2 is hatched at 45 degrees, tier 1 is flat
+     TYPEFACE -- tier 2 is set in a SERIF. This is the strongest cue of the four:
+                 sans = machine output, serif = someone wrote this. */
+.fb-tier{border-radius:10px;padding:14px 16px;margin:0 0 12px}
+.fb-t1{background:var(--fb-tier1-bg);border:1px solid var(--fb-line)}
+.fb-t2{background:var(--fb-tier2-bg);border:1px dashed var(--fb-line);
+  background-image:repeating-linear-gradient(45deg,var(--fb-hatch) 0 1px,
+    transparent 1px 9px)}
+.fb-t2 .fb-i-t,.fb-t2 .fb-i-b{font-family:Georgia,'Iowan Old Style',
+  'Times New Roman',serif}
+.fb-t2 .fb-i-b{font-size:14.5px;line-height:1.6}
+.fb-tier-lbl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--fb-muted);margin:0 0 10px;padding-bottom:8px;
+  border-bottom:1px solid var(--fb-line)}
+.fb-tier-lbl .fb-tag{padding:2px 7px;border-radius:4px;font-size:10px;
+  border:1px solid var(--fb-line)}
+.fb-t1 .fb-tag{background:rgba(255,255,255,.05)}
+.fb-tier-lbl .fb-hint{font-weight:400;letter-spacing:0;text-transform:none;
+  font-size:11px;opacity:.9}
+/* ---- alert rows ---- */
+.fb-a{border-left:3px solid var(--fb-line);padding:0 0 0 12px;margin:0 0 14px}
+.fb-a:last-child{margin-bottom:0}
+.fb-a.crit{border-left-color:var(--fb-crit)}
+.fb-a.warn{border-left-color:var(--fb-warn)}
+.fb-a.info{border-left-color:var(--fb-info)}
+.fb-a-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.fb-sev{font-size:10px;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+.fb-a.crit .fb-sev{color:var(--fb-crit-ink)}
+.fb-a.warn .fb-sev{color:var(--fb-warn-ink)}
+.fb-a.info .fb-sev{color:var(--fb-info-ink)}
+.fb-a-t{font-weight:600;font-size:15px}
+.fb-win{font-size:11px;color:var(--fb-muted);font-variant-numeric:tabular-nums}
+.fb-a-b{margin:4px 0 0;color:var(--fb-ink);opacity:.92}
+.fb-a-b b{font-weight:600}
+details.fb-d{margin:6px 0 0}
+details.fb-d>summary{cursor:pointer;font-size:12px;color:var(--fb-muted);
+  list-style:none}
+details.fb-d>summary::-webkit-details-marker{display:none}
+details.fb-d>summary:before{content:"\25b8 ";display:inline-block;width:1em}
+details.fb-d[open]>summary:before{content:"\25be "}
+details.fb-d ul{margin:6px 0 0;padding:0 0 0 18px;font-size:12.5px;
+  color:var(--fb-muted);font-variant-numeric:tabular-nums}
+details.fb-d li{margin:2px 0}
+/* ---- interpretation rows ---- */
+.fb-i{padding:0 0 0 12px;border-left:3px double var(--fb-line);margin:0 0 16px}
+.fb-i:last-child{margin-bottom:0}
+.fb-i-t{font-weight:600;font-size:15px}
+.fb-i-b{margin:4px 0 0;opacity:.92}
+.fb-stamp{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:7px 0 0;
+  font-size:11px;color:var(--fb-muted)}
+.fb-chip{padding:2px 7px;border-radius:999px;border:1px solid var(--fb-line);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.fb-chip.fresh{}
+.fb-chip.due{color:var(--fb-warn-ink);border-color:var(--fb-warn)}
+.fb-chip.stale{color:var(--fb-crit-ink);border-color:var(--fb-crit);font-weight:700}
+.fb-i.stale{border-left-color:var(--fb-crit)}
+.fb-i.stale .fb-i-t,.fb-i.stale .fb-i-b{opacity:.62}
+.fb-i.stale .fb-i-t:before{content:"UNREVIEWED CLAIM \2014 ";
+  color:var(--fb-crit-ink);font-weight:700;opacity:1}
+.fb-basis{margin:5px 0 0;font-size:11.5px;color:var(--fb-muted);
+  border-left:1px solid var(--fb-line);padding-left:8px}
+.fb-live{border-bottom:1px dotted currentColor;cursor:help}
+.fb-live:after{content:"\27f3";font-size:.72em;vertical-align:.35em;
+  margin-left:2px;opacity:.75}
+.fb-missing{color:var(--fb-crit-ink);font-weight:700}
+.fb-act{display:inline-block;margin:6px 0 0;font-size:12px;font-weight:600;
+  color:var(--fb-info-ink);text-decoration:none;border-bottom:1px solid currentColor}
+.fb-act-flat{display:inline-block;margin:6px 0 0;font-size:12px;
+  color:var(--fb-muted)}
+.fb-foot{font-size:11px;color:var(--fb-muted);line-height:1.65;
+  border-top:1px solid var(--fb-line);padding-top:9px;margin-top:2px}
+.fb-foot code{font-size:10.5px}
+.fb-foot .fb-fresh-ok{opacity:.85}
+.fb-empty{font-size:12.5px;color:var(--fb-muted)}
+@media (max-width:620px){.fb-a-hd,.fb-hd{gap:4px}}
+</style>
+<section class="fb-band" id="findings">
+<div class="fb-hd"><h2>Findings &amp; actions</h2><span class="fb-sub">Amazon Advertising · rebuilt 2026-08-05</span></div>
+<div class="fb-tier fb-t1">
+<div class="fb-tier-lbl"><span class="fb-tag">Tier 1</span>Derived alerts<span class="fb-hint">recomputed from the database on every build — never hand-typed. An alert within tolerance is omitted entirely, so anything shown here needs attention.</span></div>
+<div class="fb-a crit">
+<div class="fb-a-hd"><span class="fb-sev">▲ CRITICAL</span><span class="fb-a-t">22 ASINs are losing the Buy Box</span><span class="fb-win">2026-05..2026-07 (3 complete months)</span></div>
+<p class="fb-a-b">22 ASINs with ≥800 sessions sit below 90% Buy Box, carrying <b>51,220 sessions (11.1% of all sessions across the 249 ASINs in this window)</b>. The account-average Buy Box reads ~96% while this is true: that table has no ASIN dimension and mathematically cannot show it.</p>
+<details class="fb-d"><summary>22 items</summary><ul><li>B01HH9ZKZG — 25% Buy Box on 1,047 sessions</li><li>B08KWNGTJV — 41% Buy Box on 1,329 sessions</li><li>B003V5FPEW — 45% Buy Box on 1,347 sessions</li><li>B08KWM5ZKB — 51% Buy Box on 1,639 sessions</li><li>B08BJG454D — 57% Buy Box on 1,108 sessions</li><li>B08KWMTCLS — 62% Buy Box on 1,337 sessions</li><li>B004LL5BZS — 63% Buy Box on 1,801 sessions</li><li>B004LL9B7C — 65% Buy Box on 1,121 sessions</li><li>B004LLD722 — 70% Buy Box on 1,561 sessions</li><li>B01J28N6II — 72% Buy Box on 2,124 sessions</li><li>B00C6X6JAO — 74% Buy Box on 1,751 sessions</li><li>B08KWNDV2C — 77% Buy Box on 2,991 sessions</li><li>B0FJH3LYB3 — 78% Buy Box on 1,271 sessions</li><li>B08BXDRRNJ — 80% Buy Box on 11,224 sessions</li><li>B00R4I3LAM — 81% Buy Box on 937 sessions</li><li>B08KWM17L3 — 84% Buy Box on 5,806 sessions</li><li>B004LLBCK6 — 84% Buy Box on 2,728 sessions</li><li>B08BJFX8J8 — 85% Buy Box on 935 sessions</li><li>B0FFPPLC22 — 86% Buy Box on 3,652 sessions</li><li>B06XDH71CP — 87% Buy Box on 1,056 sessions</li><li>B07D9VQ2RT — 88% Buy Box on 2,572 sessions</li><li>B00N9UHBOG — 88% Buy Box on 1,883 sessions</li></ul></details>
+<a class="fb-act" href="amazon-decisions.html">Log a decision → Amazon decisions</a>
+</div>
+<div class="fb-a crit">
+<div class="fb-a-hd"><span class="fb-sev">▲ CRITICAL</span><span class="fb-a-t">4 ASINs collapsed ≥15pt month-over-month</span><span class="fb-win">2026-06 → 2026-07</span></div>
+<p class="fb-a-b">4 ASINs fell at least 15pt between those months. A <i>dated</i> fall is what separates a new 3P seller from a stockout from our own price change, so these are the ones to diagnose first.</p>
+<details class="fb-d"><summary>4 items</summary><ul><li>B0FFPPLC22 — 99% → 10% (-89pt) on 535 sessions</li><li>B004LLD722 — 94% → 17% (-78pt) on 284 sessions</li><li>B08BJG454D — 53% → 17% (-36pt) on 269 sessions</li><li>B004LLBCK6 — 92% → 73% (-19pt) on 698 sessions</li></ul></details>
+<a class="fb-act" href="amazon-decisions.html">Log a decision → Amazon decisions</a>
+</div>
+<div class="fb-a crit">
+<div class="fb-a-hd"><span class="fb-sev">▲ CRITICAL</span><span class="fb-a-t">31 SKUs are advertising past break-even ACOS</span><span class="fb-win">2026-07-06..2026-08-04 (30 complete days)</span></div>
+<p class="fb-a-b">31 SKUs with ≥$250 of trailing-30d spend are above their brand's loaded break-even ACOS (<b>29.9% Teeccino / 25.8% WWB</b>, as of 2026-08-05). Roughly <b>$9,544</b> of the spend in this window sits above break-even. Worst is <b>45001-L</b> at 81.0%.</p>
+<details class="fb-d"><summary>31 items</summary><ul><li>45001-L (Teeccino) — 81.0% ACOS vs 29.9% break-even, $595 spend / $734 sales</li><li>43001L (Teeccino) — 80.7% ACOS vs 29.9% break-even, $1,493 spend / $1,849 sales</li><li>10028L (WWB) — 71.3% ACOS vs 25.8% break-even, $837 spend / $1,173 sales</li><li>10043 (WWB) — 66.3% ACOS vs 25.8% break-even, $496 spend / $749 sales</li><li>30007L (Teeccino) — 59.7% ACOS vs 29.9% break-even, $610 spend / $1,023 sales</li><li>10023 (WWB) — 56.2% ACOS vs 25.8% break-even, $262 spend / $466 sales</li><li>86010L (Teeccino) — 53.1% ACOS vs 29.9% break-even, $1,108 spend / $2,086 sales</li><li>46010L (Teeccino) — 53.0% ACOS vs 29.9% break-even, $1,227 spend / $2,314 sales</li><li>40001l (Teeccino) — 52.5% ACOS vs 29.9% break-even, $1,196 spend / $2,275 sales</li><li>10302 (WWB) — 50.1% ACOS vs 25.8% break-even, $1,002 spend / $2,001 sales</li><li>30013L (Teeccino) — 48.1% ACOS vs 29.9% break-even, $1,573 spend / $3,273 sales</li><li>82130L (Teeccino) — 44.6% ACOS vs 29.9% break-even, $276 spend / $618 sales</li><li>30012 (Teeccino) — 43.3% ACOS vs 29.9% break-even, $1,851 spend / $4,276 sales</li><li>83110L (Teeccino) — 40.6% ACOS vs 29.9% break-even, $1,970 spend / $4,852 sales</li><li>85020L (Teeccino) — 40.5% ACOS vs 29.9% break-even, $381 spend / $942 sales</li><li>10012 (WWB) — 40.4% ACOS vs 25.8% break-even, $341 spend / $844 sales</li><li>10027 (WWB) — 40.3% ACOS vs 25.8% break-even, $1,040 spend / $2,580 sales</li><li>10104 (WWB) — 39.1% ACOS vs 25.8% break-even, $1,196 spend / $3,056 sales</li><li>30009L (Teeccino) — 39.0% ACOS vs 29.9% break-even, $303 spend / $778 sales</li><li>10008 (WWB) — 38.5% ACOS vs 25.8% break-even, $903 spend / $2,346 sales</li><li>10071L (WWB) — 38.0% ACOS vs 25.8% break-even, $949 spend / $2,495 sales</li><li>45021L (Teeccino) — 37.9% ACOS vs 29.9% break-even, $410 spend / $1,082 sales</li><li>80110 (Teeccino) — 36.7% ACOS vs 29.9% break-even, $2,979 spend / $8,119 sales</li><li>10001 (WWB) — 35.9% ACOS vs 25.8% break-even, $466 spend / $1,299 sales</li><li>10026 (WWB) — 34.6% ACOS vs 25.8% break-even, $636 spend / $1,838 sales</li><li>50096 (Teeccino) — 34.4% ACOS vs 29.9% break-even, $308 spend / $895 sales</li><li>10015 (WWB) — 32.3% ACOS vs 25.8% break-even, $375 spend / $1,160 sales</li><li>10013 (WWB) — 29.1% ACOS vs 25.8% break-even, $2,169 spend / $7,446 sales</li><li>10019 (WWB) — 28.1% ACOS vs 25.8% break-even, $600 spend / $2,136 sales</li><li>10024 (WWB) — 27.7% ACOS vs 25.8% break-even, $580 spend / $2,095 sales</li><li>10201L (WWB) — 27.6% ACOS vs 25.8% break-even, $1,361 spend / $4,928 sales</li></ul></details>
+<a class="fb-act" href="amazon-decisions.html">Log a decision → Amazon decisions</a>
+</div>
+<div class="fb-a crit">
+<div class="fb-a-hd"><span class="fb-sev">▲ CRITICAL</span><span class="fb-a-t">12 SKUs out of stock, 10 more under 21 days cover</span><span class="fb-win">velocity 2026-07-06..2026-08-04 vs inventory snapshot 2026-08-05</span></div>
+<p class="fb-a-b">22 SKUs selling at ≥1 unit/day have under <b>21 days of fulfillable cover</b>. <b>12 are already at zero fulfillable stock</b>, together moving ~26 units/day before they ran out — that is demand being turned away now, and a Buy Box the listing cannot hold.</p>
+<details class="fb-d"><summary>22 items</summary><ul><li>10006 — 0 days cover (0 fulfillable, 7.1 units/day, nothing inbound)</li><li>43225 — 0 days cover (0 fulfillable, 3.0 units/day, nothing inbound)</li><li>20011A — 0 days cover (0 fulfillable, 2.5 units/day, nothing inbound)</li><li>43115 — 0 days cover (0 fulfillable, 2.1 units/day, nothing inbound)</li><li>20081A — 0 days cover (0 fulfillable, 1.9 units/day, nothing inbound)</li><li>20061A — 0 days cover (0 fulfillable, 1.6 units/day, nothing inbound)</li><li>20111A — 0 days cover (0 fulfillable, 1.5 units/day, nothing inbound)</li><li>43315 — 0 days cover (0 fulfillable, 1.4 units/day, nothing inbound)</li><li>40015 — 0 days cover (0 fulfillable, 1.4 units/day, nothing inbound)</li><li>42051L — 0 days cover (0 fulfillable, 1.2 units/day, nothing inbound)</li><li>40085 — 0 days cover (0 fulfillable, 1.2 units/day, nothing inbound)</li><li>40065 — 0 days cover (0 fulfillable, 1.1 units/day, nothing inbound)</li><li>10009A — 1.2 days cover (3 fulfillable, 2.4 units/day, 156 inbound)</li><li>40134 — 2.4 days cover (3 fulfillable, 1.2 units/day, nothing inbound)</li><li>40001l — 4.6 days cover (140 fulfillable, 30.3 units/day, 3 inbound)</li><li>80110-6PK — 8.2 days cover (9 fulfillable, 1.1 units/day, nothing inbound)</li><li>83226L — 10.5 days cover (13 fulfillable, 1.2 units/day, nothing inbound)</li><li>82010L — 12.0 days cover (32 fulfillable, 2.7 units/day, nothing inbound)</li><li>10104 — 13.4 days cover (122 fulfillable, 9.1 units/day, nothing inbound)</li><li>10005e — 15.0 days cover (377 fulfillable, 25.2 units/day, 1,560 inbound)</li><li>10033 — 16.3 days cover (50 fulfillable, 3.1 units/day, nothing inbound)</li><li>10081 — 19.3 days cover (38 fulfillable, 2.0 units/day, 13 inbound)</li></ul></details>
+<a class="fb-act" href="amazon-decisions.html">Log a decision → Amazon decisions</a>
+</div>
+</div>
+<div class="fb-tier fb-t2">
+<div class="fb-tier-lbl"><span class="fb-tag">Tier 2</span>Standing interpretation<span class="fb-hint">human analysis that <i>cannot</i> be computed, so each item is dated and carries a review-by. Figures marked ⟳ are still recomputed every build; the judgement around them is not.</span></div>
+<div class="fb-i fresh">
+<div class="fb-i-t">The account has ACOS headroom; specific SKUs do not.</div>
+<p class="fb-i-b">Break-even ACOS is <b>39.2% Teeccino / 28.5% WWB</b> pre-labor, <b>29.9% / 25.8%</b> with labor loaded. The account runs <b><span class="fb-live" title="recomputed on every build (ads_acos_30d)">23.6%</span></b>, so there is headroom in aggregate — but the aggregate is not where the money leaks. <b>86010L</b> is spending at <b><span class="fb-live" title="recomputed on every build (sku86010L_acos)">53.1%</span></b> ACOS (<span class="fb-live" title="recomputed on every build (sku86010L_spend)">$1,108</span> in the window) against a ~10% margin, well past break-even on either basis. The single worst offender today is <b><span class="fb-live" title="recomputed on every build (worst_acos_sku)">45001-L</span></b> at <span class="fb-live" title="recomputed on every build (worst_acos_pct)">81.0%</span>.</p>
+<p class="fb-basis"><b>Basis:</b> Break-even ACOS comes from CostSmith's margin work and is NOT computed in this database — treat it as an input, not a measurement. Account and per-SKU ACOS are recomputed here every build. 86010L is PINNED, because the ~10% margin claim was measured against that SKU and must not silently follow whichever SKU is worst on a given night.</p>
+<div class="fb-stamp"><span class="fb-chip">as of 2026-08-05 (0d old)</span><span class="fb-chip fresh">review by 2026-09-19</span></div>
+<a class="fb-act" href="amazon-decisions.html">Decision pending → Amazon decisions</a>
+</div>
+<div class="fb-i fresh">
+<div class="fb-i-t">WWB chicory returns far above the account and is barely spending.</div>
+<p class="fb-i-b"><b><span class="fb-live" title="recomputed on every build (chicory_campaign)">WWB_French Chicory_Chicory_CAT_[Chicory - Broad]_SP</span></b> (<span class="fb-live" title="recomputed on every build (chicory_product)">Sponsored Products</span>) returned <b><span class="fb-live" title="recomputed on every build (chicory_roas)">$21.07</span> per ad dollar</b> on only <b><span class="fb-live" title="recomputed on every build (chicory_spend)">$251</span></b> of trailing-30d spend — <b><span class="fb-live" title="recomputed on every build (chicory_util)">8%</span> of the <span class="fb-live" title="recomputed on every build (chicory_avail)">$3,000</span> its <span class="fb-live" title="recomputed on every build (chicory_budget)">$100/day</span> cap allows</b>. Compare the whole account at <span class="fb-live" title="recomputed on every build (ads_acos_30d)">23.6%</span> ACOS. Because it is nowhere near its cap, the binding constraint is <b>bids and targeting, not budget</b>: raising the daily budget alone would change nothing. <b>Still the clearest reallocation candidate in the account.</b></p>
+<p class="fb-basis"><b>Basis:</b> Campaign-grain trailing-30d spend and 14-day attributed sales from raw_amazon_ads_campaigns; budget is the campaign's DAILY cap x 30. Restated 2026-08-05 against the data: the original note called this a Sponsored BRANDS campaign returning ~$3.79/dollar on a 'starved $630/mo budget'. It is Sponsored PRODUCTS, the return is far higher, $630 was a trailing-30d SPEND figure on a different WWB chicory campaign rather than a budget, and the cap is not binding at all — so the recommended action changes from 'raise the budget' to 'raise bids / widen targeting'.</p>
+<div class="fb-stamp"><span class="fb-chip">as of 2026-08-05 (0d old)</span><span class="fb-chip fresh">review by 2026-09-19</span></div>
+<a class="fb-act" href="amazon-decisions.html">Decision pending → Amazon decisions</a>
+</div>
+</div>
+<div class="fb-foot">Derived at <code>2026-08-05T15:33:40</code> from <code>teeccino_analytics.db</code>. Trailing-30d Amazon Ads: $49,690 spend / $210,632 attributed sales / 23.6% ACOS (2026-07-06..2026-08-04 (30 complete days)). <span class="fb-fresh-ok">Source freshness: Amazon Ads (SP/SB/SD) 2026-08-05 (0d); Amazon finances / margin 2026-08-04 (1d); Amazon sessions &amp; traffic 2026-08-03 (2d); FBA inventory snapshot 2026-08-05 (0d); Competitive pricing snapshot 2026-08-05 (0d).</span> <b>Hand-set thresholds in play</b> — a constant buried in a nightly job rots exactly like buried prose does, so every one is printed here: minimum SKU ad spend to report <b>$250 / 30d</b> (set 2026-08-05) — minimum trailing-30d SKU ad spend before an ACOS breach is worth reporting.; break-even ACOS <b>29.9% Teeccino / 25.8% WWB</b> (set 2026-08-05) — break-even ACOS with labor loaded (pre-labor: 39.2% Teeccino / 28.5% WWB). Source: CostSmith margin work, not computed here.; days-of-cover floor <b>21 days</b> (set 2026-08-05) — days of fulfillable cover below which a selling SKU is flagged.; minimum sales velocity <b>1 unit/day</b> (set 2026-08-05) — minimum units/day over the trailing 30d before cover is meaningful. Without it the alert fires on ~357 of 603 SKUs, most of them dormant listings with zero stock and zero demand.</div>
+</section>
 
   <div class="filters" role="group" aria-label="Date range">
     <span class="lab">Range</span>
