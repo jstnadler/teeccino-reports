@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Capabilities — Teeccino Agent Guild</title>
+<style>
+  :root {
+    --bg:#1a1a2e; --card:rgba(255,255,255,0.05); --border:rgba(255,255,255,0.1);
+    --text:#e2e8f0; --text-dim:#888; --accent:#D4A843;
+    --green:#4ade80; --yellow:#fbbf24; --red:#f87171;
+    --orange:#fb923c; --purple:#a78bfa; --blue:#60a5fa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:var(--text);
+    padding:24px;padding-top:70px;line-height:1.5;min-height:100vh}
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  h1{font-size:1.6rem;background:linear-gradient(135deg,#D4A843,#8B6914);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .subtitle{color:var(--text-dim);font-size:.85rem;margin-bottom:20px}
+  .stats-bar{display:flex;gap:30px;margin-bottom:22px;flex-wrap:wrap}
+  .stat{text-align:center}
+  .stat .num{font-size:1.7rem;font-weight:700;color:var(--accent)}
+  .stat .label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+  .btn{background:var(--card);border:1px solid var(--border);color:var(--text);
+    padding:6px 13px;border-radius:6px;cursor:pointer;font-size:.82rem}
+  .btn:hover{border-color:var(--accent);background:rgba(212,168,67,.08)}
+  .btn.active{border-color:var(--accent);background:rgba(212,168,67,.14);color:var(--accent)}
+  input[type=search]{background:var(--card);border:1px solid var(--border);color:var(--text);
+    padding:7px 12px;border-radius:6px;font-size:.85rem;min-width:230px}
+  input[type=search]:focus{outline:none;border-color:var(--accent)}
+  .cat{margin-bottom:26px}
+  .cat h2{font-size:1.05rem;padding-bottom:7px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:15px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;
+    transition:border-color .2s,transform .1s}
+  .card:hover{border-color:var(--accent);transform:translateY(-1px)}
+  .card h3{font-size:1rem;display:flex;align-items:center;gap:8px}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .s-idle{background:var(--green)} .s-working{background:var(--yellow)}
+  .s-interrupted,.s-unknown{background:var(--red)}
+  .role{color:var(--text-dim);font-size:.78rem;margin:3px 0 10px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+  .chip{font-size:.68rem;padding:2px 8px;border-radius:10px;border:1px solid var(--border);
+    background:rgba(255,255,255,.04);color:var(--text-dim);white-space:nowrap}
+  .chip.w{border-color:rgba(251,191,36,.4);color:var(--yellow)}
+  .chip.r{border-color:rgba(96,165,250,.4);color:var(--blue)}
+  .chip.iso{border-color:rgba(167,139,250,.45);color:var(--purple)}
+  .chip.model{border-color:rgba(212,168,67,.4);color:var(--accent)}
+  .chip.on{border-color:rgba(74,222,128,.4);color:var(--green)}
+  .chip.off{border-color:rgba(248,113,113,.35);color:var(--red)}
+  .chip.skill{border-color:rgba(255,255,255,.18);color:var(--text)}
+  .lbl{font-size:.66rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);
+    margin:11px 0 5px}
+  .none{font-size:.75rem;color:var(--red);font-style:italic}
+  details{margin-top:10px;border-top:1px solid var(--border);padding-top:9px}
+  summary{cursor:pointer;font-size:.76rem;color:var(--accent);list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary:before{content:"▸ ";}
+  details[open] summary:before{content:"▾ ";}
+  .kv{font-size:.75rem;color:var(--text-dim);display:flex;justify-content:space-between;
+    padding:2px 0;gap:10px}
+  .kv b{color:var(--text);font-weight:500;text-align:right}
+  .skillrow{font-size:.75rem;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+  .skillrow b{color:var(--text)} .skillrow span{color:var(--text-dim)}
+  .lane-note{background:rgba(96,165,250,.07);border-left:3px solid var(--blue);
+    padding:10px 14px;border-radius:0 5px 5px 0;font-size:.8rem;color:var(--text-dim);
+    margin-bottom:22px}
+  .gapnote{border-left-color:var(--orange);background:rgba(251,146,60,.07)}
+  .gapnote li{margin:2px 0}
+  footer{margin-top:30px;color:var(--text-dim);font-size:.72rem;text-align:center}
+  .hide{display:none !important}
+</style>
+</head>
+<body>
+<!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('hub-nav').innerHTML = html;
+      document.body.classList.add('has-hub-nav');
+    });
+</script>
+
+<header>
+  <h1>Agent Capabilities</h1>
+  <div><a class="btn" href="mission-control.html">Mission Control →</a></div>
+</header>
+<div class="subtitle" id="sub">Loading…</div>
+
+<div class="stats-bar" id="stats"></div>
+<div class="lane-note" id="lanenote"></div>
+<div class="lane-note gapnote" id="gaps"></div>
+<div class="controls" id="controls"></div>
+<div id="body"></div>
+<footer id="foot"></footer>
+
+<script>
+const E=(s)=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let DATA=null, FILTER='all', Q='';
+
+function laneChips(a){
+  const c=a.concurrency, out=[];
+  if(c.isolated) out.push(`<span class="chip iso" title="git-worktree isolation: ${E(c.isolationRepo)} (base ${E(c.isolationBase)}) — each write task gets its own worktree, so writes run in parallel safely">⑂ ${c.isolatedLane} parallel writes (worktree)</span>`);
+  else out.push(`<span class="chip w" title="Write lane: how many mutating tasks can run at once. Extra tasks queue.">✎ write ×${c.write}</span>`);
+  out.push(`<span class="chip r" title="Read lane: tasks prefixed 'read:' run here, in parallel with a write.">👁 read ×${c.read}</span>`);
+  return out.join('');
+}
+
+function card(a){
+  const d=a.definition, sk=a.skills, ac=a.access, rep=a.reporting;
+  const req=a.files.required;
+  const missing=Object.entries(req).filter(([k,v])=>!v).map(([k])=>k);
+  const legacy=Object.entries(a.files.legacySplit).filter(([k,v])=>v).map(([k])=>k);
+  const repTxt = rep.inDefinition ? '✓ in def'
+    : (rep.inWorkspace ? '△ workspace only — def is the authoritative prompt' : '✗ nowhere');
+  const skillChips = sk.length
+    ? sk.map(s=>`<span class="chip skill" title="${E(s.purpose||'undocumented')}">${E(s.name)}${s.documented?'':' ⚠'}</span>`).join('')
+    : '<span class="none">no skills defined</span>';
+  const integ = a.integrations.length
+    ? a.integrations.map(i=>`<span class="chip">${E(i)}</span>`).join('')
+    : '<span class="chip off">none detected</span>';
+  return `<div class="card" data-cat="${E(a.category)}" data-q="${E((a.name+' '+a.role+' '+a.integrations.join(' ')+' '+sk.map(s=>s.name).join(' ')).toLowerCase())}">
+    <h3><span class="dot s-${E(a.status.status)}"></span>${E(a.name)}</h3>
+    <div class="role">${E(a.role)}</div>
+    <div class="chips">
+      <span class="chip model">${E(d.model)}</span>
+      ${laneChips(a)}
+      <span class="chip ${ac.gatewayDispatch?'on':'off'}" title="Can receive inbox/outbox tasks from the gateway">${ac.gatewayDispatch?'gateway ✓':'gateway ✗'}</span>
+      <span class="chip ${ac.browser?'on':'off'}" title="${ac.browser?'Playwright MCP via per-workspace .mcp.json':'No .mcp.json — no browser in this workspace'}">${ac.browser?'browser ✓':'browser ✗'}</span>
+    </div>
+    <div class="lbl">Skills (${sk.length})</div>
+    <div class="chips">${skillChips}</div>
+    <div class="lbl" title="Keyword-detected from this agent's own def + workspace docs (sibling sections excluded). Indicative, not a permissions grant — a contrast clause like 'separate from AdSmith, which owns Google + Meta' can still register a false hit.">Integrations (detected)</div>
+    <div class="chips">${integ}</div>
+    <details>
+      <summary>Detail</summary>
+      ${sk.length?'<div class="lbl">Skill purposes</div>'+sk.map(s=>`<div class="skillrow"><b>${E(s.name)}</b>${s.scriptCount?` <span>· ${s.scriptCount} script${s.scriptCount>1?'s':''}</span>`:''}<br><span>${E(s.purpose||'— no SKILL.md description —')}</span></div>`).join(''):''}
+      <div class="lbl">Governance</div>
+      <div class="kv"><span>Hard rules / NEVERs</span><b>${d.hardRules} / ${d.neverRules}</b></div>
+      <div class="kv"><span>Startup block</span><b>${d.hasStartup?'✓':'✗ missing'}</b></div>
+      <div class="kv"><span>Activity reporting</span><b>${E(repTxt)}</b></div>
+      <div class="kv"><span>Sibling map</span><b>${d.hasSiblings?'✓':'✗ missing'}</b></div>
+      <div class="kv"><span>Def size</span><b>${d.lines} lines</b></div>
+      <div class="kv"><span>Def modified</span><b>${E((d.modified||'').slice(0,10))}</b></div>
+      <div class="lbl">Workspace</div>
+      <div class="kv"><span title="AGENT_STANDARDS §4A required set">Required files</span><b>${6-missing.length}/6${missing.length?' — missing '+E(missing.join(', ')):''}</b></div>
+      ${legacy.length?`<div class="kv"><span title="Legacy 6-file split — tolerated, not required">Legacy split files</span><b>${legacy.length} present</b></div>`:''}
+      <div class="kv"><span>Persistent memories</span><b>${a.memory.persistentFiles} files · ${a.memory.indexEntries} indexed</b></div>
+      <div class="kv"><span>Daily logs</span><b>${a.memory.dailyLogs}${a.memory.lastDailyLog?' · last '+E(a.memory.lastDailyLog):''}</b></div>
+      <div class="kv"><span>Path</span><b>${E(a.workspace.split('\\').pop())}</b></div>
+      <div class="lbl">Charter</div>
+      <div style="font-size:.75rem;color:var(--text-dim)">${E(d.description.slice(0,420))}…</div>
+    </details>
+  </div>`;
+}
+
+function render(){
+  const t=DATA.totals;
+  document.getElementById('sub').textContent =
+    `Derived from the live agent definitions, workspaces and Switchboard config — never hand-maintained. Generated ${DATA.lastUpdated.slice(0,16).replace('T',' ')}`;
+  document.getElementById('stats').innerHTML=[
+    [t.agents,'Agents'],[t.skills,'Skills'],[t.totalWriteSlots,'Write slots'],
+    [t.parallelWriters,'Parallel writers'],[t.gatewayDispatchable,'Gateway-dispatchable'],
+    [t.browserCapable,'Browser-capable']
+  ].map(([n,l])=>`<div class="stat"><div class="num">${n}</div><div class="label">${l}</div></div>`).join('');
+  document.getElementById('lanenote').innerHTML='<b>Concurrency lanes.</b> '+E(DATA.lanes.note);
+
+  const noSkills=DATA.agents.filter(a=>a.skills.length===0).map(a=>a.name);
+  const defOnly=DATA.agents.filter(a=>!a.reporting.inDefinition&&a.reporting.inWorkspace).map(a=>a.name);
+  const nowhere=DATA.agents.filter(a=>!a.reporting.covered).map(a=>a.name);
+  const undoc=DATA.agents.flatMap(a=>a.skills.filter(s=>!s.documented).map(s=>a.name+'/'+s.name));
+  const gaps=[];
+  if(noSkills.length) gaps.push(['No skills folder yet',noSkills.join(', ')]);
+  if(nowhere.length) gaps.push(['Activity reporting absent everywhere',nowhere.join(', ')]);
+  if(defOnly.length) gaps.push(['Activity reporting in workspace but not in the def',defOnly.join(', ')]);
+  if(undoc.length) gaps.push(['Skills with no SKILL.md',undoc.join(', ')]);
+  document.getElementById('gaps').innerHTML = gaps.length
+    ? '<b>Capability gaps.</b><ul style="margin:6px 0 0 18px">'+gaps.map(([k,v])=>`<li><b>${E(k)}:</b> ${E(v)}</li>`).join('')+'</ul>'
+    : '<b>Capability gaps.</b> None — every agent has skills, docs and reporting.';
+
+  const cats=[...new Set(DATA.agents.map(a=>a.category))];
+  document.getElementById('controls').innerHTML =
+    `<button class="btn ${FILTER==='all'?'active':''}" data-f="all">All</button>`+
+    cats.map(c=>`<button class="btn ${FILTER===c?'active':''}" data-f="${E(c)}">${E(c)}</button>`).join('')+
+    `<input type="search" id="q" placeholder="Search skill, tool, agent…" value="${E(Q)}">`;
+
+  document.getElementById('body').innerHTML = cats.map(c=>{
+    const list=DATA.agents.filter(a=>a.category===c);
+    return `<div class="cat" data-cat="${E(c)}"><h2>${E(c)} <span style="color:var(--text-dim);font-size:.8rem">${list.length}</span></h2>
+      <div class="grid">${list.map(card).join('')}</div></div>`;
+  }).join('');
+
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;render();});
+  const q=document.getElementById('q');
+  q.oninput=()=>{Q=q.value.toLowerCase();apply();};
+  q.onkeyup=()=>{Q=q.value.toLowerCase();apply();};
+  apply();
+  document.getElementById('foot').textContent=DATA.generator;
+}
+
+function apply(){
+  document.querySelectorAll('.cat').forEach(sec=>{
+    const catOk = FILTER==='all'||sec.dataset.cat===FILTER;
+    let shown=0;
+    sec.querySelectorAll('.card').forEach(c=>{
+      const ok = catOk && (!Q || c.dataset.q.includes(Q));
+      c.classList.toggle('hide',!ok); if(ok) shown++;
+    });
+    sec.classList.toggle('hide',shown===0);
+  });
+}
+
+fetch('agent-capabilities.json?t='+Date.now()).then(r=>r.json()).then(d=>{DATA=d;render();})
+  .catch(e=>{document.getElementById('body').innerHTML='<p class="none">Failed to load agent-capabilities.json — '+e+'</p>';});
+</script>
+</body>
+</html>
