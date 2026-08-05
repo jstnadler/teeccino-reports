@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decisions Awaiting Burke &mdash; Amazon</title>
+<style>
+  /* Burke's portal palette (matches burke/amazon.html, burke/amazon-funnel.html):
+     dark forest-green surfaces. Status colors below are the portal's reserved
+     status palette, dataviz-validated against the card surface #1a2a20:
+     #199e70 / #e0644f PASS lightness band, chroma floor, normal-vision floor
+     (dE 26.5) and 3:1 contrast; deutan dE 8.0 sits at the CVD floor, which is
+     legal here ONLY because every pill carries a text label + glyph and is never
+     color-alone. Do not substitute by eye. There is deliberately no cross-card
+     magnitude bar: the figures are in three different units (gross revenue,
+     contribution, return-per-$1,000-spent) and a shared bar would imply a
+     commensurability that does not exist. */
+  :root { --bg:#14211a; --card:#1a2a20; --ink:#e8eaed; --muted:#9aa0a6;
+          --line:#294036; --gold:#D4A843; --accent:#2E7D32;
+          --good:#199e70; --warn:#bd8a2c; --bad:#e0644f;
+          --prov-bg:#12211a; --prov-ink:#d6efe3; --raised:#1f3227; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:24px; }
+  body.has-portal-nav { padding-top:76px; }
+  .wrap { max-width:1000px; margin:0 auto; }
+  h1 { font-size:25px; margin:0 0 4px; }
+  h1 .amz { color:var(--gold); }
+  .sub { color:var(--muted); font-size:13px; margin:0 0 18px; }
+  h2 { font-size:16px; border-bottom:1px solid var(--line); padding-bottom:6px; margin:38px 0 6px; }
+  h2 .tag { font-size:11px; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0; }
+  .note { color:var(--muted); font-size:12.5px; margin:0 0 16px; line-height:1.55; }
+
+  /* ---- The framing block. This is the most important element on the page. ---- */
+  .framing { background:var(--prov-bg); border:1px solid var(--gold); border-left:4px solid var(--gold);
+             border-radius:10px; padding:16px 20px; margin:0 0 26px; }
+  .framing h3 { margin:0 0 8px; font-size:14px; color:var(--gold); letter-spacing:.01em;
+                text-transform:none; font-weight:700; }
+  .framing p { margin:0 0 9px; font-size:13.5px; line-height:1.62; color:var(--prov-ink); }
+  .framing p:last-child { margin-bottom:0; }
+  .framing b { color:var(--ink); }
+  .framing .nobutton { display:block; background:rgba(224,100,79,.10); border:1px solid var(--bad);
+                       border-radius:7px; padding:10px 13px; margin:12px 0; font-size:13.5px;
+                       color:var(--ink); line-height:1.55; }
+  .framing .nobutton b { color:var(--bad); }
+  .chain { list-style:none; margin:10px 0 0; padding:0; font-size:13px; color:var(--prov-ink); }
+  .chain li { padding:5px 0 5px 26px; position:relative; line-height:1.5; }
+  .chain li::before { content:attr(data-n); position:absolute; left:0; top:5px; width:18px; height:18px;
+                      border-radius:50%; background:var(--accent); color:#eaf6ea; font-size:11px;
+                      font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  /* ---- Decision cards ---- */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:11px;
+          padding:18px 20px 16px; margin:0 0 16px; }
+  .card.upside { border-left:4px solid var(--good); }
+  .card.stop   { border-left:4px solid var(--bad); }
+  .card.hold   { border-left:4px solid var(--warn); }
+  .chead { display:flex; align-items:flex-start; gap:13px; flex-wrap:wrap; }
+  .rank { flex:0 0 auto; width:30px; height:30px; border-radius:8px; background:var(--raised);
+          border:1px solid var(--line); color:var(--muted); font-size:13px; font-weight:700;
+          display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+  .ctitle { flex:1 1 300px; min-width:0; }
+  .ctitle h3 { margin:2px 0 3px; font-size:16.5px; font-weight:650; line-height:1.32;
+               color:var(--ink); text-transform:none; letter-spacing:0; }
+  .ctitle .skus { font-family:ui-monospace,Consolas,monospace; font-size:11.5px;
+                  color:var(--gold); opacity:.85; letter-spacing:.02em; }
+
+  .stake { flex:0 0 auto; text-align:right; min-width:150px; }
+  .stake .v { font-size:20px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.15; }
+  .stake .v.gain { color:var(--good); }
+  .stake .v.loss { color:var(--bad); }
+  .stake .v.small { font-size:15px; }
+  .stake .u { font-size:10.5px; color:var(--muted); text-transform:uppercase;
+              letter-spacing:.05em; margin-top:3px; line-height:1.35; }
+
+  .pills { margin:11px 0 4px; display:flex; gap:7px; flex-wrap:wrap; }
+  .pill { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700;
+          text-transform:uppercase; letter-spacing:.055em; padding:3px 10px; border-radius:999px; }
+  .pill.await { background:rgba(212,168,67,.14); color:var(--gold); border:1px solid var(--gold); }
+  .pill.gain  { background:rgba(25,158,112,.15); color:var(--good); border:1px solid var(--good); }
+  .pill.loss  { background:rgba(224,100,79,.13); color:var(--bad);  border:1px solid var(--bad); }
+  .pill.hold  { background:rgba(189,138,44,.13); color:var(--warn); border:1px solid var(--warn); }
+  .pill.who   { background:rgba(46,125,50,.14);  color:#6FCF7A;     border:1px solid rgba(46,125,50,.55); }
+  .pill.spend { background:rgba(154,160,166,.12);color:var(--muted);border:1px solid var(--line); }
+
+  dl.fields { margin:14px 0 0; padding:0; }
+  dl.fields dt { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;
+                 font-weight:700; margin:13px 0 3px; }
+  dl.fields dt:first-child { margin-top:0; }
+  dl.fields dd { margin:0; font-size:13.5px; line-height:1.6; color:var(--ink); }
+  dl.fields dd .m { color:var(--gold); font-variant-numeric:tabular-nums; font-weight:600; }
+  dl.fields dd code { font-family:ui-monospace,Consolas,monospace; font-size:12px; color:var(--gold); }
+  dl.fields dd.nothing { color:#f0b3a6; }
+  ol.steps { margin:4px 0 0; padding-left:19px; font-size:13px; line-height:1.62; color:var(--ink); }
+  ol.steps li { margin-bottom:4px; }
+  ol.steps li::marker { color:var(--muted); font-variant-numeric:tabular-nums; }
+  .statusline { margin-top:15px; padding-top:11px; border-top:1px dashed var(--line);
+                font-size:12px; color:var(--muted); display:flex; gap:8px;
+                align-items:center; flex-wrap:wrap; }
+  .statusline b { color:var(--gold); font-weight:700; letter-spacing:.03em; }
+  .statusline .future { color:#6b7280; font-size:11.5px; }
+
+  /* ---- Not-a-decision section ---- */
+  .human { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent);
+           border-radius:11px; padding:17px 20px; margin:0 0 15px; }
+  .human h3 { margin:0 0 7px; font-size:15px; font-weight:650; color:var(--ink);
+              text-transform:none; letter-spacing:0; }
+  .human p { margin:0 0 8px; font-size:13.5px; line-height:1.6; }
+  .human p:last-child { margin-bottom:0; }
+  .human ul { margin:6px 0 8px; padding-left:19px; font-size:13px; line-height:1.62; }
+  .human ul li { margin-bottom:4px; }
+  .human .m { color:var(--gold); font-variant-numeric:tabular-nums; font-weight:600; }
+  .human .tell { background:rgba(46,125,50,.10); border:1px solid rgba(46,125,50,.45);
+                 border-radius:7px; padding:9px 12px; font-size:12.5px; line-height:1.55;
+                 color:var(--prov-ink); margin-top:9px; }
+  .human .tell b { color:#6FCF7A; }
+
+  footer { color:var(--muted); font-size:11.5px; margin-top:40px; padding-top:14px;
+           border-top:1px solid var(--line); line-height:1.65; }
+  footer b { color:var(--ink); }
+  @media (max-width:700px) {
+    body { padding:16px; }
+    .stake { text-align:left; min-width:0; flex-basis:100%; }
+    .chead { gap:10px; }
+  }
+</style>
+</head>
+<body>
+<div id="portal-nav"></div>
+<div class="wrap">
+
+<h1>Decisions <span class="amz">Awaiting Burke</span></h1>
+<p class="sub">Amazon channel &middot; 7 open decisions &middot; prepared 2026-08-05 &middot; sorted by money at stake</p>
+
+<div class="framing">
+  <h3>Read this first &mdash; what &ldquo;approve&rdquo; means here</h3>
+  <p>Justin ruled on <b>2026-08-05</b> that no Amazon ads or listings change may proceed without your
+     approval, and that approvals get collected here in your own portal rather than buried in a chat
+     thread. This page is that mechanism.</p>
+
+  <span class="nobutton"><b>Nothing on this page is a button.</b> There is no programmatic write path
+     to Amazon &mdash; verified 2026-08-05: no mutation code exists in any pipeline script, and there
+     has been zero campaign status or budget churn from our side. Every agent in the Amazon pod is
+     advisory. Clicking, reading, or agreeing with a card on this page does <b>not</b> pause a campaign,
+     change a bid, or touch a listing.</span>
+
+  <p>What approval actually sets in motion:</p>
+  <ol class="chain" style="counter-reset:none;">
+    <li data-n="1"><b>You authorize it</b> &mdash; tell Justin or AmazonSmith which cards are a yes.</li>
+    <li data-n="2"><b>Justin releases any spend</b> separately. Approving a card never releases budget;
+        that is a second, explicit decision and only Justin makes it.</li>
+    <li data-n="3"><b>A human executes it in Seller Central</b> &mdash; usually you. Each card below
+        spells out the literal clicks, or names the agent who prepares the playbook first.</li>
+    <li data-n="4"><b>The card's status changes here</b> from <i>Awaiting Burke</i> to
+        <i>Approved</i> &rarr; <i>Done</i> (or <i>Rejected</i>), so there is one place that says
+        what was decided and whether it actually happened.</li>
+  </ol>
+  <p style="margin-top:11px;">Money figures are <b>measured from our own Amazon data</b> unless a card
+     explicitly says <i>estimate</i> or <i>forecast</i>.</p>
+</div>
+
+<h2>Open decisions <span class="tag">&mdash; highest money at stake first</span></h2>
+<p class="note">Each card states what changes, the measured number behind it, what it is worth, who
+   proposed it, what happens on approval, and what it costs to do nothing. The figures sit in three
+   different units &mdash; gross revenue, contribution margin, and return per $1,000 of ad spend
+   &mdash; so each headline number is labelled with its unit rather than plotted on a shared bar.</p>
+
+
+<!-- ============ 1 ============ -->
+<div class="card stop">
+  <div class="chead">
+    <div class="rank">1</div>
+    <div class="ctitle">
+      <h3>Investigate the Buy&nbsp;Box suppression hitting 22 ASINs</h3>
+      <span class="skus">22 ASINs &middot; onset 2026-05-20 &middot; listing health</span>
+    </div>
+    <div class="stake">
+      <div class="v loss">$13,126<span style="font-size:13px;">/mo</span></div>
+      <div class="u">Gross revenue lost &middot; measured</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill loss">Stop the bleed</span>
+    <span class="pill who">Listings change</span>
+    <span class="pill spend">No spend required</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Nothing yet &mdash; this approves a <b>diagnosis</b>. You are authorising AmazonListingSmith to
+        work the 22 affected ASINs and produce a Seller Central remediation playbook. Because the fix
+        will land on listings, it needs your gate before the work starts.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd>On <span class="m">2026-05-20</span> the count of ASINs able to serve ads dropped
+        <span class="m">14 &rarr; 4 in a single day</span>. Today <span class="m">22 ASINs</span> sit
+        below 90% Buy Box, carrying <span class="m">51,220 sessions = 12.1% of all Amazon traffic</span>,
+        and <span class="m">8 of 10</span> still show <b>no featured offer at all</b> 77 days later.
+        That pattern is suppression, not competition.
+        <br><br>
+        Ruled out with clean negatives: <b>stockouts</b> (99&ndash;2,098 units on hand),
+        <b>our own pricing</b> (ASP actually <i>fell</i> 6.14%, and only from June &mdash; after the onset),
+        <b>third-party sellers</b> (only 2&ndash;5 offers on the page),
+        <b>re-parenting</b> (0 of 22 changed variation family), and <b>DTC undercutting</b>.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>Difference-in-differences against unaffected ASINs measures the cost at
+        <span class="m">&minus;4.49pt conversion</span>, <span class="m">2,297 units</span>, and
+        <span class="m">$39,378 gross over three months</span> &mdash; about
+        <span class="m">$13,126/month</span>. This is the largest single number on the page, and it is
+        the only one that is pure lost revenue rather than misallocated ad spend.</dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonSmith (listing-health triage), from the funnel and Buy&nbsp;Box data.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd>AmazonListingSmith diagnoses the 22 ASINs and produces a Seller Central remediation playbook.
+        <b>No listing is touched until you have read that playbook</b> &mdash; it comes back here as a
+        follow-up decision with the specific per-ASIN actions. Pair this with the Seller Central check
+        in &ldquo;Needs a human&rdquo; below; that check narrows the diagnosis considerably.</dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">The bleed continues at roughly $13,126/month in gross revenue, and 12.1% of our
+        Amazon traffic keeps landing on pages that cannot convert. It has already run 77 days. Every
+        ad dollar spent against these ASINs is also being wasted, so this problem quietly inflates the
+        ACOS on several of the cards below.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<!-- ============ 2 ============ -->
+<div class="card upside">
+  <div class="chead">
+    <div class="rank">2</div>
+    <div class="ctitle">
+      <h3>Launch WWB chicory branded Sponsored Brands at full size</h3>
+      <span class="skus">B071ZTFGFT &middot; B076BZZC6M &middot; currently $630/mo</span>
+    </div>
+    <div class="stake">
+      <div class="v gain">+$3,786</div>
+      <div class="u">Contribution per $1,000 spent &middot; measured</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill gain">Recover upside</span>
+    <span class="pill who">Ads change</span>
+    <span class="pill hold">Also needs Justin's budget release</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Scale branded Sponsored Brands on the two WWB chicory hero ASINs well beyond their current
+        <span class="m">$630/month</span>. This is our best-performing advertising and it is
+        <b>starved</b>.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd><code>B071ZTFGFT</code> is running at <span class="m">6.9% ACOS</span> and
+        <code>B076BZZC6M</code> at <span class="m">4.9% ACOS</span>, both holding roughly
+        <span class="m">99% Buy Box</span>, against a break-even of <span class="m">33.5%</span>.
+        That is about <span class="m">27 points of headroom</span> on our #1 and #2 net-margin SKUs.
+        Healthy Buy Box means the traffic we buy actually converts.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>Approximately <span class="m">+$3,786 of contribution per $1,000 spent</span>. The total upside
+        scales with how much budget Justin releases &mdash; it is deliberately not stated as a monthly
+        figure here, because that number is a budget decision, not a measurement.</dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonAdSmith.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd>Two gates, in order:
+      <ol class="steps">
+        <li>You authorize the scale-up.</li>
+        <li><b>Justin releases the budget</b> &mdash; a separate decision, and the one that actually
+            commits money. Your approval alone does not release spend.</li>
+        <li>AmazonAdSmith drafts the campaign structure, keyword set, bids, and the new daily budget.</li>
+        <li>A human enters it in Seller Central: <b>Campaign Manager &rarr;</b> open the existing
+            branded SB campaigns for these two ASINs <b>&rarr; Budget</b>, raise to the released figure
+            (and add campaigns per the draft if the structure changes).</li>
+      </ol></dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">We keep leaving the largest measured upside on the page unclaimed. Every month
+        at $630 is a month of buying our cheapest, highest-converting traffic in a thin trickle while
+        spend sits in campaigns returning a fraction as much.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<!-- ============ 3 ============ -->
+<div class="card stop">
+  <div class="chead">
+    <div class="rank">3</div>
+    <div class="ctitle">
+      <h3>Pause Sponsored Products on Dark Chocolate SuperBoost</h3>
+      <span class="skus">86010L &middot; B08KWM17L3</span>
+    </div>
+    <div class="stake">
+      <div class="v loss">~$900<span style="font-size:13px;">/mo</span></div>
+      <div class="u">Contribution destroyed &middot; measured</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill loss">Stop the bleed</span>
+    <span class="pill who">Ads change</span>
+    <span class="pill hold">Highest urgency &mdash; live money</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Pause Sponsored Products on <code>86010L</code>. This is the most urgent card on the page
+        because, unlike the others, it is actively spending money right now at a guaranteed loss.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd><span class="m">44.1% ACOS over the last 60 days</span> &mdash;
+        <span class="m">$1,802 spend</span> against <span class="m">$4,083 in sales</span> &mdash;
+        set against a labor-adjusted contribution margin of just <span class="m">10.0%</span>, the
+        worst COGS ratio in the Teeccino book. The ad has to be more than four times more efficient
+        than it is before this SKU breaks even.
+        <br><br>
+        It is also a Buy&nbsp;Box offender at <span class="m">84.0%</span>, so a share of the clicks
+        we pay for cannot convert at all.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>At current efficiency this destroys roughly <span class="m">$820 of contribution per $1,000
+        spent</span> &mdash; the money goes out and comes back smaller. Stopping it saves about
+        <span class="m">$900/month in contribution</span>.</dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonAdSmith.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd>A human does this in Seller Central:
+      <ol class="steps">
+        <li><b>Advertising &rarr; Campaign Manager</b>.</li>
+        <li>Filter to the Sponsored Products campaigns advertising SKU <code>86010L</code> /
+            ASIN <code>B08KWM17L3</code>.</li>
+        <li>Set each campaign's state to <b>Paused</b>. If a campaign advertises other SKUs too, pause
+            only <code>86010L</code> at the <b>ad group &rarr; Products</b> level instead of the whole
+            campaign.</li>
+        <li>Leave the organic listing live &mdash; this pauses advertising, not the product.</li>
+      </ol>
+      Do not restart until either the margin or the 84.0% Buy&nbsp;Box is fixed; both are separate
+      pieces of work.</dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">We keep paying about $900/month for the privilege of selling this SKU at a loss,
+        and the loss grows with any budget increase.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<!-- ============ 4 ============ -->
+<div class="card hold">
+  <div class="chead">
+    <div class="rank">4</div>
+    <div class="ctitle">
+      <h3>Cut the planned Sponsored Display arms on the SuperBoost / mushroom line &mdash; keep one</h3>
+      <span class="skus">5 planned arms &rarr; 1 arm on 85070 (Miraculous Mushrooms)</span>
+    </div>
+    <div class="stake">
+      <div class="v loss small">4 of 5 arms<br>never launched</div>
+      <div class="u">Spend not yet committed &middot; forecast</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill hold">Shrink before launch</span>
+    <span class="pill who">Ads change</span>
+    <span class="pill spend">Not yet live</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Rewrite the Sponsored Display test spec from <b>five arms down to one</b>, on
+        <code>85070</code> (Miraculous Mushrooms) only. Nothing is live yet, so this is a plan change
+        rather than a campaign change.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd>Two independent reasons, either of which is sufficient:
+      <ol class="steps">
+        <li><b>The arms start underwater.</b> The five arms were forecast at
+            <span class="m">30&ndash;43% ACOS</span>, but the cluster's kill line is
+            <span class="m">22.7%</span>. Every arm would launch already past the threshold at which
+            we would shut it down.</li>
+        <li><b>The traffic will not support five readings.</b> After removing the Buy&nbsp;Box
+            offenders, the clean session pool is <span class="m">7,958 sessions</span> &mdash; enough
+            to power <b>one</b> arm. Five arms would buy five underpowered, unreadable results at full
+            price.</li>
+      </ol>
+      <code>85070</code> is the exception and the one worth running: <span class="m">99.6% Buy Box</span>,
+      <span class="m">20.2% ACOS</span>, <span class="m">31.3% margin</span> &mdash; healthy on all three.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>Avoided waste rather than recovered revenue. Four arms that were forecast to launch below their
+        own kill line never spend, and the one arm we do run gets the whole clean session pool, so its
+        result is actually readable. <i>Forecast, not measured &mdash; the arms have not run.</i></dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonAdSmith, with the session-power constraint from AmazonSmith.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd><b>No Seller Central action yet.</b> AmazonSmith revises the SD test spec to the single
+        <code>85070</code> arm and AmazonAdSmith builds it out; the revised one-arm spec then comes back
+        here as its own decision, and needs Justin's budget release before anything is created in
+        Campaign Manager.</dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">The five-arm test launches as specced: four arms burn budget below their kill
+        line from day one, and all five readings are too thin to conclude anything &mdash; so we pay
+        full price and still do not learn whether Sponsored Display works for this line.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<!-- ============ 5 ============ -->
+<div class="card hold">
+  <div class="chead">
+    <div class="rank">5</div>
+    <div class="ctitle">
+      <h3>Cap WWB category-conquest Sponsored Brands to a probe budget</h3>
+      <span class="skus">2 live SBV category campaigns</span>
+    </div>
+    <div class="stake">
+      <div class="v small" style="color:var(--warn);">32.8% &amp; 36.7%<br>ACOS vs 33.5% BE</div>
+      <div class="u">Straddling break-even &middot; measured</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill hold">Fund small, kill fast</span>
+    <span class="pill who">Ads change</span>
+    <span class="pill spend">Live spend, capped not stopped</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Keep the two live category-conquest SBV campaigns running, but <b>cap them at a small probe
+        budget</b> with a kill trigger armed from day one &mdash; rather than either scaling them up or
+        shutting them off.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd>The two campaigns run at <span class="m">32.8%</span> and <span class="m">36.7% ACOS</span>
+        against a break-even of <span class="m">33.5%</span>. One is barely above water, one is barely
+        below. That is a coin flip, not a result &mdash; it is neither good enough to scale nor clearly
+        bad enough to kill, so the correct move is to keep it cheap and instrumented.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>Roughly break-even by construction, which is exactly the point: the value is <b>optionality</b>.
+        A probe keeps conquest as a live option and keeps generating a read, while capping the downside
+        if it drifts the wrong way. Contrast with card&nbsp;2, where the same money returns 27 points of
+        headroom &mdash; that is where scale belongs, not here.</dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonAdSmith.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd>AmazonAdSmith sets the probe budget figure and the explicit kill threshold against the 33.5%
+        break-even; Justin releases the (small) spend; then a human sets it in Seller Central:
+      <ol class="steps">
+        <li><b>Advertising &rarr; Campaign Manager</b>, open each of the two SBV category campaigns.</li>
+        <li>Set <b>Daily budget</b> to the agreed probe figure.</li>
+        <li>Record the kill trigger and the review date alongside the campaign so it is armed on day one,
+            not retrofitted after it has overspent.</li>
+      </ol></dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">The campaigns keep running uncapped at coin-flip economics with no kill trigger,
+        so the first thing that tells us it went wrong is the monthly number &mdash; after the money is
+        gone.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<!-- ============ 6 ============ -->
+<div class="card stop">
+  <div class="chead">
+    <div class="rank">6</div>
+    <div class="ctitle">
+      <h3>Pause Sponsored Products on Reishi Eleuthero</h3>
+      <span class="skus">85010L &middot; B08KWMTCLS</span>
+    </div>
+    <div class="stake">
+      <div class="v loss">81.4%</div>
+      <div class="u">ACOS vs 22.9% margin &middot; measured</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill loss">Stop the bleed</span>
+    <span class="pill who">Ads change</span>
+    <span class="pill spend">Smaller spend than card 3</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Pause Sponsored Products on <code>85010L</code>. Same failure mode as card&nbsp;3, at a smaller
+        scale.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd><span class="m">81.4% ACOS</span> against a contribution margin of
+        <span class="m">22.9%</span>. The ad is consuming roughly three and a half times the margin
+        the sale produces. Unlike card&nbsp;3 the product itself is reasonably healthy &mdash; it is
+        purely the advertising that is upside down.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>Ranked below card&nbsp;3 only because the spend behind the 81.4% is smaller; the efficiency is
+        worse. Every dollar here is a worse dollar &mdash; there are just fewer of them.</dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonAdSmith.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd>A human does this in Seller Central:
+      <ol class="steps">
+        <li><b>Advertising &rarr; Campaign Manager</b>.</li>
+        <li>Filter to the Sponsored Products campaigns advertising SKU <code>85010L</code> /
+            ASIN <code>B08KWMTCLS</code>.</li>
+        <li>Set each campaign's state to <b>Paused</b>, or pause just this SKU at the
+            <b>ad group &rarr; Products</b> level if the campaign is shared.</li>
+        <li>Leave the organic listing live.</li>
+      </ol></dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">A structurally unprofitable campaign keeps running at 81.4% ACOS. Small, but it
+        never gets better on its own &mdash; nothing about the current setup trends toward the 22.9%
+        it needs to hit.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<!-- ============ 7 ============ -->
+<div class="card stop">
+  <div class="chead">
+    <div class="rank">7</div>
+    <div class="ctitle">
+      <h3>Stop advertising Lion's Mane Rhodiola in every channel</h3>
+      <span class="skus">85030L &middot; B08KWNGTJV</span>
+    </div>
+    <div class="stake">
+      <div class="v loss">&minus;1.0%</div>
+      <div class="u">Contribution before any ad spend &middot; measured</div>
+    </div>
+  </div>
+  <div class="pills">
+    <span class="pill await">&#9679; Awaiting Burke</span>
+    <span class="pill loss">Stop the bleed</span>
+    <span class="pill who">Ads change</span>
+    <span class="pill spend">Smallest dollars, clearest call</span>
+  </div>
+  <dl class="fields">
+    <dt>What changes</dt>
+    <dd>Remove <code>85030L</code> from advertising in <b>every</b> channel &mdash; Sponsored Products,
+        Sponsored Brands, and Sponsored Display &mdash; not just the one campaign currently spending.</dd>
+
+    <dt>Why &mdash; the measured number</dt>
+    <dd>Contribution is <span class="m">&minus;1.0% before a single ad dollar</span>. The product loses
+        money on its own, so there is no ACOS at which advertising it makes sense &mdash; the break-even
+        does not exist. It is also a Buy&nbsp;Box offender at <span class="m">41.5%</span>, meaning most
+        of the time the page cannot convert anyway. Current spend is small
+        (<span class="m">$17 over 60 days</span>) and has produced
+        <span class="m">zero attributed sales</span>.</dd>
+
+    <dt>What it's worth</dt>
+    <dd>The smallest dollar figure on the page and the easiest call on it. The value is less the $17
+        than the rule: <b>we do not advertise a SKU with negative standalone contribution.</b> Approving
+        this sets that precedent explicitly.</dd>
+
+    <dt>Who proposed it</dt>
+    <dd>AmazonAdSmith, with the margin figure from the COGS work.</dd>
+
+    <dt>What happens on approval</dt>
+    <dd>A human does this in Seller Central:
+      <ol class="steps">
+        <li><b>Advertising &rarr; Campaign Manager</b>, find every campaign and ad group containing
+            <code>85030L</code> / <code>B08KWNGTJV</code> across SP, SB and SD.</li>
+        <li>Remove the ASIN from each ad group's <b>Products</b> list (rather than pausing whole
+            campaigns, which may carry healthy SKUs).</li>
+        <li>Confirm the ASIN returns nothing on a Campaign Manager product search afterwards.</li>
+        <li>Leave the organic listing live &mdash; whether to keep selling it at all is a separate
+            decision that belongs with the margin work, not with advertising.</li>
+      </ol></dd>
+
+    <dt>If we do nothing</dt>
+    <dd class="nothing">We keep paying, however little, to sell a product that loses money per unit
+        &mdash; and we leave the door open for someone to scale that spend up later without noticing
+        the negative contribution underneath it.</dd>
+  </dl>
+  <div class="statusline"><b>Status: Awaiting Burke</b>
+    <span class="future">&nbsp;&rarr; Approved / Rejected / Done</span></div>
+</div>
+
+
+<h2>Needs a human, not an approval <span class="tag">&mdash; 2 items</span></h2>
+<p class="note">These are not decisions and there is nothing here to approve or reject. They are two
+   pieces of information we cannot get from the data, and both are currently blocking sharper answers
+   above.</p>
+
+<div class="human">
+  <h3>1. Burke &mdash; check Seller Central for anything dated 2026-05-20</h3>
+  <p>The Buy&nbsp;Box suppression in card&nbsp;1 has a single, sharp onset date. Our data can see the
+     effect but not the cause; the cause, if there is an announced one, will be sitting in Seller
+     Central. Please look in three places for anything dated <span class="m">2026-05-20</span>:</p>
+  <ul>
+    <li><b>Pricing Health &rarr; &ldquo;Featured Offer Ineligible&rdquo;</b></li>
+    <li><b>Account Health &rarr; Product Policy Compliance</b></li>
+    <li><b>Performance Notifications</b> (the inbox, including anything filed/archived)</li>
+  </ul>
+  <div class="tell"><b>Finding nothing is itself the answer.</b> If none of those three carry anything
+     dated 2026-05-20, that effectively rules out a policy action against us and points instead at an
+     <b>unannounced change to Amazon's pricing reference</b> &mdash; a very different problem with a
+     very different fix. So please report back either way; a clean &ldquo;nothing there&rdquo; is a
+     useful result, not a dead end.</div>
+</div>
+
+<div class="human">
+  <h3>2. Finance &mdash; fresh Acctivate item-cost export, including the <code style="font-family:ui-monospace,Consolas,monospace;color:var(--gold);">Unit</code> column</h3>
+  <p>Every margin figure on this page rests on unit costs, and our cost table has holes.
+     <span class="m">20.4% of Amazon gross &mdash; $524,564 &mdash; has no cost row at all</span>, so
+     roughly a fifth of the revenue we are making decisions about is running on incomplete costing.</p>
+  <p>The export must include the <b><code style="font-family:ui-monospace,Consolas,monospace;color:var(--gold);">Unit</code></b>
+     column. Without it we cannot tell a case cost from an each cost, and a cost row we can't interpret
+     is worse than a missing one &mdash; it produces a confident wrong margin instead of an obvious gap.</p>
+  <p>Until this lands, treat every margin and contribution number on this page as <b>directionally
+     right but not final</b>, and treat the coverage gap as the reason a card is ranked by measured
+     ad efficiency rather than by full landed profit.</p>
+</div>
+
+<footer>
+  <b>Decisions Awaiting Burke</b> &mdash; prepared by AmazonSmith for Burke, 2026-08-05.
+  Read-only presentation. <b>Nothing on this page executes anything</b>: there is no programmatic write
+  path from our systems to Amazon, so every change described here is performed by a human in Seller
+  Central after Burke authorizes it and, where money is involved, after Justin releases the spend.<br>
+  Ad and margin figures are measured from our own Amazon data over the stated windows unless labelled
+  <i>forecast</i> or <i>estimate</i>. Buy&nbsp;Box and session figures come from the Sales &amp; Traffic
+  feed. Margin is labor-adjusted contribution and is subject to the Acctivate cost-coverage gap noted
+  above.<br>
+  Questions about the numbers &rarr; AmazonSmith. Approvals and any release of spend &rarr; Justin.
+  Ads execution detail &rarr; AmazonAdSmith; listing remediation &rarr; AmazonListingSmith.
+</footer>
+
+</div>
+<script>
+  fetch('/teeccino-reports/burke/_nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('portal-nav').innerHTML = html;
+      document.body.classList.add('has-portal-nav');
+    })
+    .catch(() => {});
+</script>
+</body></html>
