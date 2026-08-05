@@ -1,0 +1,2559 @@
+{
+  "lastUpdated": "2026-08-05T14:56:04.617379-07:00",
+  "generator": "clawd-agentsmith/skills/gateway/build_agent_capabilities.py",
+  "lanes": {
+    "writeDefault": 1,
+    "readDefault": 3,
+    "isolatedDefault": 3,
+    "note": "Write lane is per-agent and defaults to 1 so two sessions never collide on git/Shopify/files. A task prefixed 'read:' goes to the parallel read lane instead. Agents with git-worktree isolation get parallel writes, each in its own worktree."
+  },
+  "totals": {
+    "agents": 20,
+    "skills": 69,
+    "documentedSkills": 67,
+    "gatewayDispatchable": 20,
+    "browserCapable": 19,
+    "parallelWriters": 7,
+    "totalWriteSlots": 33,
+    "undocumentedSkills": 2,
+    "reportingGaps": 3,
+    "reportingDefOnlyGaps": 6,
+    "workspaceGaps": 1
+  },
+  "agents": [
+    {
+      "id": "shopkeeper",
+      "name": "Shopkeeper",
+      "emoji": "cart",
+      "role": "Shopify Operations",
+      "category": "🟩 Storefront",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-shopkeeper",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-Shopkeeper.md",
+        "exists": true,
+        "model": "opus",
+        "color": "green",
+        "memoryScope": "user",
+        "description": "When you need to run Shopify store operations: promos, FOTM changeovers, discount management, inventory checks, tag updates, carousel render-order (`custom.carousel_order`), and operational/promo Shopify Metafield writes (promo flags, discount fields, inventory signals, FOTM tags). PROACTIVELY use when the user mentions promos, FOTM, discounts, Shopify products, carousel order, or store ops. NOT in lane: image content (AssetSmith), catalog Metafields (CatalogSmith).",
+        "lines": 145,
+        "bytes": 12121,
+        "modified": "2026-08-05T09:44:11.934043-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "Scripts",
+          "FOTM Changeover Workflow",
+          "Promo Launch Workflow",
+          "Sibling Agents",
+          "Catalog Metafield writes — RETIRED (2026-05-10)",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 12,
+        "neverRules": 6,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "fotm-changeover",
+          "documented": true,
+          "purpose": "Execute the monthly Flavor of the Month (FOTM) and Free Packet changeover for Teeccino's Shopify store. Use when it's the 1st of the month, when Justin asks to swap FOTM, or when the promo calendar shows a new FOTM is due. This is the COMPL",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "promo-management",
+          "documented": true,
+          "purpose": "Launch, manage, and end Teeccino promotional campaigns. Use for setting up promos, updating discounts, managing metafields, and ending sales. CRITICAL for subscription discount configuration.",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Excel / openpyxl",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": true,
+          "SOUL.md": true,
+          "USER.md": true,
+          "TOOLS.md": true,
+          "AGENTS.md": true
+        }
+      },
+      "memory": {
+        "persistentFiles": 45,
+        "indexEntries": 45,
+        "dailyLogs": 53,
+        "lastDailyLog": "2026-08-05-instants-cut-and-source-verify"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-05T13:22:30.504343-07:00"
+      }
+    },
+    {
+      "id": "themesmith",
+      "name": "ThemeSmith",
+      "emoji": "palette",
+      "role": "Shopify Theme Development",
+      "category": "🟩 Storefront",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-themesmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-ThemeSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "cyan",
+        "memoryScope": "user",
+        "description": "When you need to manage the Teeccino Shopify theme: design, build, or test new sections, fix layout/CSS issues, audit UI/UX, check accessibility, do responsive design work, or any Shopify theme development task. PROACTIVELY use when the user mentions theme design, sections, Liquid templates, CSS, responsive layout, accessibility, or visual QA.",
+        "lines": 215,
+        "bytes": 16701,
+        "modified": "2026-08-05T09:44:11.935044-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "Development Workflow (feature-branch default)",
+          "Skills",
+          "References",
+          "Theme Architecture Summary",
+          "Browser Automation (Playwright MCP)",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 11,
+        "neverRules": 5,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "css-system",
+          "documented": true,
+          "purpose": "Maintain and extend the Teeccino theme's CSS design system. Use when working with colors, typography, spacing, component styles, or design tokens. Ensures visual consistency across the theme by using the established custom property system.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "responsive-design",
+          "documented": true,
+          "purpose": "Design and test mobile-first responsive layouts for the Teeccino Shopify theme. Use when building new layouts, fixing mobile issues, or testing breakpoint behavior. Covers the theme's breakpoint system, grid patterns, and mobile-specific UX",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "section-builder",
+          "documented": true,
+          "purpose": "Build new Shopify Liquid sections from design specs or descriptions. Handles schema definition, Liquid markup, scoped CSS, responsive behavior, and block configuration. Use when Justin asks to create a new section, add a content block, or b",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "ui-ux-audit",
+          "documented": true,
+          "purpose": "Audit Shopify theme pages and sections for usability, accessibility, and UX quality. Use when Justin asks to review a page, improve the user experience, or check that a section meets UX standards. Covers visual hierarchy, CTA placement, cog",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "visual-qa",
+          "documented": true,
+          "purpose": "Screenshot-driven visual testing and QA using Playwright browser tools (mcp__playwright__*). Use after making theme changes to verify they look correct, catch visual regressions, and compare before/after states.",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": true,
+        "isolatedLane": 3,
+        "isolationRepo": "C:/Users/JustinAdler/dev/repos/teeccino-dawn-refresh",
+        "isolationBase": "dev",
+        "effectiveWrite": 3
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": true,
+          "SOUL.md": true,
+          "USER.md": true,
+          "TOOLS.md": true,
+          "AGENTS.md": true
+        }
+      },
+      "memory": {
+        "persistentFiles": 128,
+        "indexEntries": 128,
+        "dailyLogs": 46,
+        "lastDailyLog": "pdp-atc-donation-upsell-spec"
+      },
+      "status": {
+        "status": "working",
+        "currentTask": {
+          "summary": "Build curated Health Professionals testimonial-conditions band (21 stories) with practitioner-first ordering via new author_type field [+1 more branches]",
+          "source": "dispatch",
+          "startedAt": "2026-07-26T02:25:24Z",
+          "branch": "feature/health-professionals-testimonials"
+        },
+        "concurrentTasks": 2,
+        "lastActivity": "2026-07-29T22:37:29Z"
+      }
+    },
+    {
+      "id": "dataops",
+      "name": "DataOps",
+      "emoji": "bar_chart",
+      "role": "Data Pipeline & Analytics",
+      "category": "🟫 Data & Guild",
+      "workspace": "C:\\Users\\JustinAdler\\clawd\\Automations\\analytics",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-DataOps.md",
+        "exists": true,
+        "model": "opus",
+        "color": "purple",
+        "memoryScope": "user",
+        "description": "When you need to run the data pipeline, check data freshness, fix ingestion errors, backfill missing dates, rebuild dashboards, update matrix workbooks, validate data quality, or troubleshoot any Teeccino analytics infrastructure. Use for any data operations, pipeline maintenance, or reporting tasks. PROACTIVELY use when the user mentions sales data, pipeline errors, or wants to analyze Shopify performance.",
+        "lines": 167,
+        "bytes": 12023,
+        "modified": "2026-08-05T09:44:11.936044-07:00",
+        "sections": [
+          "Your Environment",
+          "Credentials",
+          "Pipeline Architecture",
+          "Scheduled Automation",
+          "Critical Business Rules",
+          "Known Issues",
+          "Data Quality Checks",
+          "When Diagnosing Issues",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 0,
+        "neverRules": 0,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [],
+      "concurrency": {
+        "write": 3,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 3
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Google Ads API",
+        "Meta Ads API",
+        "Amazon SP-API",
+        "SQLite master",
+        "Excel / openpyxl",
+        "GitHub Pages",
+        "OneDrive / Teams",
+        "Discord / Switchboard"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": false
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 39,
+        "indexEntries": 37,
+        "dailyLogs": 1,
+        "lastDailyLog": "2026-06-11"
+      },
+      "status": {
+        "status": "working",
+        "currentTask": {
+          "summary": "Two changes to the Amazon Ads dashboard, requested by Burke. Both apply to `buil",
+          "source": "discord",
+          "startedAt": "2026-08-05T14:38:45-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1534677064760954910"
+        },
+        "concurrentTasks": 1,
+        "lastActivity": "2026-08-02T14:55:45Z"
+      }
+    },
+    {
+      "id": "agentsmith",
+      "name": "AgentSmith",
+      "emoji": "gear",
+      "role": "AI Systems Architect & Gateway",
+      "category": "🟫 Data & Guild",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-agentsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AgentSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "orange",
+        "memoryScope": "user",
+        "description": "When you need to audit, improve, or extend the AI agent system: review agent definitions, check prompt quality, find overlaps or gaps between agents, design inter-agent automations, build new skills, or scaffold new agents. Also the gateway orchestrator -- dispatch tasks to agents, manage Mission Control dashboard, recover interrupted sessions. PROACTIVELY use when the user mentions agent quality, prompt engineering, system health, agent collaboration, mission control, gateway, dispatch, or wants to improve how agents work.",
+        "lines": 96,
+        "bytes": 7301,
+        "modified": "2026-08-05T09:44:22.223426-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "System Inventory",
+          "Key Paths",
+          "Skills",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 7,
+        "neverRules": 4,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": false
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "agent-audit",
+          "documented": true,
+          "purpose": "Deep review of a single agent's definition, workspace, skills, memory, and effectiveness. Use when Justin asks to audit a specific agent, when a new agent is created, or when an agent's definition has been modified. Produces a severity-grad",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "automation-design",
+          "documented": true,
+          "purpose": "Design inter-agent workflows, handoff chains, and automations that connect agents. Use when Justin wants agents to work together on multi-step processes, when you identify collaboration opportunities, or when building new automated workflow",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "gateway",
+          "documented": true,
+          "purpose": "Dispatch tasks to agents, monitor results, recover interrupted sessions, and manage the Mission Control dashboard. Use when orchestrating multi-agent work, running scheduled dispatches, or recovering from interrupted sessions.",
+          "scripts": [
+            "apply_sidebar_groups.py",
+            "build_agent_capabilities.py",
+            "build_mission_control.py",
+            "build_month_sheets.py",
+            "build_project_dashboards.py",
+            "check_channel_privacy.py",
+            "check_erp_freshness.py",
+            "check_recipe_heroes.py",
+            "check_site_freshness.py",
+            "color_sidebar.py",
+            "daily_recover.bat",
+            "designsmith_restart.ps1"
+          ],
+          "scriptCount": 35
+        },
+        {
+          "name": "prompt-review",
+          "documented": true,
+          "purpose": "Evaluate and improve prompt quality in agent definitions, CLAUDE.md files, and skills. Use when prompts feel ineffective, when a new agent is created, or for periodic prompt hygiene. Covers clarity, specificity, safety, instruction hierarch",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "skill-builder",
+          "documented": true,
+          "purpose": "Create new skills for any agent in the guild. Use when an agent needs a new specialized workflow, when a recurring task should be formalized into a skill, or when Justin asks to add a capability to an agent.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "system-review",
+          "documented": true,
+          "purpose": "Cross-agent analysis of the entire AI system for overlaps, gaps, inconsistencies, and collaboration opportunities. Use for periodic health checks, after adding/removing agents, or when Justin wants a big-picture view of how the guild is per",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 3,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 3
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Google Analytics 4",
+        "Google Ads API",
+        "Meta Ads API",
+        "Intelligems",
+        "Microsoft Clarity",
+        "Hotjar",
+        "GitHub Pages",
+        "OneDrive / Teams",
+        "Canva",
+        "Gemini (image gen)",
+        "Jekyll site",
+        "Discord / Switchboard"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": true,
+          "SOUL.md": true,
+          "USER.md": true,
+          "TOOLS.md": true,
+          "AGENTS.md": true
+        }
+      },
+      "memory": {
+        "persistentFiles": 109,
+        "indexEntries": 108,
+        "dailyLogs": 45,
+        "lastDailyLog": "2026-08-05"
+      },
+      "status": {
+        "status": "working",
+        "currentTask": {
+          "summary": "Build Agent Capabilities dashboard (skills, concurrency lanes, integrations)",
+          "source": "interactive",
+          "startedAt": "2026-08-05T14:46:53.719744-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1534678643694108882"
+        },
+        "concurrentTasks": 1,
+        "lastActivity": "2026-08-05T12:32:04-07:00"
+      }
+    },
+    {
+      "id": "assetsmith",
+      "name": "AssetSmith",
+      "emoji": "package",
+      "role": "Digital Asset Manager",
+      "category": "🟦 Catalog & Cost",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-assetsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AssetSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "orange",
+        "memoryScope": "user",
+        "description": "When you need to manage Teeccino's product assets AND push them to Shopify: catalog files across OneDrive/Dropbox/Teams/local, parse the New Packaging Excel tracker, route designer files into correct NEW PACKAGE folders with spec-compliant filenames, surface rollover-tracking discrepancies, maintain the master Assets library, AND push product/variant images to Shopify (productCreateMedia, variant_image_N metafields, MediaImage replacements, variant.image_id, custom.new_packaging flag) with live-PDP verification. PROACTIVELY use when the user mentions assets, packaging, carousel images, product photos on Shopify, image upload to Shopify, variant images, MediaImage, new packages, photo deposits, designer files, or the rollover.",
+        "lines": 135,
+        "bytes": 10850,
+        "modified": "2026-08-05T09:44:11.939043-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "Skills",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Memory"
+        ],
+        "hardRules": 17,
+        "neverRules": 9,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "build-tracker",
+          "documented": true,
+          "purpose": "state file rebuilt from live Shopify + local sources, rendered into BOTH a spreadsheet and a",
+          "scripts": [
+            "build_sync_log.py",
+            "build_tracker.py",
+            "refresh_canva_links.py"
+          ],
+          "scriptCount": 3
+        },
+        {
+          "name": "canva-sync",
+          "documented": false,
+          "purpose": "",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "catalog-audit",
+          "documented": true,
+          "purpose": "Scan all asset sources (master Assets library, Shopify Carousel folders, Teams, Dropbox) and reconcile against the manifest. Surface:",
+          "scripts": [
+            "audit_carousel_staleness.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "deposit-new-package",
+          "documented": true,
+          "purpose": "Route designer-deposited files into the correct destination folder with spec-compliant filename.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "parse-excel-tracker",
+          "documented": true,
+          "purpose": "Parse `New Packaging.xlsx` into a structured JSON manifest that's queryable, diffable, and the digital twin of Justin's Excel tracker.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "push-to-shopify",
+          "documented": false,
+          "purpose": "",
+          "scripts": [
+            "build_category_status.py",
+            "build_rollover_csv.py",
+            "cleanup_orphan_mediaimages.py",
+            "fill_45070L_carousel.py",
+            "fill_85050L_slots_4_5_6.py",
+            "fill_slots_2_6.py",
+            "fix_variant_image_id.py",
+            "hero_reswap_apg_instant.py",
+            "hero_reswap_to_shopify.py",
+            "make_sync_config.py",
+            "push_30005L_full.py",
+            "push_31007L_hero_flavor_ba.py"
+          ],
+          "scriptCount": 23
+        },
+        {
+          "name": "rename-to-spec",
+          "documented": true,
+          "purpose": "Propose and (on approval) execute filename normalization to match the spec at `data/filename-spec.md`. Used on files already deposited but not yet spec-compliant — typically caught by `catalog-audit` as \"misnamed\".",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Excel / openpyxl",
+        "OneDrive / Teams",
+        "Canva"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": true,
+          "SOUL.md": true,
+          "USER.md": true,
+          "TOOLS.md": true,
+          "AGENTS.md": true
+        }
+      },
+      "memory": {
+        "persistentFiles": 38,
+        "indexEntries": 36,
+        "dailyLogs": 22,
+        "lastDailyLog": "tracker-remark-punchlist-2026-04-16"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-04T14:40:05.919550-07:00"
+      }
+    },
+    {
+      "id": "adsmith",
+      "name": "AdSmith",
+      "emoji": "loudspeaker",
+      "role": "Paid Advertising Manager",
+      "category": "🟧 Growth",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-adsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AdSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "red",
+        "memoryScope": "user",
+        "description": "When you need to manage paid advertising on Google Ads or Meta Ads: audit campaign structure, analyze ad performance, manage budgets, create ad copy, launch or adjust campaigns, or plan advertising strategy. PROACTIVELY use when the user mentions ads, campaigns, ROAS, CPA, ad spend, Google Ads, Meta Ads, Facebook Ads, PPC, or paid media.",
+        "lines": 142,
+        "bytes": 10226,
+        "modified": "2026-08-05T09:44:11.935543-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Ad Platforms",
+          "Data Architecture",
+          "Skills",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY -- not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Memory"
+        ],
+        "hardRules": 10,
+        "neverRules": 6,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "budget-strategy",
+          "documented": true,
+          "purpose": "Analyze budget allocation across campaigns and platforms, model marginal returns, recommend reallocation for maximum ROAS/MER, and plan seasonal budget adjustments. Use when Justin asks about budget optimization, where to spend more/less, o",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "campaign-audit",
+          "documented": true,
+          "purpose": "Pull full campaign structure from Google Ads and Meta Ads, inventory everything that exists (campaigns, ad groups/sets, ads, keywords, audiences, budgets, bidding strategies), and identify structural issues, wasted spend, and optimization o",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "campaign-ops",
+          "documented": true,
+          "purpose": "Create, pause, adjust, or manage campaigns, ad sets/groups, ads, keywords, and budgets on Google Ads and Meta Ads. Every write operation requires confirmation from Justin before execution. Use when Justin asks to launch, pause, adjust, or m",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "campaign-planning",
+          "documented": true,
+          "purpose": "Plan, track, and execute a new paid media campaign end-to-end as a structured project — from idea through brief lock, creative build, pre-launch checklist, launch, weekly pacing, optimization, and post-mortem. Use when Justin proposes a new",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "creative",
+          "documented": true,
+          "purpose": "Generate ad copy for Google Responsive Search Ads (headlines and descriptions), Meta ad text (primary text, headline, description), and plan A/B test variants. Also specify static ad image requirements by platform. Use when Justin asks to w",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "reporting",
+          "documented": true,
+          "purpose": "Generate ad performance reports at campaign, ad set/group, and ad level. Compare periods, flag anomalies, rank winners and losers, calculate key metrics (ROAS, CPA, CTR, MER). Use when Justin asks for performance updates, weekly/monthly rep",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 2,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 2
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Google Ads API",
+        "Meta Ads API",
+        "GitHub Pages",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": true,
+          "SOUL.md": true,
+          "USER.md": true,
+          "TOOLS.md": true,
+          "AGENTS.md": true
+        }
+      },
+      "memory": {
+        "persistentFiles": 9,
+        "indexEntries": 9,
+        "dailyLogs": 20,
+        "lastDailyLog": "2026-07-09"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-07-30T00:00:00Z"
+      }
+    },
+    {
+      "id": "catalogsmith",
+      "name": "CatalogSmith",
+      "emoji": "books",
+      "role": "Product Information Management",
+      "category": "🟦 Catalog & Cost",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-catalogsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-CatalogSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "teal",
+        "memoryScope": "user",
+        "description": "CatalogSmith is Teeccino's product ERP — owner of the channel-agnostic finished-good master (Item # / UPC-12 identity, per-channel SKUs, per-channel price, MAP/MSRP, case pack, fill weight, lifecycle) AND of the product content canon (copy, SEO, nutrition, ingredients, allergens, brew methods, flavor notes, taxonomy) plus its publication to Shopify Metafields and Metaobjects. Shopify is ONE channel, not the catalog. PROACTIVELY use when the user mentions the product master, our catalog, ERP, Item #, SKU identity, UPC, GTIN, barcode, which channels sell a product, channel matrix, wholesale price, distributor price, MAP, MSRP, case pack, fill weight, net weight, discontinued or DO-NOT-MAKE items, Acctivate item data, product data, Shopify Metafields, Shopify Metaobjects, product descriptions, product copy, SEO, nutrition facts, ingredients, allergens, brew methods, flavor notes, product taxonomy, product families, catalog audit, catalog data quality, or bulk product edits.",
+        "lines": 184,
+        "bytes": 18839,
+        "modified": "2026-08-05T09:44:11.937043-07:00",
+        "sections": [
+          "Domain Model (identity — read before any catalog-wide operation)",
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "Skills",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 26,
+        "neverRules": 7,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "bulk-edit",
+          "documented": true,
+          "purpose": "Execute structured bulk writes to the Shopify catalog — metafield values, descriptions, SEO fields, attribute tags — driven by the master `data/product-catalog.xlsx`. Always dry-run first, always snapshot, always reversible.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "catalog-audit",
+          "documented": true,
+          "purpose": "Scan the live Shopify catalog plus the master `data/product-catalog.xlsx`, reconcile them, and produce a completeness & data-quality report. Surface gaps, inconsistencies, schema violations, and orphaned fields.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "copy-writer",
+          "documented": true,
+          "purpose": "Produce brand-voice-compliant product copy: titles, descriptions (`body_html`), SEO titles/descriptions, flavor notes, benefit statements. Enforce voice consistency across the catalog.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "schema-registry",
+          "documented": true,
+          "purpose": "Maintain the authoritative schema definitions for every metafield, metaobject, and taxonomy the catalog uses. The schema registry is the contract that keeps data consistent as it moves between Shopify, the master catalog, and syndication ch",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "seo",
+          "documented": true,
+          "purpose": "Manage SEO fields across the catalog: SEO titles (`<title>`), meta descriptions, alt text (for catalog-level images, not asset files), URL handles (read-only — changing handles breaks links).",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "syndication-prep",
+          "documented": true,
+          "purpose": "Export the master catalog into channel-specific formats for Amazon, wholesale decks, distributors, and any future sales channel. The master catalog is always the source; channel exports are derived views, never edited in place.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "taxonomy",
+          "documented": true,
+          "purpose": "Own and maintain the product taxonomy: families (Herbal Coffee / Herbal Tea / Instant Coffee / Instant Latte), styles (dark roast / light roast / adaptogen / dessert / etc.), attribute tags, and the rules that map products into collections.",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Amazon SP-API",
+        "SQLite master",
+        "Excel / openpyxl",
+        "GitHub Pages",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 89,
+        "indexEntries": 89,
+        "dailyLogs": 35,
+        "lastDailyLog": "2026-08-05-amazon-identity-defects"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-05T13:16:01.887863-07:00"
+      }
+    },
+    {
+      "id": "brewsmith",
+      "name": "BrewSmith",
+      "emoji": "newspaper",
+      "role": "CoffeeAlternatives.com Webmaster",
+      "category": "🟧 Growth",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-brewsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-BrewSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "brown",
+        "memoryScope": "user",
+        "description": "When you need to manage CoffeeAlternatives.com: write and publish articles, run SEO audits, add community content, maintain the Jekyll site, research trending coffee-alternatives topics, fix layout issues, or grow organic traffic. Autonomous webmaster — operates with minimal approval, owns the site end-to-end. PROACTIVELY use when the user mentions coffeealternatives, coffee alternatives site, content, blog, SEO, articles, webmaster, chicory content, mushroom coffee content, caffeine withdrawal content, domain authority, or organic traffic.",
+        "lines": 137,
+        "bytes": 9456,
+        "modified": "2026-08-05T09:44:11.940544-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "Skills",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 12,
+        "neverRules": 8,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "analytics",
+          "documented": true,
+          "purpose": "Owns reading GA4 + Google Search Console for coffeealternatives.com so traffic",
+          "scripts": [
+            "traffic_report.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "daily-publish",
+          "documented": true,
+          "purpose": "These are rules the scheduled run must follow without exception. If any rule can't be satisfied, abort cleanly and write a failure outbox artifact — do not ship half-broken content.",
+          "scripts": [
+            "daily_publish.bat",
+            "preflight.py",
+            "register_task.ps1"
+          ],
+          "scriptCount": 3
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Google Search Console",
+        "GitHub Pages",
+        "Jekyll site"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 16,
+        "indexEntries": 16,
+        "dailyLogs": 83,
+        "lastDailyLog": "2026-08-05"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-05T11:20:30Z"
+      }
+    },
+    {
+      "id": "hubsmith",
+      "name": "HubSmith",
+      "emoji": "compass",
+      "role": "Reports Site Webmaster",
+      "category": "🟫 Data & Guild",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-hubsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-HubSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "pink",
+        "memoryScope": "user",
+        "description": "When you need to manage the internal teeccino-reports site (jstnadler.github.io/teeccino-reports): maintain the hub index, navigation IA, the pages.json manifest, shared nav/footer/CSS chrome, dead-link and orphan detection, and archival of stale dashboards. Webmaster for the internal analytics + project dashboards site — does NOT build the data-driven dashboards themselves (those stay with DataOps / AgentSmith / others). PROACTIVELY use when the user mentions reports site, dashboard nav, hub, index page, orphan pages, dead links, dashboard archival, manifest, or the teeccino-reports repo.",
+        "lines": 142,
+        "bytes": 10889,
+        "modified": "2026-08-05T09:44:11.940544-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "Skills",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 10,
+        "neverRules": 6,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "hub-build",
+          "documented": true,
+          "purpose": "Render `index.html` from `pages.json` + `clawd/data/projects/*.json`.",
+          "scripts": [
+            "build_hub.py",
+            "verify_style_guide.py",
+            "wrap_style_guide.py"
+          ],
+          "scriptCount": 3
+        },
+        {
+          "name": "manifest-curator",
+          "documented": true,
+          "purpose": "Curate `pages.json` — the single source of truth for the `teeccino-reports` site. This skill provides:",
+          "scripts": [
+            "hub_register.py",
+            "register_fulfillment_archives.py",
+            "register_style_guide.py"
+          ],
+          "scriptCount": 3
+        },
+        {
+          "name": "shared-chrome",
+          "documented": true,
+          "purpose": "Maintains the shared HTML chrome used by every dashboard on `teeccino-reports`:",
+          "scripts": [
+            "retrofit_top_nav.py"
+          ],
+          "scriptCount": 1
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "GitHub Pages"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 13,
+        "indexEntries": 13,
+        "dailyLogs": 11,
+        "lastDailyLog": "2026-08-04"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-04T17:25:17.694909-07:00"
+      }
+    },
+    {
+      "id": "labsmith",
+      "name": "LabSmith",
+      "emoji": "test_tube",
+      "role": "Experimentation & CRO",
+      "category": "🟩 Storefront",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-labsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-LabSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#84CC16",
+        "memoryScope": "user",
+        "description": "When you need to manage A/B testing, experimentation, and conversion-rate optimization for teeccino.com: run Intelligems tests end-to-end (design, launch, monitor, declare winners), audit pages for friction using LIFT/PXL/ICE frameworks, mine Microsoft Clarity + Hotjar + GA4 for hypothesis material, run statistical sanity checks (SRM, MDE, power), and coordinate winner rollouts via dispatch to sibling agents. The vertical platform owner for Intelligems and the experimentation discipline. PROACTIVELY use when the user mentions A/B test, experiment, Intelligems, CRO, conversion rate, hypothesis, LIFT, PXL, ICE, heatmap, session replay, Clarity, Hotjar, variant, split test, lift, significance, MDE, sample-ratio, or winner.",
+        "lines": 171,
+        "bytes": 14996,
+        "modified": "2026-08-05T09:44:11.939544-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Key Paths",
+          "External Tools (vertical stack)",
+          "Skills",
+          "CRO Frameworks (canonical)",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 10,
+        "neverRules": 7,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "funnel-analysis",
+          "documented": true,
+          "purpose": "Pull conversion-funnel data from Shopify + GA4 + Clarity, identify highest-leverage drop-off points, surface them as hypothesis fuel for site-audit.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "insight-mining",
+          "documented": true,
+          "purpose": "Daily friction-signal scan across Clarity, Hotjar, GA4, Shopify, and PageSpeed. Surfaces real user pain as hypothesis fuel for site-audit. Pushes new candidate items to backlog with `status: candidate` for human review before promoting to `",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "intelligems-ops",
+          "documented": true,
+          "purpose": "REST client and lifecycle controller for Intelligems. Wraps the External API (`https://api.intelligems.io/v25-10-beta`) into idempotent operations: list experiences, fetch one, create (gated), update, lifecycle actions (start/pause/end), pu",
+          "scripts": [
+            "build_experiments_dashboard.py",
+            "check_connectivity.py",
+            "daily_refresh.py",
+            "snapshot.py"
+          ],
+          "scriptCount": 4
+        },
+        {
+          "name": "site-audit",
+          "documented": true,
+          "purpose": "Run a structured heuristic CRO audit on a target page using the LIFT model. Produces a ranked list of friction findings + a hypothesis for each, ready to be PXL-scored and added to the backlog.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "statistical-checks",
+          "documented": true,
+          "purpose": "The statistical conscience of LabSmith. Pre-launch MDE + sample-size + power. During-test SRM monitoring. Post-test significance + confidence-interval reporting. Refuses to declare winners that don't meet bar.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "test-prioritization",
+          "documented": true,
+          "purpose": "Score and rank test ideas in the backlog using PXL (rigorous), ICE (triage), and PIE (page-level). Outputs ranked backlog with explicit scores and reasoning.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "winner-rollout",
+          "documented": true,
+          "purpose": "When a test declares a winner, dispatch the implementation to the sibling agent who owns the surface. LabSmith does NOT implement the change itself — this skill is the handoff protocol.",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 3,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 3
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Google Analytics 4",
+        "Intelligems",
+        "Microsoft Clarity",
+        "Hotjar",
+        "GitHub Pages",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 7,
+        "indexEntries": 6,
+        "dailyLogs": 7,
+        "lastDailyLog": "2026-07-30"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-07-30T09:09:56.423223-07:00"
+      }
+    },
+    {
+      "id": "searchsmith",
+      "name": "SearchSmith",
+      "emoji": "mag",
+      "role": "Organic Search & SEO",
+      "category": "🟧 Growth",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-searchsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-SearchSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#3949AB",
+        "memoryScope": "user",
+        "description": "When you need to manage organic search and SEO for teeccino.com: monitor Google Search Console (query/page/device performance, ranking anomalies, CTR opportunities), run SEO audits, mine keyword and content-gap opportunities, manage SEO URL redirects, maintain sitemap/indexing health, and drive on-page/technical fixes to done by dispatching the surface owner and verifying the result in GSC. The vertical discipline owner for organic search — owns the outcome, routes the writes. PROACTIVELY use when the user mentions GSC, Google Search Console, organic search, SEO, keyword, ranking, SERP, CTR, impressions, search query, meta description, title tag, sitemap, indexing, structured data, canonical, hreflang, redirect, organic traffic, or search performance.",
+        "lines": 176,
+        "bytes": 18198,
+        "modified": "2026-08-05T09:44:11.940044-07:00",
+        "sections": [
+          "Hard Rules",
+          "Your Direct-Write Lanes (SEO-native, no other agent owns these)",
+          "Environment",
+          "Key Paths",
+          "External Tools (vertical stack)",
+          "Skills",
+          "Opportunity Scoring (canonical)",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 11,
+        "neverRules": 8,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "blog-seo-optimization",
+          "documented": true,
+          "purpose": "Repeatable playbook for SEO-optimizing a teeccino.com blog article end-to-end — the workflow proven on `recognizing-the-signs-of-dehydration` (2026-06-30). Built for **bulk-optimizing the back-catalog of old posts**.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "ctr-optimization",
+          "documented": true,
+          "purpose": "Convert high-impression / low-CTR queries that already rank well into clicks by fixing the title tag and meta description. This is the fastest, highest-leverage SEO win (the `carob` case: pos 1.6, 40k impr, 0.03% CTR). You spec the change; ",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "gsc-audit",
+          "documented": true,
+          "purpose": "Pull and interpret Google Search Console data for teeccino.com — the foundational read that feeds every other SEO skill. Produces baseline and ad-hoc audits: query/page/device/country performance, position distribution, CTR-opportunity list",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "keyword-strategy",
+          "documented": true,
+          "purpose": "Find where teeccino.com should rank but doesn't — keyword and topic-cluster opportunities, content gaps, and queries the site is \"almost\" ranking for. Output is content briefs dispatched to CatalogSmith (teeccino pages/products) or keyword ",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "rank-monitoring",
+          "documented": true,
+          "purpose": "Detect ranking and CTR anomalies before they become traffic losses (or to catch upside fast) — high-impression/low-CTR outliers like the `carob` query, sudden position drops, and pages that gained/lost impressions sharply.",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "redirects",
+          "documented": true,
+          "purpose": "Manage Shopify `urlRedirect` entries to protect and consolidate organic link equity: fix 404s that have inbound links/impressions, handle product/collection handle renames, and consolidate cannibalizing pages. **This is one of your direct w",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "technical-seo",
+          "documented": true,
+          "purpose": "Keep teeccino.com technically healthy for search: sitemap/indexing integrity, structured data validity, canonical/hreflang correctness, robots directives, and Core Web Vitals. You run the safe GSC console diagnostics directly; on-page/theme",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "weekly-digest",
+          "documented": true,
+          "purpose": "Publish a Monday week-over-week organic-search digest — the recurring heartbeat that keeps SEO visible in Mission Control and on the `search-performance.html` dashboard. (Inherited from ThemeSmith, paused pending scaffolding.)",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 3,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 3
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Google Analytics 4",
+        "Google Search Console",
+        "Google Ads API",
+        "GitHub Pages",
+        "Jekyll site"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 25,
+        "indexEntries": 25,
+        "dailyLogs": 12,
+        "lastDailyLog": "gsc-baseline-2026-07-01"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-04T14:22:56.521135-07:00"
+      }
+    },
+    {
+      "id": "costsmith",
+      "name": "CostSmith",
+      "emoji": "abacus",
+      "role": "Production Cost & COGS",
+      "category": "🟦 Catalog & Cost",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-costsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-CostSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#546E7A",
+        "memoryScope": "user",
+        "description": "When you need to compute or analyze the cost to produce a single unit at Teeccino: parse the production schedule workbook, calculate labor cost per unit by stage and finished good, compare standard vs actual labor efficiency, flag production overruns, and (as inputs become available) build toward full landed COGS. The production-cost & COGS analyst — data-first, honest about what the numbers do and don't include. PROACTIVELY use when the user mentions unit cost, cost to produce, cost per unit, COGS, cost of goods, labor cost, production cost, manufacturing cost, standard cost, cost variance, production efficiency, run rate, throughput cost, the production schedule, or costing.",
+        "lines": 153,
+        "bytes": 13802,
+        "modified": "2026-08-05T09:44:11.937543-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "What the Data Is (and Isn't)",
+          "Skills",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 9,
+        "neverRules": 7,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "batch-economics",
+          "documented": true,
+          "purpose": "Estimate the fixed **setup cost** hidden in each item's runs and show how much labor $/unit falls at larger batch sizes — i.e. which items are worth consolidating into fewer, bigger runs.",
+          "scripts": [
+            "batch.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "cost-trend",
+          "documented": true,
+          "purpose": "Track labor cost per unit **over time** (by ISO week or month) for one item or the whole plant, so drift in unit cost is visible early.",
+          "scripts": [
+            "cost_trend.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "machine-breakdown",
+          "documented": true,
+          "purpose": "Cost and utilization **per production machine / stage** — the \"which machine costs us most / runs slowest / has the most downtime\" view. Each workbook sheet is a machine: WeighRight, AMS, Maisa 1, Maisa 2+3, Assembly, Blending (sub-split by",
+          "scripts": [
+            "machine_breakdown.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "margin-analysis",
+          "documented": true,
+          "purpose": "Join unit cost to sale price to compute **gross margin per item ($ and %)**, ranked worst-first — the items to reprice or re-source.",
+          "scripts": [
+            "margin.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "material-costing",
+          "documented": true,
+          "purpose": "Compute **ingredient + packaging cost per unit** from a bill of materials, and (optionally) merge with labor cost to produce a **partial COGS** (labor + materials, still no overhead). This is the biggest missing COGS component.",
+          "scripts": [
+            "material_cost.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "throughput-analysis",
+          "documented": true,
+          "purpose": "Measure production speed and the labor cost of stoppage: units/hour, units per operator-hour, and downtime/breaktime as a share of run time, with a downtime **labor** cost. Finds the lines where operators are paid to wait.",
+          "scripts": [
+            "throughput.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "unit-cost",
+          "documented": true,
+          "purpose": "Compute the **labor cost to produce a single unit** at Teeccino from the production schedule workbook, and expose the standard-vs-actual variance that reveals production overruns. This is the v1 core of CostSmith. It does NOT include materi",
+          "scripts": [
+            "compute_labor_cost.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "variance-analysis",
+          "documented": true,
+          "purpose": "Rank finished goods by **labor efficiency variance** — where *actual* labor cost per unit most exceeds the *standard* (the workbook's \"Labor Rate\"). This is the \"where is production bleeding labor money\" report.",
+          "scripts": [
+            "variance.py"
+          ],
+          "scriptCount": 1
+        },
+        {
+          "name": "yield-scrap",
+          "documented": true,
+          "purpose": "Quantify production waste and its labor cost, keeping the two units of measure separate: **finished-unit scrap** (\"Bad Units\", rate-able and labor-costed) vs **component scrap** (\"Bad Tea Bag Units\"/\"Bad Envelope Units\", raw counts only — d",
+          "scripts": [
+            "yield_scrap.py"
+          ],
+          "scriptCount": 1
+        }
+      ],
+      "concurrency": {
+        "write": 3,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 3
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Excel / openpyxl",
+        "GitHub Pages"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 33,
+        "indexEntries": 32,
+        "dailyLogs": 9,
+        "lastDailyLog": "2026-08-05"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-05T13:19:17.382997-07:00"
+      }
+    },
+    {
+      "id": "agencysmith",
+      "name": "AgencySmith",
+      "emoji": "handshake",
+      "role": "External Vendor Relationships",
+      "category": "🟧 Growth",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-agencysmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AgencySmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#827717",
+        "memoryScope": "user",
+        "description": "AgencySmith is Teeccino's external-vendor relationship manager — the agent that remembers every interaction with an outside agency, contractor, or service partner and holds them (and us) to what was promised. It maintains a persistent relationship log per vendor, captures commitments on BOTH sides as dated obligations, produces pre-meeting briefs, computes a promise-kept scorecard for renewal decisions, guards the contract calendar (notice-to-terminate windows), and routes every vendor deliverable to the guild agent who owns that domain for review. It NEVER reviews SEO, copy, design, or ad work itself — it routes and records. First and current vendor: BigLeap (PR + SEO), signed 2026-07-28. PROACTIVELY use when the user mentions BigLeap, an agency, a vendor, a contractor, a retainer, a statement of work or SOW, a kickoff call, a vendor deliverable, a monthly agency report, a contract renewal or notice window, an invoice from a partner, \"what did they promise\", \"where are we with\", \"when are they sending\", or any named outside partner.",
+        "lines": 133,
+        "bytes": 12841,
+        "modified": "2026-08-05T09:44:11.942053-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "Core Loop",
+          "Domain Context",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)",
+          "Activity Reporting (MANDATORY -- not optional)",
+          "Memory"
+        ],
+        "hardRules": 8,
+        "neverRules": 7,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": false,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "agency-liaison",
+          "documented": true,
+          "purpose": "promise on both sides, and the accountability that falls out of it.",
+          "scripts": [
+            "relationship_log.py",
+            "test_relationship_log.py"
+          ],
+          "scriptCount": 2
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Google Analytics 4",
+        "Google Search Console",
+        "Discord / Switchboard"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 9,
+        "indexEntries": 9,
+        "dailyLogs": 3,
+        "lastDailyLog": "2026-08-04"
+      },
+      "status": {
+        "status": "working",
+        "currentTask": {
+          "summary": "Triage the outdated Teeccino Flavor Colors doc: establish what exists, whether the stale version reached BigLeap, and route authoring to the owning agent",
+          "source": "interactive",
+          "startedAt": "2026-08-04T05:00:00-07:00"
+        },
+        "concurrentTasks": 1,
+        "lastActivity": "2026-08-04T05:00:00-07:00"
+      }
+    },
+    {
+      "id": "designsmith",
+      "name": "DesignSmith",
+      "emoji": "triangular_ruler",
+      "role": "Visual & Brand Design Direction",
+      "category": "🟩 Storefront",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-designsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-DesignSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#C51162",
+        "memoryScope": "user",
+        "description": "When you need visual/brand design direction for Teeccino's digital surfaces: concept a layout for a greenfield page or section, set color/type/spacing direction before it's built, design a campaign banner or hero, audit brand cohesion across surfaces (homepage / PDP / cards / collections), or produce a token-aware design spec or mockup for ThemeSmith to build. The design-direction owner — produces the spec, routes the build. PROACTIVELY use when the user mentions design direction, visual design, mockup, layout concept, brand cohesion, brand consistency, look and feel, art direction, color palette, type scale, design system, a new landing page, a campaign banner, or a section designed from scratch.",
+        "lines": 160,
+        "bytes": 15518,
+        "modified": "2026-08-05T09:44:11.938043-07:00",
+        "sections": [
+          "Your operating model (READ THIS — it defines when you engage)",
+          "Hard Rules",
+          "Your Direct-Write Lanes (design artifacts — no other agent owns these)",
+          "Environment",
+          "Key Paths",
+          "Skills",
+          "Browser Automation (Playwright MCP)",
+          "Sibling Agents",
+          "Dispatched Mode",
+          "Activity Reporting (MANDATORY — not optional)",
+          "Startup (MANDATORY on first user message)",
+          "Persistent Agent Memory"
+        ],
+        "hardRules": 10,
+        "neverRules": 8,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "cohesion-audit",
+          "documented": true,
+          "purpose": "Proactively audit **brand cohesion across surfaces** — make color, type, spacing, and component treatment agree everywhere a design decision lands (homepage banner ↔ PDP pill ↔ card ribbon ↔ collection card ↔ etc.). This is the recurring ga",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "design-brief",
+          "documented": true,
+          "purpose": "Turn a greenfield or high-visibility design ask into a **token-aware design spec** (and, when words aren't enough, a Canva mockup), then dispatch the surface owner to build it and verify the rendered result matches intent. This is the skill",
+          "scripts": [],
+          "scriptCount": 0
+        },
+        {
+          "name": "design-system",
+          "documented": true,
+          "purpose": "Curate the **canonical brand design language** for Teeccino's storefront — the palette intent, type scale, spacing rhythm, and component inventory + usage rules — as documentation, and spec token changes for ThemeSmith to implement. You own",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Google Search Console",
+        "GitHub Pages",
+        "Canva"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 8,
+        "indexEntries": 8,
+        "dailyLogs": 3,
+        "lastDailyLog": "2026-08-03"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-03T14:14:56.767419-07:00"
+      }
+    },
+    {
+      "id": "crowley",
+      "name": "Crowley",
+      "emoji": "crystal_ball",
+      "role": "Caroline's Assistant (Analytics)",
+      "category": "🟨 Personal Portals",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-crowley",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-Crowley.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#B388FF",
+        "memoryScope": "user",
+        "description": "Crowley is Caroline's (Teeccino's CEO) personal analytics assistant — a friendly, read-only portal into the company's sales and performance data. It answers business questions in plain English, builds simple dashboards on request, and publishes them to the CEO's private reports section. It NEVER changes any data or store settings; it only reads and explains. PROACTIVELY use when the CEO (or Justin on her behalf) asks to see sales numbers, revenue, product performance, trends, month-to-date results, a summary, or wants a chart/dashboard built for her.",
+        "lines": 89,
+        "bytes": 8607,
+        "modified": "2026-08-05T09:44:11.944053-07:00",
+        "sections": [
+          "Who you serve",
+          "Hard Rules",
+          "Environment",
+          "What you do",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 8,
+        "neverRules": 3,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "analytics-portal",
+          "documented": true,
+          "purpose": "The one skill Crowley uses to serve the CEO: read Teeccino's analytics (read-only), answer her questions in plain English, build simple dashboards when she wants to *see* something, publish them to her private portal section (`crowley/` on ",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": false,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Klaviyo",
+        "SQLite master",
+        "Excel / openpyxl",
+        "GitHub Pages",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 1,
+        "indexEntries": 1,
+        "dailyLogs": 4,
+        "lastDailyLog": "2026-07-16"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-07-16T09:32:00-07:00"
+      }
+    },
+    {
+      "id": "orinoco",
+      "name": "Orinoco",
+      "emoji": "package",
+      "role": "Burke's Assistant (Amazon Analytics)",
+      "category": "🟨 Personal Portals",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-orinoco",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-Orinoco.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#2E7D32",
+        "memoryScope": "user",
+        "description": "Orinoco is Burke's personal Amazon-channel analytics assistant — a read-only portal into Teeccino's Amazon sales and advertising performance. It answers questions in plain language, builds simple dashboards on request, and publishes them to Burke's private reports section. It NEVER changes any data, listing, ad campaign, or store setting; it only reads and explains. PROACTIVELY use when Burke (or Justin on his behalf) asks about Amazon sales, units, orders, ASIN/SKU performance, ad spend, ACOS, TACOS, ROAS, buy box, inventory, or wants an Amazon chart/dashboard built.",
+        "lines": 90,
+        "bytes": 9449,
+        "modified": "2026-08-05T09:44:11.945053-07:00",
+        "sections": [
+          "Who you serve",
+          "Hard Rules",
+          "Environment",
+          "What you do",
+          "Charting & Capabilities",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 8,
+        "neverRules": 3,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "analytics-portal",
+          "documented": true,
+          "purpose": "The one skill Orinoco uses to serve Burke: read Teeccino's Amazon analytics (read-only), answer his questions, build simple dashboards when he wants to *see* something, publish them to his private portal section (`burke/` on the reports sit",
+          "scripts": [],
+          "scriptCount": 0
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": false,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "override",
+        "decisionsChannelOverride": true
+      },
+      "integrations": [
+        "Amazon SP-API",
+        "SQLite master",
+        "GitHub Pages"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 5,
+        "indexEntries": 5,
+        "dailyLogs": 0,
+        "lastDailyLog": null
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-07-21T11:47:53.048890-07:00"
+      }
+    },
+    {
+      "id": "amazonsmith",
+      "name": "AmazonSmith",
+      "emoji": "compass",
+      "role": "Amazon Channel Orchestrator (Burke's pod)",
+      "category": "🟪 Amazon",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-amazonsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AmazonSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#146EB4",
+        "memoryScope": "user",
+        "description": "AmazonSmith is the orchestrator of Teeccino's Amazon channel pod — Burke's operational front door for running the Amazon business. It coordinates the Amazon specialists (AmazonAdSmith for ads, AmazonListingSmith for listings) and the channel-aware shared guild agents (DataOps, CatalogSmith, AssetSmith, CostSmith), turns a channel goal into routed work, and tracks it to done. It is the OPERATIONAL counterpart to Orinoco's read-only analytics portal. PROACTIVELY use when the user mentions the Amazon channel broadly, Amazon strategy, Amazon roadmap, Seller Central operations, FBA, buy box, Amazon inventory/replenishment, Amazon cases/tickets, Amazon deals/promotions, or wants Amazon work coordinated across ads + listings + data.",
+        "lines": 94,
+        "bytes": 7876,
+        "modified": "2026-08-05T09:44:11.942555-07:00",
+        "sections": [
+          "Who you serve",
+          "Hard Rules",
+          "Environment",
+          "What you own (unclaimed Amazon ops) vs route",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 9,
+        "neverRules": 4,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": false,
+        "covered": false
+      },
+      "skills": [],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Amazon SP-API",
+        "Amazon Ads API",
+        "Discord / Switchboard"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 8,
+        "indexEntries": 7,
+        "dailyLogs": 1,
+        "lastDailyLog": "2026-08-04"
+      },
+      "status": {
+        "status": "working",
+        "currentTask": {
+          "summary": "You CANT make any changes to our ads or to our listings without burke's approval",
+          "source": "discord",
+          "startedAt": "2026-08-05T14:44:16.156796-07:00",
+          "threadUrl": "https://discord.com/channels/1466925435316076567/1534239315855409172"
+        },
+        "concurrentTasks": 1,
+        "lastActivity": null
+      }
+    },
+    {
+      "id": "amazonadsmith",
+      "name": "AmazonAdSmith",
+      "emoji": "dart",
+      "role": "Amazon Ads Specialist",
+      "category": "🟪 Amazon",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-amazonadsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AmazonAdSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#FF9900",
+        "memoryScope": "user",
+        "description": "AmazonAdSmith is Teeccino's Amazon Ads specialist — the paid-media agent for the Amazon channel ONLY (Sponsored Products, Sponsored Brands, Sponsored Display, and Amazon DSP later). It audits campaign structure, analyzes ad performance (ACOS/TACOS/ROAS, spend, CPC, CTR, conversion), plans bids/budgets/negatives, and drafts campaign changes. Separate from AdSmith, which owns Google + Meta. PROACTIVELY use when the user mentions Amazon Ads, Sponsored Products, Sponsored Brands, Sponsored Display, Amazon DSP, ACOS, TACOS, Amazon ad spend, Amazon PPC, bid optimization, negative keywords, or Amazon campaign structure.",
+        "lines": 90,
+        "bytes": 6647,
+        "modified": "2026-08-05T09:44:11.943054-07:00",
+        "sections": [
+          "Who you serve",
+          "Hard Rules",
+          "Environment",
+          "What you do",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 9,
+        "neverRules": 4,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": false,
+        "covered": false
+      },
+      "skills": [],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Google Ads API",
+        "Meta Ads API",
+        "Discord / Switchboard"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 4,
+        "indexEntries": 4,
+        "dailyLogs": 0,
+        "lastDailyLog": null
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": null
+      }
+    },
+    {
+      "id": "amazonlistingsmith",
+      "name": "AmazonListingSmith",
+      "emoji": "package",
+      "role": "Amazon Listing Specialist",
+      "category": "🟪 Amazon",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-amazonlistingsmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-AmazonListingSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#00695C",
+        "memoryScope": "user",
+        "description": "AmazonListingSmith is Teeccino's Amazon Listing specialist — it owns the Amazon *rendering* of the product catalog: Amazon-formatted titles and bullets, A+ / Brand Story content, browse-node/category mapping, backend search terms, parent/child ASIN variation families, and listing health (suppressions, detail-page quality, compliance). It ADAPTS CatalogSmith's product-fact canon to Amazon — it never invents product facts. PROACTIVELY use when the user mentions Amazon listings, ASIN, A+ content, Brand Story, browse nodes, Amazon product titles/bullets, backend keywords/search terms, variation families, listing suppression, detail page, or Amazon listing health.",
+        "lines": 90,
+        "bytes": 6965,
+        "modified": "2026-08-05T09:44:11.943553-07:00",
+        "sections": [
+          "Who you serve",
+          "Hard Rules",
+          "Environment",
+          "What you do",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)"
+        ],
+        "hardRules": 10,
+        "neverRules": 4,
+        "hasStartup": true,
+        "hasActivityReporting": false,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": false,
+        "inWorkspace": false,
+        "covered": false
+      },
+      "skills": [],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": true,
+        "mcpServers": [
+          "playwright"
+        ],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Amazon SP-API",
+        "Discord / Switchboard"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 4,
+        "indexEntries": 4,
+        "dailyLogs": 1,
+        "lastDailyLog": "2026-08-04"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-04T09:59:56.438662-07:00"
+      }
+    },
+    {
+      "id": "promosmith",
+      "name": "PromoSmith",
+      "emoji": "tada",
+      "role": "Promotional Strategy & Calendar",
+      "category": "🟧 Growth",
+      "workspace": "C:\\Users\\JustinAdler\\clawd-promosmith",
+      "workspaceExists": true,
+      "definition": {
+        "path": "C:\\Users\\JustinAdler\\.claude\\agents\\cc-PromoSmith.md",
+        "exists": true,
+        "model": "opus",
+        "color": "#FDD835",
+        "memoryScope": "user",
+        "description": "PromoSmith is Teeccino's promotional strategy owner — the agent that DECIDES what each month's promotion is and drives it to implemented. It owns the promo calendar as a declared artifact (one major sitewide promo per month, 7 days, well spaced), designs the offer (discount depth, gift-with-purchase tiers, free-shipping thresholds, subscription levers), declares each month's major no later than 6 weeks out, validates the calendar against the standing rule, and dispatches execution to Shopkeeper (mechanics), AdSmith (campaign), ThemeSmith (storefront), DataOps (post-promo read). It owns the OUTCOME and routes the WRITES — it never writes a Shopify object or a line of theme code itself. PROACTIVELY use when the user mentions a promo, promotion, sale, the promo calendar, a discount depth or rate, GWP or gift with purchase, free shipping threshold, FOTM or flavor of the month, the free packet, BFCM or Black Friday or Cyber Monday, a sitewide sale, a 72-hour sale, promo cadence or spacing, margin on a promo, an offer, or \"what are we running\".",
+        "lines": 151,
+        "bytes": 15514,
+        "modified": "2026-08-05T09:13:42.347100-07:00",
+        "sections": [
+          "Hard Rules",
+          "Environment",
+          "The Standing Rule (Justin, 2026-07-28 — do not relitigate)",
+          "The Formula",
+          "Core Loop",
+          "Domain Context",
+          "Sibling Agents",
+          "Startup (MANDATORY on first user message)",
+          "Activity Reporting (MANDATORY -- not optional)"
+        ],
+        "hardRules": 8,
+        "neverRules": 6,
+        "hasStartup": true,
+        "hasActivityReporting": true,
+        "hasSiblings": true
+      },
+      "reporting": {
+        "inDefinition": true,
+        "inWorkspace": true,
+        "covered": true
+      },
+      "skills": [
+        {
+          "name": "promo-calendar",
+          "documented": true,
+          "purpose": "Declare, validate, and publish Teeccino's promotional calendar. This skill holds the three tools that",
+          "scripts": [
+            "check_promo_calendar.py",
+            "compose_promo_hub.py",
+            "write_promo_calendar.py"
+          ],
+          "scriptCount": 3
+        }
+      ],
+      "concurrency": {
+        "write": 1,
+        "read": 3,
+        "isolated": false,
+        "isolatedLane": null,
+        "isolationRepo": null,
+        "isolationBase": null,
+        "effectiveWrite": 1
+      },
+      "access": {
+        "gatewayDispatch": true,
+        "discord": true,
+        "browser": false,
+        "mcpServers": [],
+        "approvers": "Justin",
+        "decisionsChannelOverride": false
+      },
+      "integrations": [
+        "Shopify Admin API",
+        "Shopify Theme (CLI)",
+        "Excel / openpyxl",
+        "OneDrive / Teams"
+      ],
+      "files": {
+        "required": {
+          "CLAUDE.md": true,
+          "status.json": true,
+          "inbox": true,
+          "outbox": true,
+          "memory": true,
+          "skills": true
+        },
+        "legacySplit": {
+          "IDENTITY.md": false,
+          "SOUL.md": false,
+          "USER.md": false,
+          "TOOLS.md": false,
+          "AGENTS.md": false
+        }
+      },
+      "memory": {
+        "persistentFiles": 13,
+        "indexEntries": 13,
+        "dailyLogs": 2,
+        "lastDailyLog": "README"
+      },
+      "status": {
+        "status": "idle",
+        "currentTask": null,
+        "concurrentTasks": 0,
+        "lastActivity": "2026-08-05T13:24:35.106163-07:00"
+      }
+    }
+  ]
+}
