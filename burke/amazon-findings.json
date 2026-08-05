@@ -1,0 +1,217 @@
+{
+ "built": "2026-08-05T15:33:39",
+ "generator": "findings_band.py",
+ "derived_alerts": [
+  {
+   "id": "buybox-standing",
+   "severity": "crit",
+   "title": "22 ASINs are losing the Buy Box",
+   "window": "2026-05..2026-07 (3 complete months)",
+   "count": 22,
+   "actionable": true,
+   "thresholds_used": []
+  },
+  {
+   "id": "buybox-drop",
+   "severity": "crit",
+   "title": "4 ASINs collapsed \u226515pt month-over-month",
+   "window": "2026-06 \u2192 2026-07",
+   "count": 4,
+   "actionable": true,
+   "thresholds_used": []
+  },
+  {
+   "id": "ads-acos-breach",
+   "severity": "crit",
+   "title": "31 SKUs are advertising past break-even ACOS",
+   "window": "2026-07-06..2026-08-04 (30 complete days)",
+   "count": 31,
+   "actionable": true,
+   "thresholds_used": [
+    "breakeven_acos",
+    "ads_sku_spend_floor"
+   ]
+  },
+  {
+   "id": "stock-cover",
+   "severity": "crit",
+   "title": "12 SKUs out of stock, 10 more under 21 days cover",
+   "window": "velocity 2026-07-06..2026-08-04 vs inventory snapshot 2026-08-05",
+   "count": 22,
+   "actionable": true,
+   "thresholds_used": [
+    "stock_cover_days",
+    "stock_velocity_floor"
+   ]
+  }
+ ],
+ "open_alert_count": 4,
+ "critical_alert_count": 4,
+ "metrics": {
+  "bb_offenders": 22,
+  "bb_window": "2026-05..2026-07 (3 complete months)",
+  "bb_sessions_pct": 11.1,
+  "bb_sessions_lost": 51220,
+  "ads_window": "2026-07-06..2026-08-04 (30 complete days)",
+  "ads_spend_30d": "$49,690",
+  "ads_sales_30d": "$210,632",
+  "ads_acos_30d": "23.6%",
+  "ads_roas_30d": "$4.24",
+  "ads_days": 30,
+  "worst_acos_sku": "45001-L",
+  "worst_acos_pct": "81.0%",
+  "sku86010L_spend": "$1,108",
+  "sku86010L_acos": "53.1%",
+  "chicory_campaign": "WWB_French Chicory_Chicory_CAT_[Chicory - Broad]_SP",
+  "chicory_spend": "$251",
+  "chicory_roas": "$21.07",
+  "chicory_budget": "$100/day",
+  "chicory_product": "Sponsored Products",
+  "chicory_util": "8%",
+  "chicory_avail": "$3,000",
+  "stock_at_risk": 22,
+  "stock_zero": 12,
+  "did_pt": "-4.49pt",
+  "did_units": "2,297",
+  "did_dollars": "$39,372",
+  "did_per_month": "$13,124",
+  "did_share_pct": "25%",
+  "comp_share_pct": "75%",
+  "yoy_gap_per_month": "$52,828",
+  "did_window": "2026-02..2026-04 vs 2026-05..2026-07"
+ },
+ "freshness": [
+  {
+   "source": "Amazon Ads (SP/SB/SD)",
+   "latest": "2026-08-05",
+   "lag_days": 0,
+   "tolerance_days": 2,
+   "stale": false
+  },
+  {
+   "source": "Amazon finances / margin",
+   "latest": "2026-08-04",
+   "lag_days": 1,
+   "tolerance_days": 3,
+   "stale": false
+  },
+  {
+   "source": "Amazon sessions & traffic",
+   "latest": "2026-08-03",
+   "lag_days": 2,
+   "tolerance_days": 4,
+   "stale": false
+  },
+  {
+   "source": "FBA inventory snapshot",
+   "latest": "2026-08-05",
+   "lag_days": 0,
+   "tolerance_days": 2,
+   "stale": false
+  },
+  {
+   "source": "Competitive pricing snapshot",
+   "latest": "2026-08-05",
+   "lag_days": 0,
+   "tolerance_days": 2,
+   "stale": false
+  }
+ ],
+ "interpretations": [
+  {
+   "page": "funnel",
+   "id": "buybox-suppression-event",
+   "headline": "The Buy Box problem is one dated event, not many ASIN problems.",
+   "as_of": "2026-08-05",
+   "review_by": "2026-09-04",
+   "actionable": true,
+   "state": "fresh",
+   "age_days": 0,
+   "days_to_review": 30,
+   "overdue_days": 0
+  },
+  {
+   "page": "funnel",
+   "id": "yoy-comp-framing",
+   "headline": "Do not fund a conversion project on the headline YoY gap.",
+   "as_of": "2026-08-05",
+   "review_by": "2026-11-03",
+   "actionable": false,
+   "state": "fresh",
+   "age_days": 0,
+   "days_to_review": 90,
+   "overdue_days": 0
+  },
+  {
+   "page": "ads",
+   "id": "breakeven-acos-headroom",
+   "headline": "The account has ACOS headroom; specific SKUs do not.",
+   "as_of": "2026-08-05",
+   "review_by": "2026-09-19",
+   "actionable": true,
+   "state": "fresh",
+   "age_days": 0,
+   "days_to_review": 45,
+   "overdue_days": 0
+  },
+  {
+   "page": "ads",
+   "id": "chicory-underfunded",
+   "headline": "WWB chicory returns far above the account and is barely spending.",
+   "as_of": "2026-08-05",
+   "review_by": "2026-09-19",
+   "actionable": true,
+   "state": "fresh",
+   "age_days": 0,
+   "days_to_review": 45,
+   "overdue_days": 0
+  },
+  {
+   "page": "profit",
+   "id": "cogs-coverage-upper-bound",
+   "headline": "Every margin figure on this page is an upper bound.",
+   "as_of": "2026-08-05",
+   "review_by": "2026-09-04",
+   "actionable": true,
+   "state": "fresh",
+   "age_days": 0,
+   "days_to_review": 30,
+   "overdue_days": 0
+  }
+ ],
+ "assumptions": {
+  "breakeven_acos": {
+   "value": {
+    "Teeccino": 29.9,
+    "WWB": 25.8
+   },
+   "display": "29.9% Teeccino / 25.8% WWB",
+   "as_of": "2026-08-05",
+   "note": "break-even ACOS with labor loaded (pre-labor: 39.2% Teeccino / 28.5% WWB). Source: CostSmith margin work, not computed here."
+  },
+  "ads_sku_spend_floor": {
+   "value": 250.0,
+   "display": "$250 / 30d",
+   "as_of": "2026-08-05",
+   "note": "minimum trailing-30d SKU ad spend before an ACOS breach is worth reporting."
+  },
+  "stock_cover_days": {
+   "value": 21,
+   "display": "21 days",
+   "as_of": "2026-08-05",
+   "note": "days of fulfillable cover below which a selling SKU is flagged."
+  },
+  "stock_velocity_floor": {
+   "value": 1.0,
+   "display": "1 unit/day",
+   "as_of": "2026-08-05",
+   "note": "minimum units/day over the trailing 30d before cover is meaningful. Without it the alert fires on ~357 of 603 SKUs, most of them dormant listings with zero stock and zero demand."
+  },
+  "review_window_days": {
+   "value": 14,
+   "display": "14 days",
+   "as_of": "2026-08-05",
+   "note": "an interpretation renders 'review due' this many days before its review_by date."
+  }
+ }
+}
