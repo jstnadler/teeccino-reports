@@ -47,6 +47,25 @@
   collected in his portal rather than a chat thread. Placed FIRST, ahead of the four analytics
   pages, in its own "Needs You" group — a page that blocks work outranks a page that reports on
   it. Introduced the gold .action treatment described above.
+
+  2026-08-05 (later) — the decisions count was corrected 7 → 9 on burke/index.html (Orinoco added
+  a stockout item and a second underperforming-ad item after re-deriving; 0f897686). NO EDIT WAS
+  NEEDED HERE, and that is deliberate, not an oversight:
+
+    THIS NAV CARRIES NO COUNTS. The link reads "Decisions Awaiting You", not "Decisions (9)".
+    A count in this file would be the worst possible place for one — this fragment is fetched by
+    EVERY page in the portal, so a stale number here would contradict the very page it sits on
+    top of, on every page at once. Counts live in ONE place (the index card) until they can be
+    read from a machine-written value. Do not add a badge here.
+
+  Sidecar note (open contract, 2026-08-05): DataOps' findings_band.py now writes
+  burke/amazon-findings.json on the burke profit build, carrying live alert counts and
+  per-interpretation freshness. It is the right SHAPE for retiring the hand-stamped index count,
+  but it does NOT currently carry this number: its open_alert_count is 4 (derived data alerts),
+  which is a different quantity from the 9 open decision cards. Reading it as the decisions count
+  would render a confidently wrong "4 open". Any future wiring must read a decisions-scoped field
+  written by whatever generates amazon-decisions.html (same generator = same cadence), and must
+  fall back to the last stamped literal if the field is absent — never to 0.
 -->
 <style>
   /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
