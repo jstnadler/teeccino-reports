@@ -63,7 +63,8 @@
       <div class="body"><canvas id="stage"></canvas><div id="err"></div></div>
       <div class="bar">
         <button id="b-proj" aria-pressed="true">Projected (as generated)</button>
-        <button id="b-proc" aria-pressed="false">Procedural only</button>
+        <button id="b-proc" aria-pressed="false">Photo still baked in</button>
+        <button id="b-proc2" aria-pressed="false">Truly photo-free</button>
         <button id="b-wire" aria-pressed="false">Wireframe</button>
         <button id="b-spin" aria-pressed="true">Spin</button>
       </div>
@@ -79,9 +80,7 @@
       all: no pillow bulge, no gusset, no side creases. Straight-on it can pass for a moment; a few
       degrees of rotation ends that.</li>
       <li><b>All the recognisability is your photograph.</b> The albedo map the pipeline extracted
-      <i>is</i> the reference image, de-lit. Hit <b>Procedural only</b> to strip the photo and see what the
-      generated <i>code</i> actually contributes on its own. The colours it did derive from the pixels are
-      correct, though:
+      <i>is</i> the reference image, de-lit. The colours it derived from the pixels are correct, though:
       <span class="swatch" style="background:#40600E"></span><code>#40600E</code>
       <span class="swatch" style="background:#C2BD93"></span><code>#C2BD93</code>
       <span class="swatch" style="background:#B5654A"></span><code>#B5654A</code>.</li>
@@ -90,9 +89,13 @@
       <li><b>It passed its own strict gate.</b> <code>validate_sculpt_spec.py --strict-quality</code>
       returned PASS / exit 0 on this. The gate checks the spec is richly <i>described</i>, not that the
       render resembles anything — likeness lives in a separate 5–8 cycle vision loop (~80–180k tokens).</li>
-      <li><b>The gate pushes you toward pasting the photo.</b> Stripping the reference-derived maps to get
-      a true code-only reconstruction flipped validation to FAIL:
-      <i>"material 'base' needs usable referencePbr extracted from source pixels."</i></li>
+      <li><b>You cannot easily get the photo out — and the gate won't let you.</b> Deleting
+      <code>materials[].albedo.map</code> from the spec and regenerating leaves the photograph fully
+      intact, because a second copy lives at <code>materials[].referencePbr.maps.albedo</code>
+      (middle button — the spec edit looks like it worked and changes nothing). Strip
+      <code>referencePbr</code> as well and you get the genuinely photo-free build (third button) — which
+      then <b>FAILS</b> <code>--strict-quality</code> with <i>"material 'base' needs usable referencePbr
+      extracted from source pixels."</i> The gate requires the field that keeps the photo in.</li>
       <li><b>No fabricated brand text — this time.</b> It never drew text; it pasted the photo. The
       falsification risk arrives the moment you push it through the surface pass to build that label
       procedurally.</li>
@@ -159,7 +162,8 @@ try {
   }
 
   async function load(which){
-    if (!mods[which]) mods[which] = await import(which === 'proj' ? './model.js' : './proc.js');
+    const src = which === 'proj' ? './model.js' : which === 'proc' ? './proc.js' : './proc2.js';
+    if (!mods[which]) mods[which] = await import(src);
     const M = mods[which];
     if (current) { scene.remove(current); }
     const model = M.createTeeccinoFrenchRoast500gPouchModel({});
@@ -173,7 +177,10 @@ try {
     applyWire();
     fit(model);
     let meshes = 0; model.traverse(o => { if (o.isMesh) meshes++; });
-    statEl.textContent = `${meshes} meshes · ${which === 'proj' ? 'reference-derived albedo/roughness/normal/AO maps applied' : 'no reference maps — procedural output only'} · drag to orbit, scroll to zoom`;
+    const label = which === 'proj' ? 'as generated — reference-derived albedo/roughness/normal/AO maps applied'
+      : which === 'proc' ? 'material.albedo.map deleted from the spec — and the photo is STILL here, via material.referencePbr.maps'
+      : 'referencePbr stripped too — genuinely photo-free, and this variant FAILS --strict-quality';
+    statEl.textContent = `${meshes} meshes · ${label} · drag to orbit, scroll to zoom`;
   }
 
   function applyWire(){
@@ -193,8 +200,14 @@ try {
 
   const bProj = document.getElementById('b-proj'), bProc = document.getElementById('b-proc');
   const bWire = document.getElementById('b-wire'), bSpin = document.getElementById('b-spin');
-  bProj.onclick = async () => { bProj.ariaPressed='true'; bProc.ariaPressed='false'; await load('proj'); };
-  bProc.onclick = async () => { bProc.ariaPressed='true'; bProj.ariaPressed='false'; await load('proc'); };
+  const bProc2 = document.getElementById('b-proc2');
+  const pick = (btn, which) => async () => {
+    for (const b of [bProj, bProc, bProc2]) b.ariaPressed = String(b === btn);
+    await load(which);
+  };
+  bProj.onclick = pick(bProj, 'proj');
+  bProc.onclick = pick(bProc, 'proc');
+  bProc2.onclick = pick(bProc2, 'proc2');
   bWire.onclick = () => { wire = !wire; bWire.ariaPressed = String(wire); applyWire(); };
   bSpin.onclick = () => { spin = !spin; bSpin.ariaPressed = String(spin); };
 
