@@ -40,6 +40,34 @@
     .card-icon { font-size: 1.6em; margin-bottom: 8px; }
     .card-title { font-size: 1.02em; font-weight: 600; color: #6FCF7A; margin-bottom: 4px; }
     .card-desc { font-size: 0.85em; color: #94a3b8; line-height: 1.5; }
+
+    /* ---- GOVERNANCE / ACTION card (gold) vs DASHBOARD card (green) ----
+       Portal convention, matches burke/_nav.html and the gold "Awaiting Burke" pills inside
+       amazon-decisions.html: gold = waiting on Burke's decision, green = showing Burke numbers.
+       Kept rare on purpose — the moment several cards are gold the signal stops working. */
+    .section-label {
+      font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.09em; font-weight: 700;
+      color: #64748b; margin: 26px 0 -2px; display: block;
+    }
+    .section-label.action { color: #D4A843; opacity: 0.9; }
+    .report-card.action {
+      border-color: rgba(212,168,67,0.55); border-left: 4px solid #D4A843;
+      background: rgba(212,168,67,0.07);
+    }
+    .report-card.action:hover { border-color: #D4A843; background: rgba(212,168,67,0.13); }
+    .report-card.action .card-title { color: #E8C06A; }
+    .report-card.action .card-badge {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 0.68em; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em; color: #D4A843;
+      border: 1px solid #D4A843; background: rgba(212,168,67,0.14);
+      padding: 2px 9px; border-radius: 999px; margin-bottom: 7px;
+    }
+    .report-card.action .card-badge::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%; background: #D4A843;
+    }
+    /* A governance card is a full-width row above the dashboard grid, not one tile among
+       four — an approval queue that has to compete for a grid cell reads as optional. */
+    .action-row { display: block; margin: 10px 0 6px; }
     footer { text-align: center; margin-top: 48px; padding: 24px 0; color: #64748b; font-size: 0.78em; border-top: 1px solid rgba(255,255,255,0.05); }
   </style>
 </head>
@@ -61,7 +89,21 @@
     <p class="sub">Your private view into Teeccino's Amazon sales &amp; advertising. Ask Orinoco a question anytime.</p>
   </div>
 
+  <!-- GOVERNANCE / DECISION SURFACES — above the dashboards on purpose. Per Justin's
+       2026-08-05 ruling, Amazon ads + listings changes wait on Burke's approval and those
+       approvals are collected in this portal, so the queue is the first thing on the page.
+       Gold styling = "waiting on you"; the dashboard grid below stays green. -->
+  <span class="section-label action">Waiting on you</span>
+  <div class="action-row">
+    <a class="report-card action" href="/teeccino-reports/burke/amazon-decisions.html">
+      <div class="card-badge">7 open</div>
+      <div class="card-title">⚖️ Decisions Awaiting Burke</div>
+      <div class="card-desc">Amazon ads and listings changes proposed by the pod, awaiting your sign-off — each with the money at stake, the measured number behind it, and the literal Seller Central steps. Nothing on the page executes anything. <span style="color:#64748b">· 7 open as of Aug 5, 2026</span></div>
+    </a>
+  </div>
+
   <!-- DASHBOARD GRID — Orinoco self-manages the cards below as it publishes burke/*.html views. -->
+  <span class="section-label">Your dashboards</span>
   <div class="report-grid" id="dashboards">
     <a class="report-card" href="/teeccino-reports/burke/amazon.html">
       <div class="card-icon">💰</div>
