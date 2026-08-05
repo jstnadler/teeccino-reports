@@ -26,12 +26,27 @@
   Adding a dashboard link: add an <a class="nav-link" href="/teeccino-reports/burke/NAME.html">
   below. (Chrome is HubSmith-owned — Orinoco/DataOps dispatch HubSmith to add the link.)
 
+  TWO KINDS OF PAGE, TWO COLORS. The portal's convention:
+    · GREEN (#6FCF7A) = a dashboard. Shows Burke numbers. Group "Dashboards".
+    · GOLD  (#D4A843) = a governance surface. Waits on Burke's decision. Group "Needs You",
+      rendered FIRST, with .nav-link.action styling.
+  Gold is not a new color — it is the same gold amazon-decisions.html already uses for every
+  "Awaiting Burke" pill and its framing block, so the nav reads as continuous with the page.
+  Do not give an analytics page .action styling; the signal only means something while it is rare.
+
   HISTORY
   2026-08-04 — amazon-movers.html became the single brand-filtered movers page (in-page brand
   selector, nightly live rebuild), so the two brand-split pages amazon-movers-wb.html and
   amazon-movers-teeccino.html were retired to _archive/burke/2026-08-04/ and their nav links
   removed. Added Ads Performance (amazon-ads.html, new) and Conversion & Buy Box
   (amazon-funnel.html, shipped 2026-08-04 but never linked — portal orphan).
+
+  2026-08-05 — added amazon-decisions.html ("Decisions Awaiting Burke", built by Orinoco,
+  1bb74c69) as the portal's first GOVERNANCE surface, per Justin's 2026-08-05 ruling that no
+  Amazon ads or listings change proceeds without Burke's approval and that approvals are
+  collected in his portal rather than a chat thread. Placed FIRST, ahead of the four analytics
+  pages, in its own "Needs You" group — a page that blocks work outranks a page that reports on
+  it. Introduced the gold .action treatment described above.
 -->
 <style>
   /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
@@ -65,6 +80,31 @@
   }
   #portal-nav-bar a.nav-link:hover { color: #6FCF7A; background: rgba(46, 125, 50, 0.1); }
   #portal-nav-bar a.nav-link.active { color: #6FCF7A; background: rgba(46, 125, 50, 0.16); font-weight: 600; }
+
+  /* GOVERNANCE / ACTION treatment — gold, boxed, ahead of the dashboards.
+     Reserved for pages awaiting Burke's decision (see the note in the header comment). */
+  #portal-nav-bar .group.needs-you { margin-left: 14px; }
+  #portal-nav-bar .group.needs-you .group-label { color: #D4A843; opacity: 0.85; }
+  #portal-nav-bar a.nav-link.action {
+    color: #E8C06A; font-weight: 600;
+    border: 1px solid rgba(212, 168, 67, 0.55);
+    background: rgba(212, 168, 67, 0.10);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  #portal-nav-bar a.nav-link.action::before {
+    content: ""; width: 7px; height: 7px; border-radius: 50%;
+    background: #D4A843; flex: 0 0 auto;
+  }
+  #portal-nav-bar a.nav-link.action:hover {
+    color: #F3D68F; background: rgba(212, 168, 67, 0.20); border-color: #D4A843;
+  }
+  #portal-nav-bar a.nav-link.action.active { color: #F3D68F; background: rgba(212, 168, 67, 0.22); }
+  /* Divider so "needs a decision" reads as a different kind of thing from "shows numbers",
+     not merely as the first dashboard in the same list. */
+  #portal-nav-bar .group.needs-you + .group {
+    border-left: 1px solid rgba(46, 125, 50, 0.28); padding-left: 16px;
+  }
+
   #portal-nav-bar .spacer { flex: 1; }
   #portal-nav-bar .home-link {
     color: #6FCF7A; font-size: 0.85em; text-decoration: none;
@@ -79,12 +119,20 @@
     #portal-nav-bar .group { margin-left: 0; gap: 8px; }
     #portal-nav-bar .group-label { display: none; }
     #portal-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
+    /* Groups wrap on narrow screens, so a left border would land mid-row and read as noise.
+       The gold pill + dot carries the distinction on its own once the labels are hidden. */
+    #portal-nav-bar .group.needs-you + .group { border-left: none; padding-left: 0; }
+    #portal-nav-bar .group.needs-you { margin-left: 0; }
     body.has-portal-nav { padding-top: 96px; }
   }
 </style>
 <nav id="portal-nav-bar" aria-label="Burke's portal navigation">
   <a class="brand" href="/teeccino-reports/burke/index.html">📦 Teeccino</a>
   <span class="portal-tag">Burke&rsquo;s Portal · Amazon</span>
+  <div class="group needs-you" data-cat="decisions">
+    <span class="group-label">Needs You</span>
+    <a class="nav-link action" href="/teeccino-reports/burke/amazon-decisions.html">Decisions Awaiting You</a>
+  </div>
   <div class="group" data-cat="dashboards">
     <span class="group-label">Dashboards</span>
     <a class="nav-link" href="/teeccino-reports/burke/amazon.html">Profit &amp; Inventory</a>
