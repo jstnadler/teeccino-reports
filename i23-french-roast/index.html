@@ -48,7 +48,8 @@
 <header>
   <h1>img2threejs trial — Teeccino French Roast 500g</h1>
   <p class="sub">One reference photo → a 1139-line procedural Three.js factory, rendered live below.
-  Drag to orbit. Run 2026-08-05 by AgentSmith.</p>
+  Drag to orbit; the buttons switch between the raw output and four cycles of correction.
+  Run 2026-08-05 by AgentSmith.</p>
 </header>
 
 <div class="wrap">
@@ -65,6 +66,8 @@
         <button id="b-proj" aria-pressed="true">Projected (as generated)</button>
         <button id="b-proc" aria-pressed="false">Photo still baked in</button>
         <button id="b-proc2" aria-pressed="false">Truly photo-free</button>
+        <button id="b-c3" aria-pressed="false">Cycle 3</button>
+        <button id="b-c4" aria-pressed="false">Cycle 4</button>
         <button id="b-wire" aria-pressed="false">Wireframe</button>
         <button id="b-spin" aria-pressed="true">Spin</button>
       </div>
@@ -75,7 +78,8 @@
   <div class="verdict">
     <h2>What you're looking at</h2>
     <ol>
-      <li><b>It is not a bag — it is a T of flat slabs.</b> Every component the spec called
+      <li><b>As first generated it is not a bag — it is a T of flat slabs.</b> (Four cycles of
+      correction change this; see the loop below.) Every component the spec called
       <code>extrude</code> or <code>plane-card</code> came out as a card, so there is no pouch volume at
       all: no pillow bulge, no gusset, no side creases. Straight-on it can pass for a moment; a few
       degrees of rotation ends that.</li>
@@ -100,6 +104,51 @@
       falsification risk arrives the moment you push it through the surface pass to build that label
       procedurally.</li>
     </ol>
+  </div>
+
+
+  <div class="verdict" style="margin-top:22px">
+    <h2>The correction loop — 4 cycles, run 2026-08-05</h2>
+    <p style="margin:0 0 14px;color:var(--muted)">Each cycle: render → inspect against the reference →
+    name the defect → fix the spec → regenerate. The headline is that it got structurally
+    <i>righter</i> and texturally <i>worse</i>, and the two are in direct tension.</p>
+    <div class="grid">
+      <div class="card"><h2>Cycle 1 — volume appears</h2>
+        <div class="body"><img src="cycle1.jpg" alt="cycle 1"></div>
+        <div class="note"><b>Found:</b> everything was a flat 0.6×0.6 card.
+        <b>Cause:</b> the codegen reads <code>geometryDescriptor.profile2D</code> and silently falls back
+        to <code>_DEFAULT_EXTRUDE_PROFILE</code> when it is missing — my spec never authored one, and
+        <code>--strict-quality</code> does not check for it. <b>Fix:</b> authored pouch cross-sections.
+        Volume arrived, but the parts flew apart.</div></div>
+      <div class="card"><h2>Cycle 2 — it reads as the product</h2>
+        <div class="body"><img src="cycle2.jpg" alt="cycle 2"></div>
+        <div class="note"><b>Found:</b> body off-frame, texture still wallpapered 2×2.
+        <b>Cause:</b> a sign error in my own offset, plus <code>textureProjection.repeat</code> left at the
+        scaffold default. <b>Fix:</b> both. First render that looks like French Roast — with 5 decal cards
+        still floating beside it.</div></div>
+      <div class="card"><h2>Cycle 3 — best front, and the gate turns on it</h2>
+        <div class="body"><img src="cycle3.jpg" alt="cycle 3"></div>
+        <div class="note"><b>Found:</b> the label/logo/linework cards each re-drew the whole bag photo.
+        <b>Cause:</b> with a projected reference albedo the artwork is already on the surface — decal
+        geometry and photo projection are mutually exclusive, and nothing in the pipeline says so.
+        <b>Fix:</b> deleted them. The front is now clean — <b>and the spec now FAILS
+        <code>--strict-quality</code></b>: <i>"mesoComponents below qualityContract minimum (2 &lt; 3)"</i>.
+        Removing the wrong geometry made the render better and the score worse.</div></div>
+      <div class="card"><h2>Cycle 4 — correct geometry, ruined texture</h2>
+        <div class="body"><img src="cycle4-front.jpg" alt="cycle 4 front"></div>
+        <div class="note"><b>Found:</b> the bag lay on its side, the seal was a unit 1×1×1 cube.
+        <b>Cause:</b> three more of my own errors — rotation set on yaw not pitch, the <code>box</code>
+        primitive ignoring <code>dimensions{}</code> (only <code>transform.scale</code> is read), and a
+        <code>visible:false</code> field I invented that no schema reads. All three accepted silently.
+        <b>Result:</b> upright and correct — and the extrude side-wall UVs now wrap the photograph
+        <b>mirrored and upside down</b>. There is no planar front-projection UV mode for a generic
+        object; that path exists only for CS2 weapons and characters.</div></div>
+    </div>
+    <p style="margin:14px 0 0"><b>Where the loop lands.</b> Four cycles bought a real pouch volume and a
+    front view that reads as the product — but every gain came from <i>me</i> supplying geometry the
+    reference photo cannot contain, and the best-looking build is the one its own gate rejects. The
+    ceiling is not effort; it is that a single front photo has no back, no depth, and no way to project
+    onto volume without a UV mode this pipeline only ships for weapons.</p>
   </div>
 
   <div class="stills">
@@ -162,7 +211,7 @@ try {
   }
 
   async function load(which){
-    const src = which === 'proj' ? './model.js' : which === 'proc' ? './proc.js' : './proc2.js';
+    const src = {proj:'./model.js', proc:'./proc.js', proc2:'./proc2.js', c3:'./c3.js', c4:'./c4.js'}[which];
     if (!mods[which]) mods[which] = await import(src);
     const M = mods[which];
     if (current) { scene.remove(current); }
@@ -179,6 +228,8 @@ try {
     let meshes = 0; model.traverse(o => { if (o.isMesh) meshes++; });
     const label = which === 'proj' ? 'as generated — reference-derived albedo/roughness/normal/AO maps applied'
       : which === 'proc' ? 'material.albedo.map deleted from the spec — and the photo is STILL here, via material.referencePbr.maps'
+      : which === 'c3' ? 'cycle 3 — profile2D authored, decal cards removed: the front finally reads as the product'
+      : which === 'c4' ? 'cycle 4 — geometrically correct and upright, but the extrude side-wall UVs wrap the photo mirrored'
       : 'referencePbr stripped too — genuinely photo-free, and this variant FAILS --strict-quality';
     statEl.textContent = `${meshes} meshes · ${label} · drag to orbit, scroll to zoom`;
   }
@@ -201,13 +252,16 @@ try {
   const bProj = document.getElementById('b-proj'), bProc = document.getElementById('b-proc');
   const bWire = document.getElementById('b-wire'), bSpin = document.getElementById('b-spin');
   const bProc2 = document.getElementById('b-proc2');
+  const bC3 = document.getElementById('b-c3'), bC4 = document.getElementById('b-c4');
   const pick = (btn, which) => async () => {
-    for (const b of [bProj, bProc, bProc2]) b.ariaPressed = String(b === btn);
+    for (const b of [bProj, bProc, bProc2, bC3, bC4]) b.ariaPressed = String(b === btn);
     await load(which);
   };
   bProj.onclick = pick(bProj, 'proj');
   bProc.onclick = pick(bProc, 'proc');
   bProc2.onclick = pick(bProc2, 'proc2');
+  bC3.onclick = pick(bC3, 'c3');
+  bC4.onclick = pick(bC4, 'c4');
   bWire.onclick = () => { wire = !wire; bWire.ariaPressed = String(wire); applyWire(); };
   bSpin.onclick = () => { spin = !spin; bSpin.ariaPressed = String(spin); };
 
