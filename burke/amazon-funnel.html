@@ -1,0 +1,2049 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon Conversion &amp; Buy Box — Teeccino</title>
+<style>
+  /* Burke's portal palette (matches burke/amazon.html): dark forest-green surfaces.
+     Series colors are the dataviz-validated categorical triad for this surface —
+     #2E9E6F / #8C74E0 / #B8831F all PASS lightness band, chroma floor, CVD
+     separation (worst adjacent dE 18.0 deutan / 10.2 tritan), normal-vision
+     floor (dE 25.5) and 3:1 contrast vs #1a2a20. Do not substitute by eye. */
+  :root { --bg:#14211a; --card:#1a2a20; --ink:#e8eaed; --muted:#9aa0a6;
+          --line:#294036; --gold:#D4A843; --accent:#2E7D32;
+          --s1:#2E9E6F; --s2:#8C74E0; --s3:#B8831F;
+          --good:#199e70; --warn:#bd8a2c; --bad:#e0644f;
+          --grid:#22332a; --prov-bg:#12211a; --prov-ink:#d6efe3; --accent-ink:#1a1400; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:24px; }
+  body.has-portal-nav { padding-top:76px; }
+  .wrap { max-width:1060px; margin:0 auto; }
+  h1 { font-size:25px; margin:0 0 4px; }
+  h1 .amz { color:var(--gold); }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:16px; }
+  h2 { font-size:16px; border-bottom:1px solid var(--line); padding-bottom:6px; margin:34px 0 12px; }
+  h2 .tag { font-size:11px; color:var(--muted); font-weight:400; }
+  h3 { font-size:13px; color:var(--muted); font-weight:600; text-transform:uppercase;
+       letter-spacing:.05em; margin:18px 0 6px; }
+  .note { color:var(--muted); font-size:12.5px; margin:-4px 0 12px; line-height:1.5; }
+  .prov { background:var(--prov-bg); border:1px solid var(--good); border-radius:8px;
+          padding:12px 16px; font-size:12.5px; color:var(--prov-ink); margin-bottom:18px; line-height:1.55; }
+  .prov strong { color:var(--good); }
+  .warnbox { background:#231a12; border:1px solid var(--warn); border-left:4px solid var(--warn);
+             border-radius:8px; padding:12px 16px; font-size:12.5px; margin:14px 0 18px; line-height:1.6; }
+  .warnbox b { color:var(--warn); }
+  .warnbox code { font-family:ui-monospace,Consolas,monospace; font-size:11.5px; color:var(--gold); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:15px; }
+  .kpi .k { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .kpi .v { font-size:23px; font-weight:600; margin-top:5px; font-variant-numeric:tabular-nums; }
+  .kpi .d { font-size:12px; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .kpi .d .lyv { color:var(--muted); }
+  .up { color:var(--good); } .down { color:var(--bad); } .flat { color:var(--muted); }
+  .chart-wrap { background:var(--card); border:1px solid var(--line); border-radius:10px;
+                padding:14px 16px 8px; margin-top:8px; position:relative; }
+  .chart-wrap.joined-top { border-bottom-left-radius:0; border-bottom-right-radius:0;
+                           border-bottom:none; margin-bottom:0; padding-bottom:2px; }
+  .chart-wrap.joined-bot { border-top-left-radius:0; border-top-right-radius:0; margin-top:0; }
+  .ct { font-size:13px; font-weight:600; margin:0 0 2px; }
+  .cs { font-size:11.5px; color:var(--muted); margin:0 0 8px; }
+  .legend { display:flex; gap:14px; font-size:12px; color:var(--muted); margin:0 0 8px; flex-wrap:wrap; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .sw { width:14px; height:3px; border-radius:2px; display:inline-block; }
+  .sw.box { height:10px; }
+  svg { display:block; width:100%; overflow:visible; }
+  .gridline { stroke:var(--grid); stroke-width:1; }
+  .axis { stroke:var(--line); stroke-width:1; }
+  .axl { fill:var(--muted); font-size:10.5px; }
+  .dlab { font-size:11px; font-weight:600; }
+  table { width:100%; border-collapse:collapse; margin-top:6px; }
+  th,td { text-align:right; padding:6px 9px; border-bottom:1px solid var(--line);
+          font-variant-numeric:tabular-nums; font-size:12.5px; }
+  th:first-child,td:first-child { text-align:left; }
+  th { color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; }
+  tr.tot td { border-top:2px solid var(--good); border-bottom:none; font-weight:700; }
+  td.asin { font-family:ui-monospace,Consolas,monospace; color:var(--gold); font-size:11.5px; }
+  td.nm { color:var(--muted); font-size:11.5px; max-width:230px; overflow:hidden;
+          text-overflow:ellipsis; white-space:nowrap; }
+  .tbl-scroll { overflow-x:auto; }
+  .pill { display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase;
+          letter-spacing:.06em; padding:3px 9px; border-radius:999px; vertical-align:middle; margin-left:8px; }
+  .pill.ok { background:rgba(25,158,112,.16); color:var(--good); border:1px solid var(--good); }
+  .pill.op { background:rgba(212,168,67,.14); color:var(--gold); border:1px solid var(--gold); }
+  .pill.no { background:rgba(224,100,79,.14); color:var(--bad); border:1px solid var(--bad); }
+  .tip { position:absolute; pointer-events:none; opacity:0; transition:opacity .08s;
+         background:#0d1712; border:1px solid var(--line); border-radius:7px; padding:8px 10px;
+         font-size:11.5px; line-height:1.5; box-shadow:0 6px 20px rgba(0,0,0,.5); z-index:40;
+         white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .tip b { display:block; margin-bottom:3px; font-size:11px; color:var(--muted);
+           text-transform:uppercase; letter-spacing:.05em; }
+  .tip i { width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:5px; }
+  .gl { font-size:12.5px; line-height:1.65; }
+  .gl dt { color:var(--gold); font-weight:600; margin-top:9px; font-size:12px; }
+  .gl dd { margin:1px 0 0; color:var(--muted); }
+  footer { color:var(--muted); font-size:11.5px; margin-top:38px; padding-top:14px;
+           border-top:1px solid var(--line); line-height:1.6; }
+</style>
+</head>
+<body>
+<div id="portal-nav"></div>
+<div class="wrap">
+
+<h1>Amazon <span class="amz">Conversion &amp; Buy Box</span></h1>
+<p class="sub" id="subline"></p>
+
+<div class="prov" id="provtop"></div>
+
+<h2>Headline — latest complete month <span class="tag" id="hdtag"></span></h2>
+<p class="note">Every delta on this page is <b>year-over-year, same month</b>. Conversion on this
+  account swings ~8 points seasonally, so a month-over-month change tells you almost nothing.</p>
+<div class="grid" id="kpis"></div>
+
+<h2>The core view — traffic up, conversion down</h2>
+<p class="note">One line per year, x-axis is <b>month of the year</b>. Read <i>vertically</i>:
+  compare the same month across years. The two panels share an x-axis so you can see that sessions
+  rose and conversion fell in the same months. Both panels are deliberately on separate scales in
+  separate frames — never one chart with two y-axes.</p>
+<div id="core"></div>
+
+<h2>Cost of the conversion gap</h2>
+<p class="note">If each month had converted at <i>last year's same-month rate</i> on
+  <i>this year's</i> traffic, this is the volume and gross revenue the gap represents.
+  It is an opportunity size, not a forecast — it assumes traffic quality is unchanged, which is
+  itself the open question (see the offer-count panel).</p>
+<div id="gappanel"></div>
+
+<h2>Buy Box <span class="tag">— resolved; no action needed</span></h2>
+<div id="bbpanel"></div>
+
+<h2>Where the traffic comes from, and who we're up against</h2>
+<div id="mixpanel"></div>
+
+<h2>Repeat purchase <span class="tag">— aggregate only</span></h2>
+<div id="reppanel"></div>
+
+<h2>Cross-sell: what gets bought together</h2>
+<div id="baskpanel"></div>
+
+<h2>Per-ASIN funnel <span class="tag">— ASIN grain only</span></h2>
+<div id="asinpanel"></div>
+
+<h2>Provenance &amp; glossary</h2>
+<div id="provpanel"></div>
+
+<footer id="foot"></footer>
+</div>
+
+<script id="payload" type="application/json">{
+ "built": "2026-08-04",
+ "monthly": [
+  {
+   "m": "2024-08",
+   "sessions": 63036,
+   "browser": 27060,
+   "mobile": 35976,
+   "pv": 86316,
+   "units": 22012,
+   "order_items": 20437,
+   "cvr": 34.92,
+   "oicvr": 32.421,
+   "bb": 96.681,
+   "aoc": 232.3,
+   "upo": 1.077,
+   "fb": 64,
+   "negfb": 0,
+   "days": 18,
+   "expected": 31,
+   "complete": false
+  },
+  {
+   "m": "2024-09",
+   "sessions": 119129,
+   "browser": 50679,
+   "mobile": 68450,
+   "pv": 165516,
+   "units": 40539,
+   "order_items": 37572,
+   "cvr": 34.029,
+   "oicvr": 31.539,
+   "bb": 95.771,
+   "aoc": 230.3,
+   "upo": 1.079,
+   "fb": 149,
+   "negfb": 2,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2024-10",
+   "sessions": 130908,
+   "browser": 55602,
+   "mobile": 75306,
+   "pv": 182458,
+   "units": 44086,
+   "order_items": 40907,
+   "cvr": 33.677,
+   "oicvr": 31.249,
+   "bb": 97.228,
+   "aoc": 231.7,
+   "upo": 1.078,
+   "fb": 155,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2024-11",
+   "sessions": 136175,
+   "browser": 58199,
+   "mobile": 77976,
+   "pv": 193982,
+   "units": 45850,
+   "order_items": 42481,
+   "cvr": 33.67,
+   "oicvr": 31.196,
+   "bb": 95.625,
+   "aoc": 226.9,
+   "upo": 1.079,
+   "fb": 105,
+   "negfb": 0,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2024-12",
+   "sessions": 139063,
+   "browser": 58810,
+   "mobile": 80253,
+   "pv": 196174,
+   "units": 47690,
+   "order_items": 44263,
+   "cvr": 34.294,
+   "oicvr": 31.829,
+   "bb": 96.784,
+   "aoc": 220.7,
+   "upo": 1.077,
+   "fb": 68,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-01",
+   "sessions": 164831,
+   "browser": 64543,
+   "mobile": 100288,
+   "pv": 235717,
+   "units": 51934,
+   "order_items": 48695,
+   "cvr": 31.507,
+   "oicvr": 29.542,
+   "bb": 97.272,
+   "aoc": 226.7,
+   "upo": 1.067,
+   "fb": 78,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-02",
+   "sessions": 132378,
+   "browser": 52967,
+   "mobile": 79411,
+   "pv": 186012,
+   "units": 43724,
+   "order_items": 41028,
+   "cvr": 33.03,
+   "oicvr": 30.993,
+   "bb": 97.335,
+   "aoc": 235.2,
+   "upo": 1.066,
+   "fb": 101,
+   "negfb": 0,
+   "days": 28,
+   "expected": 28,
+   "complete": true
+  },
+  {
+   "m": "2025-03",
+   "sessions": 130556,
+   "browser": 52792,
+   "mobile": 77764,
+   "pv": 185850,
+   "units": 44534,
+   "order_items": 41638,
+   "cvr": 34.111,
+   "oicvr": 31.893,
+   "bb": 96.31,
+   "aoc": 250.1,
+   "upo": 1.07,
+   "fb": 97,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-04",
+   "sessions": 124104,
+   "browser": 50240,
+   "mobile": 73864,
+   "pv": 171167,
+   "units": 42979,
+   "order_items": 40265,
+   "cvr": 34.631,
+   "oicvr": 32.445,
+   "bb": 96.045,
+   "aoc": 266.6,
+   "upo": 1.067,
+   "fb": 72,
+   "negfb": 0,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2025-05",
+   "sessions": 114753,
+   "browser": 46780,
+   "mobile": 67973,
+   "pv": 156519,
+   "units": 41797,
+   "order_items": 39146,
+   "cvr": 36.423,
+   "oicvr": 34.113,
+   "bb": 95.496,
+   "aoc": 272.6,
+   "upo": 1.068,
+   "fb": 97,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-06",
+   "sessions": 98938,
+   "browser": 39405,
+   "mobile": 59533,
+   "pv": 135557,
+   "units": 38029,
+   "order_items": 35639,
+   "cvr": 38.437,
+   "oicvr": 36.022,
+   "bb": 96.143,
+   "aoc": 278.9,
+   "upo": 1.067,
+   "fb": 75,
+   "negfb": 3,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2025-07",
+   "sessions": 104934,
+   "browser": 41497,
+   "mobile": 63437,
+   "pv": 145108,
+   "units": 39582,
+   "order_items": 36815,
+   "cvr": 37.721,
+   "oicvr": 35.084,
+   "bb": 95.954,
+   "aoc": 280.5,
+   "upo": 1.075,
+   "fb": 66,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-08",
+   "sessions": 107368,
+   "browser": 40585,
+   "mobile": 66783,
+   "pv": 147010,
+   "units": 40201,
+   "order_items": 37844,
+   "cvr": 37.442,
+   "oicvr": 35.247,
+   "bb": 96.707,
+   "aoc": 277.7,
+   "upo": 1.062,
+   "fb": 72,
+   "negfb": 4,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-09",
+   "sessions": 117716,
+   "browser": 46260,
+   "mobile": 71456,
+   "pv": 152849,
+   "units": 42544,
+   "order_items": 39809,
+   "cvr": 36.141,
+   "oicvr": 33.818,
+   "bb": 97.035,
+   "aoc": 287.4,
+   "upo": 1.069,
+   "fb": 72,
+   "negfb": 0,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2025-10",
+   "sessions": 150148,
+   "browser": 57842,
+   "mobile": 92306,
+   "pv": 195246,
+   "units": 50137,
+   "order_items": 46842,
+   "cvr": 33.392,
+   "oicvr": 31.197,
+   "bb": 95.622,
+   "aoc": 296.5,
+   "upo": 1.07,
+   "fb": 90,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2025-11",
+   "sessions": 168898,
+   "browser": 63960,
+   "mobile": 104938,
+   "pv": 228915,
+   "units": 53802,
+   "order_items": 50236,
+   "cvr": 31.855,
+   "oicvr": 29.743,
+   "bb": 96.155,
+   "aoc": 294.1,
+   "upo": 1.071,
+   "fb": 67,
+   "negfb": 0,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2025-12",
+   "sessions": 175657,
+   "browser": 65008,
+   "mobile": 110649,
+   "pv": 232879,
+   "units": 57264,
+   "order_items": 53629,
+   "cvr": 32.6,
+   "oicvr": 30.531,
+   "bb": 96.775,
+   "aoc": 292.3,
+   "upo": 1.068,
+   "fb": 85,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2026-01",
+   "sessions": 207161,
+   "browser": 73719,
+   "mobile": 133442,
+   "pv": 273084,
+   "units": 63356,
+   "order_items": 59711,
+   "cvr": 30.583,
+   "oicvr": 28.823,
+   "bb": 97.983,
+   "aoc": 287.5,
+   "upo": 1.061,
+   "fb": 99,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2026-02",
+   "sessions": 162720,
+   "browser": 59320,
+   "mobile": 103400,
+   "pv": 211415,
+   "units": 53850,
+   "order_items": 50814,
+   "cvr": 33.094,
+   "oicvr": 31.228,
+   "bb": 97.333,
+   "aoc": 278.5,
+   "upo": 1.06,
+   "fb": 93,
+   "negfb": 0,
+   "days": 28,
+   "expected": 28,
+   "complete": true
+  },
+  {
+   "m": "2026-03",
+   "sessions": 156703,
+   "browser": 57847,
+   "mobile": 98856,
+   "pv": 206916,
+   "units": 55110,
+   "order_items": 51876,
+   "cvr": 35.168,
+   "oicvr": 33.105,
+   "bb": 96.801,
+   "aoc": 272.0,
+   "upo": 1.062,
+   "fb": 109,
+   "negfb": 1,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2026-04",
+   "sessions": 135998,
+   "browser": 50205,
+   "mobile": 85793,
+   "pv": 177253,
+   "units": 48544,
+   "order_items": 45710,
+   "cvr": 35.695,
+   "oicvr": 33.611,
+   "bb": 97.066,
+   "aoc": 265.1,
+   "upo": 1.062,
+   "fb": 72,
+   "negfb": 0,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2026-05",
+   "sessions": 137499,
+   "browser": 49564,
+   "mobile": 87935,
+   "pv": 179515,
+   "units": 47669,
+   "order_items": 44695,
+   "cvr": 34.669,
+   "oicvr": 32.506,
+   "bb": 95.173,
+   "aoc": 262.6,
+   "upo": 1.067,
+   "fb": 72,
+   "negfb": 0,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2026-06",
+   "sessions": 138803,
+   "browser": 48414,
+   "mobile": 90389,
+   "pv": 182358,
+   "units": 49539,
+   "order_items": 46181,
+   "cvr": 35.69,
+   "oicvr": 33.271,
+   "bb": 95.154,
+   "aoc": 258.7,
+   "upo": 1.073,
+   "fb": 56,
+   "negfb": 2,
+   "days": 30,
+   "expected": 30,
+   "complete": true
+  },
+  {
+   "m": "2026-07",
+   "sessions": 123369,
+   "browser": 43796,
+   "mobile": 79573,
+   "pv": 162332,
+   "units": 43567,
+   "order_items": 40795,
+   "cvr": 35.314,
+   "oicvr": 33.067,
+   "bb": 95.701,
+   "aoc": 254.5,
+   "upo": 1.068,
+   "fb": 106,
+   "negfb": 1,
+   "days": 31,
+   "expected": 31,
+   "complete": true
+  },
+  {
+   "m": "2026-08",
+   "sessions": 12618,
+   "browser": 4356,
+   "mobile": 8262,
+   "pv": 16814,
+   "units": 4916,
+   "order_items": 4590,
+   "cvr": 38.96,
+   "oicvr": 36.377,
+   "bb": 96.213,
+   "aoc": 249.7,
+   "upo": 1.071,
+   "fb": 8,
+   "negfb": 0,
+   "days": 3,
+   "expected": 31,
+   "complete": false
+  }
+ ],
+ "latest": "2026-07",
+ "prior": "2025-07",
+ "yoy": [
+  {
+   "m": "2025-09",
+   "sess": 117716,
+   "sess_ly": 119129,
+   "sess_pct": -1.2,
+   "cvr": 36.141,
+   "cvr_ly": 34.029,
+   "cvr_pp": 2.11,
+   "units": 42544,
+   "units_ly": 40539,
+   "units_pct": 4.9,
+   "bb": 97.035,
+   "bb_ly": 95.771
+  },
+  {
+   "m": "2025-10",
+   "sess": 150148,
+   "sess_ly": 130908,
+   "sess_pct": 14.7,
+   "cvr": 33.392,
+   "cvr_ly": 33.677,
+   "cvr_pp": -0.28,
+   "units": 50137,
+   "units_ly": 44086,
+   "units_pct": 13.7,
+   "bb": 95.622,
+   "bb_ly": 97.228
+  },
+  {
+   "m": "2025-11",
+   "sess": 168898,
+   "sess_ly": 136175,
+   "sess_pct": 24.0,
+   "cvr": 31.855,
+   "cvr_ly": 33.67,
+   "cvr_pp": -1.82,
+   "units": 53802,
+   "units_ly": 45850,
+   "units_pct": 17.3,
+   "bb": 96.155,
+   "bb_ly": 95.625
+  },
+  {
+   "m": "2025-12",
+   "sess": 175657,
+   "sess_ly": 139063,
+   "sess_pct": 26.3,
+   "cvr": 32.6,
+   "cvr_ly": 34.294,
+   "cvr_pp": -1.69,
+   "units": 57264,
+   "units_ly": 47690,
+   "units_pct": 20.1,
+   "bb": 96.775,
+   "bb_ly": 96.784
+  },
+  {
+   "m": "2026-01",
+   "sess": 207161,
+   "sess_ly": 164831,
+   "sess_pct": 25.7,
+   "cvr": 30.583,
+   "cvr_ly": 31.507,
+   "cvr_pp": -0.92,
+   "units": 63356,
+   "units_ly": 51934,
+   "units_pct": 22.0,
+   "bb": 97.983,
+   "bb_ly": 97.272
+  },
+  {
+   "m": "2026-02",
+   "sess": 162720,
+   "sess_ly": 132378,
+   "sess_pct": 22.9,
+   "cvr": 33.094,
+   "cvr_ly": 33.03,
+   "cvr_pp": 0.06,
+   "units": 53850,
+   "units_ly": 43724,
+   "units_pct": 23.2,
+   "bb": 97.333,
+   "bb_ly": 97.335
+  },
+  {
+   "m": "2026-03",
+   "sess": 156703,
+   "sess_ly": 130556,
+   "sess_pct": 20.0,
+   "cvr": 35.168,
+   "cvr_ly": 34.111,
+   "cvr_pp": 1.06,
+   "units": 55110,
+   "units_ly": 44534,
+   "units_pct": 23.7,
+   "bb": 96.801,
+   "bb_ly": 96.31
+  },
+  {
+   "m": "2026-04",
+   "sess": 135998,
+   "sess_ly": 124104,
+   "sess_pct": 9.6,
+   "cvr": 35.695,
+   "cvr_ly": 34.631,
+   "cvr_pp": 1.06,
+   "units": 48544,
+   "units_ly": 42979,
+   "units_pct": 12.9,
+   "bb": 97.066,
+   "bb_ly": 96.045
+  },
+  {
+   "m": "2026-05",
+   "sess": 137499,
+   "sess_ly": 114753,
+   "sess_pct": 19.8,
+   "cvr": 34.669,
+   "cvr_ly": 36.423,
+   "cvr_pp": -1.75,
+   "units": 47669,
+   "units_ly": 41797,
+   "units_pct": 14.0,
+   "bb": 95.173,
+   "bb_ly": 95.496
+  },
+  {
+   "m": "2026-06",
+   "sess": 138803,
+   "sess_ly": 98938,
+   "sess_pct": 40.3,
+   "cvr": 35.69,
+   "cvr_ly": 38.437,
+   "cvr_pp": -2.75,
+   "units": 49539,
+   "units_ly": 38029,
+   "units_pct": 30.3,
+   "bb": 95.154,
+   "bb_ly": 96.143
+  },
+  {
+   "m": "2026-07",
+   "sess": 123369,
+   "sess_ly": 104934,
+   "sess_pct": 17.6,
+   "cvr": 35.314,
+   "cvr_ly": 37.721,
+   "cvr_pp": -2.41,
+   "units": 43567,
+   "units_ly": 39582,
+   "units_pct": 10.1,
+   "bb": 95.701,
+   "bb_ly": 95.954
+  }
+ ],
+ "gap": [
+  {
+   "m": "2026-05",
+   "sessions": 137499,
+   "cvr_ty": 34.669,
+   "cvr_ly": 36.423,
+   "delta_pp": 1.754,
+   "units": 2412,
+   "dollars": 41334
+  },
+  {
+   "m": "2026-06",
+   "sessions": 138803,
+   "cvr_ty": 35.69,
+   "cvr_ly": 38.437,
+   "delta_pp": 2.747,
+   "units": 3813,
+   "dollars": 65348
+  },
+  {
+   "m": "2026-07",
+   "sessions": 123369,
+   "cvr_ty": 35.314,
+   "cvr_ly": 37.721,
+   "delta_pp": 2.407,
+   "units": 2969,
+   "dollars": 50893
+  }
+ ],
+ "gap_tot": {
+  "units": 9194,
+  "dollars": 157575,
+  "months": 3,
+  "per_month": 52525
+ },
+ "blended_gpu": 17.1387,
+ "gap_months": [
+  "2026-05",
+  "2026-06",
+  "2026-07"
+ ],
+ "asin_funnel": [
+  {
+   "asin": "B071ZTFGFT",
+   "sessions": 12992,
+   "pv": 18258,
+   "units": 4110,
+   "cvr": 31.63,
+   "bb": 99.2,
+   "alias_rows": 2,
+   "name": "Worldwide Botanicals French Chicory Root, 1 Pound - Brew Like Co"
+  },
+  {
+   "asin": "B07DWBJ6D8",
+   "sessions": 7900,
+   "pv": 10950,
+   "units": 1063,
+   "cvr": 13.46,
+   "bb": 99.7,
+   "alias_rows": 2,
+   "name": "Herbal Tea Sampler Assortment - 12 Tea Bags - Maca Chocolate\u0301, F"
+  },
+  {
+   "asin": "B076BZZC6M",
+   "sessions": 6850,
+   "pv": 9418,
+   "units": 2205,
+   "cvr": 32.19,
+   "bb": 99.0,
+   "alias_rows": 2,
+   "name": "Worldwide Botanicals Organic French Chicory Root, 1 Pound - Brew"
+  },
+  {
+   "asin": "B07D9X8NZH",
+   "sessions": 6480,
+   "pv": 8760,
+   "units": 864,
+   "cvr": 13.33,
+   "bb": 99.3,
+   "alias_rows": 2,
+   "name": "Dandelion Dark Roast Herbal Coffee - 10 oz"
+  },
+  {
+   "asin": "B09S7D8DR5",
+   "sessions": 6102,
+   "pv": 8152,
+   "units": 1301,
+   "cvr": 21.32,
+   "bb": 99.4,
+   "alias_rows": 2,
+   "name": "Worldwide Botanicals Organic Lemon Balm Tea, 6 Ounces - Loose Le"
+  },
+  {
+   "asin": "B00N9UHFZG",
+   "sessions": 5703,
+   "pv": 8103,
+   "units": 1809,
+   "cvr": 31.72,
+   "bb": 99.1,
+   "alias_rows": 1,
+   "name": "French Roast Chicory Coffee Alternative, 11 Ounce: Ground Herbal"
+  },
+  {
+   "asin": "B08BXDRRNJ",
+   "sessions": 3794,
+   "pv": 4892,
+   "units": 488,
+   "cvr": 12.86,
+   "bb": 98.9,
+   "alias_rows": 2,
+   "name": "Mushroom Herbal Tea - Mushroom Adaptogen Tea Sampler - 12 Tea Ba"
+  },
+  {
+   "asin": "B0DTVF3RT1",
+   "sessions": 3634,
+   "pv": 4737,
+   "units": 1359,
+   "cvr": 37.4,
+   "bb": 99.5,
+   "alias_rows": 1,
+   "name": "Worldwide Botanicals Organic Hibiscus Tea \u2013 8 oz, Loose Leaf, Cu"
+  },
+  {
+   "asin": "B07KKND5ZZ",
+   "sessions": 2982,
+   "pv": 3994,
+   "units": 736,
+   "cvr": 24.68,
+   "bb": 99.3,
+   "alias_rows": 2,
+   "name": "Worldwide Botanicals Organic Peppermint Loose Leaf Tea, 4 oz - P"
+  },
+  {
+   "asin": "B07FDPWMJ1",
+   "sessions": 2903,
+   "pv": 3906,
+   "units": 835,
+   "cvr": 28.76,
+   "bb": 99.2,
+   "alias_rows": 1,
+   "name": "Dandelion Tea Sampler - 12 Tea Bags - Caramel Nut, Coconut, Dark"
+  },
+  {
+   "asin": "B0F2B3CQ7W",
+   "sessions": 2161,
+   "pv": 2853,
+   "units": 721,
+   "cvr": 33.36,
+   "bb": 98.9,
+   "alias_rows": 1,
+   "name": "Worldwide Botanicals Organic Burdock Root \u2013 1 lb - 100% Arctium "
+  },
+  {
+   "asin": "B0F4Y75TVB",
+   "sessions": 1933,
+   "pv": 2672,
+   "units": 638,
+   "cvr": 33.01,
+   "bb": 99.0,
+   "alias_rows": 1,
+   "name": "Miraculous Mushrooms Adapt & Protect Coffee Alternative, 10 Oz \u2013"
+  },
+  {
+   "asin": "B0FMLPG2R4",
+   "sessions": 1899,
+   "pv": 2539,
+   "units": 327,
+   "cvr": 17.22,
+   "bb": 99.5,
+   "alias_rows": 1,
+   "name": "Instant Organic Dandelion Blend \u2013 33 servings \u2013 Gluten Free Inst"
+  },
+  {
+   "asin": "B08KWM17L3",
+   "sessions": 1819,
+   "pv": 2350,
+   "units": 495,
+   "cvr": 27.21,
+   "bb": 84.9,
+   "alias_rows": 1,
+   "name": "Dark Chocolate Prebiotic SuperBoostTM Coffee Alternative - 10 Ou"
+  },
+  {
+   "asin": "B0789SWQV8",
+   "sessions": 1805,
+   "pv": 2547,
+   "units": 533,
+   "cvr": 29.53,
+   "bb": 99.4,
+   "alias_rows": 1,
+   "name": "Worldwide Botanicals Organic Barley, Dark Roast \u2013 1 lb \u2013Italy's "
+  }
+ ],
+ "asin_period": "2026-07-01",
+ "alias_ev": {
+  "sku_sum": 147205,
+  "asin_sum": 120104
+ },
+ "alias_pairs": [
+  {
+   "child_asin": "B071ZTFGFT",
+   "skus": "10031 / 10031L",
+   "n": 2,
+   "lo": 6496,
+   "hi": 6496,
+   "units": 4110
+  },
+  {
+   "child_asin": "B07DWBJ6D8",
+   "skus": "40001 / 40001l",
+   "n": 2,
+   "lo": 3950,
+   "hi": 3950,
+   "units": 1063
+  },
+  {
+   "child_asin": "B076BZZC6M",
+   "skus": "10051 / 10051L",
+   "n": 2,
+   "lo": 3425,
+   "hi": 3425,
+   "units": 2205
+  },
+  {
+   "child_asin": "B07D9X8NZH",
+   "skus": "83110 / 83110L",
+   "n": 2,
+   "lo": 3240,
+   "hi": 3240,
+   "units": 864
+  },
+  {
+   "child_asin": "B09S7D8DR5",
+   "skus": "10006 / 10006L",
+   "n": 2,
+   "lo": 3051,
+   "hi": 3051,
+   "units": 1301
+  }
+ ],
+ "repeat": [
+  {
+   "m": "2024-02",
+   "asins": 237,
+   "orders": 46819,
+   "uniq": 43973,
+   "rcp": 5.7,
+   "rrev": 48353.0,
+   "rrevpct": 7.63
+  },
+  {
+   "m": "2024-03",
+   "asins": 241,
+   "orders": 48551,
+   "uniq": 45258,
+   "rcp": 6.4,
+   "rrev": 56484.0,
+   "rrevpct": 8.36
+  },
+  {
+   "m": "2024-04",
+   "asins": 239,
+   "orders": 44316,
+   "uniq": 41512,
+   "rcp": 5.97,
+   "rrev": 48286.0,
+   "rrevpct": 7.76
+  },
+  {
+   "m": "2024-05",
+   "asins": 240,
+   "orders": 44597,
+   "uniq": 41628,
+   "rcp": 6.26,
+   "rrev": 50811.0,
+   "rrevpct": 8.15
+  },
+  {
+   "m": "2024-06",
+   "asins": 238,
+   "orders": 40305,
+   "uniq": 37538,
+   "rcp": 6.4,
+   "rrev": 46597.0,
+   "rrevpct": 8.6
+  },
+  {
+   "m": "2024-07",
+   "asins": 243,
+   "orders": 39246,
+   "uniq": 36654,
+   "rcp": 6.26,
+   "rrev": 45882.0,
+   "rrevpct": 8.36
+  },
+  {
+   "m": "2024-08",
+   "asins": 253,
+   "orders": 41245,
+   "uniq": 38502,
+   "rcp": 6.23,
+   "rrev": 46737.0,
+   "rrevpct": 8.36
+  },
+  {
+   "m": "2024-09",
+   "asins": 249,
+   "orders": 45220,
+   "uniq": 42290,
+   "rcp": 6.02,
+   "rrev": 53533.0,
+   "rrevpct": 8.6
+  },
+  {
+   "m": "2024-10",
+   "asins": 246,
+   "orders": 48903,
+   "uniq": 45572,
+   "rcp": 6.39,
+   "rrev": 57047.0,
+   "rrevpct": 8.76
+  },
+  {
+   "m": "2024-11",
+   "asins": 247,
+   "orders": 50364,
+   "uniq": 47332,
+   "rcp": 5.62,
+   "rrev": 54418.0,
+   "rrevpct": 7.66
+  },
+  {
+   "m": "2024-12",
+   "asins": 247,
+   "orders": 51406,
+   "uniq": 48336,
+   "rcp": 5.55,
+   "rrev": 56437.0,
+   "rrevpct": 7.76
+  },
+  {
+   "m": "2025-01",
+   "asins": 252,
+   "orders": 55607,
+   "uniq": 52379,
+   "rcp": 5.41,
+   "rrev": 57028.0,
+   "rrevpct": 7.64
+  },
+  {
+   "m": "2025-02",
+   "asins": 252,
+   "orders": 47340,
+   "uniq": 44676,
+   "rcp": 5.3,
+   "rrev": 47172.0,
+   "rrevpct": 7.07
+  },
+  {
+   "m": "2025-03",
+   "asins": 254,
+   "orders": 48643,
+   "uniq": 45346,
+   "rcp": 6.29,
+   "rrev": 57290.0,
+   "rrevpct": 8.36
+  },
+  {
+   "m": "2025-04",
+   "asins": 274,
+   "orders": 46931,
+   "uniq": 44223,
+   "rcp": 5.46,
+   "rrev": 49330.0,
+   "rrevpct": 7.53
+  },
+  {
+   "m": "2025-05",
+   "asins": 283,
+   "orders": 45480,
+   "uniq": 42748,
+   "rcp": 5.67,
+   "rrev": 49219.0,
+   "rrevpct": 8.03
+  },
+  {
+   "m": "2025-06",
+   "asins": 287,
+   "orders": 41556,
+   "uniq": 39054,
+   "rcp": 5.59,
+   "rrev": 45457.0,
+   "rrevpct": 8.07
+  },
+  {
+   "m": "2025-07",
+   "asins": 286,
+   "orders": 42374,
+   "uniq": 39882,
+   "rcp": 5.55,
+   "rrev": 44695.0,
+   "rrevpct": 7.83
+  },
+  {
+   "m": "2025-08",
+   "asins": 297,
+   "orders": 43360,
+   "uniq": 40664,
+   "rcp": 5.8,
+   "rrev": 48908.0,
+   "rrevpct": 8.51
+  },
+  {
+   "m": "2025-09",
+   "asins": 295,
+   "orders": 45271,
+   "uniq": 42549,
+   "rcp": 5.65,
+   "rrev": 48905.0,
+   "rrevpct": 7.9
+  },
+  {
+   "m": "2025-10",
+   "asins": 298,
+   "orders": 53131,
+   "uniq": 50125,
+   "rcp": 5.26,
+   "rrev": 58226.0,
+   "rrevpct": 8.33
+  },
+  {
+   "m": "2025-11",
+   "asins": 304,
+   "orders": 56658,
+   "uniq": 53486,
+   "rcp": 5.17,
+   "rrev": 60261.0,
+   "rrevpct": 7.99
+  },
+  {
+   "m": "2025-12",
+   "asins": 307,
+   "orders": 60016,
+   "uniq": 56658,
+   "rcp": 5.21,
+   "rrev": 63067.0,
+   "rrevpct": 7.93
+  },
+  {
+   "m": "2026-01",
+   "asins": 309,
+   "orders": 65727,
+   "uniq": 62179,
+   "rcp": 5.06,
+   "rrev": 66078.0,
+   "rrevpct": 7.84
+  },
+  {
+   "m": "2026-02",
+   "asins": 305,
+   "orders": 56890,
+   "uniq": 54031,
+   "rcp": 4.69,
+   "rrev": 52853.0,
+   "rrevpct": 7.09
+  },
+  {
+   "m": "2026-03",
+   "asins": 298,
+   "orders": 58034,
+   "uniq": 54579,
+   "rcp": 5.45,
+   "rrev": 66439.0,
+   "rrevpct": 8.2
+  },
+  {
+   "m": "2026-04",
+   "asins": 286,
+   "orders": 51617,
+   "uniq": 48581,
+   "rcp": 5.43,
+   "rrev": 58579.0,
+   "rrevpct": 8.09
+  },
+  {
+   "m": "2026-05",
+   "asins": 276,
+   "orders": 50331,
+   "uniq": 47210,
+   "rcp": 5.7,
+   "rrev": 60675.0,
+   "rrevpct": 8.36
+  },
+  {
+   "m": "2026-06",
+   "asins": 290,
+   "orders": 51635,
+   "uniq": 48568,
+   "rcp": 5.55,
+   "rrev": 57717.0,
+   "rrevpct": 8.33
+  },
+  {
+   "m": "2026-07",
+   "asins": 291,
+   "orders": 45790,
+   "uniq": 43073,
+   "rcp": 5.52,
+   "rrev": 52262.0,
+   "rrevpct": 8.26
+  }
+ ],
+ "repeat_top": [
+  {
+   "asin": "B071ZTFGFT",
+   "orders": 4205,
+   "uniq": 3926,
+   "rcp": 6.32,
+   "rrev": 4295.0,
+   "name": "Worldwide Botanicals French Chicory Root, 1 Pound - Brew Like Co"
+  },
+  {
+   "asin": "B076BZZC6M",
+   "orders": 2230,
+   "uniq": 2085,
+   "rcp": 6.33,
+   "rrev": 2442.0,
+   "name": "Worldwide Botanicals Organic French Chicory Root, 1 Pound - Brew"
+  },
+  {
+   "asin": "B00N9UHFZG",
+   "orders": 1796,
+   "uniq": 1645,
+   "rcp": 7.9,
+   "rrev": 2576.0,
+   "name": "French Roast Chicory Coffee Alternative, 11 Ounce: Ground Herbal"
+  },
+  {
+   "asin": "B0DTVF3RT1",
+   "orders": 1354,
+   "uniq": 1310,
+   "rcp": 2.75,
+   "rrev": 419.0,
+   "name": "Worldwide Botanicals Organic Hibiscus Tea \u2013 8 oz, Loose Leaf, Cu"
+  },
+  {
+   "asin": "B09S7D8DR5",
+   "orders": 1337,
+   "uniq": 1309,
+   "rcp": 1.99,
+   "rrev": 477.0,
+   "name": "Worldwide Botanicals Organic Lemon Balm Tea, 6 Ounces - Loose Le"
+  },
+  {
+   "asin": "B07DWBJ6D8",
+   "orders": 1083,
+   "uniq": 1029,
+   "rcp": 4.76,
+   "rrev": 665.0,
+   "name": "Herbal Tea Sampler Assortment - 12 Tea Bags - Maca Chocolate\u0301, F"
+  },
+  {
+   "asin": "B07D9X8NZH",
+   "orders": 902,
+   "uniq": 825,
+   "rcp": 8.12,
+   "rrev": 1583.0,
+   "name": "Dandelion Dark Roast Herbal Coffee - 10 oz"
+  },
+  {
+   "asin": "B07FDPWMJ1",
+   "orders": 846,
+   "uniq": 819,
+   "rcp": 2.69,
+   "rrev": 279.0,
+   "name": "Dandelion Tea Sampler - 12 Tea Bags - Caramel Nut, Coconut, Dark"
+  },
+  {
+   "asin": "B00C6X6E4K",
+   "orders": 747,
+   "uniq": 669,
+   "rcp": 10.01,
+   "rrev": 1502.0,
+   "name": "Dandelion Herbal Tea - Dark Roast - 25 Tea Bags"
+  },
+  {
+   "asin": "B07KKND5ZZ",
+   "orders": 745,
+   "uniq": 729,
+   "rcp": 2.06,
+   "rrev": 255.0,
+   "name": "Worldwide Botanicals Organic Peppermint Loose Leaf Tea, 4 oz - P"
+  },
+  {
+   "asin": "B0F2B3CQ7W",
+   "orders": 728,
+   "uniq": 710,
+   "rcp": 2.11,
+   "rrev": 300.0,
+   "name": "Worldwide Botanicals Organic Burdock Root \u2013 1 lb - 100% Arctium "
+  },
+  {
+   "asin": "B008233AU4",
+   "orders": 702,
+   "uniq": 656,
+   "rcp": 5.49,
+   "rrev": 690.0,
+   "name": "Hazelnut - 11 Ounce"
+  }
+ ],
+ "repeat_period": [
+  "2026-07-01",
+  "2026-07-31"
+ ],
+ "basket": [
+  {
+   "asin": "B07DWBJ6D8",
+   "pw": "B07FDPWMJ1",
+   "pct": 16.9,
+   "rank": 1,
+   "base_orders": 1083,
+   "attach_est": 183.0,
+   "name": "Herbal Tea Sampler Assortment - 12 Tea Bags - Maca Chocolate\u0301, F",
+   "pw_name": "Dandelion Tea Sampler - 12 Tea Bags - Caramel Nut, Coconut, Dark"
+  },
+  {
+   "asin": "B07FDPWMJ1",
+   "pw": "B07DWBJ6D8",
+   "pct": 17.3,
+   "rank": 1,
+   "base_orders": 846,
+   "attach_est": 146.0,
+   "name": "Dandelion Tea Sampler - 12 Tea Bags - Caramel Nut, Coconut, Dark",
+   "pw_name": "Herbal Tea Sampler Assortment - 12 Tea Bags - Maca Chocolate\u0301, F"
+  },
+  {
+   "asin": "B08BXDRRNJ",
+   "pw": "B07FDPWMJ1",
+   "pct": 16.9,
+   "rank": 1,
+   "base_orders": 524,
+   "attach_est": 89.0,
+   "name": "Mushroom Herbal Tea - Mushroom Adaptogen Tea Sampler - 12 Tea Ba",
+   "pw_name": "Dandelion Tea Sampler - 12 Tea Bags - Caramel Nut, Coconut, Dark"
+  },
+  {
+   "asin": "B09S7D8DR5",
+   "pw": "B01E9GTTZW",
+   "pct": 6.1,
+   "rank": 1,
+   "base_orders": 1337,
+   "attach_est": 81.0,
+   "name": "Worldwide Botanicals Organic Lemon Balm Tea, 6 Ounces - Loose Le",
+   "pw_name": ""
+  },
+  {
+   "asin": "B07FDPWMJ1",
+   "pw": "B08BXDRRNJ",
+   "pct": 9.4,
+   "rank": 2,
+   "base_orders": 846,
+   "attach_est": 80.0,
+   "name": "Dandelion Tea Sampler - 12 Tea Bags - Caramel Nut, Coconut, Dark",
+   "pw_name": "Mushroom Herbal Tea - Mushroom Adaptogen Tea Sampler - 12 Tea Ba"
+  },
+  {
+   "asin": "B00NB405AW",
+   "pw": "B07F4HRVJK",
+   "pct": 21.9,
+   "rank": 1,
+   "base_orders": 336,
+   "attach_est": 74.0,
+   "name": "Vanilla Nut Herbal Tea - Rich & Roasted Herbal Tea That's Caffei",
+   "pw_name": ""
+  },
+  {
+   "asin": "B07DWBJ6D8",
+   "pw": "B08BXDRRNJ",
+   "pct": 6.7,
+   "rank": 2,
+   "base_orders": 1083,
+   "attach_est": 73.0,
+   "name": "Herbal Tea Sampler Assortment - 12 Tea Bags - Maca Chocolate\u0301, F",
+   "pw_name": "Mushroom Herbal Tea - Mushroom Adaptogen Tea Sampler - 12 Tea Ba"
+  },
+  {
+   "asin": "B08BXDRRNJ",
+   "pw": "B07DWBJ6D8",
+   "pct": 12.3,
+   "rank": 2,
+   "base_orders": 524,
+   "attach_est": 65.0,
+   "name": "Mushroom Herbal Tea - Mushroom Adaptogen Tea Sampler - 12 Tea Ba",
+   "pw_name": "Herbal Tea Sampler Assortment - 12 Tea Bags - Maca Chocolate\u0301, F"
+  },
+  {
+   "asin": "B00N9UHFZG",
+   "pw": "B008233AU4",
+   "pct": 3.5,
+   "rank": 1,
+   "base_orders": 1796,
+   "attach_est": 63.0,
+   "name": "French Roast Chicory Coffee Alternative, 11 Ounce: Ground Herbal",
+   "pw_name": "Hazelnut - 11 Ounce"
+  },
+  {
+   "asin": "B0F2B94W15",
+   "pw": "B0F2B3CQ7W",
+   "pct": 12.0,
+   "rank": 1,
+   "base_orders": 518,
+   "attach_est": 62.0,
+   "name": "Worldwide Botanicals Organic Dandelion Root \u2013 1 lb - Cut & Sifte",
+   "pw_name": "Worldwide Botanicals Organic Burdock Root \u2013 1 lb - 100% Arctium "
+  },
+  {
+   "asin": "B002UDITGM",
+   "pw": "B008233AU4",
+   "pct": 10.5,
+   "rank": 1,
+   "base_orders": 560,
+   "attach_est": 59.0,
+   "name": "Vanilla Nut - 11 Ounce",
+   "pw_name": "Hazelnut - 11 Ounce"
+  },
+  {
+   "asin": "B008233AU4",
+   "pw": "B00N9UHFZG",
+   "pct": 8.1,
+   "rank": 1,
+   "base_orders": 702,
+   "attach_est": 57.0,
+   "name": "Hazelnut - 11 Ounce",
+   "pw_name": "French Roast Chicory Coffee Alternative, 11 Ounce: Ground Herbal"
+  },
+  {
+   "asin": "B0F2B3CQ7W",
+   "pw": "B0F2B94W15",
+   "pct": 7.5,
+   "rank": 1,
+   "base_orders": 728,
+   "attach_est": 54.0,
+   "name": "Worldwide Botanicals Organic Burdock Root \u2013 1 lb - 100% Arctium ",
+   "pw_name": "Worldwide Botanicals Organic Dandelion Root \u2013 1 lb - Cut & Sifte"
+  },
+  {
+   "asin": "B008233AU4",
+   "pw": "B002UDITGM",
+   "pct": 7.0,
+   "rank": 2,
+   "base_orders": 702,
+   "attach_est": 49.0,
+   "name": "Hazelnut - 11 Ounce",
+   "pw_name": "Vanilla Nut - 11 Ounce"
+  },
+  {
+   "asin": "B07SQ9MLHQ",
+   "pw": "B09S7D8DR5",
+   "pct": 11.5,
+   "rank": 1,
+   "base_orders": 428,
+   "attach_est": 49.0,
+   "name": "Worldwide Botanicals Organic Holy Basil Tea, 8oz - Tulsi Rama - ",
+   "pw_name": "Worldwide Botanicals Organic Lemon Balm Tea, 6 Ounces - Loose Le"
+  }
+ ],
+ "basket_period": [
+  "2026-07-01",
+  "2026-07-31"
+ ],
+ "holes": [
+  "2026-01-01",
+  "2026-04-09",
+  "2026-04-10",
+  "2026-04-12",
+  "2026-04-13",
+  "2026-04-14",
+  "2026-04-15"
+ ],
+ "cov": {
+  "daily": {
+   "a": "2024-08-14",
+   "b": "2026-08-03",
+   "n": 720
+  },
+  "sku": {
+   "a": "2024-09-01",
+   "b": "2026-07-31",
+   "n": 5944
+  },
+  "rep": {
+   "a": "2024-02-01",
+   "b": "2026-08-01",
+   "n": 14915
+  },
+  "bask": {
+   "a": "2025-07-01",
+   "b": "2026-07-31",
+   "n": 9869
+  }
+ },
+ "inv_snap": "2026-08-04"
+}</script>
+<script>
+const D = JSON.parse(document.getElementById('payload').textContent);
+const C = { s1:'#2E9E6F', s2:'#8C74E0', s3:'#B8831F', muted:'#9aa0a6', good:'#199e70',
+            bad:'#e0644f', gold:'#D4A843', grid:'#22332a', line:'#294036', card:'#1a2a20' };
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const n0 = v => v==null ? '—' : Math.round(v).toLocaleString('en-US');
+const n1 = v => v==null ? '—' : v.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
+const n2 = v => v==null ? '—' : v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const usd = v => v==null ? '—' : '$'+Math.round(v).toLocaleString('en-US');
+const usdk = v => v==null ? '—' : '$'+(Math.round(v/100)/10).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+'k';
+const mlab = m => MN[+m.slice(5,7)-1]+' '+m.slice(0,4);
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el = (h) => { const d=document.createElement('div'); d.innerHTML=h.trim(); return d.firstChild; };
+const YC = { '2024':C.s3, '2025':C.s2, '2026':C.s1 };
+
+/* ---------------------------------------------------------------- generic line chart
+   series: [{name, color, pts:[{x,y,label,meta}], dash}]  x is a 0-based slot index */
+function lineChart(host, o) {
+  const W = 980, H = o.h || 210, P = o.pad || {t:10,r:o.endLabels?54:16,b:24,l:52};
+  const xs = o.xLabels, nx = xs.length;
+  const iw = W-P.l-P.r, ih = H-P.t-P.b;
+  let vals = [];
+  o.series.forEach(s => s.pts.forEach(p => { if (p.y!=null) vals.push(p.y); }));
+  let lo = o.min!=null ? o.min : Math.min(...vals), hi = o.max!=null ? o.max : Math.max(...vals);
+  if (o.min==null) lo = lo - (hi-lo)*0.12;
+  if (o.max==null) hi = hi + (hi-lo)*0.10;
+  if (o.zero) lo = 0;
+  const X = i => P.l + (nx===1?iw/2:iw*i/(nx-1));
+  const Y = v => P.t + ih - ih*(v-lo)/(hi-lo||1);
+  const ticks = o.ticks || 4;
+  let g = '';
+  // banded region (e.g. Buy Box healthy zone)
+  if (o.band) g += `<rect x="${P.l}" y="${Y(o.band[1]).toFixed(1)}" width="${iw}"
+      height="${Math.abs(Y(o.band[0])-Y(o.band[1])).toFixed(1)}" fill="${o.bandFill||'rgba(25,158,112,.12)'}"/>`;
+  for (let t=0;t<=ticks;t++) {
+    const v = lo + (hi-lo)*t/ticks, y = Y(v);
+    g += `<line class="gridline" x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}"/>`
+       + `<text class="axl" x="${P.l-8}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${o.yFmt(v)}</text>`;
+  }
+  const step = nx > 16 ? Math.ceil(nx/12) : 1;
+  xs.forEach((lb,i) => { if (i%step) return;
+    g += `<text class="axl" x="${X(i).toFixed(1)}" y="${H-P.b+15}" text-anchor="middle">${esc(lb)}</text>`; });
+  g += `<line class="axis" x1="${P.l}" y1="${P.t+ih}" x2="${W-P.r}" y2="${P.t+ih}"/>`;
+  // series paths — 2px lines, drawn oldest-first so the current year sits on top
+  o.series.forEach(s => {
+    const segs = []; let cur = [];
+    s.pts.forEach(p => { if (p.y==null) { if(cur.length)segs.push(cur); cur=[]; }
+                         else cur.push([X(p.x),Y(p.y)]); });
+    if (cur.length) segs.push(cur);
+    segs.forEach(sg => {
+      g += `<path d="${sg.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+' '+c[1].toFixed(1)).join(' ')}"
+              fill="none" stroke="${s.color}" stroke-width="${s.w||2}" stroke-linecap="round"
+              stroke-linejoin="round" ${s.dash?`stroke-dasharray="${s.dash}"`:''} opacity="${s.op||1}"/>`;
+      if (sg.length===1) g += `<circle cx="${sg[0][0].toFixed(1)}" cy="${sg[0][1].toFixed(1)}" r="3" fill="${s.color}"/>`;
+    });
+    // 2px surface ring on markers so overlapping series stay separable
+    if (o.dots) s.pts.forEach(p => { if (p.y==null) return;
+      g += `<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="3.4" fill="${s.color}"
+              stroke="${C.card}" stroke-width="2"/>`; });
+    if (o.endLabels) {
+      const last = s.pts.filter(p=>p.y!=null).pop();
+      if (last) g += `<text class="dlab" x="${(X(last.x)+9).toFixed(1)}" y="${(Y(last.y)+4).toFixed(1)}"
+                        fill="${s.color}">${esc(s.name)}</text>`;
+    }
+  });
+  // hover layer: crosshair + tooltip
+  g += `<g class="hoverg" style="opacity:0"><line class="cross" y1="${P.t}" y2="${P.t+ih}"
+          stroke="${C.gold}" stroke-width="1" stroke-dasharray="3 3"/></g>`;
+  g += `<rect x="${P.l}" y="${P.t}" width="${iw}" height="${ih}" fill="transparent" class="hit"/>`;
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||o.title||'chart')}">${g}</svg>`;
+  const tip = el('<div class="tip"></div>'); host.appendChild(tip);
+  const svg = host.querySelector('svg'), hg = svg.querySelector('.hoverg'), cross = svg.querySelector('.cross');
+  const move = ev => {
+    const r = svg.getBoundingClientRect(), sx = W/r.width;
+    const px = (ev.clientX - r.left)*sx;
+    let i = Math.round((px-P.l)/(iw/(nx-1||1))); i = Math.max(0, Math.min(nx-1, i));
+    cross.setAttribute('x1', X(i).toFixed(1)); cross.setAttribute('x2', X(i).toFixed(1));
+    hg.style.opacity = 1;
+    const rows = o.series.map(s => { const p = s.pts.find(q=>q.x===i);
+      return p && p.y!=null ? `<div><i style="background:${s.color}"></i>${esc(s.name)} &nbsp;<b style="display:inline;color:inherit;text-transform:none;letter-spacing:0;font-size:11.5px">${o.tFmt?o.tFmt(p.y,p):o.yFmt(p.y)}</b>${p.note?` <span style="color:${C.muted}">${esc(p.note)}</span>`:''}</div>` : '';
+    }).filter(Boolean).join('');
+    if (!rows) { tip.style.opacity = 0; return; }
+    tip.innerHTML = `<b>${esc(o.tTitle?o.tTitle(i):xs[i])}</b>${rows}`;
+    tip.style.opacity = 1;
+    const lx = P.l/sx + (iw/sx)*(nx===1?.5:i/(nx-1));
+    tip.style.left = Math.min(r.width - tip.offsetWidth - 6, Math.max(4, lx + 14)) + 'px';
+    tip.style.top  = 6 + 'px';
+  };
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('mouseleave', () => { hg.style.opacity=0; tip.style.opacity=0; });
+}
+
+/* ---------------------------------------------------------------- stacked share chart (100%) */
+function shareChart(host, o) {
+  const W=980,H=190,P={t:10,r:16,b:24,l:52}, iw=W-P.l-P.r, ih=H-P.t-P.b, nx=o.rows.length;
+  const bw = Math.max(3, iw/nx - 2); // 2px surface gap between adjacent bars
+  const X = i => P.l + iw*(i+0.5)/nx;
+  let g='';
+  for (let t=0;t<=4;t++){ const y=P.t+ih-ih*t/4;
+    g+=`<line class="gridline" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/>`
+     + `<text class="axl" x="${P.l-8}" y="${y+3.5}" text-anchor="end">${t*25}%</text>`; }
+  o.rows.forEach((r,i)=>{
+    const tot = r.a + r.b; if(!tot) return;
+    const ha = ih*r.a/tot;
+    // 2px surface gap between the two stacked segments
+    g+=`<rect x="${(X(i)-bw/2).toFixed(1)}" y="${(P.t+ih-ha).toFixed(1)}" width="${bw.toFixed(1)}"
+          height="${Math.max(0,ha).toFixed(1)}" fill="${C.s1}" rx="1"/>`;
+    g+=`<rect x="${(X(i)-bw/2).toFixed(1)}" y="${P.t}" width="${bw.toFixed(1)}"
+          height="${Math.max(0,ih-ha-2).toFixed(1)}" fill="${C.s2}" rx="1"/>`;
+  });
+  const step = Math.ceil(nx/12);
+  o.rows.forEach((r,i)=>{ if(i%step) return;
+    g+=`<text class="axl" x="${X(i).toFixed(1)}" y="${H-P.b+15}" text-anchor="middle">${esc(mlab(r.m).replace(' ',' '))}</text>`; });
+  g+=`<rect x="${P.l}" y="${P.t}" width="${iw}" height="${ih}" fill="transparent" class="hit"/>`;
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria)}">${g}</svg>`;
+  const tip=el('<div class="tip"></div>'); host.appendChild(tip);
+  const svg=host.querySelector('svg');
+  svg.addEventListener('mousemove',ev=>{
+    const r=svg.getBoundingClientRect(), sx=W/r.width, px=(ev.clientX-r.left)*sx;
+    let i=Math.floor((px-P.l)/(iw/nx)); i=Math.max(0,Math.min(nx-1,i));
+    const d=o.rows[i], tot=d.a+d.b;
+    tip.innerHTML=`<b>${mlab(d.m)}</b>
+      <div><i style="background:${C.s1}"></i>Browser ${n0(d.a)} (${n1(100*d.a/tot)}%)</div>
+      <div><i style="background:${C.s2}"></i>Mobile app ${n0(d.b)} (${n1(100*d.b/tot)}%)</div>`;
+    tip.style.opacity=1;
+    const lx=(P.l/sx)+(iw/sx)*((i+0.5)/nx);
+    tip.style.left=Math.min(r.width-tip.offsetWidth-6,Math.max(4,lx+12))+'px'; tip.style.top='6px';
+  });
+  svg.addEventListener('mouseleave',()=>tip.style.opacity=0);
+}
+
+const legend = items => `<div class="legend">${items.map(i=>
+  `<span><i class="sw ${i.box?'box':''}" style="background:${i.c}"></i>${esc(i.n)}</span>`).join('')}</div>`;
+const frame = (cls,title,sub,body) =>
+  `<div class="chart-wrap ${cls||''}">${title?`<p class="ct">${title}</p>`:''}${sub?`<p class="cs">${sub}</p>`:''}${body}</div>`;
+
+/* ================================================================ render */
+const M = D.monthly, byM = Object.fromEntries(M.map(r=>[r.m,r]));
+const L = byM[D.latest], PY = D.prior ? byM[D.prior] : null;
+const years = [...new Set(M.map(r=>r.m.slice(0,4)))].sort();
+
+document.getElementById('subline').innerHTML =
+  `Session &rarr; conversion &rarr; Buy Box funnel for the Amazon US marketplace. `
++ `Daily data through <b>${mlab(D.cov.daily.b)} ${+D.cov.daily.b.slice(8)}</b>. Built ${D.built}.`;
+
+document.getElementById('provtop').innerHTML =
+  `<strong>What this page is.</strong> Amazon-reported traffic and conversion, from Data Kiosk
+   Sales &amp; Traffic. Headline funnel metrics come from <code>raw_amazon_sales_traffic_daily</code>
+   (marketplace/day grain, ${D.cov.daily.n} days, ${D.cov.daily.a} &rarr; ${D.cov.daily.b}) &mdash; no SKU
+   dimension, so no double-counting. Dollar figures use gross principal from
+   <code>calc_daily_amazon_sku</code>: <strong>gross ordered revenue, pre-COGS</strong>
+   (Amazon fees not deducted, returns not netted). <strong>No advertising data on this page</strong>
+   &mdash; ACOS/TACOS/ROAS live on the ads dashboard, not here.`;
+
+/* ---- KPIs */
+document.getElementById('hdtag').textContent = `${mlab(D.latest)} vs ${mlab(D.prior)}`;
+function kpi(k, v, ly, fmt, opt={}) {
+  let d = '';
+  if (ly!=null) {
+    const pp = opt.pp, raw = pp ? (v-ly) : (100*(v/ly-1));
+    const dir = Math.abs(raw) < (opt.eps??0.05) ? 'flat' : (raw>0 ? (opt.invert?'down':'up') : (opt.invert?'up':'down'));
+    const sign = raw>0?'+':'';
+    d = `<div class="d"><span class="${dir}">${sign}${n1(raw)}${pp?' pp':'%'}</span>
+         <span class="lyv">vs ${fmt(ly)} LY</span></div>`;
+  }
+  return `<div class="card kpi"><div class="k">${k}</div><div class="v">${fmt(v)}</div>${d}</div>`;
+}
+document.getElementById('kpis').innerHTML =
+  kpi('Sessions', L.sessions, PY&&PY.sessions, n0)
++ kpi('Page views', L.pv, PY&&PY.pv, n0)
++ kpi('Unit-session %', L.cvr, PY&&PY.cvr, v=>n2(v)+'%', {pp:1})
++ kpi('Units ordered', L.units, PY&&PY.units, n0)
++ kpi('Buy Box %', L.bb, PY&&PY.bb, v=>n1(v)+'%', {pp:1})
++ kpi('Avg offer count', L.aoc, PY&&PY.aoc, n0, {invert:1});
+
+/* ---- core: sessions + conversion, YoY overlaid on month-of-year */
+function yoySeries(key) {
+  return years.map(y => ({ name:y, color:YC[y]||C.muted,
+    op: y===years[years.length-1] ? 1 : 0.85,
+    w:  y===years[years.length-1] ? 2.5 : 2,
+    pts: MN.map((_,i) => { const r = byM[`${y}-${String(i+1).padStart(2,'0')}`];
+      return { x:i, y: r && r.complete ? r[key] : null,
+               note: r && !r.complete ? '(partial)' : '' }; }) }));
+}
+const coreLeg = legend(years.map(y=>({n:y, c:YC[y]||C.muted})));
+// The "conversion is down" story is a recent inflection, not a uniform decline —
+// derive the turn month from the data rather than asserting it in prose.
+const sessUp = D.yoy.filter(r=>r.sess_pct>0).length;
+const sessPcts = D.yoy.filter(r=>r.sess_pct>0).map(r=>r.sess_pct);
+const sessRange = `+${n1(Math.min(...sessPcts))}% to +${n1(Math.max(...sessPcts))}%`;
+let firstBehind = null, lastAhead = null;
+for (let i=D.yoy.length-1; i>=0; i--) {
+  if (D.yoy[i].cvr_pp >= 0) { lastAhead = D.yoy[i].m; break; }
+  firstBehind = D.yoy[i].m;
+}
+const behindRun = D.yoy.filter(r => r.m >= firstBehind);
+const worst = [...D.yoy].sort((a,b)=>a.cvr_pp-b.cvr_pp).slice(0,3).map(r=>r.m).sort();
+const core = document.getElementById('core');
+core.innerHTML =
+  frame('joined-top','Sessions by month, one line per year',
+    `Traffic is up year-over-year in ${sessUp} of the last ${D.yoy.length} comparable months (${sessRange}).`,
+    coreLeg+'<div id="ch-sess"></div>')
++ frame('joined-bot','Unit-session % (conversion) — same months, same x-axis',
+    `Conversion ran <b>at or above</b> last year through ${mlab(lastAhead)}, then broke below it in `
+    + `${mlab(firstBehind)} and has stayed there. The gap is recent, not a slow two-year slide.`,
+    '<div id="ch-cvr"></div>');
+lineChart(document.getElementById('ch-sess'), { xLabels:MN, series:yoySeries('sessions'),
+  yFmt:v=>Math.round(v/1000)+'k', tFmt:v=>n0(v)+' sessions', zero:true, dots:true,
+  tTitle:i=>MN[i]+' — sessions', aria:'Monthly Amazon sessions, one line per year, 2024 to 2026' });
+lineChart(document.getElementById('ch-cvr'), { xLabels:MN, series:yoySeries('cvr'),
+  yFmt:v=>n0(v)+'%', tFmt:v=>n2(v)+'%', dots:true, h:200,
+  tTitle:i=>MN[i]+' — unit-session %', aria:'Monthly Amazon unit-session percentage, one line per year' });
+
+/* ---- inflection callout */
+core.insertAdjacentHTML('beforeend',
+  `<div class="warnbox"><b>Read the turn, not the trend.</b>
+    Conversion was <i>ahead</i> of last year in ${mlab(D.yoy[D.yoy.length-1].m).slice(-4)} through
+    ${mlab(lastAhead)} (Feb&ndash;Apr all positive), then went negative in ${mlab(firstBehind)} and has
+    stayed negative for ${behindRun.length} straight months at
+    &minus;${n2(Math.min(...behindRun.map(r=>Math.abs(r.cvr_pp))))} to
+    &minus;${n2(Math.max(...behindRun.map(r=>Math.abs(r.cvr_pp))))} pp.
+    Those are the <b>three worst YoY conversion months in the entire ${D.cov.daily.n}-day series</b>
+    (${worst.map(mlab).join(', ')}).
+    So this is a <b>recent break, not a long slow decline</b> &mdash; which is good news for
+    diagnosing it: look for something that changed around ${mlab(firstBehind)}, not for a
+    two-year erosion story. Sessions kept climbing straight through the break.</div>`);
+
+/* ---- YoY table (only valid comparison) */
+const yt = D.yoy.slice(-13);
+core.insertAdjacentHTML('beforeend',
+  `<h3>Year-over-year, same month <span style="text-transform:none;letter-spacing:0;font-weight:400">(complete months only)</span></h3>
+   <div class="tbl-scroll"><table><thead><tr><th>Month</th><th>Sessions</th><th>vs LY</th>
+   <th>Cvr %</th><th>LY cvr %</th><th>&Delta; pp</th><th>Units</th><th>vs LY</th><th>Buy Box %</th></tr></thead><tbody>`
+ + yt.map(r=>`<tr><td>${mlab(r.m)}</td><td>${n0(r.sess)}</td>
+     <td class="${r.sess_pct>0?'up':'down'}">${r.sess_pct>0?'+':''}${n1(r.sess_pct)}%</td>
+     <td>${n2(r.cvr)}</td><td style="color:${C.muted}">${n2(r.cvr_ly)}</td>
+     <td class="${r.cvr_pp>0?'up':'down'}">${r.cvr_pp>0?'+':''}${n2(r.cvr_pp)}</td>
+     <td>${n0(r.units)}</td><td class="${r.units_pct>0?'up':'down'}">${r.units_pct>0?'+':''}${n1(r.units_pct)}%</td>
+     <td>${n1(r.bb)}</td></tr>`).join('')
+ + `</tbody></table></div>`);
+
+/* ---- conversion-gap cost */
+const g = D.gap, gt = D.gap_tot;
+document.getElementById('gappanel').innerHTML =
+  `<div class="grid">
+     <div class="card kpi"><div class="k">Units forgone (${gt.months} mo)</div><div class="v">${n0(gt.units)}</div>
+       <div class="d"><span class="lyv">vs LY same-month conversion</span></div></div>
+     <div class="card kpi"><div class="k">Gross revenue at stake</div><div class="v">${usdk(gt.dollars)}</div>
+       <div class="d"><span class="lyv">at $${n2(D.blended_gpu)}/unit gross</span></div></div>
+     <div class="card kpi"><div class="k">Run rate</div><div class="v">${usdk(gt.per_month)}<span style="font-size:14px;color:${C.muted}">/mo</span></div>
+       <div class="d"><span class="lyv">${mlab(D.gap_months[0])}&ndash;${mlab(D.gap_months[gt.months-1])} average</span></div></div>
+   </div>`
++ frame('', 'Month by month', `Units forgone = this year's sessions &times; (last year's same-month conversion &minus; this year's). Dollars at $${n2(D.blended_gpu)} gross per unit &mdash; the blended ${gt.months}-month rate from <code>calc_daily_amazon_sku</code>.`,
+   `<div class="tbl-scroll"><table><thead><tr><th>Month</th><th>Sessions</th><th>Cvr %</th>
+    <th>LY cvr %</th><th>Gap (pp)</th><th>Units forgone</th><th>Gross $</th></tr></thead><tbody>`
+  + g.map(r=>`<tr><td>${mlab(r.m)}</td><td>${n0(r.sessions)}</td><td>${n2(r.cvr_ty)}</td>
+      <td style="color:${C.muted}">${n2(r.cvr_ly)}</td><td class="down">&minus;${n2(r.delta_pp)}</td>
+      <td>${n0(r.units)}</td><td>${usd(r.dollars)}</td></tr>`).join('')
+  + `<tr class="tot"><td>Total</td><td></td><td></td><td></td><td></td>
+      <td>${n0(gt.units)}</td><td>${usd(gt.dollars)}</td></tr></tbody></table></div>`);
+
+/* ---- buy box */
+const bbLo = Math.min(...M.map(r=>r.bb)), bbHi = Math.max(...M.map(r=>r.bb));
+document.getElementById('bbpanel').innerHTML =
+  `<div class="warnbox" style="background:rgba(25,158,112,.08);border-color:${C.good};border-left-color:${C.good}">
+     <b style="color:${C.good}">HEALTHY &mdash; not the problem.</b> Buy Box has held between
+     <b style="color:${C.good}">${n1(bbLo)}% and ${n1(bbHi)}%</b> every single month for two straight
+     years. There is no Buy Box loss to recover and no upside worth chasing here. The conversion gap
+     above is <i>not</i> a Buy Box story &mdash; look at traffic quality, price, and the detail page instead.
+   </div>`
++ frame('', 'Buy Box % by month', `Shaded band is the 95&ndash;98% healthy range. Monthly average of the daily reported figure.`,
+    legend([{n:'Buy Box %',c:C.s1},{n:'95–98% healthy band',c:'rgba(25,158,112,.35)',box:1}])
+    + '<div id="ch-bb"></div>');
+lineChart(document.getElementById('ch-bb'), {
+  xLabels: M.map(r=>mlab(r.m).replace(' ',' ')),
+  series:[{name:'Buy Box %', color:C.s1,
+           pts:M.map((r,i)=>({x:i,y:r.bb,note:r.complete?'':'(partial)'}))}],
+  yFmt:v=>n0(v)+'%', tFmt:v=>n2(v)+'%', min:90, max:100, band:[95,98], ticks:5, h:190,
+  tTitle:i=>mlab(M[i].m), aria:'Monthly Amazon Buy Box percentage, holding between 95 and 98 percent' });
+
+/* ---- traffic mix + offer count */
+document.getElementById('mixpanel').innerHTML =
+  frame('', 'Browser vs mobile-app sessions', 'Share of total sessions each month. App share matters because the app detail page is a different surface with different conversion behaviour.',
+    legend([{n:'Browser',c:C.s1,box:1},{n:'Mobile app',c:C.s2,box:1}]) + '<div id="ch-mix"></div>')
++ frame('', 'Average offer count <span style="font-weight:400;color:'+C.muted+'">— competitive pressure proxy</span>',
+    'Mean number of competing offers on our listings.',
+    legend([{n:'Avg offer count',c:C.s3}]) + '<div id="ch-aoc"></div>');
+shareChart(document.getElementById('ch-mix'),
+  { rows: M.map(r=>({m:r.m, a:r.browser, b:r.mobile})),
+    aria:'Browser versus mobile app session share by month' });
+const appSh = r => 100*r.mobile/(r.browser+r.mobile);
+document.getElementById('ch-mix').insertAdjacentHTML('afterend',
+  `<p class="note" style="margin:10px 0 2px">Mobile app is now the <b>majority surface</b>:
+   ${n1(appSh(L))}% of sessions in ${mlab(L.m)}, up from ${n1(appSh(PY))}% a year ago and
+   ${n1(appSh(M[0]))}% at the start of the series. That is a real mix shift &mdash; but it is a
+   <i>gradual</i> one, roughly ${n1(appSh(L)-appSh(PY))} pp a year, with no step change at
+   ${mlab(firstBehind)}. It can plausibly explain slow conversion drift; it does not explain the
+   break. Splitting conversion by surface would settle it, and the daily table does not carry that
+   breakdown &mdash; it would need a Data Kiosk field we do not currently ingest.</p>`);
+const aocFirst = M[0], aocLast = M[M.length-1];
+const aocPeak = M.reduce((a,b)=>b.aoc>a.aoc?b:a);
+const aocAtBreak = byM[firstBehind];
+lineChart(document.getElementById('ch-aoc'), {
+  xLabels: M.map(r=>mlab(r.m).replace(' ',' ')),
+  series:[{name:'Avg offer count', color:C.s3, pts:M.map((r,i)=>({x:i,y:r.aoc}))}],
+  yFmt:v=>n0(v), tFmt:v=>n1(v)+' offers', h:180, ticks:4,
+  tTitle:i=>mlab(M[i].m), aria:'Average competing offer count per month' });
+document.getElementById('mixpanel').insertAdjacentHTML('beforeend',
+  `<div class="warnbox" style="border-color:${C.bad};border-left-color:${C.bad}">
+   <b style="color:${C.bad}">Competitive pressure does not explain the conversion break.</b>
+   Offer count climbed from <b>${n0(aocFirst.aoc)}</b> (${mlab(aocFirst.m)}) to a peak of
+   <b>${n0(aocPeak.aoc)}</b> in ${mlab(aocPeak.m)} &mdash; then <b>fell steadily</b> to
+   <b>${n0(aocLast.aoc)}</b> by ${mlab(aocLast.m)}. Conversion broke below last year in
+   ${mlab(firstBehind)}, when offer count was <b>already ${n1(100*(1-aocAtBreak.aoc/aocPeak.aoc))}% off
+   its peak and still falling</b>. Fewer competitors, worse conversion &mdash; the two move in
+   <i>opposite</i> directions across the break. Whatever caused the ${mlab(firstBehind)} inflection,
+   this is not it. Buy Box (above) is ruled out on the same grounds. That points the investigation at
+   traffic <i>composition</i> (paid vs organic mix, keyword mix) or something on the detail page or
+   price &mdash; none of which this dataset can see. Confirming any of those needs the ads tables and
+   a pricing-snapshot history.</div>`);
+
+/* ---- repeat purchase */
+const R = D.repeat, RL = R[R.length-1];
+document.getElementById('reppanel').innerHTML =
+  `<div class="warnbox"><b>Aggregate only &mdash; there are no cohorts here, and there cannot be.</b>
+    We hold <b>zero customer identifiers</b> for Amazon: no name, email, or customer key exists in any
+    table, we requested no restricted-data scopes, and at 100% FBA we never see a shipping label.
+    So this panel is the <i>only</i> repeat-purchase signal available, and it is
+    <b>per-ASIN</b>: "repeat" means a customer who bought <i>that same ASIN</i> again. A customer who
+    moved from French Roast to Mocha counts as new. Read it as a floor, not a true repeat rate.</div>`
++ `<div class="grid">
+     <div class="card kpi"><div class="k">Repeat customers</div><div class="v">${n2(RL.rcp)}%</div>
+       <div class="d"><span class="lyv">${mlab(RL.m)}, ASIN-weighted</span></div></div>
+     <div class="card kpi"><div class="k">Repeat revenue share</div><div class="v">${n2(RL.rrevpct)}%</div>
+       <div class="d"><span class="lyv">${usdk(RL.rrev)} of ordered revenue</span></div></div>
+     <div class="card kpi"><div class="k">Unique customers</div><div class="v">${n0(RL.uniq)}</div>
+       <div class="d"><span class="lyv">${n0(RL.orders)} orders across ${RL.asins} ASINs</span></div></div>
+   </div>`
++ frame('', 'Repeat share by month', 'Both lines are share-of-total, so they belong on one percentage axis.',
+    legend([{n:'Repeat customers %',c:C.s1},{n:'Repeat revenue %',c:C.s2}]) + '<div id="ch-rep"></div>')
++ `<h3>Highest-volume ASINs, ${mlab(D.repeat_period[0])}</h3>
+   <div class="tbl-scroll"><table><thead><tr><th>ASIN</th><th>Product</th><th>Orders</th>
+   <th>Unique cust.</th><th>Repeat %</th><th>Repeat rev.</th></tr></thead><tbody>`
++ D.repeat_top.map(r=>`<tr><td class="asin">${esc(r.asin)}</td><td class="nm">${esc(r.name)||'&mdash;'}</td>
+    <td>${n0(r.orders)}</td><td>${n0(r.uniq)}</td><td>${n2(r.rcp)}%</td><td>${usd(r.rrev)}</td></tr>`).join('')
++ `</tbody></table></div>`;
+lineChart(document.getElementById('ch-rep'), {
+  xLabels: R.map(r=>mlab(r.m).replace(' ',' ')),
+  series:[{name:'Repeat customers %',color:C.s1,pts:R.map((r,i)=>({x:i,y:r.rcp}))},
+          {name:'Repeat revenue %', color:C.s2,pts:R.map((r,i)=>({x:i,y:r.rrevpct}))}],
+  yFmt:v=>n1(v)+'%', tFmt:v=>n2(v)+'%', zero:true, h:190,
+  tTitle:i=>mlab(R[i].m), aria:'Repeat customer and repeat revenue share by month' });
+
+/* ---- market basket */
+document.getElementById('baskpanel').innerHTML =
+  `<p class="note">Amazon's market-basket report: for customers who bought the base ASIN, the share who
+   also bought a second ASIN in the same basket. <span class="pill op">Untapped</span>
+   Nothing downstream consumes this table today &mdash; no bundle, no Sponsored Display audience, no
+   cross-sell A+ module is built off it. That makes it an <b>opportunity surface, not a finding</b>.</p>
+   <div class="warnbox">Restricted to base ASINs with <b>200+ orders</b> in ${mlab(D.basket_period[0])}
+   and ranked by estimated attach volume (orders &times; combination %). Unfiltered, this table is
+   dominated by low-volume ASINs showing a meaningless 100% pairing off a handful of baskets.
+   The pairing % is Amazon's; the attach estimate is ours and is directional only.</div>
+   <div class="tbl-scroll"><table><thead><tr><th>Base ASIN</th><th>Product</th><th>Bought with</th>
+   <th>Partner product</th><th>Rank</th><th>Pairing %</th><th>Base orders</th><th>Est. attach</th>
+   </tr></thead><tbody>`
++ D.basket.map(r=>`<tr><td class="asin">${esc(r.asin)}</td><td class="nm">${esc(r.name)||'&mdash;'}</td>
+    <td class="asin">${esc(r.pw)}</td><td class="nm">${esc(r.pw_name)||'&mdash;'}</td>
+    <td>${r.rank}</td><td>${n1(r.pct)}%</td><td>${n0(r.base_orders)}</td><td>${n0(r.attach_est)}</td></tr>`).join('')
++ `</tbody></table></div>`;
+
+/* ---- ASIN funnel */
+const ae = D.alias_ev, inflate = 100*(ae.sku_sum/ae.asin_sum - 1);
+document.getElementById('asinpanel').innerHTML =
+  `<div class="warnbox"><b>Per-SKU conversion is not shown on this page, on purpose &mdash; it would be wrong.</b>
+    <code>raw_amazon_sales_traffic_sku</code> double-counts sessions across SKU aliases: many products
+    exist as a bare code <i>and</i> an <code>L</code>-suffixed twin (plus <code>_NI</code>,
+    <code>-FBA</code>, <code>-6PK</code>, and case variants). Amazon reports the <b>same ASIN's
+    sessions against every alias row</b> but attributes the units to only one of them.
+    <br><br>In ${mlab(D.asin_period)} that inflates total sessions from <b>${n0(ae.asin_sum)}</b>
+    (ASIN grain) to <b>${n0(ae.sku_sum)}</b> (SKU grain) &mdash; <b>${n1(inflate)}% phantom traffic</b>.
+    Dividing units by those sessions manufactures fake "conversion collapsed to 0.1%" SKUs.
+    Verified alias pairs with byte-identical session counts:
+    <br><br>${D.alias_pairs.map(p=>`<code>${esc(p.skus)}</code> &rarr; ${esc(p.child_asin)},
+      both reporting exactly ${n0(p.hi)} sessions`).join('<br>')}
+    <br><br>The table below therefore aggregates by <b>child ASIN</b>. A valid per-SKU view is blocked
+    until CatalogSmith supplies the alias / pack-role map.</div>
+   <p class="note">Aggregated to child ASIN, ${mlab(D.asin_period)}. Top 15 by sessions.
+    Product names from the ${D.inv_snap} inventory snapshot.</p>
+   <div class="tbl-scroll"><table><thead><tr><th>ASIN</th><th>Product</th><th>Sessions</th>
+   <th>Page views</th><th>Units</th><th>Unit-session %</th><th>Buy Box %</th><th>Alias rows</th>
+   </tr></thead><tbody>`
++ D.asin_funnel.map(r=>`<tr><td class="asin">${esc(r.asin)}</td><td class="nm">${esc(r.name)||'&mdash;'}</td>
+    <td>${n0(r.sessions)}</td><td>${n0(r.pv)}</td><td>${n0(r.units)}</td>
+    <td>${r.cvr==null?'&mdash;':n2(r.cvr)+'%'}</td><td>${r.bb==null?'&mdash;':n1(r.bb)+'%'}</td>
+    <td style="color:${r.alias_rows>1?C.gold:C.muted}">${r.alias_rows}</td></tr>`).join('')
++ `</tbody></table></div>`;
+
+/* ---- provenance */
+document.getElementById('provpanel').innerHTML =
+  `<div class="tbl-scroll"><table><thead><tr><th>Source table</th><th>Grain</th><th>Coverage</th>
+   <th>Rows</th><th>Feeds</th></tr></thead><tbody>
+   <tr><td class="asin">raw_amazon_sales_traffic_daily</td><td>marketplace &times; day</td>
+     <td>${D.cov.daily.a} &rarr; ${D.cov.daily.b}</td><td>${n0(D.cov.daily.n)}</td>
+     <td class="nm">All headline KPIs, core chart, Buy Box, traffic mix, offer count</td></tr>
+   <tr><td class="asin">raw_amazon_sales_traffic_sku</td><td>SKU &times; month</td>
+     <td>${D.cov.sku.a} &rarr; ${D.cov.sku.b}</td><td>${n0(D.cov.sku.n)}</td>
+     <td class="nm">Per-ASIN funnel only, aggregated to child ASIN</td></tr>
+   <tr><td class="asin">raw_amazon_repeat_purchase</td><td>ASIN &times; month/week</td>
+     <td>${D.cov.rep.a} &rarr; ${D.cov.rep.b}</td><td>${n0(D.cov.rep.n)}</td>
+     <td class="nm">Repeat-purchase panel (MONTH rows only)</td></tr>
+   <tr><td class="asin">raw_amazon_market_basket</td><td>ASIN pair &times; month</td>
+     <td>${D.cov.bask.a} &rarr; ${D.cov.bask.b}</td><td>${n0(D.cov.bask.n)}</td>
+     <td class="nm">Cross-sell pairs</td></tr>
+   <tr><td class="asin">calc_daily_amazon_sku</td><td>SKU &times; day</td><td>&mdash;</td><td>&mdash;</td>
+     <td class="nm">Gross $ per unit for the conversion-gap dollar figure only</td></tr>
+   </tbody></table></div>
+   <h3>Caveats that change how you read this page</h3>
+   <dl class="gl">
+     <dt>Seasonality &mdash; only YoY same-month deltas are valid</dt>
+     <dd>Conversion swings roughly ${n2(Math.min(...D.yoy.map(r=>r.cvr)))}% to
+       ${n2(Math.max(...M.filter(r=>r.complete).map(r=>r.cvr)))}% across the calendar year on this
+       account: peak-traffic months convert <i>worse</i>, summer converts best. A month-over-month
+       conversion move is almost entirely seasonal. Never quote one.</dd>
+     <dt>SKU-alias session double-counting</dt>
+     <dd><code>raw_amazon_sales_traffic_sku</code> repeats one ASIN's sessions across every alias SKU
+       row while attributing units to one. ${n1(inflate)}% session inflation in ${mlab(D.asin_period)}.
+       No per-<code>seller_sku</code> conversion rate appears anywhere on this page. Blocked on
+       CatalogSmith's alias / pack-role map.</dd>
+     <dt>Dollars are gross, pre-COGS</dt>
+     <dd>Gross principal only. Amazon fees are not deducted, returns are not netted, and unit COGS is
+       unavailable (blocked on the same CatalogSmith pack-role map). Do not use the conversion-gap
+       dollar figure as a margin or profit number.</dd>
+     <dt>Repeat purchase is per-ASIN and PII-free</dt>
+     <dd>No customer key exists in our Amazon data at all, so cohorts and LTV are structurally
+       uncomputable. "Repeat" here means same-ASIN repurchase only.</dd>
+     <dt>No advertising data on this page</dt>
+     <dd>Sessions here are total sessions &mdash; organic and paid are not separated in the Sales
+       &amp; Traffic dataset. Ad-driven traffic could be part of the conversion story; that analysis
+       needs the ads tables and belongs on the ads dashboard.</dd>
+     <dt>Partial months are excluded from comparisons</dt>
+     <dd>${M.filter(r=>!r.complete).map(r=>`${mlab(r.m)} (${r.days} of ${r.expected} days)`).join(', ')}.
+       These are drawn on the trend charts but never used in a YoY delta.</dd>
+     ${D.holes.length?`<dt>Known gap in the dollar source</dt>
+     <dd><code>calc_daily_amazon_sku</code> has near-zero units on
+       ${D.holes.length} day(s): ${D.holes.join(', ')}. The conversion-gap dollar rate is computed
+       over ${mlab(D.gap_months[0])}&ndash;${mlab(D.gap_months[D.gap_months.length-1])}, which
+       excludes them. Flagged for DataOps.</dd>`:''}
+   </dl>
+   <h3>Metric definitions</h3>
+   <dl class="gl">
+     <dt>Sessions</dt><dd>Visits to our detail pages, Amazon-defined, deduplicated within 24h. Browser + mobile app.</dd>
+     <dt>Unit-session % ("conversion")</dt><dd>Units ordered &divide; sessions. Can exceed order-item rate because one session can buy several units.</dd>
+     <dt>Buy Box %</dt><dd>Share of detail-page views where we held the featured offer.</dd>
+     <dt>Average offer count</dt><dd>Mean competing offers on our listings &mdash; a proxy for competitive pressure, not a measure of it.</dd>
+     <dt>Units forgone</dt><dd>Sessions &times; (LY same-month unit-session % &minus; TY unit-session %). An opportunity size under an unchanged-traffic-quality assumption.</dd>
+   </dl>`;
+
+document.getElementById('foot').innerHTML =
+  `Built by Orinoco for Burke &mdash; read-only. Data ${D.cov.daily.a} &rarr; ${D.cov.daily.b}; page built ${D.built}.
+   Amazon US marketplace only. Gross ordered revenue, pre-COGS. No advertising metrics on this page.
+   Questions about the numbers &rarr; Orinoco. Changes to listings, price, or campaigns go through Justin.`;
+</script>
+<script>
+  fetch('/teeccino-reports/burke/_nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('portal-nav').innerHTML = html;
+      document.body.classList.add('has-portal-nav');
+    })
+    .catch(() => {});
+</script>
+</body></html>
