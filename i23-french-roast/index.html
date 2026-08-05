@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>img2threejs trial — Teeccino French Roast 500g</title>
+<style>
+  :root{
+    --bg:#17130f; --panel:#211a15; --line:#3a2e25; --ink:#f4efe8; --muted:#b3a596;
+    --brown:#6B3327; --green:#40600E; --cream:#C2BD93; --terra:#B5654A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{padding:24px 20px 8px;max-width:1100px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px 20px 60px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+           margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .card .body{padding:0}
+  .card img{display:block;width:100%;height:auto;background:#fff}
+  #stage{width:100%;aspect-ratio:1/1;display:block;background:#fff;touch-action:none;cursor:grab}
+  .note{padding:10px 14px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line)}
+  button{background:#2d241d;color:var(--ink);border:1px solid var(--line);border-radius:999px;
+         padding:6px 13px;font-size:13px;cursor:pointer}
+  button[aria-pressed="true"]{background:var(--brown);border-color:var(--brown)}
+  .verdict{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .verdict h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  .verdict ol{margin:0;padding-left:20px}
+  .verdict li{margin-bottom:9px}
+  .verdict li b{color:#fff}
+  code{background:#0e0b09;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+  .stills{margin-top:22px}
+  .stills .grid{gap:14px}
+  footer{max-width:1100px;margin:0 auto;padding:0 20px 50px;color:var(--muted);font-size:13px}
+  a{color:#d9b48a}
+  #err{padding:14px;color:#ff9b8a;font:12px/1.5 monospace;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header>
+  <h1>img2threejs trial — Teeccino French Roast 500g</h1>
+  <p class="sub">One reference photo → a 1139-line procedural Three.js factory, rendered live below.
+  Drag to orbit. Run 2026-08-05 by AgentSmith.</p>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+    <div class="card">
+      <h2>Reference photo (the only input)</h2>
+      <div class="body"><img src="fr-ref.jpg" alt="Teeccino French Roast 500g bag, front"></div>
+      <div class="note">1500×1500 studio front shot. Nothing else was supplied — no dimensions, no artwork files.</div>
+    </div>
+    <div class="card">
+      <h2>Live generated model — drag to orbit</h2>
+      <div class="body"><canvas id="stage"></canvas><div id="err"></div></div>
+      <div class="bar">
+        <button id="b-proj" aria-pressed="true">Projected (as generated)</button>
+        <button id="b-proc" aria-pressed="false">Procedural only</button>
+        <button id="b-wire" aria-pressed="false">Wireframe</button>
+        <button id="b-spin" aria-pressed="true">Spin</button>
+      </div>
+      <div class="note" id="stat">loading…</div>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h2>What you're looking at</h2>
+    <ol>
+      <li><b>It is not a bag — it is a T of flat slabs.</b> Every component the spec called
+      <code>extrude</code> or <code>plane-card</code> came out as a card, so there is no pouch volume at
+      all: no pillow bulge, no gusset, no side creases. Straight-on it can pass for a moment; a few
+      degrees of rotation ends that.</li>
+      <li><b>All the recognisability is your photograph.</b> The albedo map the pipeline extracted
+      <i>is</i> the reference image, de-lit. Hit <b>Procedural only</b> to strip the photo and see what the
+      generated <i>code</i> actually contributes on its own. The colours it did derive from the pixels are
+      correct, though:
+      <span class="swatch" style="background:#40600E"></span><code>#40600E</code>
+      <span class="swatch" style="background:#C2BD93"></span><code>#C2BD93</code>
+      <span class="swatch" style="background:#B5654A"></span><code>#B5654A</code>.</li>
+      <li><b>The tiling is the tell.</b> At the spec's default <code>textureProjection.repeat [2,2]</code>
+      each slab is wallpapered with a 2×2 grid of tiny French Roast bags — visible on the still below.</li>
+      <li><b>It passed its own strict gate.</b> <code>validate_sculpt_spec.py --strict-quality</code>
+      returned PASS / exit 0 on this. The gate checks the spec is richly <i>described</i>, not that the
+      render resembles anything — likeness lives in a separate 5–8 cycle vision loop (~80–180k tokens).</li>
+      <li><b>The gate pushes you toward pasting the photo.</b> Stripping the reference-derived maps to get
+      a true code-only reconstruction flipped validation to FAIL:
+      <i>"material 'base' needs usable referencePbr extracted from source pixels."</i></li>
+      <li><b>No fabricated brand text — this time.</b> It never drew text; it pasted the photo. The
+      falsification risk arrives the moment you push it through the surface pass to build that label
+      procedurally.</li>
+    </ol>
+  </div>
+
+  <div class="stills">
+    <div class="grid">
+      <div class="card">
+        <h2>Still — as generated (photo tiled 2×2)</h2>
+        <div class="body"><img src="still-projected.jpg" alt="render with tiled reference photo"></div>
+      </div>
+      <div class="card">
+        <h2>Still — before the textures decoded</h2>
+        <div class="body"><img src="still-untextured.jpg" alt="untextured grey render"></div>
+        <div class="note">The raw geometry with no maps: three overlapping slabs. This is the actual
+        reconstruction; everything else is the photograph.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Skill: <a href="https://github.com/img2threejs/img2threejs">img2threejs</a> v1.4.4-beta.3, Apache-2.0,
+  pinned <code>67d8ab78</code>. Installed to DesignSmith only. Unlisted page — not in the hub index.
+</footer>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://esm.sh/three@0.169.0",
+  "three/examples/jsm/":"https://esm.sh/three@0.169.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+const errEl = document.getElementById('err');
+const statEl = document.getElementById('stat');
+try {
+  const THREE = await import('three');
+  const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
+
+  const canvas = document.getElementById('stage');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0xffffff, 1);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xffffff);
+
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+
+  const mods = {};
+  let current = null, spin = true, wire = false;
+
+  function fit(model){
+    const box = new THREE.Box3().setFromObject(model);
+    const c = box.getCenter(new THREE.Vector3());
+    camera.position.set(c.x, c.y, c.z + 3.4);
+    controls.target.copy(c);
+    controls.update();
+  }
+
+  async function load(which){
+    if (!mods[which]) mods[which] = await import(which === 'proj' ? './model.js' : './proc.js');
+    const M = mods[which];
+    if (current) { scene.remove(current); }
+    const model = M.createTeeccinoFrenchRoast500gPouchModel({});
+    scene.add(model);
+    if (!scene.userData.lit) {
+      scene.add(M.createTeeccinoFrenchRoast500gPouchLookDevLights('reference'));
+      try { scene.environment = M.createTeeccinoFrenchRoast500gPouchEnvironment(renderer); } catch(e){}
+      scene.userData.lit = true;
+    }
+    current = model;
+    applyWire();
+    fit(model);
+    let meshes = 0; model.traverse(o => { if (o.isMesh) meshes++; });
+    statEl.textContent = `${meshes} meshes · ${which === 'proj' ? 'reference-derived albedo/roughness/normal/AO maps applied' : 'no reference maps — procedural output only'} · drag to orbit, scroll to zoom`;
+  }
+
+  function applyWire(){
+    if (!current) return;
+    current.traverse(o => { if (o.isMesh && o.material) o.material.wireframe = wire; });
+  }
+
+  function size(){
+    const w = canvas.clientWidth || 600;
+    renderer.setSize(w, w, false);
+    camera.aspect = 1; camera.updateProjectionMatrix();
+  }
+  addEventListener('resize', size);
+
+  await load('proj');
+  size();
+
+  const bProj = document.getElementById('b-proj'), bProc = document.getElementById('b-proc');
+  const bWire = document.getElementById('b-wire'), bSpin = document.getElementById('b-spin');
+  bProj.onclick = async () => { bProj.ariaPressed='true'; bProc.ariaPressed='false'; await load('proj'); };
+  bProc.onclick = async () => { bProc.ariaPressed='true'; bProj.ariaPressed='false'; await load('proc'); };
+  bWire.onclick = () => { wire = !wire; bWire.ariaPressed = String(wire); applyWire(); };
+  bSpin.onclick = () => { spin = !spin; bSpin.ariaPressed = String(spin); };
+
+  (function loop(){
+    if (spin && current) current.rotation.y += 0.004;
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+} catch (e) {
+  errEl.textContent = 'Render failed: ' + (e && e.stack || e);
+  statEl.textContent = 'error';
+}
+</script>
+</body>
+</html>
