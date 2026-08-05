@@ -106,7 +106,7 @@
   separate frames — never one chart with two y-axes.</p>
 <div id="core"></div>
 
-<h2>Cost of the conversion gap</h2>
+<h2>Cost of the conversion gap <span class="tag">— opportunity vs. best-ever comp</span></h2>
 <p class="note">If each month had converted at <i>last year's same-month rate</i> on
   <i>this year's</i> traffic, this is the volume and gross revenue the gap represents.
   It is an opportunity size, not a forecast — it assumes traffic quality is unchanged, which is
@@ -1585,6 +1585,9 @@ const n2 = v => v==null ? '—' : v.toLocaleString('en-US',{minimumFractionDigit
 const usd = v => v==null ? '—' : '$'+Math.round(v).toLocaleString('en-US');
 const usdk = v => v==null ? '—' : '$'+(Math.round(v/100)/10).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+'k';
 const mlab = m => MN[+m.slice(5,7)-1]+' '+m.slice(0,4);
+// Full date, US order. Do NOT build this by appending a day to mlab() — that
+// yields "Aug 2026 3". Always go through dlab().
+const dlab = d => MN[+d.slice(5,7)-1]+' '+(+d.slice(8,10))+', '+d.slice(0,4);
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el = (h) => { const d=document.createElement('div'); d.innerHTML=h.trim(); return d.firstChild; };
 const YC = { '2024':C.s3, '2025':C.s2, '2026':C.s1 };
@@ -1617,6 +1620,18 @@ function lineChart(host, o) {
   xs.forEach((lb,i) => { if (i%step) return;
     g += `<text class="axl" x="${X(i).toFixed(1)}" y="${H-P.b+15}" text-anchor="middle">${esc(lb)}</text>`; });
   g += `<line class="axis" x1="${P.l}" y1="${P.t+ih}" x2="${W-P.r}" y2="${P.t+ih}"/>`;
+  // reference lines (median, tripwire) — drawn under the data, direct-labelled
+  // Reference lines can sit close together (median vs tripwire differ by ~0.2pp),
+  // so labels alternate end and vertical side to avoid colliding.
+  let hlab = '';   // labels deferred so they paint ON TOP of the data line
+  (o.hlines||[]).forEach(h => { if (h.y<lo||h.y>hi) return; const y=Y(h.y);
+    const left = h.anchor==='start';
+    g += `<line x1="${P.l}" y1="${y.toFixed(1)}" x2="${W-P.r}" y2="${y.toFixed(1)}"
+            stroke="${h.color}" stroke-width="1.5" stroke-dasharray="${h.dash||'4 4'}" opacity=".9"/>`;
+    hlab += `<text class="dlab" x="${left ? P.l+5 : W-P.r-5}" y="${(y+(h.dy||-5)).toFixed(1)}"
+            text-anchor="${left?'start':'end'}" fill="${h.color}"
+            style="font-size:10.5px;paint-order:stroke;stroke:${C.card};stroke-width:4px"
+            >${esc(h.label)}</text>`; });
   // series paths — 2px lines, drawn oldest-first so the current year sits on top
   o.series.forEach(s => {
     const segs = []; let cur = [];
@@ -1639,6 +1654,7 @@ function lineChart(host, o) {
                         fill="${s.color}">${esc(s.name)}</text>`;
     }
   });
+  g += hlab;
   // hover layer: crosshair + tooltip
   g += `<g class="hoverg" style="opacity:0"><line class="cross" y1="${P.t}" y2="${P.t+ih}"
           stroke="${C.gold}" stroke-width="1" stroke-dasharray="3 3"/></g>`;
@@ -1717,7 +1733,7 @@ const years = [...new Set(M.map(r=>r.m.slice(0,4)))].sort();
 
 document.getElementById('subline').innerHTML =
   `Session &rarr; conversion &rarr; Buy Box funnel for the Amazon US marketplace. `
-+ `Daily data through <b>${mlab(D.cov.daily.b)} ${+D.cov.daily.b.slice(8)}</b>. Built ${D.built}.`;
++ `Daily data through <b>${dlab(D.cov.daily.b)}</b>. Built ${dlab(D.built)}.`;
 
 document.getElementById('provtop').innerHTML =
   `<strong>What this page is.</strong> Amazon-reported traffic and conversion, from Data Kiosk
@@ -1770,15 +1786,29 @@ for (let i=D.yoy.length-1; i>=0; i--) {
   firstBehind = D.yoy[i].m;
 }
 const behindRun = D.yoy.filter(r => r.m >= firstBehind);
-const worst = [...D.yoy].sort((a,b)=>a.cvr_pp-b.cvr_pp).slice(0,3).map(r=>r.m).sort();
+
+/* LEVELS, not deltas. The YoY delta series alone reads like a May-2026 break —
+   it is not. It went negative in late 2025, recovered to positive Feb–Apr 2026,
+   then negative again. On levels, 2026 is flat and the 2025 comp is the outlier. */
+const TRIPWIRE = 34.5;
+const PYR = +D.latest.slice(0,4)-1;   // prior comparison year
+const comp = M.filter(r=>r.complete).slice().sort((a,b)=>b.cvr-a.cvr);
+const rankOf = m => comp.findIndex(r=>r.m===m)+1;
+const med = (a=>{const s=[...a].sort((x,y)=>x-y);const h=s.length>>1;
+  return s.length%2?s[h]:(s[h-1]+s[h])/2;})(M.filter(r=>r.complete).map(r=>r.cvr));
+const stable = M.filter(r=>r.complete && r.m>='2026-03');
+const stMin = Math.min(...stable.map(r=>r.cvr)), stMax = Math.max(...stable.map(r=>r.cvr));
+const stMean = stable.reduce((s,r)=>s+r.cvr,0)/stable.length;
+const compMonths = D.gap.map(g=>`${mlab(g.m.replace(/^\d{4}/,y=>+y-1))} ${n2(g.cvr_ly)}%`);
+const compRanks = D.gap.map(g=>rankOf(`${+g.m.slice(0,4)-1}-${g.m.slice(5,7)}`));
 const core = document.getElementById('core');
 core.innerHTML =
   frame('joined-top','Sessions by month, one line per year',
     `Traffic is up year-over-year in ${sessUp} of the last ${D.yoy.length} comparable months (${sessRange}).`,
     coreLeg+'<div id="ch-sess"></div>')
 + frame('joined-bot','Unit-session % (conversion) — same months, same x-axis',
-    `Conversion ran <b>at or above</b> last year through ${mlab(lastAhead)}, then broke below it in `
-    + `${mlab(firstBehind)} and has stayed there. The gap is recent, not a slow two-year slide.`,
+    `Compare the same month across years. Note the shape of the <b>${PYR}</b> line: its summer is the `
+    + `high point of the whole series, and that is what ${D.latest.slice(0,4)} is measured against.`,
     '<div id="ch-cvr"></div>');
 lineChart(document.getElementById('ch-sess'), { xLabels:MN, series:yoySeries('sessions'),
   yFmt:v=>Math.round(v/1000)+'k', tFmt:v=>n0(v)+' sessions', zero:true, dots:true,
@@ -1787,19 +1817,44 @@ lineChart(document.getElementById('ch-cvr'), { xLabels:MN, series:yoySeries('cvr
   yFmt:v=>n0(v)+'%', tFmt:v=>n2(v)+'%', dots:true, h:200,
   tTitle:i=>MN[i]+' — unit-session %', aria:'Monthly Amazon unit-session percentage, one line per year' });
 
-/* ---- inflection callout */
+/* ---- levels view: the correction to a delta-only reading */
 core.insertAdjacentHTML('beforeend',
-  `<div class="warnbox"><b>Read the turn, not the trend.</b>
-    Conversion was <i>ahead</i> of last year in ${mlab(D.yoy[D.yoy.length-1].m).slice(-4)} through
-    ${mlab(lastAhead)} (Feb&ndash;Apr all positive), then went negative in ${mlab(firstBehind)} and has
-    stayed negative for ${behindRun.length} straight months at
-    &minus;${n2(Math.min(...behindRun.map(r=>Math.abs(r.cvr_pp))))} to
-    &minus;${n2(Math.max(...behindRun.map(r=>Math.abs(r.cvr_pp))))} pp.
-    Those are the <b>three worst YoY conversion months in the entire ${D.cov.daily.n}-day series</b>
-    (${worst.map(mlab).join(', ')}).
-    So this is a <b>recent break, not a long slow decline</b> &mdash; which is good news for
-    diagnosing it: look for something that changed around ${mlab(firstBehind)}, not for a
-    two-year erosion story. Sessions kept climbing straight through the break.</div>`);
+  `<div class="warnbox" style="border-color:${C.good};border-left-color:${C.good};background:rgba(25,158,112,.08)">
+    <b style="color:${C.good}">Read levels, not just the YoY delta &mdash; conversion is not deteriorating.</b>
+    The delta series alone is misleading: it went negative in late ${+D.latest.slice(0,4)-1},
+    recovered to <b>positive</b> for three months (Feb&nbsp;+0.06, Mar&nbsp;+1.06, Apr&nbsp;+1.06), then
+    went negative again. That is not a break with a cause to hunt.
+    <br><br>On <b>levels</b>, ${D.latest.slice(0,4)} is flat and healthy:
+    ${stable.map(r=>`${MN[+r.m.slice(5,7)-1]}&nbsp;${n2(r.cvr)}`).join(' &middot; ')}
+    &mdash; a spread of just <b>${n2(stMax-stMin)} pp</b> across five months, averaging
+    <b>${n2(stMean)}%</b>, which is <b>${n2(stMean-med)} pp above the ${D.cov.daily.n}-day median of
+    ${n2(med)}%</b>.
+    <br><br>What changed is the <i>comparison</i>, not the performance.
+    ${compMonths.join(', ')} rank <b>#${compRanks.join(', #')} of ${comp.length}</b> months in the
+    entire series &mdash; last summer was the best-converting stretch on record, and it fell to
+    ${n2(byM['2025-11'].cvr)}%/${n2(byM['2025-12'].cvr)}% by Nov/Dec of the same year.
+    <b>We are comping against a peak, not regressing from one.</b>
+    <br><br><b>The tripwire for a real problem is a level, not a delta:</b> sustained months below
+    roughly <b>${n1(TRIPWIRE)}%</b>. Nothing since ${mlab(M.filter(r=>r.complete&&r.cvr<TRIPWIRE).pop().m)}
+    has breached it (${D.latest.slice(0,4)} low is ${n2(stMin)}%). A negative YoY delta on its own is
+    not a signal to act on.</div>`);
+
+/* ---- absolute-level timeline */
+core.insertAdjacentHTML('beforeend',
+  frame('', 'Unit-session % — absolute level, continuous timeline',
+    `The same numbers in chronological order, so the shape is direct rather than inferred: a ${PYR} summer peak, a winter trough, then a flat ${D.latest.slice(0,4)} plateau sitting above the series median. The tripwire sits almost exactly on the median (${n2(TRIPWIRE-med)} pp apart), so the two reference lines nearly coincide &mdash; that is the point: a genuine problem means falling to the middle of our own history, not merely below a record year.`,
+    legend([{n:'Unit-session %',c:C.s1},{n:`Series median ${n2(med)}%`,c:C.muted},
+            {n:`${n1(TRIPWIRE)}% tripwire`,c:C.bad}]) + '<div id="ch-lvl"></div>'));
+lineChart(document.getElementById('ch-lvl'), {
+  xLabels: M.map(r=>mlab(r.m)),
+  series:[{name:'Unit-session %', color:C.s1,
+           pts:M.map((r,i)=>({x:i,y:r.cvr,note:r.complete?'':'(partial)'}))}],
+  yFmt:v=>n0(v)+'%', tFmt:v=>n2(v)+'%', min:29, max:40, ticks:5, h:215, dots:true,
+  pad:{t:10,r:40,b:24,l:52},
+  hlines:[{y:med, color:C.muted, dash:'4 4', label:`series median ${n2(med)}%`,
+           anchor:'start', dy:13},
+          {y:TRIPWIRE, color:C.bad, dash:'6 3', label:`tripwire ${n1(TRIPWIRE)}%`, dy:-6}],
+  tTitle:i=>mlab(M[i].m), aria:'Absolute unit-session percentage by month, showing a 2025 summer peak and a flat 2026 plateau' });
 
 /* ---- YoY table (only valid comparison) */
 const yt = D.yoy.slice(-13);
@@ -1818,7 +1873,14 @@ core.insertAdjacentHTML('beforeend',
 /* ---- conversion-gap cost */
 const g = D.gap, gt = D.gap_tot;
 document.getElementById('gappanel').innerHTML =
-  `<div class="grid">
+  `<div class="warnbox"><b>This is headroom against the best summer on record &mdash; not lost performance.</b>
+    The benchmark months (${compMonths.join(', ')}) are the <b>#${compRanks.join(', #')}
+    best-converting months of all ${comp.length}</b> in the series. ${D.latest.slice(0,4)} conversion
+    is flat at ${n2(stMean)}%, <i>above</i> the ${n2(med)}% series median &mdash; nothing regressed.
+    So read the figures below as <b>"what beating our best-ever summer would be worth,"</b> not
+    <b>"what we lost."</b> Treating it as recovered revenue would overstate the case and send people
+    chasing a decline that did not happen.</div>`
++ `<div class="grid">
      <div class="card kpi"><div class="k">Units forgone (${gt.months} mo)</div><div class="v">${n0(gt.units)}</div>
        <div class="d"><span class="lyv">vs LY same-month conversion</span></div></div>
      <div class="card kpi"><div class="k">Gross revenue at stake</div><div class="v">${usdk(gt.dollars)}</div>
@@ -1869,10 +1931,11 @@ document.getElementById('ch-mix').insertAdjacentHTML('afterend',
   `<p class="note" style="margin:10px 0 2px">Mobile app is now the <b>majority surface</b>:
    ${n1(appSh(L))}% of sessions in ${mlab(L.m)}, up from ${n1(appSh(PY))}% a year ago and
    ${n1(appSh(M[0]))}% at the start of the series. That is a real mix shift &mdash; but it is a
-   <i>gradual</i> one, roughly ${n1(appSh(L)-appSh(PY))} pp a year, with no step change at
-   ${mlab(firstBehind)}. It can plausibly explain slow conversion drift; it does not explain the
-   break. Splitting conversion by surface would settle it, and the daily table does not carry that
-   breakdown &mdash; it would need a Data Kiosk field we do not currently ingest.</p>`);
+   <i>gradual</i> one, roughly ${n1(appSh(L)-appSh(PY))} pp a year. Worth knowing as a structural
+   shift in its own right; it is not evidence of a conversion problem, since conversion levels are
+   flat. Splitting conversion by surface would show whether the app converts differently, and the
+   daily table does not carry that breakdown &mdash; it would need a Data Kiosk field we do not
+   currently ingest.</p>`);
 const aocFirst = M[0], aocLast = M[M.length-1];
 const aocPeak = M.reduce((a,b)=>b.aoc>a.aoc?b:a);
 const aocAtBreak = byM[firstBehind];
@@ -1883,17 +1946,20 @@ lineChart(document.getElementById('ch-aoc'), {
   tTitle:i=>mlab(M[i].m), aria:'Average competing offer count per month' });
 document.getElementById('mixpanel').insertAdjacentHTML('beforeend',
   `<div class="warnbox" style="border-color:${C.bad};border-left-color:${C.bad}">
-   <b style="color:${C.bad}">Competitive pressure does not explain the conversion break.</b>
+   <b style="color:${C.bad}">Competitive pressure does not explain the year-over-year gap.</b>
    Offer count climbed from <b>${n0(aocFirst.aoc)}</b> (${mlab(aocFirst.m)}) to a peak of
    <b>${n0(aocPeak.aoc)}</b> in ${mlab(aocPeak.m)} &mdash; then <b>fell steadily</b> to
-   <b>${n0(aocLast.aoc)}</b> by ${mlab(aocLast.m)}. Conversion broke below last year in
-   ${mlab(firstBehind)}, when offer count was <b>already ${n1(100*(1-aocAtBreak.aoc/aocPeak.aoc))}% off
-   its peak and still falling</b>. Fewer competitors, worse conversion &mdash; the two move in
-   <i>opposite</i> directions across the break. Whatever caused the ${mlab(firstBehind)} inflection,
-   this is not it. Buy Box (above) is ruled out on the same grounds. That points the investigation at
-   traffic <i>composition</i> (paid vs organic mix, keyword mix) or something on the detail page or
-   price &mdash; none of which this dataset can see. Confirming any of those needs the ads tables and
-   a pricing-snapshot history.</div>`);
+   <b>${n0(aocLast.aoc)}</b> by ${mlab(aocLast.m)}. Across the months where conversion sits below last
+   year, offer count was <b>already ${n1(100*(1-aocAtBreak.aoc/aocPeak.aoc))}% off its peak and still
+   falling</b>. Fewer competitors alongside a wider YoY gap &mdash; the two move in <i>opposite</i>
+   directions, so rising competition is not what put ${D.latest.slice(0,4)} below
+   ${+D.latest.slice(0,4)-1}. Buy Box (above) is ruled out on the same grounds.
+   <br><br>To be clear about what these rule out: they are candidate explanations for the
+   <b>YoY gap</b>, not for a decline &mdash; per the levels panel above, there was no decline.
+   The gap is mostly explained by an exceptional prior-year comp. If you still want to <i>beat</i>
+   that comp, the untested levers are traffic composition (paid vs organic mix, keyword mix), price,
+   and the detail page &mdash; none visible in this dataset. Testing them needs the ads tables and a
+   pricing-snapshot history.</div>`);
 
 /* ---- repeat purchase */
 const R = D.repeat, RL = R[R.length-1];
@@ -1997,7 +2063,9 @@ document.getElementById('provpanel').innerHTML =
      <dd>Conversion swings roughly ${n2(Math.min(...D.yoy.map(r=>r.cvr)))}% to
        ${n2(Math.max(...M.filter(r=>r.complete).map(r=>r.cvr)))}% across the calendar year on this
        account: peak-traffic months convert <i>worse</i>, summer converts best. A month-over-month
-       conversion move is almost entirely seasonal. Never quote one.</dd>
+       conversion move is almost entirely seasonal. Never quote one. And because seasonal peaks vary
+       in height year to year, even a valid YoY same-month delta needs the <i>level</i> alongside it
+       &mdash; a negative delta against a record comp is not a decline.</dd>
      <dt>SKU-alias session double-counting</dt>
      <dd><code>raw_amazon_sales_traffic_sku</code> repeats one ASIN's sessions across every alias SKU
        row while attributing units to one. ${n1(inflate)}% session inflation in ${mlab(D.asin_period)}.
@@ -2029,7 +2097,8 @@ document.getElementById('provpanel').innerHTML =
      <dt>Unit-session % ("conversion")</dt><dd>Units ordered &divide; sessions. Can exceed order-item rate because one session can buy several units.</dd>
      <dt>Buy Box %</dt><dd>Share of detail-page views where we held the featured offer.</dd>
      <dt>Average offer count</dt><dd>Mean competing offers on our listings &mdash; a proxy for competitive pressure, not a measure of it.</dd>
-     <dt>Units forgone</dt><dd>Sessions &times; (LY same-month unit-session % &minus; TY unit-session %). An opportunity size under an unchanged-traffic-quality assumption.</dd>
+     <dt>Units forgone</dt><dd>Sessions &times; (LY same-month unit-session % &minus; TY unit-session %). Headroom against the prior-year comp under an unchanged-traffic-quality assumption &mdash; <b>not</b> lost units. Where the comp month is an all-time high, as it is for ${D.gap_months.map(mlab).join('/')}, this measures the cost of not beating a record rather than the cost of a decline.</dd>
+     <dt>Conversion tripwire (${n1(TRIPWIRE)}%)</dt><dd>The level that would indicate a genuine regression. A negative YoY delta does not, on its own &mdash; it can simply mean a strong comp. ${D.latest.slice(0,4)} has stayed above the tripwire every month since ${mlab(M.filter(r=>r.complete&&r.cvr<TRIPWIRE).pop().m)}.</dd>
    </dl>`;
 
 document.getElementById('foot').innerHTML =
