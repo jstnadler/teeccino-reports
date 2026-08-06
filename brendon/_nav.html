@@ -1,0 +1,117 @@
+<!--
+  PORTAL-SCOPED nav partial — Brendon's portal (agent: SocialSmith, organic social + assets).
+  Owner: HubSmith. Modify only via clawd-hubsmith.
+  Created 2026-08-06, on Justin's approval, following the burke/ precedent.
+
+  ISOLATION (AGENT_STANDARDS §18): this nav links ONLY to pages inside brendon/.
+  It MUST NOT link to Justin's main hub (/teeccino-reports/index.html) or any of his
+  dashboards. If Brendon ever needs a view that already exists at the repo root, he gets
+  his OWN brendon/NAME.html copy — never a link to Justin's page. That is the same rule
+  that gives Burke his own burke/amazon.html instead of a link to root amazon.html.
+
+  It deliberately does NOT load the shared nav partial under /_partials/ — that one's
+  boot script powers search from Justin's pages.json, so mounting it here would make all
+  176 of his manifest entries searchable from inside an employee portal. That exact
+  substitution is what broke burke/ and crowley/ on 2026-08-04; it is now refused at write
+  time by portal_export.assert_portal_safe(). Pure HTML + CSS here, no JS, no manifest read.
+
+  Accent = magenta #D500F9, SocialSmith's assigned agent color, so the portal reads as
+  SocialSmith's surface the way burke/ reads as Orinoco's forest green. Picked from the
+  agent, not invented for the chrome.
+
+  How the portal's own pages include it (index.html + any brendon/*.html dashboard):
+      <div id="portal-nav"></div>
+      <script>
+        fetch('/teeccino-reports/brendon/_nav.html')
+          .then(r => r.text())
+          .then(html => {
+            document.getElementById('portal-nav').innerHTML = html;
+            document.body.classList.add('has-portal-nav');
+          });
+      </script>
+
+  Adding a dashboard link: add an <a class="nav-link" href="/teeccino-reports/brendon/NAME.html">
+  inside a `<div class="group" data-cat="dashboards">` block below. Chrome is HubSmith-owned —
+  SocialSmith dispatches HubSmith to add the link when it publishes a page.
+
+  WHY THERE IS NO "DASHBOARDS" GROUP IN THE MARKUP YET
+  ---------------------------------------------------
+  There are zero pages in this portal today (see brendon/index.html for why: the Instagram
+  pipeline that would feed a social dashboard is not running). An empty nav group renders as
+  a bare label pointing at nothing, which reads as breakage rather than as "not yet" — the
+  same reason build_hub.py skips empty categories on the main hub. The group appears with the
+  first real link, in one edit.
+
+  NO COUNTS OR STATUS TEXT IN THIS FILE. Learned on burke/ 2026-08-05: this fragment is
+  fetched by EVERY page in the portal, so any number or state living here can contradict the
+  page sitting under it, on every page at once. Anything that mirrors another page's live
+  contents belongs in ONE place — the index card — until it can be read from a machine-written
+  value. Do not add a badge here.
+
+  TWO KINDS OF PAGE, TWO COLORS — inherited from the burke/ portal convention, available here
+  but not yet used:
+    · MAGENTA (#E88BF7) = a dashboard. Shows Brendon numbers. Group "Dashboards".
+    · GOLD    (#D4A843) = a governance surface. Waits on Brendon's decision. Group "Needs You",
+      rendered FIRST, with .nav-link.action styling.
+  A page that blocks work outranks a page that reports on it. Do not give an analytics page
+  .action styling; the signal only means something while it is rare. The gold styles are NOT
+  defined in this file — add them, copied from burke/_nav.html, on the day a governance
+  surface actually ships here. Shipping unused CSS invites someone to find a use for it.
+-->
+<style>
+  /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
+  #portal-nav-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(26, 18, 32, 0.96);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid rgba(213, 0, 249, 0.32);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    flex-wrap: wrap; row-gap: 6px;
+  }
+  #portal-nav-bar .brand {
+    font-weight: 700; font-size: 1.05em; color: #E88BF7;
+    text-decoration: none; letter-spacing: -0.02em;
+  }
+  #portal-nav-bar .brand:hover { color: #F4BDFB; }
+  #portal-nav-bar .portal-tag {
+    color: #94a3b8; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; border: 1px solid rgba(213, 0, 249, 0.38);
+    padding: 2px 8px; border-radius: 999px; margin-left: 2px;
+  }
+  #portal-nav-bar .group { display: flex; align-items: center; gap: 14px; margin-left: 16px; }
+  #portal-nav-bar .group-label {
+    color: #64748b; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  #portal-nav-bar a.nav-link {
+    color: #94a3b8; text-decoration: none; font-size: 0.88em;
+    padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+  }
+  #portal-nav-bar a.nav-link:hover { color: #E88BF7; background: rgba(213, 0, 249, 0.10); }
+  #portal-nav-bar a.nav-link.active { color: #E88BF7; background: rgba(213, 0, 249, 0.16); font-weight: 600; }
+
+  #portal-nav-bar .spacer { flex: 1; }
+  #portal-nav-bar .home-link {
+    color: #E88BF7; font-size: 0.85em; text-decoration: none;
+    border: 1px solid rgba(213, 0, 249, 0.38); padding: 4px 12px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  #portal-nav-bar .home-link:hover { background: rgba(213, 0, 249, 0.14); }
+
+  body.has-portal-nav { padding-top: 72px; }
+  @media (max-width: 880px) {
+    #portal-nav-bar { gap: 8px; padding: 10px 12px; }
+    #portal-nav-bar .group { margin-left: 0; gap: 8px; }
+    #portal-nav-bar .group-label { display: none; }
+    #portal-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
+    body.has-portal-nav { padding-top: 96px; }
+  }
+</style>
+<nav id="portal-nav-bar" aria-label="Brendon's portal navigation">
+  <a class="brand" href="/teeccino-reports/brendon/index.html">🎨 Teeccino</a>
+  <span class="portal-tag">Brendon&rsquo;s Portal &middot; Social &amp; Assets</span>
+  <!-- Dashboard links go here, in <div class="group" data-cat="dashboards">. See header. -->
+  <span class="spacer"></span>
+  <a class="home-link" href="/teeccino-reports/brendon/index.html">My Dashboards &rarr;</a>
+</nav>
