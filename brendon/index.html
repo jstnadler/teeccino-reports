@@ -20,6 +20,12 @@
   -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* An author `display` rule beats the UA stylesheet's [hidden]{display:none} regardless of
+       specificity, so `.section-label { display:block }` below silently defeats the hidden
+       attribute the empty-state script sets. Caught by rendering the page — the DOM said
+       el.hidden === true while the label was plainly on screen. Keep this rule above the
+       components that set display. */
+    [hidden] { display: none !important; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #1a1220 0%, #1e1526 100%);
