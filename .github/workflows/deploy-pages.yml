@@ -19,6 +19,28 @@ permissions:
   id-token: write
 
 # Never cancel an in-flight deploy; queue instead so a push can't abort a live rollout.
+#
+# DO NOT "FIX" THIS BY FLIPPING cancel-in-progress. Read this first -- it has been
+# proposed twice (2026-08-06 SocialSmith, 2026-08-07 DataOps) off the same misreading:
+#
+#   * `cancel-in-progress: false` protects runs that are ALREADY EXECUTING. It says
+#     nothing about QUEUED runs -- GitHub keeps one pending run per concurrency group,
+#     and a newly queued run evicts the previously-pending one regardless of this flag.
+#     So "my deploys keep getting cancelled" and "cancel-in-progress is false" are both
+#     true at once, and flipping the flag fixes nothing. The tell: each cancelled run's
+#     updatedAt == the next run's createdAt. That is queue-slot eviction, not this flag.
+#
+#   * The 13h site freeze on 2026-08-06 (frozen at 75288bb1, 16:13Z) was a run that went
+#     non-terminal during the GitHub Actions/Pages major outage (incident opened 15:22Z)
+#     and pinned this group. The environment config was NOT the cause: the github-pages
+#     environment has not been modified since 2026-03-18, and deploys from main succeeded
+#     under it at 15:37Z, 17 minutes before the freeze.
+#
+# The real gap was that nothing NOTICED for 13 hours. That is fixed by detection, not by
+# making every push abort the previous rollout:
+#   clawd-hubsmith/skills/hub-build/deploy_watchdog.py  (scheduled every 20 min)
+# It compares the live deployment SHA to origin/main, alerts to the HubSmith outbox, and
+# performs one bounded cancel+re-dispatch of a genuinely stuck run.
 concurrency:
   group: pages
   cancel-in-progress: false
