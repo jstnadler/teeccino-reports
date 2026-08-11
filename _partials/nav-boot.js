@@ -40,6 +40,22 @@
      window.location.href, which would otherwise drop the query string). Stickiness
      is per-tab only. Enable: ?share=1 (or true). Disable/reset: ?share=0 (or false).
      If sessionStorage is unavailable, we fall back to URL-only behavior. */
+  /* 0) FAVICON — declare one for every page that mounts the shared chrome.
+     No page on this site declared a favicon, so every load hit the browser's
+     default request for https://jstnadler.github.io/favicon.ico (domain root,
+     outside this repo — not ours to place a file at) and logged a 404. Injected
+     here rather than added to ~65 publisher <head>s: one file, whole site, no
+     publisher edits. Runs BEFORE the share-mode return so shared pages get it
+     too. Skipped if a page declares its own icon — publisher intent wins. */
+  (function injectFavicon() {
+    if (document.querySelector('link[rel~="icon"]')) return;
+    var link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/svg+xml';
+    link.href = '/teeccino-reports/favicon.svg';
+    document.head.appendChild(link);
+  })();
+
   var params = new URLSearchParams(window.location.search);
   var shareParam = params.get('share');
   var shareOn = false;
