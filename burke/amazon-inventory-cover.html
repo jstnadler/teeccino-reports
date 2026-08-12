@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Coverage — Burke's Amazon Portal</title>
+<!--
+  Orinoco-built, Burke's isolated portal (AGENT_STANDARDS §18). Read-only view over
+  raw_amazon_inventory + calc_daily_amazon_sku (US marketplace). Do not register in the
+  main hub's pages.json. Rebuild via memory note in cc-Orinoco if the query changes.
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --surface-1: #1a1a19;
+    --page: #14211a;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted: #94a3b8;
+    --gridline: #2c2c2a;
+    --baseline: #383835;
+    --brand-green: #6FCF7A;
+    --brand-green-dark: #2E7D32;
+    --series-available: #3987e5;
+    --series-inbound: #d95926;
+    --series-reserved: #199e70;
+    --good: #0ca30c;
+    --warn: #fab219;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #14211a 0%, #16241b 100%);
+    min-height: 100vh; color: var(--text-primary); padding: 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .header { margin: 24px 0 8px; }
+  .header h1 {
+    font-size: 1.9em;
+    background: linear-gradient(135deg, var(--brand-green-dark), var(--brand-green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .header .sub { color: var(--muted); font-size: 0.95em; max-width: 720px; line-height: 1.5; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 22px 0; }
+  .stat-tile {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .stat-tile .label { font-size: 0.78em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .stat-tile .value { font-size: 2em; font-weight: 700; color: var(--text-primary); font-variant-numeric: normal; }
+  .stat-tile .value .unit { font-size: 0.5em; color: var(--text-secondary); font-weight: 500; margin-left: 4px; }
+  .stat-tile .delta { font-size: 0.85em; margin-top: 6px; font-weight: 600; }
+  .stat-tile .delta.down { color: var(--good); }
+  .stat-tile .delta.up { color: var(--warn); }
+  .stat-tile .footnote { font-size: 0.78em; color: var(--muted); margin-top: 4px; }
+
+  .panel {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 20px 22px; margin: 18px 0;
+  }
+  .panel h2 { font-size: 1.05em; color: var(--brand-green); margin-bottom: 3px; }
+  .panel .panel-sub { font-size: 0.82em; color: var(--muted); margin-bottom: 16px; }
+
+  svg { width: 100%; height: auto; overflow: visible; font-family: inherit; }
+  .gridline { stroke: var(--gridline); stroke-width: 1; }
+  .baseline { stroke: var(--baseline); stroke-width: 1; }
+  .axis-label { fill: var(--muted); font-size: 11px; }
+  .ratio-line { fill: none; stroke: var(--brand-green); stroke-width: 2.5; stroke-linecap: round; }
+  .ratio-dot { fill: var(--brand-green); stroke: var(--surface-1); stroke-width: 2; }
+  .ratio-dot.partial { fill: var(--warn); }
+  .ratio-value-label { fill: var(--text-primary); font-size: 12px; font-weight: 700; text-anchor: middle; }
+  .week-label { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+
+  .bar-seg { rx: 2; }
+  .bar-seg.available { fill: var(--series-available); }
+  .bar-seg.inbound { fill: var(--series-inbound); }
+  .bar-seg.reserved { fill: var(--series-reserved); }
+  .bar-seg:hover { opacity: 0.82; cursor: pointer; }
+
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 0.82em; color: var(--text-secondary); }
+  .legend .item { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+  th, td { text-align: right; padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.07); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; font-variant-numeric: normal; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.ratio-cell { color: var(--brand-green); font-weight: 700; }
+  tr.partial td { color: var(--muted); font-style: italic; }
+  tr.partial td.ratio-cell { color: var(--warn); }
+
+  .tooltip {
+    position: fixed; pointer-events: none; background: #0d0d0d; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 8px 11px; font-size: 0.8em; color: #fff; line-height: 1.5;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.1s; z-index: 50; max-width: 220px;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip b { color: var(--brand-green); }
+
+  .caveat {
+    font-size: 0.82em; color: var(--muted); line-height: 1.6; border-left: 3px solid rgba(212,168,67,0.5);
+    padding: 10px 14px; background: rgba(212,168,67,0.06); border-radius: 0 8px 8px 0; margin-top: 6px;
+  }
+  .caveat b { color: #E8C06A; }
+
+  footer { text-align: center; margin-top: 40px; padding: 24px 0; color: #64748b; font-size: 0.78em; border-top: 1px solid rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+
+<div id="portal-nav"></div>
+<script>
+  fetch('/teeccino-reports/burke/_nav.html')
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('portal-nav').innerHTML = html;
+      document.body.classList.add('has-portal-nav');
+    });
+</script>
+
+<div class="container">
+  <div class="header">
+    <h1>📦 Inventory Coverage</h1>
+    <p class="sub">Total Amazon inventory (available + inbound + reserved) as a multiple of that week's units sold — how many weeks of demand you're currently holding, tracked week over week. US marketplace, FBA only.</p>
+  </div>
+
+  <div class="stat-row" id="stat-row"></div>
+
+  <div class="panel">
+    <h2>Weeks of cover, over time</h2>
+    <p class="panel-sub">Total inventory ÷ units sold that week. Higher = more weeks of stock on hand relative to how fast it's selling.</p>
+    <svg id="line-chart" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <div class="panel">
+    <h2>Inventory composition by week</h2>
+    <p class="panel-sub">Units in each bucket at week's end snapshot.</p>
+    <svg id="bar-chart" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <span class="item"><span class="swatch" style="background:var(--series-available)"></span>Available (fulfillable)</span>
+      <span class="item"><span class="swatch" style="background:var(--series-inbound)"></span>Inbound (working+shipped+receiving)</span>
+      <span class="item"><span class="swatch" style="background:var(--series-reserved)"></span>Reserved (FC transfer + processing + customer orders)</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Weekly detail</h2>
+    <table id="detail-table">
+      <thead>
+        <tr>
+          <th>Week</th><th>Units sold</th><th>Available</th><th>Inbound</th><th>Reserved</th><th>Total inventory</th><th>Weeks of cover</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="caveat">
+      <b>Two things to know about this number:</b><br>
+      1. <b>"Reserved" isn't purely FC transfer.</b> Amazon's inventory feed we ingest gives one combined "reserved" bucket — FC transfer, FC processing, and customer orders together — not split out. So this ratio is the closest available reading of "inbound + FC transfer + available," not an exact isolation of FC transfer alone. Flagged to Justin/DataOps if you want the split broken out.<br>
+      2. <b>History starts 2026-07-13</b> — that's when DataOps' FBA inventory snapshot began. You're seeing every week we have (currently 4 complete + this week in progress); the trend will keep filling in from here. The in-progress week is shown separately and excluded from the trend line since only a few days of sales have posted.
+    </div>
+  </div>
+
+  <footer>
+    Burke's private portal · Teeccino Reports · built by Orinoco, read-only · data through <span id="footer-date"></span>
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const DATA = [{"start": "2026-07-13", "end": "2026-07-19", "complete": true, "units": 10384, "available": 97547, "inbound": 12445, "reserved": 19206, "total_inv": 129198, "ratio": 12.44, "snap_date": "2026-07-19"}, {"start": "2026-07-20", "end": "2026-07-26", "complete": true, "units": 9694, "available": 95658, "inbound": 12750, "reserved": 20355, "total_inv": 128763, "ratio": 13.28, "snap_date": "2026-07-26"}, {"start": "2026-07-27", "end": "2026-08-02", "complete": true, "units": 10138, "available": 100309, "inbound": 18445, "reserved": 16616, "total_inv": 135370, "ratio": 13.35, "snap_date": "2026-08-02"}, {"start": "2026-08-03", "end": "2026-08-09", "complete": true, "units": 10089, "available": 95915, "inbound": 9739, "reserved": 14225, "total_inv": 119879, "ratio": 11.88, "snap_date": "2026-08-09"}, {"start": "2026-08-10", "end": "2026-08-16", "complete": false, "units": 1313, "available": 94088, "inbound": 9814, "reserved": 14929, "total_inv": 118831, "ratio": 90.5, "snap_date": "2026-08-11"}];
+
+function fmt(n) { return n.toLocaleString('en-US'); }
+function weekLabel(start, end) {
+  const s = new Date(start + 'T00:00:00'), e = new Date(end + 'T00:00:00');
+  const opts = { month: 'short', day: 'numeric' };
+  return s.toLocaleDateString('en-US', opts) + '–' + e.toLocaleDateString('en-US', opts);
+}
+
+const tooltip = document.getElementById('tooltip');
+function showTip(html, x, y) {
+  tooltip.innerHTML = html;
+  tooltip.style.left = (x + 14) + 'px';
+  tooltip.style.top = (y - 10) + 'px';
+  tooltip.classList.add('show');
+}
+function hideTip() { tooltip.classList.remove('show'); }
+
+// ---- Stat tiles ----
+const complete = DATA.filter(d => d.complete);
+const latest = complete[complete.length - 1];
+const prior = complete[complete.length - 2];
+const partial = DATA.find(d => !d.complete);
+
+const statRow = document.getElementById('stat-row');
+const deltaPct = prior ? ((latest.ratio - prior.ratio) / prior.ratio * 100) : null;
+const deltaDir = deltaPct == null ? '' : (deltaPct <= 0 ? 'down' : 'up');
+const deltaArrow = deltaPct == null ? '' : (deltaPct <= 0 ? '▼' : '▲');
+const deltaText = deltaPct == null ? '' :
+  `<span class="delta ${deltaDir}">${deltaArrow} ${Math.abs(deltaPct).toFixed(1)}% vs prior week</span>`;
+
+statRow.innerHTML = `
+  <div class="stat-tile">
+    <div class="label">Weeks of cover — ${weekLabel(latest.start, latest.end)}</div>
+    <div class="value">${latest.ratio.toFixed(1)}<span class="unit">× last week's units</span></div>
+    ${deltaText}
+  </div>
+  <div class="stat-tile">
+    <div class="label">Total inventory (that week's snapshot)</div>
+    <div class="value">${fmt(latest.total_inv)}<span class="unit">units</span></div>
+    <div class="footnote">Available ${fmt(latest.available)} · Inbound ${fmt(latest.inbound)} · Reserved ${fmt(latest.reserved)}</div>
+  </div>
+  <div class="stat-tile">
+    <div class="label">Units sold that week</div>
+    <div class="value">${fmt(latest.units)}<span class="unit">units</span></div>
+    <div class="footnote">US marketplace, all SKUs</div>
+  </div>
+  <div class="stat-tile">
+    <div class="label">This week so far (in progress)</div>
+    <div class="value">${fmt(partial ? partial.units : 0)}<span class="unit">units sold</span></div>
+    <div class="footnote">${partial ? weekLabel(partial.start, partial.end) + ' — through latest snapshot ' + partial.snap_date : ''}</div>
+  </div>
+`;
+
+// ---- Line chart: ratio over complete weeks ----
+(function() {
+  const svg = document.getElementById('line-chart');
+  const W = 900, H = 260, padL = 50, padR = 30, padT = 30, padB = 40;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const rows = complete;
+  const maxR = Math.max(...rows.map(r => r.ratio)) * 1.25;
+  const minR = 0;
+  const x = i => padL + (rows.length === 1 ? plotW / 2 : i / (rows.length - 1) * plotW);
+  const y = v => padT + plotH - ((v - minR) / (maxR - minR)) * plotH;
+
+  let svgHtml = '';
+  // gridlines
+  const ticks = 4;
+  for (let t = 0; t <= ticks; t++) {
+    const v = minR + (maxR - minR) * t / ticks;
+    const yy = y(v);
+    svgHtml += `<line class="gridline" x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}"></line>`;
+    svgHtml += `<text class="axis-label" x="${padL - 10}" y="${yy + 4}" text-anchor="end">${v.toFixed(0)}×</text>`;
+  }
+  // baseline
+  svgHtml += `<line class="baseline" x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}"></line>`;
+
+  // line path
+  const pathD = rows.map((r, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(r.ratio)}`).join(' ');
+  svgHtml += `<path class="ratio-line" d="${pathD}"></path>`;
+
+  // dots + labels
+  rows.forEach((r, i) => {
+    svgHtml += `<circle class="ratio-dot" data-i="${i}" cx="${x(i)}" cy="${y(r.ratio)}" r="5"></circle>`;
+    svgHtml += `<text class="ratio-value-label" x="${x(i)}" y="${y(r.ratio) - 14}">${r.ratio.toFixed(1)}×</text>`;
+    svgHtml += `<text class="week-label" x="${x(i)}" y="${padT + plotH + 22}">${weekLabel(r.start, r.end)}</text>`;
+  });
+
+  svg.innerHTML = svgHtml;
+
+  svg.querySelectorAll('.ratio-dot').forEach(dot => {
+    dot.addEventListener('mouseenter', e => {
+      const r = rows[+dot.dataset.i];
+      showTip(`<b>${weekLabel(r.start, r.end)}</b><br>${r.ratio.toFixed(2)}× weekly units<br>${fmt(r.total_inv)} total inventory ÷ ${fmt(r.units)} units sold`, e.clientX, e.clientY);
+    });
+    dot.addEventListener('mousemove', e => showTip(tooltip.innerHTML, e.clientX, e.clientY));
+    dot.addEventListener('mouseleave', hideTip);
+  });
+})();
+
+// ---- Stacked bar chart: composition per week (all rows incl partial) ----
+(function() {
+  const svg = document.getElementById('bar-chart');
+  const W = 900, H = 260, padL = 60, padR = 30, padT = 20, padB = 40;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const rows = DATA;
+  const maxTotal = Math.max(...rows.map(r => r.total_inv)) * 1.1;
+  const bw = plotW / rows.length * 0.55;
+  const gap = plotW / rows.length;
+  const y = v => padT + plotH - (v / maxTotal) * plotH;
+
+  let svgHtml = '';
+  const ticks = 4;
+  for (let t = 0; t <= ticks; t++) {
+    const v = maxTotal * t / ticks;
+    const yy = y(v);
+    svgHtml += `<line class="gridline" x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}"></line>`;
+    svgHtml += `<text class="axis-label" x="${padL - 10}" y="${yy + 4}" text-anchor="end">${fmt(Math.round(v))}</text>`;
+  }
+  svgHtml += `<line class="baseline" x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}"></line>`;
+
+  rows.forEach((r, i) => {
+    const cx = padL + gap * i + gap / 2 - bw / 2;
+    let cursor = 0;
+    const segs = [
+      ['available', r.available],
+      ['inbound', r.inbound],
+      ['reserved', r.reserved],
+    ];
+    segs.forEach(([cls, val]) => {
+      const yTop = y(cursor + val);
+      const yBot = y(cursor);
+      const h = yBot - yTop;
+      svgHtml += `<rect class="bar-seg ${cls}" data-i="${i}" data-cls="${cls}" x="${cx}" y="${yTop}" width="${bw}" height="${Math.max(h - 2, 0)}" rx="2"></rect>`;
+      cursor += val;
+    });
+    const label = weekLabel(r.start, r.end) + (r.complete ? '' : ' (in progress)');
+    svgHtml += `<text class="week-label" x="${cx + bw / 2}" y="${padT + plotH + 22}">${label}</text>`;
+  });
+
+  svg.innerHTML = svgHtml;
+
+  const labels = { available: 'Available', inbound: 'Inbound', reserved: 'Reserved' };
+  svg.querySelectorAll('.bar-seg').forEach(seg => {
+    seg.addEventListener('mouseenter', e => {
+      const r = rows[+seg.dataset.i];
+      const cls = seg.dataset.cls;
+      showTip(`<b>${weekLabel(r.start, r.end)}</b><br>${labels[cls]}: ${fmt(r[cls])} units`, e.clientX, e.clientY);
+    });
+    seg.addEventListener('mousemove', e => showTip(tooltip.innerHTML, e.clientX, e.clientY));
+    seg.addEventListener('mouseleave', hideTip);
+  });
+})();
+
+// ---- Table ----
+(function() {
+  const tbody = document.querySelector('#detail-table tbody');
+  tbody.innerHTML = DATA.map(r => `
+    <tr class="${r.complete ? '' : 'partial'}">
+      <td>${weekLabel(r.start, r.end)}${r.complete ? '' : ' (in progress)'}</td>
+      <td>${fmt(r.units)}</td>
+      <td>${fmt(r.available)}</td>
+      <td>${fmt(r.inbound)}</td>
+      <td>${fmt(r.reserved)}</td>
+      <td>${fmt(r.total_inv)}</td>
+      <td class="ratio-cell">${r.ratio ? r.ratio.toFixed(2) + '×' : '—'}</td>
+    </tr>
+  `).join('');
+})();
+
+document.getElementById('footer-date').textContent = DATA[DATA.length - 1].snap_date;
+</script>
+
+</body>
+</html>
