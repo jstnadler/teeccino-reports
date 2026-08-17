@@ -290,9 +290,9 @@ statRow.innerHTML = `
 // ---- Line chart: ratio over the currently-selected date range ----
 function renderLineChart(rows) {
   const svg = document.getElementById('line-chart');
-  // The in-progress current week has ratio:null (units sold so far can't be
-  // annualized into a real ratio yet) -- exclude it here same as the
-  // original build did, even though the bar chart and table still show it.
+  // Belt-and-suspenders: rowsInRange() already filters to CLOSED_WEEKS, so
+  // this should be a no-op. Kept because the in-progress week's ratio:null
+  // will crash the .toFixed() calls below if it ever slips through.
   rows = rows.filter(r => r.complete);
   if (!rows.length) { svg.innerHTML = '<text x="450" y="130" text-anchor="middle" class="axis-label">No weeks in this range</text>'; return; }
   const W = 900, H = 260, padL = 50, padR = 30, padT = 30, padB = 40;
@@ -447,7 +447,13 @@ if (anyEstimatedEver) {
 // Stat tiles up top are NOT affected -- those are "right now" figures, not a
 // windowed view, so they stay pinned to the latest measured week regardless
 // of what range is selected here.
-const rangeAnchor = DATA[DATA.length - 1].end; // dataset's own "today", not the real clock -- keeps a static build reproducible
+//
+// Per Burke (2026-08-17): the range views shouldn't include the current
+// in-progress week at all -- it's not closed yet, so CLOSED_WEEKS is what
+// every range filters against. (The "This week so far" stat tile above is
+// the one place it's still surfaced, already labeled as in-progress.)
+const CLOSED_WEEKS = DATA.filter(r => r.complete);
+const rangeAnchor = (CLOSED_WEEKS[CLOSED_WEEKS.length - 1] || DATA[DATA.length - 1]).end; // last CLOSED week's end = dataset's own "today"
 function monthsBack(n) {
   const end = new Date(rangeAnchor + 'T00:00:00');
   const start = new Date(end);
@@ -466,7 +472,7 @@ function computeRange(preset, customStart, customEnd) {
   return monthsBack(months);
 }
 function rowsInRange(start, end) {
-  return DATA.filter(r => {
+  return CLOSED_WEEKS.filter(r => {
     const rs = new Date(r.start + 'T00:00:00'), re = new Date(r.end + 'T00:00:00');
     return re >= start && rs <= end;
   });
