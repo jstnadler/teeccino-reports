@@ -77,6 +77,10 @@
   .bar-seg.inbound { fill: var(--series-inbound); }
   .bar-seg.reserved { fill: var(--series-reserved); }
   .bar-seg:hover { opacity: 0.82; cursor: pointer; }
+  .bar-seg.estimated { fill: url(#hatch-estimated); stroke: var(--series-inbound); stroke-width: 1; opacity: 0.85; }
+  .ratio-line.estimated { stroke: var(--muted); stroke-dasharray: 5 4; }
+  .ratio-dot.estimated { fill: var(--muted); }
+  .est-badge { fill: var(--muted); font-size: 10px; text-anchor: middle; font-style: italic; }
 
   .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 0.82em; color: var(--text-secondary); }
   .legend .item { display: flex; align-items: center; gap: 6px; }
@@ -122,7 +126,7 @@
 <div class="container">
   <div class="header">
     <h1>📦 Inventory Coverage</h1>
-    <p class="sub">Total Amazon inventory (available + inbound + reserved) as a multiple of that week's units sold — how many weeks of demand you're currently holding, tracked week over week. US marketplace, FBA only.</p>
+    <p class="sub">Total Amazon inventory (available + inbound + reserved) as a multiple of that week's units sold — how many weeks of demand you're currently holding, tracked week over week. US marketplace, FBA only. History before 2026-07-13 is reconstructed from Amazon's FBA ledger, with inbound <b>estimated</b> (see caveats below) — those weeks are shown with a dashed line / hatched bars.</p>
   </div>
 
   <div class="stat-row" id="stat-row"></div>
@@ -135,12 +139,20 @@
 
   <div class="panel">
     <h2>Inventory composition by week</h2>
-    <p class="panel-sub">Units in each bucket at week's end snapshot.</p>
-    <svg id="bar-chart" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet"></svg>
+    <p class="panel-sub">Units in each bucket at week's end snapshot. Hatched bars = pre-7/13 ledger weeks with an estimated inbound figure.</p>
+    <svg id="bar-chart" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="hatch-estimated" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+          <rect width="6" height="6" fill="var(--series-inbound)" opacity="0.35"></rect>
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--series-inbound)" stroke-width="2"></line>
+        </pattern>
+      </defs>
+    </svg>
     <div class="legend">
       <span class="item"><span class="swatch" style="background:var(--series-available)"></span>Available (fulfillable)</span>
       <span class="item"><span class="swatch" style="background:var(--series-inbound)"></span>Inbound (working+shipped+receiving)</span>
       <span class="item"><span class="swatch" style="background:var(--series-reserved)"></span>Reserved (FC transfer + processing + customer orders)</span>
+      <span class="item"><span class="swatch" style="background:repeating-linear-gradient(45deg, var(--series-inbound) 0 2px, transparent 2px 6px); opacity:0.6"></span>Inbound (estimated, pre-7/13)</span>
     </div>
   </div>
 
@@ -155,9 +167,11 @@
       <tbody></tbody>
     </table>
     <div class="caveat">
-      <b>Two things to know about this number:</b><br>
-      1. <b>"Reserved" isn't purely FC transfer.</b> Amazon's inventory feed we ingest gives one combined "reserved" bucket — FC transfer, FC processing, and customer orders together — not split out. So this ratio is the closest available reading of "inbound + FC transfer + available," not an exact isolation of FC transfer alone. Flagged to Justin/DataOps if you want the split broken out.<br>
-      2. <b>History starts 2026-07-13</b> — that's when DataOps' FBA inventory snapshot began. You're seeing every week we have (currently 4 complete + this week in progress); the trend will keep filling in from here. The in-progress week is shown separately and excluded from the trend line since only a few days of sales have posted.
+      <b>Things to know about this number:</b><br>
+      1. <b>"Reserved" isn't purely FC transfer.</b> Amazon's live inventory feed we ingest (2026-07-13 onward) gives one combined "reserved" bucket — FC transfer, FC processing, and customer orders together — not split out. So this ratio is the closest available reading of "inbound + FC transfer + available," not an exact isolation of FC transfer alone. Flagged to Justin/DataOps if you want the split broken out.<br>
+      2. <b>Weeks before 2026-07-13 are reconstructed from Amazon's FBA inventory ledger</b> (DataOps backfill, 2025-01-01 onward), not the live snapshot feed. The ledger has no "available vs. reserved" split either, so those weeks show one combined figure under "Available."<br>
+      3. <b>Inbound before 2026-07-13 is an ESTIMATE, not a measurement.</b> Amazon's ledger report carries no inbound-shipment column at all. We apply the average inbound share we measure in the live data (<span id="ratio-used-text">—</span> across every day we have) to the ledger's inventory total for each older week. That ratio has swung as wide as 1.8%–25.5% day to day, so treat hatched/dashed values as directional, not exact — they're marked <code>estimated: true</code> in the underlying data. Flagged as a modeling choice, not a data fact.<br>
+      4. <b>January 2025 is the hard floor.</b> That's the limit of what Amazon's ledger report will return; there's no way to go back further.
     </div>
   </div>
 
@@ -169,7 +183,7 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
-const DATA = [{"start": "2026-07-13", "end": "2026-07-19", "complete": true, "units": 10384, "available": 97547, "inbound": 12445, "reserved": 19206, "total_inv": 129198, "ratio": 12.44, "snap_date": "2026-07-19", "source": "snapshot"}, {"start": "2026-07-20", "end": "2026-07-26", "complete": true, "units": 9694, "available": 95658, "inbound": 12750, "reserved": 20355, "total_inv": 128763, "ratio": 13.28, "snap_date": "2026-07-26", "source": "snapshot"}, {"start": "2026-07-27", "end": "2026-08-02", "complete": true, "units": 10138, "available": 100309, "inbound": 18445, "reserved": 16616, "total_inv": 135370, "ratio": 13.35, "snap_date": "2026-08-02", "source": "snapshot"}, {"start": "2026-08-03", "end": "2026-08-09", "complete": true, "units": 10089, "available": 95915, "inbound": 9739, "reserved": 14225, "total_inv": 119879, "ratio": 11.88, "snap_date": "2026-08-09", "source": "snapshot"}, {"start": "2026-08-10", "end": "2026-08-16", "complete": false, "units": 4438, "available": 93000, "inbound": 9783, "reserved": 16355, "total_inv": 119138, "ratio": 26.84, "snap_date": "2026-08-13", "source": "snapshot"}];
+const DATA = [{"start": "2024-12-30", "end": "2025-01-05", "complete": true, "units": 10472, "available": 116077, "inbound": 13163, "reserved": 0, "total_inv": 129240, "ratio": 12.34, "snap_date": "2025-01-05", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-01-06", "end": "2025-01-12", "complete": true, "units": 11600, "available": 117617, "inbound": 13338, "reserved": 0, "total_inv": 130955, "ratio": 11.29, "snap_date": "2025-01-12", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-01-13", "end": "2025-01-19", "complete": true, "units": 12173, "available": 124083, "inbound": 14071, "reserved": 0, "total_inv": 138154, "ratio": 11.35, "snap_date": "2025-01-19", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-01-20", "end": "2025-01-26", "complete": true, "units": 11407, "available": 131662, "inbound": 14930, "reserved": 0, "total_inv": 146592, "ratio": 12.85, "snap_date": "2025-01-26", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-01-27", "end": "2025-02-02", "complete": true, "units": 12354, "available": 142505, "inbound": 16160, "reserved": 0, "total_inv": 158665, "ratio": 12.84, "snap_date": "2025-02-02", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-02-03", "end": "2025-02-09", "complete": true, "units": 11448, "available": 140538, "inbound": 15937, "reserved": 0, "total_inv": 156475, "ratio": 13.67, "snap_date": "2025-02-09", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-02-10", "end": "2025-02-16", "complete": true, "units": 10302, "available": 141789, "inbound": 16079, "reserved": 0, "total_inv": 157868, "ratio": 15.32, "snap_date": "2025-02-16", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-02-17", "end": "2025-02-23", "complete": true, "units": 10905, "available": 137113, "inbound": 15549, "reserved": 0, "total_inv": 152662, "ratio": 14.0, "snap_date": "2025-02-23", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-02-24", "end": "2025-03-02", "complete": true, "units": 10974, "available": 132918, "inbound": 15073, "reserved": 0, "total_inv": 147991, "ratio": 13.49, "snap_date": "2025-03-02", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-03-03", "end": "2025-03-09", "complete": true, "units": 10401, "available": 137332, "inbound": 15573, "reserved": 0, "total_inv": 152905, "ratio": 14.7, "snap_date": "2025-03-09", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-03-10", "end": "2025-03-16", "complete": true, "units": 9775, "available": 137646, "inbound": 15609, "reserved": 0, "total_inv": 153255, "ratio": 15.68, "snap_date": "2025-03-16", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-03-17", "end": "2025-03-23", "complete": true, "units": 9698, "available": 140592, "inbound": 15943, "reserved": 0, "total_inv": 156535, "ratio": 16.14, "snap_date": "2025-03-23", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-03-24", "end": "2025-03-30", "complete": true, "units": 9853, "available": 155590, "inbound": 17644, "reserved": 0, "total_inv": 173234, "ratio": 17.58, "snap_date": "2025-03-30", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-03-31", "end": "2025-04-06", "complete": true, "units": 10383, "available": 159201, "inbound": 18053, "reserved": 0, "total_inv": 177254, "ratio": 17.07, "snap_date": "2025-04-06", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-04-07", "end": "2025-04-13", "complete": true, "units": 10574, "available": 151752, "inbound": 17209, "reserved": 0, "total_inv": 168961, "ratio": 15.98, "snap_date": "2025-04-13", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-04-14", "end": "2025-04-20", "complete": true, "units": 9699, "available": 151715, "inbound": 17204, "reserved": 0, "total_inv": 168919, "ratio": 17.42, "snap_date": "2025-04-20", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-04-21", "end": "2025-04-27", "complete": true, "units": 9562, "available": 151619, "inbound": 17194, "reserved": 0, "total_inv": 168813, "ratio": 17.65, "snap_date": "2025-04-27", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-04-28", "end": "2025-05-04", "complete": true, "units": 10298, "available": 153141, "inbound": 17366, "reserved": 0, "total_inv": 170507, "ratio": 16.56, "snap_date": "2025-05-04", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-05-05", "end": "2025-05-11", "complete": true, "units": 10125, "available": 151990, "inbound": 17236, "reserved": 0, "total_inv": 169226, "ratio": 16.71, "snap_date": "2025-05-11", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-05-12", "end": "2025-05-18", "complete": true, "units": 9353, "available": 147159, "inbound": 16688, "reserved": 0, "total_inv": 163847, "ratio": 17.52, "snap_date": "2025-05-18", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-05-19", "end": "2025-05-25", "complete": true, "units": 8979, "available": 148049, "inbound": 16789, "reserved": 0, "total_inv": 164838, "ratio": 18.36, "snap_date": "2025-05-25", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-05-26", "end": "2025-06-01", "complete": true, "units": 9311, "available": 146014, "inbound": 16558, "reserved": 0, "total_inv": 162572, "ratio": 17.46, "snap_date": "2025-06-01", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-06-02", "end": "2025-06-08", "complete": true, "units": 9186, "available": 143964, "inbound": 16326, "reserved": 0, "total_inv": 160290, "ratio": 17.45, "snap_date": "2025-06-08", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-06-09", "end": "2025-06-15", "complete": true, "units": 9183, "available": 141601, "inbound": 16058, "reserved": 0, "total_inv": 157659, "ratio": 17.17, "snap_date": "2025-06-15", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-06-16", "end": "2025-06-22", "complete": true, "units": 8566, "available": 136520, "inbound": 15481, "reserved": 0, "total_inv": 152001, "ratio": 17.74, "snap_date": "2025-06-22", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-06-23", "end": "2025-06-29", "complete": true, "units": 8795, "available": 129568, "inbound": 14693, "reserved": 0, "total_inv": 144261, "ratio": 16.4, "snap_date": "2025-06-29", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-06-30", "end": "2025-07-06", "complete": true, "units": 8119, "available": 125842, "inbound": 14270, "reserved": 0, "total_inv": 140112, "ratio": 17.26, "snap_date": "2025-07-06", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-07-07", "end": "2025-07-13", "complete": true, "units": 10502, "available": 116249, "inbound": 13183, "reserved": 0, "total_inv": 129432, "ratio": 12.32, "snap_date": "2025-07-13", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-07-14", "end": "2025-07-20", "complete": true, "units": 8952, "available": 108898, "inbound": 12349, "reserved": 0, "total_inv": 121247, "ratio": 13.54, "snap_date": "2025-07-20", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-07-21", "end": "2025-07-27", "complete": true, "units": 8380, "available": 105128, "inbound": 11922, "reserved": 0, "total_inv": 117050, "ratio": 13.97, "snap_date": "2025-07-27", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-07-28", "end": "2025-08-03", "complete": true, "units": 8587, "available": 101621, "inbound": 11524, "reserved": 0, "total_inv": 113145, "ratio": 13.18, "snap_date": "2025-08-03", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-08-04", "end": "2025-08-10", "complete": true, "units": 9099, "available": 102087, "inbound": 11577, "reserved": 0, "total_inv": 113664, "ratio": 12.49, "snap_date": "2025-08-10", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-08-11", "end": "2025-08-17", "complete": true, "units": 8885, "available": 98405, "inbound": 11159, "reserved": 0, "total_inv": 109564, "ratio": 12.33, "snap_date": "2025-08-17", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-08-18", "end": "2025-08-24", "complete": true, "units": 9032, "available": 93765, "inbound": 10633, "reserved": 0, "total_inv": 104398, "ratio": 11.56, "snap_date": "2025-08-24", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-08-25", "end": "2025-08-31", "complete": true, "units": 9263, "available": 93829, "inbound": 10640, "reserved": 0, "total_inv": 104469, "ratio": 11.28, "snap_date": "2025-08-31", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-09-01", "end": "2025-09-07", "complete": true, "units": 9792, "available": 92725, "inbound": 10515, "reserved": 0, "total_inv": 103240, "ratio": 10.54, "snap_date": "2025-09-07", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-09-08", "end": "2025-09-14", "complete": true, "units": 10009, "available": 86024, "inbound": 9755, "reserved": 0, "total_inv": 95779, "ratio": 9.57, "snap_date": "2025-09-14", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-09-15", "end": "2025-09-21", "complete": true, "units": 9906, "available": 78733, "inbound": 8928, "reserved": 0, "total_inv": 87661, "ratio": 8.85, "snap_date": "2025-09-21", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-09-22", "end": "2025-09-28", "complete": true, "units": 9876, "available": 78052, "inbound": 8851, "reserved": 0, "total_inv": 86903, "ratio": 8.8, "snap_date": "2025-09-28", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-09-29", "end": "2025-10-05", "complete": true, "units": 10151, "available": 85708, "inbound": 9719, "reserved": 0, "total_inv": 95427, "ratio": 9.4, "snap_date": "2025-10-05", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-10-06", "end": "2025-10-12", "complete": true, "units": 13776, "available": 86045, "inbound": 9758, "reserved": 0, "total_inv": 95803, "ratio": 6.95, "snap_date": "2025-10-12", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-10-13", "end": "2025-10-19", "complete": true, "units": 10924, "available": 64141, "inbound": 7274, "reserved": 0, "total_inv": 71415, "ratio": 6.54, "snap_date": "2025-10-19", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-10-20", "end": "2025-10-26", "complete": true, "units": 9981, "available": 98324, "inbound": 11150, "reserved": 0, "total_inv": 109474, "ratio": 10.97, "snap_date": "2025-10-26", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-10-27", "end": "2025-11-02", "complete": true, "units": 11115, "available": 92016, "inbound": 10435, "reserved": 0, "total_inv": 102451, "ratio": 9.22, "snap_date": "2025-11-02", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-11-03", "end": "2025-11-09", "complete": true, "units": 11470, "available": 92085, "inbound": 10442, "reserved": 0, "total_inv": 102527, "ratio": 8.94, "snap_date": "2025-11-09", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-11-10", "end": "2025-11-16", "complete": true, "units": 11984, "available": 98040, "inbound": 11118, "reserved": 0, "total_inv": 109158, "ratio": 9.11, "snap_date": "2025-11-16", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-11-17", "end": "2025-11-23", "complete": true, "units": 12278, "available": 99365, "inbound": 11268, "reserved": 0, "total_inv": 110633, "ratio": 9.01, "snap_date": "2025-11-23", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-11-24", "end": "2025-11-30", "complete": true, "units": 11446, "available": 105016, "inbound": 11909, "reserved": 0, "total_inv": 116925, "ratio": 10.22, "snap_date": "2025-11-30", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-12-01", "end": "2025-12-07", "complete": true, "units": 16243, "available": 98923, "inbound": 11218, "reserved": 0, "total_inv": 110141, "ratio": 6.78, "snap_date": "2025-12-07", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-12-08", "end": "2025-12-14", "complete": true, "units": 13906, "available": 95735, "inbound": 10856, "reserved": 0, "total_inv": 106591, "ratio": 7.67, "snap_date": "2025-12-14", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-12-15", "end": "2025-12-21", "complete": true, "units": 14035, "available": 99053, "inbound": 11233, "reserved": 0, "total_inv": 110286, "ratio": 7.86, "snap_date": "2025-12-21", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-12-22", "end": "2025-12-28", "complete": true, "units": 9888, "available": 95471, "inbound": 10826, "reserved": 0, "total_inv": 106297, "ratio": 10.75, "snap_date": "2025-12-28", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2025-12-29", "end": "2026-01-04", "complete": true, "units": 13850, "available": 94116, "inbound": 10673, "reserved": 0, "total_inv": 104789, "ratio": 7.57, "snap_date": "2026-01-04", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-01-05", "end": "2026-01-11", "complete": true, "units": 16016, "available": 94036, "inbound": 10664, "reserved": 0, "total_inv": 104700, "ratio": 6.54, "snap_date": "2026-01-11", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-01-12", "end": "2026-01-18", "complete": true, "units": 14348, "available": 96402, "inbound": 10932, "reserved": 0, "total_inv": 107334, "ratio": 7.48, "snap_date": "2026-01-18", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-01-19", "end": "2026-01-25", "complete": true, "units": 12335, "available": 107945, "inbound": 12241, "reserved": 0, "total_inv": 120186, "ratio": 9.74, "snap_date": "2026-01-25", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-01-26", "end": "2026-02-01", "complete": true, "units": 13549, "available": 113230, "inbound": 12840, "reserved": 0, "total_inv": 126070, "ratio": 9.3, "snap_date": "2026-02-01", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-02-02", "end": "2026-02-08", "complete": true, "units": 14302, "available": 122726, "inbound": 13917, "reserved": 0, "total_inv": 136643, "ratio": 9.55, "snap_date": "2026-02-08", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-02-09", "end": "2026-02-15", "complete": true, "units": 13641, "available": 125864, "inbound": 14273, "reserved": 0, "total_inv": 140137, "ratio": 10.27, "snap_date": "2026-02-15", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-02-16", "end": "2026-02-22", "complete": true, "units": 13231, "available": 123956, "inbound": 14057, "reserved": 0, "total_inv": 138013, "ratio": 10.43, "snap_date": "2026-02-22", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-02-23", "end": "2026-03-01", "complete": true, "units": 13877, "available": 126675, "inbound": 14365, "reserved": 0, "total_inv": 141040, "ratio": 10.16, "snap_date": "2026-03-01", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-03-02", "end": "2026-03-08", "complete": true, "units": 12845, "available": 121103, "inbound": 13733, "reserved": 0, "total_inv": 134836, "ratio": 10.5, "snap_date": "2026-03-08", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-03-09", "end": "2026-03-15", "complete": true, "units": 12481, "available": 119222, "inbound": 13520, "reserved": 0, "total_inv": 132742, "ratio": 10.64, "snap_date": "2026-03-15", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-03-16", "end": "2026-03-22", "complete": true, "units": 12039, "available": 121127, "inbound": 13736, "reserved": 0, "total_inv": 134863, "ratio": 11.2, "snap_date": "2026-03-22", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-03-23", "end": "2026-03-29", "complete": true, "units": 12363, "available": 128744, "inbound": 14600, "reserved": 0, "total_inv": 143344, "ratio": 11.59, "snap_date": "2026-03-29", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-03-30", "end": "2026-04-05", "complete": true, "units": 12164, "available": 131377, "inbound": 14898, "reserved": 0, "total_inv": 146275, "ratio": 12.03, "snap_date": "2026-04-05", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-04-06", "end": "2026-04-12", "complete": true, "units": 5250, "available": 130530, "inbound": 14802, "reserved": 0, "total_inv": 145332, "ratio": 27.68, "snap_date": "2026-04-12", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-04-13", "end": "2026-04-19", "complete": true, "units": 4554, "available": 128093, "inbound": 14526, "reserved": 0, "total_inv": 142619, "ratio": 31.32, "snap_date": "2026-04-19", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-04-20", "end": "2026-04-26", "complete": true, "units": 11179, "available": 122120, "inbound": 13848, "reserved": 0, "total_inv": 135968, "ratio": 12.16, "snap_date": "2026-04-26", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-04-27", "end": "2026-05-03", "complete": true, "units": 11136, "available": 129035, "inbound": 14633, "reserved": 0, "total_inv": 143668, "ratio": 12.9, "snap_date": "2026-05-03", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-05-04", "end": "2026-05-10", "complete": true, "units": 11259, "available": 121234, "inbound": 13748, "reserved": 0, "total_inv": 134982, "ratio": 11.99, "snap_date": "2026-05-10", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-05-11", "end": "2026-05-17", "complete": true, "units": 10807, "available": 118917, "inbound": 13485, "reserved": 0, "total_inv": 132402, "ratio": 12.25, "snap_date": "2026-05-17", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-05-18", "end": "2026-05-24", "complete": true, "units": 10554, "available": 113893, "inbound": 12915, "reserved": 0, "total_inv": 126808, "ratio": 12.02, "snap_date": "2026-05-24", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-05-25", "end": "2026-05-31", "complete": true, "units": 10217, "available": 111847, "inbound": 12683, "reserved": 0, "total_inv": 124530, "ratio": 12.19, "snap_date": "2026-05-31", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-06-01", "end": "2026-06-07", "complete": true, "units": 10980, "available": 109636, "inbound": 12433, "reserved": 0, "total_inv": 122069, "ratio": 11.12, "snap_date": "2026-06-07", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-06-08", "end": "2026-06-14", "complete": true, "units": 11040, "available": 106775, "inbound": 12108, "reserved": 0, "total_inv": 118883, "ratio": 10.77, "snap_date": "2026-06-14", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-06-15", "end": "2026-06-21", "complete": true, "units": 10627, "available": 101168, "inbound": 11472, "reserved": 0, "total_inv": 112640, "ratio": 10.6, "snap_date": "2026-06-21", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-06-22", "end": "2026-06-28", "complete": true, "units": 10127, "available": 95404, "inbound": 10819, "reserved": 0, "total_inv": 106223, "ratio": 10.49, "snap_date": "2026-06-28", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-06-29", "end": "2026-07-05", "complete": true, "units": 13292, "available": 100495, "inbound": 11396, "reserved": 0, "total_inv": 111891, "ratio": 8.42, "snap_date": "2026-07-05", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-07-06", "end": "2026-07-12", "complete": true, "units": 10827, "available": 103370, "inbound": 11722, "reserved": 0, "total_inv": 115092, "ratio": 10.63, "snap_date": "2026-07-12", "source": "ledger", "estimated": true, "inbound_ratio_used": 0.1134}, {"start": "2026-07-13", "end": "2026-07-19", "complete": true, "units": 10384, "available": 97547, "inbound": 12445, "reserved": 19206, "total_inv": 129198, "ratio": 12.44, "snap_date": "2026-07-19", "source": "snapshot", "estimated": false, "inbound_ratio_used": null}, {"start": "2026-07-20", "end": "2026-07-26", "complete": true, "units": 9694, "available": 95658, "inbound": 12750, "reserved": 20355, "total_inv": 128763, "ratio": 13.28, "snap_date": "2026-07-26", "source": "snapshot", "estimated": false, "inbound_ratio_used": null}, {"start": "2026-07-27", "end": "2026-08-02", "complete": true, "units": 10138, "available": 100309, "inbound": 18445, "reserved": 16616, "total_inv": 135370, "ratio": 13.35, "snap_date": "2026-08-02", "source": "snapshot", "estimated": false, "inbound_ratio_used": null}, {"start": "2026-08-03", "end": "2026-08-09", "complete": true, "units": 10089, "available": 95915, "inbound": 9739, "reserved": 14225, "total_inv": 119879, "ratio": 11.88, "snap_date": "2026-08-09", "source": "snapshot", "estimated": false, "inbound_ratio_used": null}, {"start": "2026-08-10", "end": "2026-08-16", "complete": true, "units": 10368, "available": 94645, "inbound": 1895, "reserved": 13005, "total_inv": 109545, "ratio": 10.57, "snap_date": "2026-08-16", "source": "snapshot", "estimated": false, "inbound_ratio_used": null}, {"start": "2026-08-17", "end": "2026-08-23", "complete": false, "units": 0, "available": 93801, "inbound": 1930, "reserved": 11934, "total_inv": 107665, "ratio": null, "snap_date": "2026-08-17", "source": "snapshot", "estimated": false, "inbound_ratio_used": null}];
 
 function fmt(n) { return n.toLocaleString('en-US'); }
 function weekLabel(start, end) {
@@ -189,9 +203,21 @@ function hideTip() { tooltip.classList.remove('show'); }
 
 // ---- Stat tiles ----
 const complete = DATA.filter(d => d.complete);
-const latest = complete[complete.length - 1];
-const prior = complete[complete.length - 2];
+// "latest" for the headline tiles should be the newest real (non-estimated) week,
+// not the newest row overall -- the ledger backfill runs earlier in the array, not later.
+const measured = complete.filter(d => !d.estimated);
+const latest = measured[measured.length - 1] || complete[complete.length - 1];
+const latestIdx = complete.indexOf(latest);
+const prior = latestIdx > 0 ? complete[latestIdx - 1] : null;
 const partial = DATA.find(d => !d.complete);
+
+const firstEstimated = DATA.find(d => d.estimated);
+const ratioUsedEl = document.getElementById('ratio-used-text');
+if (ratioUsedEl) {
+  ratioUsedEl.textContent = firstEstimated && firstEstimated.inbound_ratio_used != null
+    ? (firstEstimated.inbound_ratio_used * 100).toFixed(1) + '%'
+    : 'n/a';
+}
 
 const statRow = document.getElementById('stat-row');
 const deltaPct = prior ? ((latest.ratio - prior.ratio) / prior.ratio * 100) : null;
@@ -233,6 +259,11 @@ statRow.innerHTML = `
   const minR = 0;
   const x = i => padL + (rows.length === 1 ? plotW / 2 : i / (rows.length - 1) * plotW);
   const y = v => padT + plotH - ((v - minR) / (maxR - minR)) * plotH;
+  // With the ledger backfill, this can be 70-80+ weeks -- thin the x-axis
+  // labels so they don't overlap. Always keep the first, last, and the
+  // 7/13 handoff point (last estimated / first measured week).
+  const handoffIdx = rows.findIndex(r => !r.estimated);
+  const labelEvery = Math.max(1, Math.ceil(rows.length / 16));
 
   let svgHtml = '';
   // gridlines
@@ -246,15 +277,24 @@ statRow.innerHTML = `
   // baseline
   svgHtml += `<line class="baseline" x1="${padL}" y1="${padT + plotH}" x2="${W - padR}" y2="${padT + plotH}"></line>`;
 
-  // line path
-  const pathD = rows.map((r, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(r.ratio)}`).join(' ');
-  svgHtml += `<path class="ratio-line" d="${pathD}"></path>`;
+  // line path — split into an estimated (dashed) segment and a measured (solid) segment
+  // at the 7/13 handoff, so the visual break lines up with the data's actual precision drop.
+  if (handoffIdx > 0) {
+    const estD = rows.slice(0, handoffIdx + 1).map((r, i) => `${i === 0 ? 'M' : 'L'} ${x(i)} ${y(r.ratio)}`).join(' ');
+    svgHtml += `<path class="ratio-line estimated" d="${estD}"></path>`;
+  }
+  const measuredStart = handoffIdx > 0 ? handoffIdx : 0;
+  const measD = rows.slice(measuredStart).map((r, i) => `${i === 0 ? 'M' : 'L'} ${x(measuredStart + i)} ${y(r.ratio)}`).join(' ');
+  svgHtml += `<path class="ratio-line" d="${measD}"></path>`;
 
   // dots + labels
   rows.forEach((r, i) => {
-    svgHtml += `<circle class="ratio-dot" data-i="${i}" cx="${x(i)}" cy="${y(r.ratio)}" r="5"></circle>`;
-    svgHtml += `<text class="ratio-value-label" x="${x(i)}" y="${y(r.ratio) - 14}">${r.ratio.toFixed(1)}×</text>`;
-    svgHtml += `<text class="week-label" x="${x(i)}" y="${padT + plotH + 22}">${weekLabel(r.start, r.end)}</text>`;
+    const dotCls = r.estimated ? 'ratio-dot estimated' : 'ratio-dot';
+    svgHtml += `<circle class="${dotCls}" data-i="${i}" cx="${x(i)}" cy="${y(r.ratio)}" r="${r.estimated ? 3.5 : 5}"></circle>`;
+    if (rows.length <= 20 || i % labelEvery === 0 || i === rows.length - 1) {
+      svgHtml += `<text class="ratio-value-label" x="${x(i)}" y="${y(r.ratio) - 14}">${r.ratio.toFixed(1)}×</text>`;
+      svgHtml += `<text class="week-label" x="${x(i)}" y="${padT + plotH + 22}">${weekLabel(r.start, r.end)}</text>`;
+    }
   });
 
   svg.innerHTML = svgHtml;
@@ -262,7 +302,8 @@ statRow.innerHTML = `
   svg.querySelectorAll('.ratio-dot').forEach(dot => {
     dot.addEventListener('mouseenter', e => {
       const r = rows[+dot.dataset.i];
-      showTip(`<b>${weekLabel(r.start, r.end)}</b><br>${r.ratio.toFixed(2)}× weekly units<br>${fmt(r.total_inv)} total inventory ÷ ${fmt(r.units)} units sold`, e.clientX, e.clientY);
+      const estNote = r.estimated ? `<br><i>estimated — inbound modeled at ${(r.inbound_ratio_used * 100).toFixed(1)}%, ledger-derived</i>` : '';
+      showTip(`<b>${weekLabel(r.start, r.end)}</b>${r.estimated ? ' (est.)' : ''}<br>${r.ratio.toFixed(2)}× weekly units<br>${fmt(r.total_inv)} total inventory ÷ ${fmt(r.units)} units sold${estNote}`, e.clientX, e.clientY);
     });
     dot.addEventListener('mousemove', e => showTip(tooltip.innerHTML, e.clientX, e.clientY));
     dot.addEventListener('mouseleave', hideTip);
@@ -279,8 +320,14 @@ statRow.innerHTML = `
   const bw = plotW / rows.length * 0.55;
   const gap = plotW / rows.length;
   const y = v => padT + plotH - (v / maxTotal) * plotH;
+  const labelEvery = Math.max(1, Math.ceil(rows.length / 16));
 
-  let svgHtml = '';
+  let svgHtml = `<defs>
+    <pattern id="hatch-estimated" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <rect width="6" height="6" fill="var(--series-inbound)" opacity="0.35"></rect>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--series-inbound)" stroke-width="2"></line>
+    </pattern>
+  </defs>`;
   const ticks = 4;
   for (let t = 0; t <= ticks; t++) {
     const v = maxTotal * t / ticks;
@@ -302,21 +349,27 @@ statRow.innerHTML = `
       const yTop = y(cursor + val);
       const yBot = y(cursor);
       const h = yBot - yTop;
-      svgHtml += `<rect class="bar-seg ${cls}" data-i="${i}" data-cls="${cls}" x="${cx}" y="${yTop}" width="${bw}" height="${Math.max(h - 2, 0)}" rx="2"></rect>`;
+      const isEstInbound = cls === 'inbound' && r.estimated;
+      const segCls = 'bar-seg ' + cls + (isEstInbound ? ' estimated' : '');
+      svgHtml += `<rect class="${segCls}" data-i="${i}" data-cls="${cls}" x="${cx}" y="${yTop}" width="${bw}" height="${Math.max(h - 2, 0)}" rx="2"></rect>`;
       cursor += val;
     });
-    const label = weekLabel(r.start, r.end) + (r.complete ? '' : ' (in progress)');
-    svgHtml += `<text class="week-label" x="${cx + bw / 2}" y="${padT + plotH + 22}">${label}</text>`;
+    if (rows.length <= 20 || i % labelEvery === 0 || i === rows.length - 1) {
+      const label = weekLabel(r.start, r.end) + (r.complete ? (r.estimated ? ' (est.)' : '') : ' (in progress)');
+      svgHtml += `<text class="week-label" x="${cx + bw / 2}" y="${padT + plotH + 22}">${label}</text>`;
+    }
   });
 
   svg.innerHTML = svgHtml;
 
-  const labels = { available: 'Available', inbound: 'Inbound', reserved: 'Reserved' };
+  const labels = { available: 'Available' + ' (incl. reserved, pre-7/13 weeks)', inbound: 'Inbound', reserved: 'Reserved' };
   svg.querySelectorAll('.bar-seg').forEach(seg => {
     seg.addEventListener('mouseenter', e => {
       const r = rows[+seg.dataset.i];
       const cls = seg.dataset.cls;
-      showTip(`<b>${weekLabel(r.start, r.end)}</b><br>${labels[cls]}: ${fmt(r[cls])} units`, e.clientX, e.clientY);
+      const label = r.estimated ? labels[cls] : { available: 'Available', inbound: 'Inbound', reserved: 'Reserved' }[cls];
+      const estNote = (cls === 'inbound' && r.estimated) ? ` (estimated, ${(r.inbound_ratio_used * 100).toFixed(1)}% modeled ratio)` : '';
+      showTip(`<b>${weekLabel(r.start, r.end)}</b><br>${label}: ${fmt(r[cls])} units${estNote}`, e.clientX, e.clientY);
     });
     seg.addEventListener('mousemove', e => showTip(tooltip.innerHTML, e.clientX, e.clientY));
     seg.addEventListener('mouseleave', hideTip);
@@ -327,19 +380,29 @@ statRow.innerHTML = `
 (function() {
   const tbody = document.querySelector('#detail-table tbody');
   tbody.innerHTML = DATA.map(r => `
-    <tr class="${r.complete ? '' : 'partial'}">
-      <td>${weekLabel(r.start, r.end)}${r.complete ? '' : ' (in progress)'}</td>
+    <tr class="${r.complete ? '' : 'partial'}" title="${r.estimated ? 'Ledger-derived week — inbound estimated, not measured' : ''}">
+      <td>${weekLabel(r.start, r.end)}${r.complete ? (r.estimated ? ' (ledger, est.)' : '') : ' (in progress)'}</td>
       <td>${fmt(r.units)}</td>
-      <td>${fmt(r.available)}</td>
-      <td>${fmt(r.inbound)}</td>
+      <td>${fmt(r.available)}${r.estimated ? '<sup>†</sup>' : ''}</td>
+      <td>${fmt(r.inbound)}${r.estimated ? '<sup>*</sup>' : ''}</td>
       <td>${fmt(r.reserved)}</td>
       <td>${fmt(r.total_inv)}</td>
       <td class="ratio-cell">${r.ratio ? r.ratio.toFixed(2) + '×' : '—'}</td>
     </tr>
   `).join('');
+  const anyEstimated = DATA.some(r => r.estimated);
+  if (anyEstimated) {
+    const note = document.createElement('p');
+    note.className = 'panel-sub';
+    note.style.marginTop = '10px';
+    note.innerHTML = '<sup>†</sup> Available figure for ledger weeks combines available + reserved (ledger can\'t split them). <sup>*</sup> Inbound for ledger weeks is an estimate, not a measurement — see caveats below.';
+    document.querySelector('#detail-table').insertAdjacentElement('afterend', note);
+  }
 })();
 
-document.getElementById('footer-date').textContent = DATA[DATA.length - 1].snap_date;
+// Most-recent MEASURED week (not the ledger backfill, which sorts earliest-first)
+const mostRecentRow = DATA.reduce((a, b) => (b.snap_date > (a ? a.snap_date : '') ? b : a), null);
+document.getElementById('footer-date').textContent = mostRecentRow ? mostRecentRow.snap_date : DATA[DATA.length - 1].snap_date;
 </script>
 
 </body>
