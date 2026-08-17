@@ -109,6 +109,26 @@
   .caveat b { color: #E8C06A; }
 
   footer { text-align: center; margin-top: 40px; padding: 24px 0; color: #64748b; font-size: 0.78em; border-top: 1px solid rgba(255,255,255,0.05); }
+
+  .range-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .range-btn {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);
+    font-size: 0.82em; padding: 6px 13px; border-radius: 999px; cursor: pointer; font-family: inherit;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .range-btn:hover { background: rgba(255,255,255,0.09); color: var(--text-primary); }
+  .range-btn.active { background: var(--brand-green-dark); border-color: var(--brand-green); color: #fff; font-weight: 600; }
+  .range-custom { display: none; align-items: center; gap: 8px; }
+  .range-custom.show { display: flex; }
+  .range-custom input[type="date"] {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: var(--text-primary);
+    border-radius: 6px; padding: 5px 8px; font-family: inherit; font-size: 0.82em;
+  }
+  .range-custom button {
+    background: var(--brand-green-dark); border: 1px solid var(--brand-green); color: #fff;
+    font-size: 0.82em; padding: 6px 13px; border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: 600;
+  }
+  .range-note { font-size: 0.78em; color: var(--muted); margin-left: 4px; }
 </style>
 </head>
 <body>
@@ -132,8 +152,26 @@
   <div class="stat-row" id="stat-row"></div>
 
   <div class="panel">
+    <div class="range-bar" id="range-bar">
+      <button class="range-btn" data-range="1m">Last month</button>
+      <button class="range-btn" data-range="3m">Last 3 months</button>
+      <button class="range-btn active" data-range="6m">Last 6 months</button>
+      <button class="range-btn" data-range="12m">Last 12 months</button>
+      <button class="range-btn" data-range="ytd">YTD</button>
+      <button class="range-btn" data-range="custom">Custom</button>
+      <span class="range-custom" id="range-custom">
+        <input type="date" id="range-start">
+        <span style="color:var(--muted)">–</span>
+        <input type="date" id="range-end">
+        <button id="range-apply">Apply</button>
+      </span>
+      <span class="range-note" id="range-note"></span>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Weeks of cover, over time</h2>
-    <p class="panel-sub">Total inventory ÷ units sold that week. Higher = more weeks of stock on hand relative to how fast it's selling.</p>
+    <p class="panel-sub">Total inventory ÷ units sold that week. Higher = more weeks of stock on hand relative to how fast it's selling. Range above applies to this chart, the composition chart, and the table below.</p>
     <svg id="line-chart" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet"></svg>
   </div>
 
@@ -249,19 +287,23 @@ statRow.innerHTML = `
   </div>
 `;
 
-// ---- Line chart: ratio over complete weeks ----
-(function() {
+// ---- Line chart: ratio over the currently-selected date range ----
+function renderLineChart(rows) {
   const svg = document.getElementById('line-chart');
+  // The in-progress current week has ratio:null (units sold so far can't be
+  // annualized into a real ratio yet) -- exclude it here same as the
+  // original build did, even though the bar chart and table still show it.
+  rows = rows.filter(r => r.complete);
+  if (!rows.length) { svg.innerHTML = '<text x="450" y="130" text-anchor="middle" class="axis-label">No weeks in this range</text>'; return; }
   const W = 900, H = 260, padL = 50, padR = 30, padT = 30, padB = 40;
   const plotW = W - padL - padR, plotH = H - padT - padB;
-  const rows = complete;
   const maxR = Math.max(...rows.map(r => r.ratio)) * 1.25;
   const minR = 0;
   const x = i => padL + (rows.length === 1 ? plotW / 2 : i / (rows.length - 1) * plotW);
   const y = v => padT + plotH - ((v - minR) / (maxR - minR)) * plotH;
-  // With the ledger backfill, this can be 70-80+ weeks -- thin the x-axis
-  // labels so they don't overlap. Always keep the first, last, and the
-  // 7/13 handoff point (last estimated / first measured week).
+  // Long ranges (the full 86-week history) get crowded on the x-axis -- thin
+  // labels down. Always keep the first, last, and the 7/13 estimated/measured
+  // handoff point if it falls inside this range.
   const handoffIdx = rows.findIndex(r => !r.estimated);
   const labelEvery = Math.max(1, Math.ceil(rows.length / 16));
 
@@ -308,14 +350,14 @@ statRow.innerHTML = `
     dot.addEventListener('mousemove', e => showTip(tooltip.innerHTML, e.clientX, e.clientY));
     dot.addEventListener('mouseleave', hideTip);
   });
-})();
+}
 
-// ---- Stacked bar chart: composition per week (all rows incl partial) ----
-(function() {
+// ---- Stacked bar chart: composition per week, for the currently-selected range ----
+function renderBarChart(rows) {
   const svg = document.getElementById('bar-chart');
+  if (!rows.length) { svg.innerHTML = '<text x="450" y="130" text-anchor="middle" class="axis-label">No weeks in this range</text>'; return; }
   const W = 900, H = 260, padL = 60, padR = 30, padT = 20, padB = 40;
   const plotW = W - padL - padR, plotH = H - padT - padB;
-  const rows = DATA;
   const maxTotal = Math.max(...rows.map(r => r.total_inv)) * 1.1;
   const bw = plotW / rows.length * 0.55;
   const gap = plotW / rows.length;
@@ -374,12 +416,12 @@ statRow.innerHTML = `
     seg.addEventListener('mousemove', e => showTip(tooltip.innerHTML, e.clientX, e.clientY));
     seg.addEventListener('mouseleave', hideTip);
   });
-})();
+}
 
-// ---- Table ----
-(function() {
+// ---- Table, for the currently-selected range ----
+function renderTable(rows) {
   const tbody = document.querySelector('#detail-table tbody');
-  tbody.innerHTML = DATA.map(r => `
+  tbody.innerHTML = rows.length ? rows.map(r => `
     <tr class="${r.complete ? '' : 'partial'}" title="${r.estimated ? 'Ledger-derived week — inbound estimated, not measured' : ''}">
       <td>${weekLabel(r.start, r.end)}${r.complete ? (r.estimated ? ' (ledger, est.)' : '') : ' (in progress)'}</td>
       <td>${fmt(r.units)}</td>
@@ -389,15 +431,82 @@ statRow.innerHTML = `
       <td>${fmt(r.total_inv)}</td>
       <td class="ratio-cell">${r.ratio ? r.ratio.toFixed(2) + '×' : '—'}</td>
     </tr>
-  `).join('');
-  const anyEstimated = DATA.some(r => r.estimated);
-  if (anyEstimated) {
-    const note = document.createElement('p');
-    note.className = 'panel-sub';
-    note.style.marginTop = '10px';
-    note.innerHTML = '<sup>†</sup> Available figure for ledger weeks combines available + reserved (ledger can\'t split them). <sup>*</sup> Inbound for ledger weeks is an estimate, not a measurement — see caveats below.';
-    document.querySelector('#detail-table').insertAdjacentElement('afterend', note);
+  `).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">No weeks in this range</td></tr>';
+}
+
+const anyEstimatedEver = DATA.some(r => r.estimated);
+if (anyEstimatedEver) {
+  const note = document.createElement('p');
+  note.className = 'panel-sub';
+  note.style.marginTop = '10px';
+  note.innerHTML = '<sup>†</sup> Available figure for ledger weeks combines available + reserved (ledger can\'t split them). <sup>*</sup> Inbound for ledger weeks is an estimate, not a measurement — see caveats below.';
+  document.querySelector('#detail-table').insertAdjacentElement('afterend', note);
+}
+
+// ---- Date-range control: drives the line chart, bar chart, and table ----
+// Stat tiles up top are NOT affected -- those are "right now" figures, not a
+// windowed view, so they stay pinned to the latest measured week regardless
+// of what range is selected here.
+const rangeAnchor = DATA[DATA.length - 1].end; // dataset's own "today", not the real clock -- keeps a static build reproducible
+function monthsBack(n) {
+  const end = new Date(rangeAnchor + 'T00:00:00');
+  const start = new Date(end);
+  start.setMonth(start.getMonth() - n);
+  return { start, end };
+}
+function computeRange(preset, customStart, customEnd) {
+  if (preset === 'ytd') {
+    const end = new Date(rangeAnchor + 'T00:00:00');
+    return { start: new Date(end.getFullYear(), 0, 1), end };
   }
+  if (preset === 'custom') {
+    return { start: new Date(customStart + 'T00:00:00'), end: new Date(customEnd + 'T00:00:00') };
+  }
+  const months = { '1m': 1, '3m': 3, '6m': 6, '12m': 12 }[preset] || 6;
+  return monthsBack(months);
+}
+function rowsInRange(start, end) {
+  return DATA.filter(r => {
+    const rs = new Date(r.start + 'T00:00:00'), re = new Date(r.end + 'T00:00:00');
+    return re >= start && rs <= end;
+  });
+}
+function applyRange(preset, customStart, customEnd) {
+  const { start, end } = computeRange(preset, customStart, customEnd);
+  const rows = rowsInRange(start, end);
+  renderLineChart(rows);
+  renderBarChart(rows);
+  renderTable(rows);
+  const note = document.getElementById('range-note');
+  const fmtDate = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  note.textContent = rows.length ? `${fmtDate(start)} – ${fmtDate(end)} · ${rows.length} week${rows.length === 1 ? '' : 's'}` : '';
+}
+
+(function() {
+  const bar = document.getElementById('range-bar');
+  const customWrap = document.getElementById('range-custom');
+  const startInput = document.getElementById('range-start');
+  const endInput = document.getElementById('range-end');
+  endInput.value = rangeAnchor;
+  const sixMoAgo = monthsBack(6).start;
+  startInput.value = sixMoAgo.toISOString().slice(0, 10);
+  endInput.max = rangeAnchor;
+  startInput.max = rangeAnchor;
+
+  bar.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      bar.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const preset = btn.dataset.range;
+      customWrap.classList.toggle('show', preset === 'custom');
+      if (preset !== 'custom') applyRange(preset);
+    });
+  });
+  document.getElementById('range-apply').addEventListener('click', () => {
+    if (startInput.value && endInput.value) applyRange('custom', startInput.value, endInput.value);
+  });
+
+  applyRange('6m'); // default view
 })();
 
 // Most-recent MEASURED week (not the ledger backfill, which sorts earliest-first)
