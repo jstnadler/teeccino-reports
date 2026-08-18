@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Production Throughput — Teeccino Reports</title>
-<meta name="description" content="Units produced per machine-hour / minute by packing line and product family. Owner: CostSmith.">
+<meta name="description" content="Retail boxes produced per machine-hour / minute by packing line and product family. Owner: CostSmith.">
 <style>
   /* ── HubSmith chrome for cost-throughput.html ─────────────────────────────
      Owner of THIS wrapper (head/body shell, nav include, breadcrumb, footer):
@@ -106,6 +106,14 @@
      order below passes every gate in BOTH modes (worst adjacent CVD ΔE 9.1
      light / 8.4 dark). Do not reorder without re-running the validator.
    - Direct download links to the four CSV exports (refreshed daily 06:30).
+   - v3.1: counts retail BOXES. Multipack SKUs record the MULTIPACK as one unit in
+     the schedule, so config/boxes-per-unit.json multiplies them up (40010 = 6 boxes
+     per recorded unit). 27 SKUs, all x6 -- CatalogSmith's "Population A", an Acctivate
+     UoM='cs' trade case corroborated by case_pack=6 on all four price lists and by the
+     case GTIN. Measured against the pre-boxes publish: Tea +132.2%, Maisa 2+3 +20.6%,
+     Maisa 1 +14.5%, Assembly +5.2%; APG, WeighRight and AMS unchanged (0.0%).
+     The 25CT-3PK and 10CT-4PK groups are NOT converted -- see config/boxes-per-unit.json
+     _held_back. Cost per unit is NOT on this basis and must stay per sellable SKU unit.
   Light-mode contrast note: aqua/yellow/magenta sit under 3:1 on the light
   surface, so the data table below the chart is REQUIRED relief — do not drop it.
 ==================================================================== -->
@@ -183,7 +191,7 @@
   </style>
 
   <h2>Production Throughput</h2>
-  <p class="cts-sub">Units produced per machine-hour / minute / operator-hour, by packing line and product family. Higher = faster. Slice by metric, family, line, year — or search for specific SKUs and compare up to six.</p>
+  <p class="cts-sub">Retail boxes produced per machine-hour / minute / operator-hour, by packing line and product family. Higher = faster. Slice by metric, family, line, year — or search for specific SKUs and compare up to six.</p>
   <p class="cts-scope" id="cts-scope">Loading…</p>
 
   <div class="cts-controls">
@@ -378,7 +386,7 @@
     var tb=S.map(function(s){return "<tr><td>"+esc(s.name)+"</td>"+MS.map(function(mo){var c=s.byMonth[mo];return "<td>"+(c?fmt(c[m]):"–")+"</td>"}).join("")+"</tr>"}).join("");
     $("cts-tbl").querySelector("thead").innerHTML=th;
     $("cts-tbl").querySelector("tbody").innerHTML=tb;
-    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A 'unit' = one pack in that SKU's own pack size (a 10-ct box ≠ a 5-lb bag) — compare within a SKU or line, not across families. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
+    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A 'unit' = one retail BOX in that SKU's own pack size — a 10-ct box holds 10 tea bags, a 25-ct box holds 25, and a 10ct/6pk SKU counts as 6 boxes, not one. Sizes still differ (a 10-ct box ≠ a 5-lb bag), so compare within a SKU or line rather than across families. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
   }
 
   function initControls(){
