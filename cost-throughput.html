@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Production Throughput — Teeccino Reports</title>
-<meta name="description" content="Retail boxes produced per machine-hour / minute by packing line and product family. Owner: CostSmith.">
+<meta name="description" content="Retail boxes produced per machine-hour / minute / operator-hour by packing line and product type. Owner: CostSmith.">
 <style>
   /* ── HubSmith chrome for cost-throughput.html ─────────────────────────────
      Owner of THIS wrapper (head/body shell, nav include, breadcrumb, footer):
@@ -88,7 +88,7 @@
   not edit inside .cts-root; changes route to CostSmith.
 =================================================================== -->
 <!-- ===================================================================
-  CostSmith — Production Throughput chart-section body  (v3, SKU finder)
+  CostSmith — Production Throughput chart-section body  (v3.1, retail-boxes basis)
   Owner: costsmith | Data feed: cost-throughput-facts.json (repo root)
   Reads the flat-list schema: dims{lines,families,years,months,metrics},
   by_family_month[], by_line_month[], by_sku_month[], by_sku[].
@@ -191,7 +191,7 @@
   </style>
 
   <h2>Production Throughput</h2>
-  <p class="cts-sub">Retail boxes produced per machine-hour / minute / operator-hour, by packing line and product family. Higher = faster. Slice by metric, family, line, year — or search for specific SKUs and compare up to six.</p>
+  <p class="cts-sub">Retail boxes produced per machine-hour / minute / operator-hour, by packing line and product type. Higher = faster. Slice by metric, type, line, year — or search for specific SKUs and compare up to six.</p>
   <p class="cts-scope" id="cts-scope">Loading…</p>
 
   <div class="cts-controls">
@@ -199,10 +199,13 @@
       <select id="cts-metric"></select></div>
     <div class="cts-field"><label for="cts-view">View</label>
       <select id="cts-view">
-        <option value="family">By product family</option>
+        <option value="family">By product type</option>
         <option value="line">By packing line</option>
+        <option value="linetype">By packing line, one product type</option>
         <option value="sku">By SKU (search &amp; compare)</option>
       </select></div>
+    <div class="cts-field" id="cts-typewrap" style="display:none"><label for="cts-type">Product type</label>
+      <select id="cts-type"></select></div>
     <div class="cts-field"><label for="cts-year">Year</label>
       <select id="cts-year"></select></div>
   </div>
@@ -213,7 +216,7 @@
         <label for="cts-search">Find a SKU — type an item number or name</label>
         <input type="search" id="cts-search" placeholder="e.g. 40116, french roast, hazelnut tea" autocomplete="off" spellcheck="false">
       </div>
-      <div class="cts-field"><label for="cts-fam">Family</label>
+      <div class="cts-field"><label for="cts-fam">Product type</label>
         <select id="cts-fam"></select></div>
       <div class="cts-field"><label for="cts-line">Packing line</label>
         <select id="cts-line"></select></div>
@@ -252,13 +255,16 @@
   var FEED="cost-throughput-facts.json";
   var PAL=["--s1","--s2","--s3","--s4","--s5","--s6"];
   var MAXSEL=PAL.length;               // never cycle the palette; 7th selection is refused
-  var METRIC_LABELS={units_per_machine_hour:"Units / machine-hour",units_per_minute:"Units / minute",units_per_operator_hour:"Units / operator-hour"};
+  // Labels say BOXES because the feed is on the boxes basis (v3.1). The feed KEYS are still
+  // units_per_* -- renaming those would break every consumer of cost-throughput-facts.json,
+  // so only the human-facing label changed. Do not "fix" the keys to match.
+  var METRIC_LABELS={units_per_machine_hour:"Boxes / machine-hour",units_per_minute:"Boxes / minute",units_per_operator_hour:"Boxes / operator-hour"};
   var $=function(id){return ROOT.querySelector("#"+id)};
-  var D=null, IDX={fam:{},line:{},sku:{}}, skuMeta={}, monthsCount={};
+  var D=null, IDX={fam:{},line:{},sku:{},linefam:{}}, skuMeta={}, monthsCount={};
   // slots[] holds the palette assignment. A removed SKU leaves a HOLE rather
   // than shifting the others along — colour follows the entity, not its rank.
   var slots=new Array(MAXSEL).fill(null);
-  var state={metric:"units_per_machine_hour",view:"family",year:"2026",q:"",fam:"",line:"",multiOnly:true};
+  var state={metric:"units_per_machine_hour",view:"family",year:"2026",q:"",fam:"",line:"",multiOnly:true,type:null};
 
   function cssv(v){return getComputedStyle(ROOT).getPropertyValue(v).trim()}
   function fmt(x){return (x==null)?"–":(Math.abs(x)<10?(+x).toFixed(2):Math.round(x).toLocaleString())}
@@ -341,6 +347,13 @@
       present.forEach(function(f,i){ if(IDX.fam[f]) out.push({name:f,byMonth:IDX.fam[f],ci:out.length}); });
     }else if(state.view==="line"){
       D.dims.lines.forEach(function(l){ if(IDX.line[l]) out.push({name:l,byMonth:IDX.line[l],ci:out.length}); });
+    }else if(state.view==="linetype"){
+      // one series per packing LINE, all for the same product type -> "which machine
+      // is faster at Tea". Lines that never ran this type simply have no series.
+      D.dims.lines.forEach(function(l){
+        var byMonth=IDX.linefam[l+"||"+state.type];
+        if(byMonth) out.push({name:l,byMonth:byMonth,ci:out.length});
+      });
     }else{
       slots.forEach(function(sku,i){
         if(!sku) return;
@@ -381,12 +394,12 @@
     g.push("</g>");
     $("cts-svg").innerHTML=g.join("");
     $("cts-legend").innerHTML=S.map(function(s){return "<span><i style='background:"+cssv(PAL[s.ci%PAL.length])+"'></i>"+esc(s.name)+"</span>"}).join("")||
-      "<span style='color:var(--muted)'>"+(state.view==="sku"?"Search for a SKU above to plot it.":"No data for this selection.")+"</span>";
+      "<span style='color:var(--muted)'>"+(state.view==="sku"?"Search for a SKU above to plot it.":(state.view==="linetype"?("No line ran "+esc(state.type||"")+" in this period."):"No data for this selection."))+"</span>";
     var th="<tr><th>Series</th>"+MS.map(function(mo){return "<th>"+mlabel(mo)+"</th>"}).join("")+"</tr>";
     var tb=S.map(function(s){return "<tr><td>"+esc(s.name)+"</td>"+MS.map(function(mo){var c=s.byMonth[mo];return "<td>"+(c?fmt(c[m]):"–")+"</td>"}).join("")+"</tr>"}).join("");
     $("cts-tbl").querySelector("thead").innerHTML=th;
     $("cts-tbl").querySelector("tbody").innerHTML=tb;
-    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A 'unit' = one retail BOX in that SKU's own pack size — a 10-ct box holds 10 tea bags, a 25-ct box holds 25, and a 10ct/6pk SKU counts as 6 boxes, not one. Sizes still differ (a 10-ct box ≠ a 5-lb bag), so compare within a SKU or line rather than across families. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
+    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A box = one retail box in that SKU's own pack size — a 10-ct box holds 10 tea bags, a 25-ct box holds 25, and a 10ct/6pk SKU counts as 6 boxes, not one. Sizes still differ (a 10-ct box ≠ a 5-lb bag), so compare within a SKU or line rather than across product types. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
   }
 
   function initControls(){
@@ -396,7 +409,14 @@
     if(yrs.indexOf("2026")<0) state.year=yrs[yrs.length-1];
 
     var fams={}; D.by_sku.forEach(function(s){if(s.family)fams[s.family]=1});
-    $("cts-fam").innerHTML="<option value=''>All families</option>"+Object.keys(fams).sort().map(function(f){return "<option value='"+esc(f)+"'>"+esc(f)+"</option>"}).join("");
+    $("cts-fam").innerHTML="<option value=''>All types</option>"+Object.keys(fams).sort().map(function(f){return "<option value='"+esc(f)+"'>"+esc(f)+"</option>"}).join("");
+    var typeOrder=["Tea","APG","Instant","Sampler"];
+    var types=D.dims.families.slice().sort(function(a,b){
+      var ia=typeOrder.indexOf(a), ib=typeOrder.indexOf(b);
+      return (ia<0?99:ia)-(ib<0?99:ib);
+    });
+    $("cts-type").innerHTML=types.map(function(t){return "<option value='"+esc(t)+"'>"+esc(t)+"</option>"}).join("");
+    state.type=types[0]||null;
     $("cts-line").innerHTML="<option value=''>All lines</option>"+D.dims.lines.map(function(l){return "<option value='"+esc(l)+"'>"+esc(l)+"</option>"}).join("");
 
     D.by_sku_month.forEach(function(r){monthsCount[r.sku]=(monthsCount[r.sku]||0)+1;});
@@ -411,6 +431,11 @@
     IDX.fam=buildIndex(d.by_family_month,"family");
     IDX.line=buildIndex(d.by_line_month,"line");
     IDX.sku=buildIndex(d.by_sku_month,"sku");
+    // line x type x month, keyed "<line>||<type>" so one lookup gives a line's series
+    // for the selected product type. Feed key is still "family"; the UI says type.
+    (d.by_line_family_month||[]).forEach(function(r){
+      var k=r.line+"||"+r.family; (IDX.linefam[k]=IDX.linefam[k]||{})[r.month]=r;
+    });
     d.by_sku.forEach(function(s){skuMeta[s.sku]=s});
     var meta=d._meta||{};
     $("cts-scope").textContent="Throughput only • source built "+((meta.source_built_at||d.source_built_at||"")+"").slice(0,10)+" • "+d.dims.months.length+" months ("+d.dims.years.join(", ")+") • "+d.by_sku.length+" SKUs";
@@ -420,8 +445,10 @@
     $("cts-view").onchange=function(){
       state.view=this.value;
       $("cts-finder").hidden=(this.value!=="sku");
+      $("cts-typewrap").style.display=(this.value==="linetype")?"":"none";
       render();
     };
+    $("cts-type").onchange=function(){state.type=this.value;render()};
     $("cts-year").onchange=function(){state.year=this.value;render()};
     $("cts-search").oninput=function(){state.q=this.value.trim();drawResults()};
     $("cts-search").onkeydown=function(e){
