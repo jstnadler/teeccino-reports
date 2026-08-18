@@ -87,24 +87,46 @@
   github.io base path and any future custom-domain root). HubSmith does
   not edit inside .cts-root; changes route to CostSmith.
 =================================================================== -->
+<!-- ===================================================================
+  CostSmith — Production Throughput chart-section body  (v3, SKU finder)
+  Owner: costsmith | Data feed: cost-throughput-facts.json (repo root)
+  Reads the flat-list schema: dims{lines,families,years,months,metrics},
+  by_family_month[], by_line_month[], by_sku_month[], by_sku[].
+  HubSmith: paste inside hub chrome <main>. Self-contained, no external libs.
+  Dark mode follows html[data-theme="dark"] OR OS setting.
+
+  v3 changes
+   - SKU picker is a SEARCH box + family/line filters + results list, not a
+     385-option dropdown. Compare up to 6 SKUs at once.
+   - Colour follows the SKU, not its rank: each selection holds a fixed palette
+     slot, so removing one series never repaints the others.
+   - Palette re-stepped to the validated categorical order. The previous order
+     put green (#008300) next to orange (#eb6834) — adjacent CVD ΔE 3.2 under
+     protanopia, i.e. indistinguishable to red-green colourblind readers. The
+     order below passes every gate in BOTH modes (worst adjacent CVD ΔE 9.1
+     light / 8.4 dark). Do not reorder without re-running the validator.
+   - Direct download links to the four CSV exports (refreshed daily 06:30).
+  Light-mode contrast note: aqua/yellow/magenta sit under 3:1 on the light
+  surface, so the data table below the chart is REQUIRED relief — do not drop it.
+==================================================================== -->
 <section class="cts-root" aria-label="Production throughput">
   <style>
     .cts-root{
       color-scheme:light;
       --surface-1:#fcfcfb; --surface-2:#f4f4f1; --border:#e6e6e3;
       --ink:#0b0b0b; --ink-2:#52514e; --muted:#8a8984;
-      --s1:#2a78d6; --s2:#eb6834; --s3:#008300; --s4:#4a3aa7; --s5:#e34948; --s6:#eda100;
+      --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
       font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink);
     }
     :root[data-theme="dark"] .cts-root{
       color-scheme:dark; --surface-1:#1a1a19; --surface-2:#242422; --border:#33322f;
       --ink:#fff; --ink-2:#c3c2b7; --muted:#8f8e86;
-      --s1:#3987e5; --s2:#d95926; --s3:#2e9e2e; --s4:#9085e9; --s5:#e66767; --s6:#c98500;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
     }
     @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cts-root{
       color-scheme:dark; --surface-1:#1a1a19; --surface-2:#242422; --border:#33322f;
       --ink:#fff; --ink-2:#c3c2b7; --muted:#8f8e86;
-      --s1:#3987e5; --s2:#d95926; --s3:#2e9e2e; --s4:#9085e9; --s5:#e66767; --s6:#c98500;
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
     }}
     .cts-root h2{font-size:20px;margin:0 0 2px;font-weight:700}
     .cts-sub{color:var(--ink-2);margin:0 0 4px;max-width:72ch}
@@ -112,7 +134,29 @@
     .cts-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;margin:0 0 14px;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
     .cts-field{display:flex;flex-direction:column;gap:3px}
     .cts-field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-    .cts-field select{font:inherit;padding:6px 8px;background:var(--surface-1);color:var(--ink);border:1px solid var(--border);border-radius:7px;min-width:150px}
+    .cts-field select,.cts-field input[type=search]{font:inherit;padding:6px 8px;background:var(--surface-1);color:var(--ink);border:1px solid var(--border);border-radius:7px;min-width:150px}
+    .cts-field input[type=search]{min-width:230px}
+
+    /* --- SKU finder ------------------------------------------------ */
+    .cts-finder{margin:0 0 14px;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
+    .cts-finder[hidden]{display:none}
+    .cts-frow{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end}
+    .cts-check{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);padding-bottom:6px}
+    .cts-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:4px}
+    .cts-chip{display:inline-flex;align-items:center;gap:7px;padding:4px 6px 4px 8px;background:var(--surface-1);border:1px solid var(--border);border-radius:999px;font-size:12.5px;color:var(--ink)}
+    .cts-chip i{width:10px;height:10px;border-radius:3px;flex:none}
+    .cts-chip button{border:0;background:none;color:var(--muted);font:inherit;font-size:15px;line-height:1;cursor:pointer;padding:0 2px}
+    .cts-chip button:hover{color:var(--ink)}
+    .cts-results{margin-top:10px;max-height:210px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;background:var(--surface-1)}
+    .cts-hit{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;font:inherit;background:none;border:0;border-bottom:1px solid var(--border);padding:7px 10px;cursor:pointer;color:var(--ink)}
+    .cts-hit:last-child{border-bottom:0}
+    .cts-hit:hover,.cts-hit:focus-visible{background:var(--surface-2);outline:none}
+    .cts-hit[aria-pressed=true]{background:var(--surface-2)}
+    .cts-hit b{font-weight:600;min-width:74px;font-variant-numeric:tabular-nums}
+    .cts-hit .d{color:var(--ink-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .cts-hit .m{color:var(--muted);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .cts-count{font-size:11.5px;color:var(--muted);margin-top:6px}
+
     .cts-chartwrap{border:1px solid var(--border);border-radius:10px;background:var(--surface-1);padding:12px 8px 6px}
     .cts-svg{width:100%;height:auto;display:block}
     .cts-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 6px 2px;font-size:12.5px}
@@ -125,10 +169,21 @@
     .cts-tbl thead th{color:var(--ink-2);font-weight:600;border-bottom:2px solid var(--border)}
     .cts-note{color:var(--muted);font-size:12px;margin-top:10px;max-width:80ch}
     .cts-dot{fill:var(--surface-1);stroke-width:2}
+    .cts-hit-target{fill:transparent;stroke:none}
+
+    /* --- downloads -------------------------------------------------- */
+    .cts-dl{margin-top:20px;padding:12px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
+    .cts-dl h3{font-size:13px;margin:0 0 2px;font-weight:700}
+    .cts-dl p{margin:0 0 8px;font-size:12px;color:var(--muted)}
+    .cts-dl ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 22px}
+    .cts-dl li{font-size:12.5px}
+    .cts-dl a{color:var(--s1);text-decoration:none;border-bottom:1px solid transparent}
+    .cts-dl a:hover,.cts-dl a:focus-visible{border-bottom-color:currentColor}
+    .cts-dl .w{color:var(--muted);font-size:12px}
   </style>
 
   <h2>Production Throughput</h2>
-  <p class="cts-sub">Units produced per machine-hour / minute / operator-hour, by packing line and product family. Higher = faster. Slice by metric, family, line, single SKU, and year.</p>
+  <p class="cts-sub">Units produced per machine-hour / minute / operator-hour, by packing line and product family. Higher = faster. Slice by metric, family, line, year — or search for specific SKUs and compare up to six.</p>
   <p class="cts-scope" id="cts-scope">Loading…</p>
 
   <div class="cts-controls">
@@ -138,12 +193,28 @@
       <select id="cts-view">
         <option value="family">By product family</option>
         <option value="line">By packing line</option>
-        <option value="sku">By single SKU</option>
+        <option value="sku">By SKU (search &amp; compare)</option>
       </select></div>
     <div class="cts-field"><label for="cts-year">Year</label>
       <select id="cts-year"></select></div>
-    <div class="cts-field" id="cts-skuwrap" style="display:none"><label for="cts-sku">SKU</label>
-      <select id="cts-sku"></select></div>
+  </div>
+
+  <div class="cts-finder" id="cts-finder" hidden>
+    <div class="cts-frow">
+      <div class="cts-field">
+        <label for="cts-search">Find a SKU — type an item number or name</label>
+        <input type="search" id="cts-search" placeholder="e.g. 40116, french roast, hazelnut tea" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="cts-field"><label for="cts-fam">Family</label>
+        <select id="cts-fam"></select></div>
+      <div class="cts-field"><label for="cts-line">Packing line</label>
+        <select id="cts-line"></select></div>
+      <label class="cts-check"><input type="checkbox" id="cts-multi" checked> Only SKUs with 2+ months</label>
+    </div>
+
+    <div class="cts-chips" id="cts-chips"></div>
+    <div class="cts-results" id="cts-results" role="listbox" aria-label="Matching SKUs"></div>
+    <p class="cts-count" id="cts-count"></p>
   </div>
 
   <div class="cts-chartwrap">
@@ -153,6 +224,18 @@
 
   <div class="cts-tblwrap"><table class="cts-tbl" id="cts-tbl"><thead></thead><tbody></tbody></table></div>
   <p class="cts-note" id="cts-note"></p>
+
+  <div class="cts-dl">
+    <h3>Download the underlying data</h3>
+    <p>CSV, refreshed every morning at 06:30 from the same source as this chart.</p>
+    <ul>
+      <li><a href="cost-production-runs-alltime.csv" download>Every production run, dated</a></li>
+      <li><a href="cost-throughput-by-machine-month-alltime.csv" download>Throughput by machine × month</a></li>
+      <li><a href="cost-throughput-by-category-month-alltime.csv" download>Throughput by category × month</a></li>
+      <li><a href="cost-ams-sku-beforeafter-amy-alltime.csv" download>AMS: handpack vs Amy, by SKU</a></li>
+    </ul>
+    <p class="w" style="margin:8px 0 0">Throughput only — no cost, wage or price figures in these files.</p>
+  </div>
 </section>
 
 <script>
@@ -160,13 +243,20 @@
   var ROOT=document.currentScript.previousElementSibling;
   var FEED="cost-throughput-facts.json";
   var PAL=["--s1","--s2","--s3","--s4","--s5","--s6"];
+  var MAXSEL=PAL.length;               // never cycle the palette; 7th selection is refused
   var METRIC_LABELS={units_per_machine_hour:"Units / machine-hour",units_per_minute:"Units / minute",units_per_operator_hour:"Units / operator-hour"};
   var $=function(id){return ROOT.querySelector("#"+id)};
-  var D=null, IDX={fam:{},line:{},sku:{}}, skuMeta={};
-  var state={metric:"units_per_machine_hour",view:"family",year:"2026",sku:null};
+  var D=null, IDX={fam:{},line:{},sku:{}}, skuMeta={}, monthsCount={};
+  // slots[] holds the palette assignment. A removed SKU leaves a HOLE rather
+  // than shifting the others along — colour follows the entity, not its rank.
+  var slots=new Array(MAXSEL).fill(null);
+  var state={metric:"units_per_machine_hour",view:"family",year:"2026",q:"",fam:"",line:"",multiOnly:true};
 
   function cssv(v){return getComputedStyle(ROOT).getPropertyValue(v).trim()}
   function fmt(x){return (x==null)?"–":(Math.abs(x)<10?(+x).toFixed(2):Math.round(x).toLocaleString())}
+  // axis ticks are a scale, not a reading: whole numbers, so 0 prints "0" not "0.00"
+  function axfmt(x){return (Math.abs(x)<10?(+x).toFixed(Math.abs(x)<1?0:1):Math.round(x)).toLocaleString()}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
   function monthsForYear(){var ms=D.dims.months; return state.year==="all"?ms:ms.filter(function(m){return m.slice(0,4)===state.year});}
   function mlabel(m){return m.slice(2);} // "2026-01" -> "26-01"
 
@@ -174,18 +264,82 @@
     var o={}; list.forEach(function(r){ var k=r[keyName]; (o[k]=o[k]||{})[r.month]=r; }); return o;
   }
 
+  /* ---------- SKU search ------------------------------------------- */
+  function matches(){
+    var toks=state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    return D.by_sku.filter(function(s){
+      if(state.multiOnly && (monthsCount[s.sku]||0)<2) return false;
+      if(state.fam && s.family!==state.fam) return false;
+      if(state.line && (s.lines||[]).indexOf(state.line)<0) return false;
+      if(!toks.length) return true;
+      var hay=(s.sku+" "+(s.desc||"")).toLowerCase();
+      return toks.every(function(t){return hay.indexOf(t)>=0});   // every token must hit
+    }).sort(function(a,b){
+      // a typed item number should come first even if another SKU has more runs
+      var q=state.q.toLowerCase();
+      var ax=q&&a.sku.toLowerCase().indexOf(q)===0?1:0, bx=q&&b.sku.toLowerCase().indexOf(q)===0?1:0;
+      if(ax!==bx) return bx-ax;
+      return (b.units||0)-(a.units||0);
+    });
+  }
+
+  function slotOf(sku){return slots.indexOf(sku)}
+  function selectedCount(){return slots.filter(Boolean).length}
+
+  function toggle(sku){
+    var at=slotOf(sku);
+    if(at>=0){ slots[at]=null; }
+    else{
+      var free=slots.indexOf(null);
+      if(free<0){ flash("Six SKUs is the limit — remove one first."); return; }
+      slots[free]=sku;
+    }
+    drawChips(); drawResults(); render();
+  }
+
+  function flash(msg){ var c=$("cts-count"); c.textContent=msg; }
+
+  function drawChips(){
+    var html=slots.map(function(sku,i){
+      if(!sku) return "";
+      var m=skuMeta[sku]||{};
+      return "<span class='cts-chip'><i style='background:"+cssv(PAL[i])+"'></i>"+
+             esc(sku)+" <span style='color:var(--ink-2)'>"+esc((m.desc||"").slice(0,26))+"</span>"+
+             "<button type='button' data-sku='"+esc(sku)+"' aria-label='Remove "+esc(sku)+"'>&times;</button></span>";
+    }).join("");
+    $("cts-chips").innerHTML=html;
+  }
+
+  function drawResults(){
+    var list=matches(), CAP=80, shown=list.slice(0,CAP);
+    $("cts-results").innerHTML=shown.map(function(s){
+      var on=slotOf(s.sku)>=0;
+      return "<button type='button' class='cts-hit' role='option' aria-pressed='"+on+"' data-sku='"+esc(s.sku)+"'>"+
+        "<b>"+esc(s.sku)+"</b><span class='d'>"+esc(s.desc||"")+"</span>"+
+        "<span class='m'>"+esc(s.family||"")+" · "+esc((s.lines||[]).join("/"))+" · "+
+        fmt(s.units)+" units · "+(monthsCount[s.sku]||0)+" mo</span></button>";
+    }).join("")||"<div style='padding:10px;color:var(--muted)'>No SKU matches those filters.</div>";
+    $("cts-count").textContent=list.length+" match"+(list.length===1?"":"es")+
+      (list.length>CAP?" — showing the first "+CAP+", keep typing to narrow":"")+
+      " · "+selectedCount()+" of "+MAXSEL+" selected";
+  }
+
+  /* ---------- series ------------------------------------------------ */
   function seriesForView(){
     var out=[];
     if(state.view==="family"){
-      // default families of interest first, then any others present
       var order=["APG","Tea","Instant","Sampler"];
       var present=D.dims.families.slice().sort(function(a,b){return order.indexOf(a)-order.indexOf(b)});
-      present.forEach(function(f){ if(IDX.fam[f]) out.push({name:f,byMonth:IDX.fam[f]}); });
+      present.forEach(function(f,i){ if(IDX.fam[f]) out.push({name:f,byMonth:IDX.fam[f],ci:out.length}); });
     }else if(state.view==="line"){
-      D.dims.lines.forEach(function(l){ if(IDX.line[l]) out.push({name:l,byMonth:IDX.line[l]}); });
+      D.dims.lines.forEach(function(l){ if(IDX.line[l]) out.push({name:l,byMonth:IDX.line[l],ci:out.length}); });
     }else{
-      var s=IDX.sku[state.sku]; var meta=skuMeta[state.sku]||{};
-      if(s) out.push({name:(state.sku+" "+(meta.desc||"")).slice(0,40),byMonth:s});
+      slots.forEach(function(sku,i){
+        if(!sku) return;
+        var s=IDX.sku[sku]; if(!s) return;
+        var meta=skuMeta[sku]||{};
+        out.push({name:sku+" "+(meta.desc||"").slice(0,28),byMonth:s,ci:i});
+      });
     }
     return out;
   }
@@ -201,24 +355,30 @@
     var g=["<g font-family='system-ui' font-size='11'>"];
     for(var k=0;k<=4;k++){var vy=maxY*1.1*k/4,py=y(vy);
       g.push("<line x1='"+padL+"' y1='"+py+"' x2='"+(W-padR)+"' y2='"+py+"' stroke='"+cssv('--border')+"'/>");
-      g.push("<text x='"+(padL-8)+"' y='"+(py+4)+"' text-anchor='end' fill='"+cssv('--muted')+"'>"+fmt(vy)+"</text>");
+      g.push("<text x='"+(padL-8)+"' y='"+(py+4)+"' text-anchor='end' fill='"+cssv('--muted')+"'>"+axfmt(vy)+"</text>");
     }
     var step=MS.length>13?2:1;
     MS.forEach(function(mo,i){ if(i%step===0||i===MS.length-1) g.push("<text x='"+x(i)+"' y='"+(H-padB+22)+"' text-anchor='middle' fill='"+cssv('--muted')+"' font-size='10'>"+mlabel(mo)+"</text>"); });
-    S.forEach(function(s,si){
-      var col=cssv(PAL[si%PAL.length]),pts=[];
+    S.forEach(function(s){
+      var col=cssv(PAL[s.ci%PAL.length]),pts=[];
       MS.forEach(function(mo,i){ var c=s.byMonth[mo]; if(c&&c[m]!=null) pts.push([x(i),y(c[m]),c[m],mo]); });
       if(pts.length>1) g.push("<polyline fill='none' stroke='"+col+"' stroke-width='2' points='"+pts.map(function(p){return p[0]+","+p[1]}).join(" ")+"'/>");
-      pts.forEach(function(p){ g.push("<circle class='cts-dot' cx='"+p[0]+"' cy='"+p[1]+"' r='3.5' stroke='"+col+"'><title>"+s.name+" — "+p[3]+": "+fmt(p[2])+"</title></circle>"); });
+      pts.forEach(function(p){
+        var tip="<title>"+esc(s.name)+" — "+p[3]+": "+fmt(p[2])+"</title>";
+        g.push("<circle class='cts-dot' cx='"+p[0]+"' cy='"+p[1]+"' r='3.5' stroke='"+col+"'>"+tip+"</circle>");
+        // invisible, larger hit target so the tooltip is reachable on a thin mark
+        g.push("<circle class='cts-hit-target' cx='"+p[0]+"' cy='"+p[1]+"' r='9'>"+tip+"</circle>");
+      });
     });
     g.push("</g>");
     $("cts-svg").innerHTML=g.join("");
-    $("cts-legend").innerHTML=S.map(function(s,si){return "<span><i style='background:"+cssv(PAL[si%PAL.length])+"'></i>"+s.name+"</span>"}).join("")||"<span style='color:var(--muted)'>No data for this selection.</span>";
+    $("cts-legend").innerHTML=S.map(function(s){return "<span><i style='background:"+cssv(PAL[s.ci%PAL.length])+"'></i>"+esc(s.name)+"</span>"}).join("")||
+      "<span style='color:var(--muted)'>"+(state.view==="sku"?"Search for a SKU above to plot it.":"No data for this selection.")+"</span>";
     var th="<tr><th>Series</th>"+MS.map(function(mo){return "<th>"+mlabel(mo)+"</th>"}).join("")+"</tr>";
-    var tb=S.map(function(s){return "<tr><td>"+s.name+"</td>"+MS.map(function(mo){var c=s.byMonth[mo];return "<td>"+(c?fmt(c[m]):"–")+"</td>"}).join("")+"</tr>"}).join("");
+    var tb=S.map(function(s){return "<tr><td>"+esc(s.name)+"</td>"+MS.map(function(mo){var c=s.byMonth[mo];return "<td>"+(c?fmt(c[m]):"–")+"</td>"}).join("")+"</tr>"}).join("");
     $("cts-tbl").querySelector("thead").innerHTML=th;
     $("cts-tbl").querySelector("tbody").innerHTML=tb;
-    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A 'unit' = one pack in that SKU's own pack size (a 10-ct box ≠ a 5-lb bag) — compare within a SKU or line, not across families. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial.";
+    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A 'unit' = one pack in that SKU's own pack size (a 10-ct box ≠ a 5-lb bag) — compare within a SKU or line, not across families. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
   }
 
   function initControls(){
@@ -226,12 +386,16 @@
     var yrs=D.dims.years.slice();
     $("cts-year").innerHTML="<option value='all'>All ("+yrs[0]+"–"+yrs[yrs.length-1]+")</option>"+yrs.map(function(y){return "<option value='"+y+"'"+(y==="2026"?" selected":"")+">"+y+"</option>"}).join("");
     if(yrs.indexOf("2026")<0) state.year=yrs[yrs.length-1];
-    // SKU picker: skus with >=2 months, most months first
-    var monthsCount={}; D.by_sku_month.forEach(function(r){monthsCount[r.sku]=(monthsCount[r.sku]||0)+1;});
-    var opts=D.by_sku.map(function(s){return {sku:s.sku,label:s.sku+" — "+(s.desc||"").slice(0,34)+" ["+(s.lines||[]).join("/")+"]",mc:monthsCount[s.sku]||0}})
-      .filter(function(o){return o.mc>=2}).sort(function(a,b){return b.mc-a.mc});
-    $("cts-sku").innerHTML=opts.map(function(o){return "<option value='"+o.sku+"'>"+o.label+"</option>"}).join("");
-    state.sku=opts.length?opts[0].sku:null;
+
+    var fams={}; D.by_sku.forEach(function(s){if(s.family)fams[s.family]=1});
+    $("cts-fam").innerHTML="<option value=''>All families</option>"+Object.keys(fams).sort().map(function(f){return "<option value='"+esc(f)+"'>"+esc(f)+"</option>"}).join("");
+    $("cts-line").innerHTML="<option value=''>All lines</option>"+D.dims.lines.map(function(l){return "<option value='"+esc(l)+"'>"+esc(l)+"</option>"}).join("");
+
+    D.by_sku_month.forEach(function(r){monthsCount[r.sku]=(monthsCount[r.sku]||0)+1;});
+    // seed with the highest-volume SKU so the SKU view is never blank on arrival
+    var seed=matches()[0];
+    if(seed) slots[0]=seed.sku;
+    drawChips(); drawResults();
   }
 
   fetch(FEED).then(function(r){return r.json()}).then(function(d){
@@ -243,10 +407,24 @@
     var meta=d._meta||{};
     $("cts-scope").textContent="Throughput only • source built "+((meta.source_built_at||d.source_built_at||"")+"").slice(0,10)+" • "+d.dims.months.length+" months ("+d.dims.years.join(", ")+") • "+d.by_sku.length+" SKUs";
     initControls();
+
     $("cts-metric").onchange=function(){state.metric=this.value;render()};
-    $("cts-view").onchange=function(){state.view=this.value;$("cts-skuwrap").style.display=this.value==="sku"?"":"none";render()};
+    $("cts-view").onchange=function(){
+      state.view=this.value;
+      $("cts-finder").hidden=(this.value!=="sku");
+      render();
+    };
     $("cts-year").onchange=function(){state.year=this.value;render()};
-    $("cts-sku").onchange=function(){state.sku=this.value;render()};
+    $("cts-search").oninput=function(){state.q=this.value.trim();drawResults()};
+    $("cts-search").onkeydown=function(e){
+      if(e.key==="Enter"){ e.preventDefault(); var first=matches()[0]; if(first) toggle(first.sku); }
+    };
+    $("cts-fam").onchange=function(){state.fam=this.value;drawResults()};
+    $("cts-line").onchange=function(){state.line=this.value;drawResults()};
+    $("cts-multi").onchange=function(){state.multiOnly=this.checked;drawResults()};
+    $("cts-results").onclick=function(e){var b=e.target.closest(".cts-hit"); if(b) toggle(b.dataset.sku)};
+    $("cts-chips").onclick=function(e){var b=e.target.closest("button[data-sku]"); if(b) toggle(b.dataset.sku)};
+
     render();
   }).catch(function(e){ $("cts-scope").textContent="Could not load "+FEED+" — "+e; });
 })();
