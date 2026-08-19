@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Production Throughput — Teeccino Reports</title>
-<meta name="description" content="Retail boxes produced per machine-hour / minute / operator-hour by packing line and product type. Owner: CostSmith.">
+<meta name="description" content="Retail units produced per machine-hour / minute / operator-hour by packing line and product type. Owner: CostSmith.">
 <style>
   /* ── HubSmith chrome for cost-throughput.html ─────────────────────────────
      Owner of THIS wrapper (head/body shell, nav include, breadcrumb, footer):
@@ -88,7 +88,7 @@
   not edit inside .cts-root; changes route to CostSmith.
 =================================================================== -->
 <!-- ===================================================================
-  CostSmith — Production Throughput chart-section body  (v3.1, retail-boxes basis)
+  CostSmith — Production Throughput chart-section body  (v3.2, retail-UNITS basis)
   Owner: costsmith | Data feed: cost-throughput-facts.json (repo root)
   Reads the flat-list schema: dims{lines,families,years,months,metrics},
   by_family_month[], by_line_month[], by_sku_month[], by_sku[].
@@ -106,14 +106,23 @@
      order below passes every gate in BOTH modes (worst adjacent CVD ΔE 9.1
      light / 8.4 dark). Do not reorder without re-running the validator.
    - Direct download links to the four CSV exports (refreshed daily 06:30).
-   - v3.1: counts retail BOXES. Multipack SKUs record the MULTIPACK as one unit in
-     the schedule, so config/boxes-per-unit.json multiplies them up (40010 = 6 boxes
-     per recorded unit). 27 SKUs, all x6 -- CatalogSmith's "Population A", an Acctivate
+   - v3.1: counts retail units. A multipack SKU records the MULTIPACK as one quantity
+     in the schedule, so config/boxes-per-unit.json multiplies it up (40010 = 6 units per
+     recorded quantity). Started at 27 SKUs -- CatalogSmith's "Population A", an Acctivate
      UoM='cs' trade case corroborated by case_pack=6 on all four price lists and by the
-     case GTIN. Measured against the pre-boxes publish: Tea +132.2%, Maisa 2+3 +20.6%,
-     Maisa 1 +14.5%, Assembly +5.2%; APG, WeighRight and AMS unchanged (0.0%).
-     The 25CT-3PK and 10CT-4PK groups are NOT converted -- see config/boxes-per-unit.json
-     _held_back. Cost per unit is NOT on this basis and must stay per sellable SKU unit.
+     case GTIN. Measured against the pre-normalization publish: Tea +132.2%, Maisa 2+3
+     +20.6%, Maisa 1 +14.5%, Assembly +5.2%; APG, WeighRight and AMS unchanged (0.0%).
+   - v3.2 (2026-08-19): says UNITS, not "boxes". Justin: "Bags and Boxes are both units.
+     Usually cases are made up of either bags or boxes" -- restating his canonical
+     2026-08-03 definition (UNIT = one individual retail item, a single bag, box or
+     canister; CASE = a shipping case made of N units). "Boxes" was a tea-shaped word
+     standing in for a basis, which is the third-basis error that ruling forbids. The map
+     grew 27 -> 65 SKUs: +47010 at x12 (CatalogSmith Population C, private-label trade
+     case -- it had been published as the plant's biggest DRAG and is its biggest LIFT),
+     +11 dual-language 'F' tea items at x6, +26 retail-BAG and instant-bag trade cases at
+     x6 (Population D). The 25CT-3PK / 10CT-4PK Amazon groups are still NOT converted --
+     see _populations.B_still_out. Cost per unit is NOT on this basis and must stay per
+     sellable SKU unit.
   Light-mode contrast note: aqua/yellow/magenta sit under 3:1 on the light
   surface, so the data table below the chart is REQUIRED relief — do not drop it.
 ==================================================================== -->
@@ -226,7 +235,7 @@
   </style>
 
   <h2>Production Throughput</h2>
-  <p class="cts-sub">Retail boxes produced per machine-hour / minute / operator-hour, by packing line and product type. Higher = faster. Slice by metric, type, line, year — or search for specific SKUs and compare up to six.</p>
+  <p class="cts-sub">Retail units produced per machine-hour / minute / operator-hour, by packing line and product type. Higher = faster. Slice by metric, type, line, year — or search for specific SKUs and compare up to six.</p>
   <p class="cts-scope" id="cts-scope">Loading…</p>
 
   <div class="cts-controls">
@@ -326,10 +335,10 @@
   var FEED="cost-throughput-facts.json";
   var PAL=["--s1","--s2","--s3","--s4","--s5","--s6"];
   var MAXSEL=PAL.length;               // never cycle the palette; 7th selection is refused
-  // Labels say BOXES because the feed is on the boxes basis (v3.1). The feed KEYS are still
+  // Labels say UNITS (v3.2): Justin 2026-08-19, "Bags and Boxes are both units". The feed KEYS are
   // units_per_* -- renaming those would break every consumer of cost-throughput-facts.json,
   // so only the human-facing label changed. Do not "fix" the keys to match.
-  var METRIC_LABELS={units_per_machine_hour:"Boxes / machine-hour",units_per_minute:"Boxes / minute",units_per_operator_hour:"Boxes / operator-hour"};
+  var METRIC_LABELS={units_per_machine_hour:"Units / machine-hour",units_per_minute:"Units / minute",units_per_operator_hour:"Units / operator-hour"};
   var $=function(id){return ROOT.querySelector("#"+id)};
   var D=null, IDX={fam:{},line:{},sku:{},linefam:{}}, skuMeta={}, monthsCount={};
   // slots[] holds the palette assignment. A removed SKU leaves a HOLE rather
@@ -339,7 +348,7 @@
 
   function cssv(v){return getComputedStyle(ROOT).getPropertyValue(v).trim()}
   function fmt(x){return (x==null)?"–":(Math.abs(x)<10?(+x).toFixed(2):Math.round(x).toLocaleString())}
-  // whole-number formatter for counts (boxes, hours, runs); fmt() switches to 2dp under 10
+  // whole-number formatter for counts (units, hours, runs); fmt() switches to 2dp under 10
   function num(x){return (x==null)?"–":Math.round(x).toLocaleString()}
   // signed, fixed 1dp -- the effect column is only readable if every row has the same precision
   function sfmt(x){return (x==null)?"–":((x>=0?"+":"\u2212")+Math.abs(x).toFixed(1))}
@@ -474,7 +483,7 @@
     var tb=S.map(function(s){return "<tr><td>"+esc(s.name)+"</td>"+MS.map(function(mo){var c=s.byMonth[mo];return "<td>"+(c?fmt(c[m]):"–")+"</td>"}).join("")+"</tr>"}).join("");
     $("cts-tbl").querySelector("thead").innerHTML=th;
     $("cts-tbl").querySelector("tbody").innerHTML=tb;
-    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A box = one retail box in that SKU's own pack size — a 10-ct box holds 10 tea bags, a 25-ct box holds 25, and a 10ct/6pk SKU counts as 6 boxes, not one. Sizes still differ (a 10-ct box ≠ a 5-lb bag), so compare within a SKU or line rather than across product types. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
+    $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A unit = one individual retail item a customer buys — a single bag, box or canister. A 10-ct box holds 10 tea bags and counts as one unit; a 6-pack SKU counts as 6 units, not one, because a case is made of units. Sizes still differ (a 10-ct box ≠ a 5-lb bag), so compare within a SKU or line rather than across product types. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
     // the leaderboard shares the metric + year selectors, so refresh it with the chart
     renderLB();
   }
@@ -533,7 +542,7 @@
     return out.filter(function(r){return r.hours>0 && r.units>0});
   }
 
-  // A multipack SKU is only a problem if its quantity was NOT normalized to individual boxes.
+  // A multipack SKU is only a problem if its quantity was NOT normalized to individual units.
   // The feed already multiplies up the 27 CatalogSmith-governed x6 trade cases
   // (boxes_normalized_skus), so those rates ARE like-for-like and must not be flagged -- warning
   // about a correct row costs as much trust as missing a wrong one. What is left is the x3/x4
@@ -545,7 +554,7 @@
   var PKRE=/(\d+)\s*(?:pk\b|pack\b|count case|ct case)/i;
   var NORMSKU={};
   function packOf(sku,desc){
-    if(NORMSKU[String(sku||'').toUpperCase()]) return null;   // already counted in boxes
+    if(NORMSKU[String(sku||'').toUpperCase()]) return null;   // already counted in individual units
     var m=PKRE.exec(desc||""); return m?+m[1]:null;
   }
 
@@ -584,14 +593,14 @@
     var maxAbs=Math.max.apply(null,shown.map(function(r){return Math.abs(r.effect)}).concat([1e-9]));
 
     var mlab=METRIC_LABELS[state.metric]||state.metric;
-    var unit=mlab.replace(/^Boxes \/ /,"per ");
+    var unit=mlab.replace(/^Units \/ /,"per ");   // "Units / machine-hour" -> "per machine-hour"
     var yrTxt=state.year==="all"?("all years, "+D.dims.years.join("-")):state.year;
     var hoursWord=lbHoursKey()==="operator_hours"?"operator":"machine";
     $("cts-lb-avg").innerHTML="Average across the <b>"+num(rows.length)+"</b> SKU(s) shown ("+esc(yrTxt)+"): "
-      +"<b>"+fmt(avg)+"</b> "+esc(mlab.toLowerCase())+" &middot; "+num(Math.round(U))+" boxes over "
+      +"<b>"+fmt(avg)+"</b> "+esc(mlab.toLowerCase())+" &middot; "+num(Math.round(U))+" units over "
       +num(Math.round(H))+" "+hoursWord+"-hours";
 
-    thead.innerHTML="<tr><th>#</th><th>SKU</th><th>Product</th><th>Type</th><th>Runs</th><th>Boxes</th>"
+    thead.innerHTML="<tr><th>#</th><th>SKU</th><th>Product</th><th>Type</th><th>Runs</th><th>Units</th>"
       +"<th>"+hoursWord.charAt(0).toUpperCase()+hoursWord.slice(1)+"-hrs</th><th>Rate</th>"
       +"<th>Share of hours</th><th class='cts-eff'>Effect on the average</th></tr>";
 
@@ -602,8 +611,8 @@
               +"% of hours at "+fmt(r.rate)+" vs "+fmt(avg)+" average";
       var bar="<div class='cts-effin' title='"+esc(tip)+"'>"
         +"<span class='cts-effb "+(up?"up":"down")+"' style='width:"+w.toFixed(2)+"%'></span></div>";
-      var pkBadge=r.pk?("<span class='cts-pk' title='One counted box here is a "+r.pk
-        +"-pack, not a single retail box'>"+r.pk+"-pack</span>"):"";
+      var pkBadge=r.pk?("<span class='cts-pk' title='One counted quantity here is a "+r.pk
+        +"-pack, not a single retail unit'>"+r.pk+"-pack</span>"):"";
       var susBadge=r.sus?("<span class='cts-sus' title='This SKU has at least one month whose rate is "
         +"more than 5x its own median - a suspect figure. Needs checking on the run sheet.'>check data</span>"):"";
       return "<tr><td class='cts-rk'>"+(i+1)+"</td>"
@@ -627,12 +636,12 @@
       +"whether it is fast or slow. Ranking on rate alone would put a SKU that ran for twenty minutes "
       +"at the top."
       +(nPk?(" Caution: "+nPk+" of the "+shown.length+" rows shown are badged as multipacks whose "
-        +"quantity is still counted in PACKS, not individual boxes - their rate is not like-for-like "
-        +"against a single-box SKU and is understated by roughly the pack size. Governed 6-box trade "
-        +"cases are already converted to boxes and are NOT badged."):"")
+        +"quantity is still counted in PACKS, not individual units - their rate is not like-for-like "
+        +"against a single-unit SKU and is understated by roughly the pack size. Governed trade cases "
+        +"are already converted to individual retail units and are NOT badged."):"")
       +" Rows need "+LB.minRuns+"+ rated run(s). Cleaning and setup rows are excluded."
       +(LB.clean&&LBSKIP.cells?(" Left out "+LBSKIP.cells+" suspect SKU-month(s) worth "
-        +num(Math.round(LBSKIP.units))+" boxes, where the logged rate is over 5x that SKU's own median "
+        +num(Math.round(LBSKIP.units))+" units, where the logged rate is over 5x that SKU's own median "
         +"month - a wrong number rather than a fast month. Untick the box to put them back."):"")
       +(Object.keys(LBSKIP.skus).length?(" Badged 'check data': "+Object.keys(LBSKIP.skus).sort().join(", ")+"."):"");
   }
