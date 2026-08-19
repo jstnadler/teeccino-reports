@@ -533,13 +533,21 @@
     return out.filter(function(r){return r.hours>0 && r.units>0});
   }
 
-  // "10ct/6pk", "6 Count Case", "(12 Pack)" -> the counted unit is a MULTIPACK, not one retail
-  // box. Flagged, never silently divided: the authoritative pack count is CatalogSmith's, not
-  // something to infer from a description string.
+  // A multipack SKU is only a problem if its quantity was NOT normalized to individual boxes.
+  // The feed already multiplies up the 27 CatalogSmith-governed x6 trade cases
+  // (boxes_normalized_skus), so those rates ARE like-for-like and must not be flagged -- warning
+  // about a correct row costs as much trust as missing a wrong one. What is left is the x3/x4
+  // Amazon consumer multipacks (CatalogSmith Population B, held back pending a schema ruling on
+  // pack fill weight) and any other pack-named SKU outside the governed map: those still count a
+  // whole pack as one unit. Badge those, and never divide by a number parsed out of a name.
   // SKUs the feed flagged as having at least one self-inconsistent month
   var SUSSKU={}; var LBSKIP={cells:0,units:0,skus:{}};
   var PKRE=/(\d+)\s*(?:pk\b|pack\b|count case|ct case)/i;
-  function packOf(desc){ var m=PKRE.exec(desc||""); return m?+m[1]:null; }
+  var NORMSKU={};
+  function packOf(sku,desc){
+    if(NORMSKU[String(sku||'').toUpperCase()]) return null;   // already counted in boxes
+    var m=PKRE.exec(desc||""); return m?+m[1]:null;
+  }
 
   function renderLB(){
     if(!D||!D.by_sku) return;
@@ -562,7 +570,7 @@
       r.rate=lbRate(r.units,r.hours);
       r.share=r.hours/H;
       r.effect=r.share*(r.rate-avg);
-      r.pk=packOf(r.desc);
+      r.pk=packOf(r.sku,r.desc);
     });
     var srt={
       pull_dn:function(a,b){return a.effect-b.effect},
@@ -618,8 +626,10 @@
       +"zero, so this column says how much of the average each SKU is responsible for - not merely "
       +"whether it is fast or slow. Ranking on rate alone would put a SKU that ran for twenty minutes "
       +"at the top."
-      +(nPk?(" Caution: "+nPk+" of the "+shown.length+" rows shown are multipack SKUs (badged), where "
-        +"one counted box is a whole pack - their rate is not like-for-like against a single-box SKU."):"")
+      +(nPk?(" Caution: "+nPk+" of the "+shown.length+" rows shown are badged as multipacks whose "
+        +"quantity is still counted in PACKS, not individual boxes - their rate is not like-for-like "
+        +"against a single-box SKU and is understated by roughly the pack size. Governed 6-box trade "
+        +"cases are already converted to boxes and are NOT badged."):"")
       +" Rows need "+LB.minRuns+"+ rated run(s). Cleaning and setup rows are excluded."
       +(LB.clean&&LBSKIP.cells?(" Left out "+LBSKIP.cells+" suspect SKU-month(s) worth "
         +num(Math.round(LBSKIP.units))+" boxes, where the logged rate is over 5x that SKU's own median "
@@ -663,6 +673,7 @@
     });
     d.by_sku.forEach(function(s){skuMeta[s.sku]=s});
     (d.rate_suspects||[]).forEach(function(r){SUSSKU[r.sku]=true});
+    (d.boxes_normalized_skus||[]).forEach(function(k){NORMSKU[String(k).toUpperCase()]=true});
     var meta=d._meta||{};
     $("cts-scope").textContent="Throughput only • source built "+((meta.source_built_at||d.source_built_at||"")+"").slice(0,10)+" • "+d.dims.months.length+" months ("+d.dims.years.join(", ")+") • "+d.by_sku.length+" SKUs";
     initControls();
