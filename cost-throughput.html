@@ -124,17 +124,22 @@
       --surface-1:#fcfcfb; --surface-2:#f4f4f1; --border:#e6e6e3;
       --ink:#0b0b0b; --ink-2:#52514e; --muted:#8a8984;
       --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+      /* diverging pair for the leaderboard's signed effect bars: blue = above average,
+         red = below, neutral gray midpoint. Validated (all six checks pass, both modes). */
+      --up:#2a78d6; --down:#e34948; --mid:#f0efec;
       font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink);
     }
     :root[data-theme="dark"] .cts-root{
       color-scheme:dark; --surface-1:#1a1a19; --surface-2:#242422; --border:#33322f;
       --ink:#fff; --ink-2:#c3c2b7; --muted:#8f8e86;
       --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+      --up:#3987e5; --down:#e66767; --mid:#383835;
     }
     @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cts-root{
       color-scheme:dark; --surface-1:#1a1a19; --surface-2:#242422; --border:#33322f;
       --ink:#fff; --ink-2:#c3c2b7; --muted:#8f8e86;
       --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+      --up:#3987e5; --down:#e66767; --mid:#383835;
     }}
     .cts-root h2{font-size:20px;margin:0 0 2px;font-weight:700}
     .cts-sub{color:var(--ink-2);margin:0 0 4px;max-width:72ch}
@@ -188,6 +193,36 @@
     .cts-dl a{color:var(--s1);text-decoration:none;border-bottom:1px solid transparent}
     .cts-dl a:hover,.cts-dl a:focus-visible{border-bottom-color:currentColor}
     .cts-dl .w{color:var(--muted);font-size:12px}
+    /* ---------- SKU leaderboard ---------- */
+    .cts-lb{margin:28px 0 0;padding-top:20px;border-top:1px solid var(--border)}
+    .cts-lb h3{font-size:16px;margin:0 0 2px;font-weight:700}
+    .cts-lb .cts-sub{margin:0 0 12px}
+    .cts-lbbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;margin:0 0 12px;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px}
+    .cts-avg{margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+    .cts-avg b{color:var(--ink)}
+    .cts-lbwrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+    table.cts-lbt{border-collapse:collapse;width:100%;font-size:13px;min-width:800px}
+    table.cts-lbt th,table.cts-lbt td{padding:7px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--border)}
+    table.cts-lbt th{position:sticky;top:0;background:var(--surface-2);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;z-index:1}
+    table.cts-lbt th:nth-child(2),table.cts-lbt th:nth-child(3),table.cts-lbt td:nth-child(2),table.cts-lbt td:nth-child(3){text-align:left}
+    table.cts-lbt tbody tr:last-child td{border-bottom:0}
+    table.cts-lbt tbody tr:hover{background:var(--surface-2)}
+    .cts-rk{color:var(--muted);font-variant-numeric:tabular-nums}
+    .cts-sku{font-weight:600;font-variant-numeric:tabular-nums}
+    .cts-nm{display:flex;align-items:center;gap:0;max-width:27ch}
+    .cts-nmt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2);min-width:0}
+    table.cts-lbt td.n{font-variant-numeric:tabular-nums}
+    /* signed effect cell: a 2px surface gap keeps the fill off the centre rule */
+    .cts-eff{width:150px;min-width:150px}
+    .cts-effin{position:relative;height:16px;width:126px;margin-left:auto;background:linear-gradient(var(--mid),var(--mid)) no-repeat center/1px 100%}
+    .cts-effb{position:absolute;top:2px;height:12px}
+    .cts-effb.up{left:50%;margin-left:1px;background:var(--up);border-radius:0 4px 4px 0}
+    .cts-effb.down{right:50%;margin-right:1px;background:var(--down);border-radius:4px 0 0 4px}
+    .cts-effv{font-variant-numeric:tabular-nums;font-weight:600;min-width:5.5ch;text-align:right}
+    .cts-effrow{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+    .cts-sus{flex:0 0 auto;display:inline-block;margin-left:5px;padding:0 4px;border-radius:4px;font-size:10px;background:var(--down);color:#fff;vertical-align:1px;font-weight:600}
+    .cts-pk{flex:0 0 auto;display:inline-block;margin-left:5px;padding:0 4px;border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--muted);vertical-align:1px}
+    .cts-lbnote{color:var(--muted);font-size:12px;margin:10px 0 0;max-width:80ch}
   </style>
 
   <h2>Production Throughput</h2>
@@ -236,6 +271,42 @@
   <div class="cts-tblwrap"><table class="cts-tbl" id="cts-tbl"><thead></thead><tbody></tbody></table></div>
   <p class="cts-note" id="cts-note"></p>
 
+  <div class="cts-lb">
+    <h3>Which SKUs move the average</h3>
+    <p class="cts-sub">Every SKU is compared with the average for the rows shown. A SKU only shifts that
+      average if it is both <em>fast or slow</em> <b>and</b> takes up a real share of machine time — so the
+      effect column multiplies the two. The pluses and minuses add up to zero.</p>
+    <div class="cts-lbbar">
+      <div class="cts-field"><label for="cts-lb-sort">Rank by</label>
+        <select id="cts-lb-sort">
+          <option value="pull_dn">Biggest drag on the average</option>
+          <option value="pull_up">Biggest lift to the average</option>
+          <option value="rate_lo">Slowest rate</option>
+          <option value="rate_hi">Fastest rate</option>
+          <option value="hours">Most machine time</option>
+        </select></div>
+      <div class="cts-field"><label for="cts-lb-type">Product type</label>
+        <select id="cts-lb-type"></select></div>
+      <div class="cts-field"><label for="cts-lb-line">Packing line</label>
+        <select id="cts-lb-line"></select></div>
+      <div class="cts-field"><label for="cts-lb-runs">Minimum runs</label>
+        <select id="cts-lb-runs">
+          <option value="1">1+</option><option value="3" selected>3+</option>
+          <option value="5">5+</option><option value="10">10+</option>
+        </select></div>
+      <label class="cts-check" title="A month whose rate is more than 5x that SKU's own median month is almost certainly a data-entry error, not a fast month. One such cell otherwise ranks first.">
+        <input type="checkbox" id="cts-lb-clean" checked> Leave out suspect months</label>
+      <div class="cts-field"><label for="cts-lb-n">Show</label>
+        <select id="cts-lb-n">
+          <option value="15">Top 15</option><option value="25" selected>Top 25</option>
+          <option value="50">Top 50</option><option value="0">All</option>
+        </select></div>
+    </div>
+    <p class="cts-avg" id="cts-lb-avg"></p>
+    <div class="cts-lbwrap"><table class="cts-lbt" id="cts-lb-tbl"><thead></thead><tbody></tbody></table></div>
+    <p class="cts-lbnote" id="cts-lb-note"></p>
+  </div>
+
   <div class="cts-dl">
     <h3>Download the underlying data</h3>
     <p>CSV, refreshed every morning at 06:30 from the same source as this chart.</p>
@@ -268,6 +339,10 @@
 
   function cssv(v){return getComputedStyle(ROOT).getPropertyValue(v).trim()}
   function fmt(x){return (x==null)?"–":(Math.abs(x)<10?(+x).toFixed(2):Math.round(x).toLocaleString())}
+  // whole-number formatter for counts (boxes, hours, runs); fmt() switches to 2dp under 10
+  function num(x){return (x==null)?"–":Math.round(x).toLocaleString()}
+  // signed, fixed 1dp -- the effect column is only readable if every row has the same precision
+  function sfmt(x){return (x==null)?"–":((x>=0?"+":"\u2212")+Math.abs(x).toFixed(1))}
   // axis ticks are a scale, not a reading: whole numbers, so 0 prints "0" not "0.00"
   function axfmt(x){return (Math.abs(x)<10?(+x).toFixed(Math.abs(x)<1?0:1):Math.round(x)).toLocaleString()}
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
@@ -400,6 +475,156 @@
     $("cts-tbl").querySelector("thead").innerHTML=th;
     $("cts-tbl").querySelector("tbody").innerHTML=tb;
     $("cts-note").textContent="Showing "+METRIC_LABELS[m]+". A box = one retail box in that SKU's own pack size — a 10-ct box holds 10 tea bags, a 25-ct box holds 25, and a 10ct/6pk SKU counts as 6 boxes, not one. Sizes still differ (a 10-ct box ≠ a 5-lb bag), so compare within a SKU or line rather than across product types. Blending excluded (base level, lbs); tea-bag component output tracked separately. Excluded (unrated) runs: cleaning/setup rows with no qty or time. Current month may be partial. A dot marks a month the SKU actually ran; a line crossing months with no dot means it was not run in between, not that output held steady.";
+    // the leaderboard shares the metric + year selectors, so refresh it with the chart
+    renderLB();
+  }
+
+
+  /* ================= SKU leaderboard: what moves the average =================
+     The plant rate is a WEIGHTED average -- total units / total hours -- not the mean of the
+     SKU rates. So "which SKU drags the average down" is not answered by sorting on rate: a slow
+     SKU that ran for twenty minutes moves nothing. Write the weighted average as
+         avg = SUM( share_i * rate_i ),  share_i = hours_i / total_hours
+     and each SKU's signed contribution relative to the average falls straight out:
+         effect_i = share_i * (rate_i - avg)
+     These sum to EXACTLY zero, which is what makes ranking them meaningful -- the column is a
+     decomposition of the average, not a heuristic score. Recomputed against whatever rows are
+     on screen, so filtering to one product type compares against THAT type's average. */
+  var LB={sort:"pull_dn",type:"",line:"",minRuns:3,n:25,clean:true};
+
+  // hours denominator matching the selected metric (machine time vs operator time)
+  function lbHoursKey(){ return state.metric==="units_per_operator_hour" ? "operator_hours" : "machine_hours"; }
+  // units_per_minute is machine-hours in different clothing; one denominator per metric
+  function lbRate(units,hours){
+    if(!(hours>0)) return null;
+    return state.metric==="units_per_minute" ? units/(hours*60) : units/hours;
+  }
+
+  /* Rows for the current YEAR. by_sku is all-time, so a year selection re-aggregates
+     by_sku_month -- which is why operator_hours and lines are carried on those cells. */
+  function lbRows(){
+    var hk=lbHoursKey(), out=[];
+    if(state.year==="all"){
+      D.by_sku.forEach(function(s){
+        out.push({sku:s.sku,desc:s.desc,family:s.family,lines:s.lines||[],
+                  units:s.units,hours:s[hk],runs:s.runs_rated||s.runs,sus:!!SUSSKU[s.sku]});
+      });
+      // by_sku is a pre-baked all-time total, so a suspect month cannot be subtracted out of it
+      // here. Badge the SKU rather than pretend the total is clean; pick a single year to exclude.
+      if(LB.clean) out.forEach(function(r){ if(r.sus){ LBSKIP.skus[r.sku]=1; } });
+    }else{
+      var acc={};
+      (D.by_sku_month||[]).forEach(function(r){
+        if(String(r.month).slice(0,4)!==state.year) return;
+        // a month flagged by the feed's self-consistency guard is a wrong number, not a fast
+        // month -- excluded from the aggregate, and counted so the note can own up to it
+        if(LB.clean && r.rate_suspect){ LBSKIP.cells++; LBSKIP.units+=r.units||0; LBSKIP.skus[r.sku]=1; return; }
+        var a=acc[r.sku]||(acc[r.sku]={units:0,hours:0,runs:0,lines:{},family:r.family,sus:false});
+        a.units+=r.units||0; a.hours+=r[hk]||0; a.runs+=r.runs||0;
+        if(r.rate_suspect) a.sus=true;
+        (r.lines||[]).forEach(function(l){a.lines[l]=1});
+      });
+      for(var k in acc){
+        var a=acc[k], meta=skuMeta[k]||{};
+        out.push({sku:k,desc:meta.desc,family:a.family||meta.family,lines:Object.keys(a.lines).sort(),
+                  units:a.units,hours:a.hours,runs:a.runs,sus:a.sus});
+      }
+    }
+    return out.filter(function(r){return r.hours>0 && r.units>0});
+  }
+
+  // "10ct/6pk", "6 Count Case", "(12 Pack)" -> the counted unit is a MULTIPACK, not one retail
+  // box. Flagged, never silently divided: the authoritative pack count is CatalogSmith's, not
+  // something to infer from a description string.
+  // SKUs the feed flagged as having at least one self-inconsistent month
+  var SUSSKU={}; var LBSKIP={cells:0,units:0,skus:{}};
+  var PKRE=/(\d+)\s*(?:pk\b|pack\b|count case|ct case)/i;
+  function packOf(desc){ var m=PKRE.exec(desc||""); return m?+m[1]:null; }
+
+  function renderLB(){
+    if(!D||!D.by_sku) return;
+    LBSKIP={cells:0,units:0,skus:{}};
+    var rows=lbRows().filter(function(r){
+      if(LB.type && r.family!==LB.type) return false;
+      if(LB.line && (r.lines||[]).indexOf(LB.line)<0) return false;
+      return (r.runs||0)>=LB.minRuns;
+    });
+    var H=0,U=0;
+    rows.forEach(function(r){H+=r.hours;U+=r.units});
+    var avg=lbRate(U,H);
+    var thead=$("cts-lb-tbl").querySelector("thead"), tbody=$("cts-lb-tbl").querySelector("tbody");
+    if(!rows.length||!avg){
+      $("cts-lb-avg").innerHTML="<span style='color:var(--muted)'>No SKUs match this selection.</span>";
+      thead.innerHTML=""; tbody.innerHTML=""; $("cts-lb-note").textContent="";
+      return;
+    }
+    rows.forEach(function(r){
+      r.rate=lbRate(r.units,r.hours);
+      r.share=r.hours/H;
+      r.effect=r.share*(r.rate-avg);
+      r.pk=packOf(r.desc);
+    });
+    var srt={
+      pull_dn:function(a,b){return a.effect-b.effect},
+      pull_up:function(a,b){return b.effect-a.effect},
+      rate_lo:function(a,b){return a.rate-b.rate},
+      rate_hi:function(a,b){return b.rate-a.rate},
+      hours:function(a,b){return b.hours-a.hours}
+    }[LB.sort];
+    rows.sort(srt);
+    var shown=LB.n>0?rows.slice(0,LB.n):rows;
+    var maxAbs=Math.max.apply(null,shown.map(function(r){return Math.abs(r.effect)}).concat([1e-9]));
+
+    var mlab=METRIC_LABELS[state.metric]||state.metric;
+    var unit=mlab.replace(/^Boxes \/ /,"per ");
+    var yrTxt=state.year==="all"?("all years, "+D.dims.years.join("-")):state.year;
+    var hoursWord=lbHoursKey()==="operator_hours"?"operator":"machine";
+    $("cts-lb-avg").innerHTML="Average across the <b>"+num(rows.length)+"</b> SKU(s) shown ("+esc(yrTxt)+"): "
+      +"<b>"+fmt(avg)+"</b> "+esc(mlab.toLowerCase())+" &middot; "+num(Math.round(U))+" boxes over "
+      +num(Math.round(H))+" "+hoursWord+"-hours";
+
+    thead.innerHTML="<tr><th>#</th><th>SKU</th><th>Product</th><th>Type</th><th>Runs</th><th>Boxes</th>"
+      +"<th>"+hoursWord.charAt(0).toUpperCase()+hoursWord.slice(1)+"-hrs</th><th>Rate</th>"
+      +"<th>Share of hours</th><th class='cts-eff'>Effect on the average</th></tr>";
+
+    tbody.innerHTML=shown.map(function(r,i){
+      var w=Math.abs(r.effect)/maxAbs*49;               // % of the track; half the width per side
+      var up=r.effect>=0;
+      var tip=r.sku+": "+sfmt(r.effect)+" "+unit+" - "+(r.share*100).toFixed(1)
+              +"% of hours at "+fmt(r.rate)+" vs "+fmt(avg)+" average";
+      var bar="<div class='cts-effin' title='"+esc(tip)+"'>"
+        +"<span class='cts-effb "+(up?"up":"down")+"' style='width:"+w.toFixed(2)+"%'></span></div>";
+      var pkBadge=r.pk?("<span class='cts-pk' title='One counted box here is a "+r.pk
+        +"-pack, not a single retail box'>"+r.pk+"-pack</span>"):"";
+      var susBadge=r.sus?("<span class='cts-sus' title='This SKU has at least one month whose rate is "
+        +"more than 5x its own median - a suspect figure. Needs checking on the run sheet.'>check data</span>"):"";
+      return "<tr><td class='cts-rk'>"+(i+1)+"</td>"
+        +"<td class='cts-sku'>"+esc(r.sku)+"</td>"
+        +"<td><div class='cts-nm'><span class='cts-nmt' title='"+esc(r.desc||"")+"'>"
+        +esc(r.desc||"\u2014")+"</span>"+pkBadge+susBadge+"</div></td>"
+        +"<td>"+esc(r.family||"\u2014")+"</td>"
+        +"<td class='n'>"+num(r.runs)+"</td>"
+        +"<td class='n'>"+num(Math.round(r.units))+"</td>"
+        +"<td class='n'>"+num(Math.round(r.hours))+"</td>"
+        +"<td class='n'>"+fmt(r.rate)+"</td>"
+        +"<td class='n'>"+(r.share*100).toFixed(1)+"%</td>"
+        +"<td class='cts-eff'><div class='cts-effrow'>"
+        +"<span class='cts-effv'>"+sfmt(r.effect)+"</span>"+bar+"</div></td></tr>";
+    }).join("");
+
+    var nPk=shown.filter(function(r){return r.pk}).length;
+    $("cts-lb-note").textContent="Effect = the SKU's share of hours multiplied by how far its rate "
+      +"sits from the average above. Add up every SKU's effect (not only the ones shown) and you get "
+      +"zero, so this column says how much of the average each SKU is responsible for - not merely "
+      +"whether it is fast or slow. Ranking on rate alone would put a SKU that ran for twenty minutes "
+      +"at the top."
+      +(nPk?(" Caution: "+nPk+" of the "+shown.length+" rows shown are multipack SKUs (badged), where "
+        +"one counted box is a whole pack - their rate is not like-for-like against a single-box SKU."):"")
+      +" Rows need "+LB.minRuns+"+ rated run(s). Cleaning and setup rows are excluded."
+      +(LB.clean&&LBSKIP.cells?(" Left out "+LBSKIP.cells+" suspect SKU-month(s) worth "
+        +num(Math.round(LBSKIP.units))+" boxes, where the logged rate is over 5x that SKU's own median "
+        +"month - a wrong number rather than a fast month. Untick the box to put them back."):"")
+      +(Object.keys(LBSKIP.skus).length?(" Badged 'check data': "+Object.keys(LBSKIP.skus).sort().join(", ")+"."):"");
   }
 
   function initControls(){
@@ -437,10 +662,21 @@
       var k=r.line+"||"+r.family; (IDX.linefam[k]=IDX.linefam[k]||{})[r.month]=r;
     });
     d.by_sku.forEach(function(s){skuMeta[s.sku]=s});
+    (d.rate_suspects||[]).forEach(function(r){SUSSKU[r.sku]=true});
     var meta=d._meta||{};
     $("cts-scope").textContent="Throughput only • source built "+((meta.source_built_at||d.source_built_at||"")+"").slice(0,10)+" • "+d.dims.months.length+" months ("+d.dims.years.join(", ")+") • "+d.by_sku.length+" SKUs";
     initControls();
 
+    // leaderboard controls
+    var fams2=D.dims.families.slice().sort();
+    $("cts-lb-type").innerHTML="<option value=''>All types</option>"+fams2.map(function(f){return "<option value='"+esc(f)+"'>"+esc(f)+"</option>"}).join("");
+    $("cts-lb-line").innerHTML="<option value=''>All lines</option>"+D.dims.lines.map(function(l){return "<option value='"+esc(l)+"'>"+esc(l)+"</option>"}).join("");
+    $("cts-lb-sort").onchange=function(){LB.sort=this.value;renderLB()};
+    $("cts-lb-type").onchange=function(){LB.type=this.value;renderLB()};
+    $("cts-lb-line").onchange=function(){LB.line=this.value;renderLB()};
+    $("cts-lb-runs").onchange=function(){LB.minRuns=+this.value;renderLB()};
+    $("cts-lb-n").onchange=function(){LB.n=+this.value;renderLB()};
+    $("cts-lb-clean").onchange=function(){LB.clean=this.checked;renderLB()};
     $("cts-metric").onchange=function(){state.metric=this.value;render()};
     $("cts-view").onchange=function(){
       state.view=this.value;
