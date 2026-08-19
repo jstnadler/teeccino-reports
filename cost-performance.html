@@ -326,6 +326,13 @@ const active=()=>!!(RANGE.from||RANGE.to);
 const inR=d=>(!RANGE.from||d>=RANGE.from)&&(!RANGE.to||d<=RANGE.to);
 function fRows(){ return active()? RAW.facts.filter(f=>f.d&&inR(f.d)) : RAW.facts; }
 function finSet(){ return new Set(RAW.finished_stages||['WeighRight','AMS','Maisa 1','Maisa 2+3','Assembly']); }
+/* "Cost to make" must count only runs that CREATED the units they consumed hours against.
+   The pack station also logs repack/rework (re-boxing tea bags the Maisas already made) and
+   cleaning. Those hours are real spend, but their output already exists -- charging them into
+   cost-per-unit inflated 19 tea SKUs by a mean 17.4% (worst 57%). Excluded here and reported
+   separately below, never silently dropped. f.wt is absent on normal production runs. */
+const isMake=f=>!f.wt||f.wt==='production';
+let REPACK={runs:0,units:0,ophrs:0};
 
 /* ---------- generic monthly bar chart ---------- */
 function barChart(map,unit){
@@ -368,9 +375,11 @@ function effChart(weeks){
 function recompute(){
   WAGE=RAW.wage_rate||26.06; LOADED=RAW.blend_loaded_rate||105.85;
   const rows=fRows(), fin=finSet();
+  REPACK={runs:0,units:0,ophrs:0};
   const pk={}, bl={}, blMeta={};
   rows.forEach(f=>{
-    if(fin.has(f.m)){ if(f.t&&f.o&&f.q){ const a=pk[f.i]||(pk[f.i]=[0,0]); a[0]+=f.t*f.o; a[1]+=f.q; } }
+    if(fin.has(f.m)){ if(f.t&&f.o&&f.q){ if(isMake(f)){ const a=pk[f.i]||(pk[f.i]=[0,0]); a[0]+=f.t*f.o; a[1]+=f.q; }
+        else if(f.wt==='repack_rework'){ REPACK.runs++; REPACK.units+=f.q; REPACK.ophrs+=f.t*f.o; } } }
     else if(f.m==='Blending'&&String(f.i).toUpperCase().endsWith('BBP')){
       const m=blMeta[f.i]||(blMeta[f.i]={lbs:0,hrs:0,runs:0,by:{}}); m.runs++; if(f.bl)m.by[f.bl]=(m.by[f.bl]||0)+1;
       if(f.t&&f.q){ const a=bl[f.i]||(bl[f.i]=[0,0]); a[0]+=f.t; a[1]+=f.q; m.hrs+=f.t; m.lbs+=f.q; } }
@@ -622,9 +631,19 @@ function renderPack(){
     return `<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${cell}</td></tr>`;}).join('')
     :`<tr><td colspan="4" class="empty">No SKUs match.</td></tr>`;
-  $('#pack-foot').innerHTML=noRun
+  // Repack/rework is REPORTED, not hidden. These hours were spent re-boxing or re-bagging units
+  // that already existed, so they are not part of any SKU's cost to make one unit — but they are
+  // real money and belong on the page.
+  const rpNote=REPACK.runs
+    ? `<span class="illus">Excluded from cost to make: <b>${num(REPACK.runs)}</b> repack/rework run(s) — `
+      +`${num(Math.round(REPACK.units))} units re-handled, ${REPACK.ophrs.toFixed(0)} operator-hours `
+      +`($${num(Math.round(REPACK.ophrs*WAGE))} of labor). These re-handle units that already exist, so charging `
+      +`them into cost-per-unit would double-count the making of them.</span>`
+    : '';
+  const nrNote=noRun
     ? `<span class="illus">${num(noRun)} of ${num(rows.length)} SKU(s) had no production runs in this period — shown at the bottom with no cost (a cost here would only be an all-time figure, not this period's).</span>`
     : '';
+  $('#pack-foot').innerHTML=[nrNote,rpNote].filter(Boolean).join('<br>');
 }
 // The production item#(s) whose packing runs drive this SKU's packing cost. A simple SKU maps to
 // one item; a bundle/sampler rolls up its component bags, so it can map to several. Collected from
