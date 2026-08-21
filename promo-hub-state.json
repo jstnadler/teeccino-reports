@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-21T12:53:27.370229-07:00",
+  "generatedAt": "2026-08-21T13:03:35.346904-07:00",
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
   "joinKey": "promoId (stated) + promoIdAliases (stated). Never name, month or date.",
@@ -12,7 +12,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-13T15:08:04-07:00",
-      "ageSeconds": 683123,
+      "ageSeconds": 683731,
       "ageHuman": "7d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -24,7 +24,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-13T15:08:04-07:00",
-      "ageSeconds": 683123,
+      "ageSeconds": 683731,
       "ageHuman": "7d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -36,7 +36,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-13T15:08:06-07:00",
-      "ageSeconds": 683121,
+      "ageSeconds": 683729,
       "ageHuman": "7d ago",
       "stale": true,
       "thresholdSeconds": 86400,
@@ -49,7 +49,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-21T08:14:49-07:00",
-      "ageSeconds": 16718,
+      "ageSeconds": 17326,
       "ageHuman": "4h ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -93,7 +93,7 @@
       "lifecycle": "ENDED - TEARDOWN OPEN",
       "lifecycleReason": "record status=open",
       "order": 1,
-      "daysLabel": "ended 12h ago",
+      "daysLabel": "ended 13h ago",
       "hasRecord": true,
       "recordPath": "C:\\Users\\JustinAdler\\clawd\\data\\promo-records\\sws-2026-08.json",
       "window": {
@@ -228,13 +228,13 @@
           "group": "data-driven",
           "teardownKind": "auto",
           "launchState": "partial",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "'Summer Wellness Sale / Save 25% / Ends August 20 at midnight'; FOTM carve-out keeps 'Flavor of the Month / Save 26%'",
           "teardownTarget": "AUTO FOR THE LABEL ONLY. campaign_sale_window_end=2026-08-20 and the gate is today<=end, so on 2026-08-21 the window goes inert. IT DOES NOT REMOVE THE PILL: campaign_sale_enabled=true / campaign_sale_end_date=2026-08-31 / label='Flavor of the Month' remain armed, so ANY variant left at custom.discount>0 on Aug 21 renders 'Flavor of the Month . Ends August 31'. That is defect #2's exact mechanism. Pill disappearance depends 100% on Shopkeeper's 00:05 PT zeroing. FOTM carve-out (9 French Roast variants at 20/10) MUST stay non-zero and MUST keep its pill. | 2026-08-18 FIX BUILT, NOT ARMED. Justin chose 'de-attribute above a threshold'. Branch feature/sws-teardown-2026-08-21 commit 6ba66d8 adds settings.campaign_sale_max_claim_pct (range 0-60, ships at 0 = DISABLED) and campaign_sale_overage_label (default 'vs. buying separately'), mirrored across campaign-sale-badge / card-campaign-badge / shop-all-card. Above the threshold the campaign NAME is replaced and the end-date urgency copy suppressed; the number is kept because it is true vs compare_at. VERIFIED on CLI dev 9327 with the value forced to 28: 7 of 12 variety-pack cards de-attributed (40/39/39/35/35/35/33), 5 untouched (25/26/26/20/18); positive control french-roast-herbal-coffee at 26% unchanged; PDP pill reads 'vs. buying separately . Save 40%' with end-text suppressed; 375px shows no horizontal overflow, ribbons 14px inside the card edge, 39px height identical for the long and short strings. PENDING: live ship approval, and the value write (0 -> 28) which is a SEPARATE explicit step per RULING 2 -- code without the value is the 2026-08-10 inert ship. | 2026-08-18 SHIP PATH SET: Justin approved ONE bundled deploy on Thu 2026-08-21. Branch feature/sws-teardown-2026-08-21 pushed to origin at bd25619 (3 commits). tmp/ship_sws_teardown.py is HUMAN-TRIGGERED, not scheduled (RULING 6), with four gates: window bounded at BOTH ends (floor Aug 21 00:00 PT, ceiling Aug 23 23:59 PT), branch integrity with a 13-file allowlist against surprise auto-sync payloads, content assertions, and merge-with-abort-on-conflict. Two gates were forced to fail before being trusted: the too-early abort fires today, and reintroducing one '$45' aborts the content gate. Post-ship it runs the RULING 2 verification itself -- Admin Assets sha1 match plus served-HTML with a positive control -- and refuses to print clean when verification is incomplete. Mission Control action themesmith-sws-teardown-ship-20260821 registered, due Aug 21 09:00 PT. | 2026-08-18 CONFLICT RESOLVED BY JUSTIN: take $59 (ours). Merge commit 08d393a on feature/sws-teardown-2026-08-21, pushed. main bc17bdf ($40->$45) vs ours bd25619 ($40->$59) on the same two lines in sections/header-group.json and templates/index.json. Verified before resolving that main touched ONLY those two threshold lines since e99d1a5, so --ours dropped nothing. Post-resolve both files are byte-identical to bd25619 modulo line endings, both read $59, neither contains a $45, CRLF intact (85/85 and 1294/1294). $45 stays live and untouched through Aug 20. ALL FIVE GATES NOW PASS under a simulated Thursday clock; the real clock still refuses. Live confirmed at 2026-08-18T17:04:50Z, theme 160800145656: announcement bar serves 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -'. main untouched.",
           "launchEvidence": "SERVED-HTML PROBE 2026-08-18T00:13:17Z, theme;desc=160800145656, server-timing render;dur=157 (FRESH). https://teeccino.com/products/instant-miraculous-mushroom-box -> '<... data-campaign-sale-badge> Summer Wellness Sale . Save 40% Ends August 20 at ...'. POSITIVE CONTROL (carve-out branch, same snippet) https://teeccino.com/products/french-roast-herbal-coffee -> 'Flavor of the Month . Save 26% Ends August 31 at' (cached render, content consistent). NEGATIVE CONTROL https://teeccino.com/products/influencer-intro-gift-regular (custom.discount=0), render;dur=110 FRESH -> ZERO campaign-sale-badge nodes, proving the probe can see absence. PARTIAL because: (a) 18 live PDPs on Replo/main-product templates never call the snippet (template-coverage gap, logged 2026-08-17); (b) the 40% figure is an OVERSTATED CLAIM -- see the Card badge ribbon row.",
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T20:05Z, served HTML, both probes FRESH. POSITIVE https://teeccino.com/products/french-roast-herbal-coffee?variant=... HTTP 200 render;dur=154 -> 1 data-campaign-sale-badge node reading 'Flavor of the Month' + 'Ends August 31' (correct: standing FOTM campaign runs thru Aug 31). NEGATIVE https://teeccino.com/products/instant-miraculous-mushroom-box?_p=... HTTP 200 render;dur=207 -> ZERO badge nodes, zero 'Summer Wellness Sale' / 'Ends August 20' strings. This is the SAME product cited in the launch evidence as wearing 'Summer Wellness Sale / Save 40%', so the SWS label is provably gone. The positive probe finding a badge proves the negative probe can see presence -- absence is real, not a blind probe. CATALOG CROSS-CHECK: 194 active products scanned, only 4 carry a non-zero variant custom.discount and ALL 4 are FOTM-tagged French Roast family at 20%; ZERO non-FOTM products would inherit the standing 'Flavor of the Month' label.",
           "launchVerifiedBy": "themesmith",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Card badge ribbon",
@@ -244,13 +244,13 @@
           "group": "data-driven",
           "teardownKind": "auto",
           "launchState": "failed",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "Save 25% consistent with PDP pill",
           "teardownTarget": "AUTO once custom.discount zeroes (same gate as the PDP pill -- verify, do not assume). The sum-of-parts overstatement is a SEPARATE STANDING DEFECT that survives teardown and will recur on the next promo. Fix proposed to Justin 2026-08-18; customer-facing wording decision pending. | 2026-08-18 FIX BUILT, NOT ARMED. Justin chose 'de-attribute above a threshold'. Branch feature/sws-teardown-2026-08-21 commit 6ba66d8 adds settings.campaign_sale_max_claim_pct (range 0-60, ships at 0 = DISABLED) and campaign_sale_overage_label (default 'vs. buying separately'), mirrored across campaign-sale-badge / card-campaign-badge / shop-all-card. Above the threshold the campaign NAME is replaced and the end-date urgency copy suppressed; the number is kept because it is true vs compare_at. VERIFIED on CLI dev 9327 with the value forced to 28: 7 of 12 variety-pack cards de-attributed (40/39/39/35/35/35/33), 5 untouched (25/26/26/20/18); positive control french-roast-herbal-coffee at 26% unchanged; PDP pill reads 'vs. buying separately . Save 40%' with end-text suppressed; 375px shows no horizontal overflow, ribbons 14px inside the card edge, 39px height identical for the long and short strings. PENDING: live ship approval, and the value write (0 -> 28) which is a SEPARATE explicit step per RULING 2 -- code without the value is the 2026-08-10 inert ship. | 2026-08-18 SHIP PATH SET: Justin approved ONE bundled deploy on Thu 2026-08-21. Branch feature/sws-teardown-2026-08-21 pushed to origin at bd25619 (3 commits). tmp/ship_sws_teardown.py is HUMAN-TRIGGERED, not scheduled (RULING 6), with four gates: window bounded at BOTH ends (floor Aug 21 00:00 PT, ceiling Aug 23 23:59 PT), branch integrity with a 13-file allowlist against surprise auto-sync payloads, content assertions, and merge-with-abort-on-conflict. Two gates were forced to fail before being trusted: the too-early abort fires today, and reintroducing one '$45' aborts the content gate. Post-ship it runs the RULING 2 verification itself -- Admin Assets sha1 match plus served-HTML with a positive control -- and refuses to print clean when verification is incomplete. Mission Control action themesmith-sws-teardown-ship-20260821 registered, due Aug 21 09:00 PT. | 2026-08-18 CONFLICT RESOLVED BY JUSTIN: take $59 (ours). Merge commit 08d393a on feature/sws-teardown-2026-08-21, pushed. main bc17bdf ($40->$45) vs ours bd25619 ($40->$59) on the same two lines in sections/header-group.json and templates/index.json. Verified before resolving that main touched ONLY those two threshold lines since e99d1a5, so --ours dropped nothing. Post-resolve both files are byte-identical to bd25619 modulo line endings, both read $59, neither contains a $45, CRLF intact (85/85 and 1294/1294). $45 stays live and untouched through Aug 20. ALL FIVE GATES NOW PASS under a simulated Thursday clock; the real clock still refuses. Live confirmed at 2026-08-18T17:04:50Z, theme 160800145656: announcement bar serves 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -'. main untouched.",
           "launchEvidence": "SERVED-HTML PROBE 2026-08-18T00:07:47Z https://teeccino.com/collections/variety-packs theme 160800145656 render;dur=100 (FRESH). 12 cards, all 12 render a campaign ribbon. VERBATIM: instant-miraculous-mushroom-box cmp $94.96 -> $57.40, badge 'Save 40%', ribbon '40% OFF THRU AUG 20'. mothers-day-gift-box-instant $80.96->$49.20 'Save 39%'. herbal-coffee-variety-pack-vn-fv-mc-sp $73.96->$45.10 'Save 39%'. daily-ritual-bundle $62.96->$41.00 'Save 35%'. pour-over-starter-kit $56.96->$36.90 'Save 35%'. lights-out-bundle $61.26->$41.00 'Save 33%'. THE ARITHMETIC IS CORRECT IN EVERY CASE ((cmp-price)/cmp matches the printed % to under 1pp). The defect is the INPUT and the ATTRIBUTION, not the renderer: compare_at on these bundles is a SUM-OF-PARTS anchor, so the entire bundle-vs-buying-separately saving is attributed to 'Summer Wellness Sale'. SCOPE SWEEP /collections/all-products-v2 2026-08-18T00:09:24Z render;dur=486 FRESH, 50 cards: 28 at 25%, 17 at 26%, 2 at 27%, 1 at 31% (miraculous-mushrooms(R)-matcha-instant-latte $35.49->$24.60), 1 at 40%. The modal case is correct; the outliers are exactly the sum-of-parts bundles. The same 40% also renders on that product's PDP pill.",
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T20:05Z, served HTML, both probes FRESH. POSITIVE https://teeccino.com/products/french-roast-herbal-coffee?variant=... HTTP 200 render;dur=154 -> 1 data-campaign-sale-badge node reading 'Flavor of the Month' + 'Ends August 31' (correct: standing FOTM campaign runs thru Aug 31). NEGATIVE https://teeccino.com/products/instant-miraculous-mushroom-box?_p=... HTTP 200 render;dur=207 -> ZERO badge nodes, zero 'Summer Wellness Sale' / 'Ends August 20' strings. This is the SAME product cited in the launch evidence as wearing 'Summer Wellness Sale / Save 40%', so the SWS label is provably gone. The positive probe finding a badge proves the negative probe can see presence -- absence is real, not a blind probe. CATALOG CROSS-CHECK: 194 active products scanned, only 4 carry a non-zero variant custom.discount and ALL 4 are FOTM-tagged French Roast family at 20%; ZERO non-FOTM products would inherit the standing 'Flavor of the Month' label.",
           "launchVerifiedBy": "themesmith",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Shop All price ribbon",
@@ -260,13 +260,13 @@
           "group": "data-driven",
           "teardownKind": "auto",
           "launchState": "partial",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "Period string is DATE-derived ('THRU AUG 20'), never the label; % is the DEFAULT variant's saving vs its own price row.",
           "teardownTarget": "AUTO once custom.discount zeroes. The period string is date-derived and self-expires; verified separately from the label. | 2026-08-18 FIX BUILT, NOT ARMED. Justin chose 'de-attribute above a threshold'. Branch feature/sws-teardown-2026-08-21 commit 6ba66d8 adds settings.campaign_sale_max_claim_pct (range 0-60, ships at 0 = DISABLED) and campaign_sale_overage_label (default 'vs. buying separately'), mirrored across campaign-sale-badge / card-campaign-badge / shop-all-card. Above the threshold the campaign NAME is replaced and the end-date urgency copy suppressed; the number is kept because it is true vs compare_at. VERIFIED on CLI dev 9327 with the value forced to 28: 7 of 12 variety-pack cards de-attributed (40/39/39/35/35/35/33), 5 untouched (25/26/26/20/18); positive control french-roast-herbal-coffee at 26% unchanged; PDP pill reads 'vs. buying separately . Save 40%' with end-text suppressed; 375px shows no horizontal overflow, ribbons 14px inside the card edge, 39px height identical for the long and short strings. PENDING: live ship approval, and the value write (0 -> 28) which is a SEPARATE explicit step per RULING 2 -- code without the value is the 2026-08-10 inert ship. | 2026-08-18 SHIP PATH SET: Justin approved ONE bundled deploy on Thu 2026-08-21. Branch feature/sws-teardown-2026-08-21 pushed to origin at bd25619 (3 commits). tmp/ship_sws_teardown.py is HUMAN-TRIGGERED, not scheduled (RULING 6), with four gates: window bounded at BOTH ends (floor Aug 21 00:00 PT, ceiling Aug 23 23:59 PT), branch integrity with a 13-file allowlist against surprise auto-sync payloads, content assertions, and merge-with-abort-on-conflict. Two gates were forced to fail before being trusted: the too-early abort fires today, and reintroducing one '$45' aborts the content gate. Post-ship it runs the RULING 2 verification itself -- Admin Assets sha1 match plus served-HTML with a positive control -- and refuses to print clean when verification is incomplete. Mission Control action themesmith-sws-teardown-ship-20260821 registered, due Aug 21 09:00 PT. | 2026-08-18 CONFLICT RESOLVED BY JUSTIN: take $59 (ours). Merge commit 08d393a on feature/sws-teardown-2026-08-21, pushed. main bc17bdf ($40->$45) vs ours bd25619 ($40->$59) on the same two lines in sections/header-group.json and templates/index.json. Verified before resolving that main touched ONLY those two threshold lines since e99d1a5, so --ours dropped nothing. Post-resolve both files are byte-identical to bd25619 modulo line endings, both read $59, neither contains a $45, CRLF intact (85/85 and 1294/1294). $45 stays live and untouched through Aug 20. ALL FIVE GATES NOW PASS under a simulated Thursday clock; the real clock still refuses. Live confirmed at 2026-08-18T17:04:50Z, theme 160800145656: announcement bar serves 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -'. main untouched.",
           "launchEvidence": "SERVED-HTML 2026-08-18T00:07:47Z /collections/variety-packs render;dur=100 FRESH. All 12 ribbons read 'N% OFF THRU AUG 20' -- period string correct and date-derived. Ribbon % == card badge % == (compare_at-price)/compare_at on all 12, so the 2026-08-10 default-vs-best fix is holding and the two surfaces cannot disagree. PARTIAL for the same sum-of-parts reason as the card badge: '40% OFF THRU AUG 20' is arithmetically right and commercially overstated.",
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T20:05Z, served HTML, both probes FRESH. POSITIVE https://teeccino.com/products/french-roast-herbal-coffee?variant=... HTTP 200 render;dur=154 -> 1 data-campaign-sale-badge node reading 'Flavor of the Month' + 'Ends August 31' (correct: standing FOTM campaign runs thru Aug 31). NEGATIVE https://teeccino.com/products/instant-miraculous-mushroom-box?_p=... HTTP 200 render;dur=207 -> ZERO badge nodes, zero 'Summer Wellness Sale' / 'Ends August 20' strings. This is the SAME product cited in the launch evidence as wearing 'Summer Wellness Sale / Save 40%', so the SWS label is provably gone. The positive probe finding a badge proves the negative probe can see presence -- absence is real, not a blind probe. CATALOG CROSS-CHECK: 194 active products scanned, only 4 carry a non-zero variant custom.discount and ALL 4 are FOTM-tagged French Roast family at 20%; ZERO non-FOTM products would inherit the standing 'Flavor of the Month' label.",
           "launchVerifiedBy": "themesmith",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "FOTM label carve-out (campaign_sale_window_exempt_tag)",
@@ -276,13 +276,13 @@
           "group": "on-site",
           "teardownKind": "required",
           "launchState": "done",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "campaign_sale_window_exempt_tag = '__none__' on LIVE theme 160800145656. NOT blank -- the three snippets read the setting through `| default: 'FOTM'`, and Liquid's default filter treats an empty string as falsy, so blank silently falls back to 'FOTM' and the change is a NO-OP. A sentinel that matches no product tag is required. Rates untouched: custom.discount stays 20, fsd stays 10.",
           "teardownTarget": "RESTORE campaign_sale_window_exempt_tag = 'FOTM' after 2026-08-20 (exact string, not blank -- blank is a no-op via `| default: 'FOTM'`). The LABEL self-reverts when the window expires; the SETTING does not. Left at '__none__' it silently absorbs September's Hazelnut FOTM family into the next window promo's label. Folded into ThemeSmith action themesmith-sws-teardown-ship-20260821 as a gated trigger that refuses while the window is open.",
           "launchEvidence": "Live setting re-read = '__none__'. 9/9 FOTM variants still 20/10. 7 served-HTML probes vs clawd-agentsmith\\logs\\sws-label-unify-baseline-20260819.json: 4 FOTM PDPs moved 'Flavor of the Month/Ends August 31' -> 'Summer Wellness Sale/Ends August 20 at midnight' with save%% held (26/26/27/27); positive controls maple-pecan (Save 25%%) + dandelion-mocha-herbal-coffee (Save 26%%) unchanged; negative control influencer-intro-gift-regular 0 badge nodes; all fresh renders (render;dur 81-456).",
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T19:52Z. Admin Assets API, LIVE theme 160800145656, config/settings_data.json updated_at 2026-08-21T12:50:53-07:00 -> campaign_sale_window_exempt_tag = \"FOTM\" (verbatim, literal string, NOT blank -- all 3 readers use '| default: FOTM' so blank is a silent no-op). Shipped via git commit 8865a6a on main. Pre-flight proved LIVE settings_data.json semantically identical to origin/main (0 differing keys) so the git route could not clobber editor drift. NOTE: this is a LATENT fix -- _csw_exempt is only evaluated inside 'if _csw_active' and the window closed 2026-08-20, so it renders nothing today; it matters for the NEXT window, which is exactly the silent-absorption risk RULING 4 names.",
           "launchVerifiedBy": "themesmith (write) + agentsmith (independent served-HTML diff vs pre-change baseline)",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Announcement bar",
@@ -292,13 +292,13 @@
           "group": "hardcoded",
           "teardownKind": "required",
           "launchState": "done",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "Summer Wellness Sale messaging only",
           "teardownTarget": "MANUAL. Post-purge only one block remains and its '$40' must match whatever post-promo free-shipping threshold Justin sets on Aug 21. If the threshold reverts to $59 (Shopkeeper-SWSTeardown-20260821 SHIP_BASE=59.0) this string becomes a THIRD live number and must change in the same ship. | 2026-08-18: the surviving block's $40 is included in commit bd25619 -> $59, staged for Aug 21. | 2026-08-18 SHIP PATH SET: Justin approved ONE bundled deploy on Thu 2026-08-21. Branch feature/sws-teardown-2026-08-21 pushed to origin at bd25619 (3 commits). tmp/ship_sws_teardown.py is HUMAN-TRIGGERED, not scheduled (RULING 6), with four gates: window bounded at BOTH ends (floor Aug 21 00:00 PT, ceiling Aug 23 23:59 PT), branch integrity with a 13-file allowlist against surprise auto-sync payloads, content assertions, and merge-with-abort-on-conflict. Two gates were forced to fail before being trusted: the too-early abort fires today, and reintroducing one '$45' aborts the content gate. Post-ship it runs the RULING 2 verification itself -- Admin Assets sha1 match plus served-HTML with a positive control -- and refuses to print clean when verification is incomplete. Mission Control action themesmith-sws-teardown-ship-20260821 registered, due Aug 21 09:00 PT. | 2026-08-18 NEW FINDING, independent of this promo: the announcement bar's 'FREE GIFT AT $25' has no visible mechanism. Admin API sweep shows 0 active free-gift discounts; all 9 BXGY automatic nodes EXPIRED, most recent ended 2026-05-19 (91 days). The 6 active BXGY codes require code entry and cannot back an unconditional banner claim. String present since at least 2026-04-08. Either an unreadable UpCart reward tier or a ~3-month-old dead claim. Escalated to Justin. The Thursday ship is GATED on the answer (gate_gift.py) and will not rewrite that line until KEEP or DROP is recorded. | 2026-08-18 CONFLICT RESOLVED BY JUSTIN: take $59 (ours). Merge commit 08d393a on feature/sws-teardown-2026-08-21, pushed. main bc17bdf ($40->$45) vs ours bd25619 ($40->$59) on the same two lines in sections/header-group.json and templates/index.json. Verified before resolving that main touched ONLY those two threshold lines since e99d1a5, so --ours dropped nothing. Post-resolve both files are byte-identical to bd25619 modulo line endings, both read $59, neither contains a $45, CRLF intact (85/85 and 1294/1294). $45 stays live and untouched through Aug 20. ALL FIVE GATES NOW PASS under a simulated Thursday clock; the real clock still refuses. Live confirmed at 2026-08-18T17:04:50Z, theme 160800145656: announcement bar serves 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -'. main untouched.",
           "launchEvidence": "CORRECTION TO THE STANDING REPORT. The bar is NOT rotating three dead promos on live. SERVED-HTML PROBE 2026-08-18T00:07:30Z https://teeccino.com/ theme;desc=160800145656 render;dur=172 (FRESH) serves EXACTLY ONE block: '<h5>FREE SHIPPING ORDERS OVER $40 - FREE GIFT AT $25 -</h5>', and the wrapper carries class 'countdown--false'. The six dead blocks (2x 30%-off-subscriptions, 'SUMMER SOLSTICE SALE ... UP TO 30% OFF', 'COFFEE DAY SALE! - UP TO 40% SITEWIDE', free-mystery-gift, buy-more-save-more) are all disabled:true in sections/header-group.json and render nothing. The risk was LATENT (one theme-editor toggle away from a live 40% claim during a 25% sale), not live. PURGED on branch feature/sws-teardown-2026-08-21, commit f2f6fff, 1 insertion / 53 deletions, JSON revalidated, nothing else in the file touched. Awaiting Justin's live-ship approval. | *** 2026-08-18 CORRECTION, verified: the live free-shipping threshold is $45, NOT $40. *** Read directly from the Shopify delivery profile via Admin API: 'Free Shipping!' active at $45.00 on all five General profile zones (West Coast, South Central, Southeast, Northeast, Non-Continental) plus 'Free Subscription Shipping' at $45.00. The '$40 threshold, 5 zones' recorded in this row's launchTarget was stale. Justin's commit bc17bdf (2026-08-18 09:29) moved the announcement bar and homepage hero from $40 to $45 to match, so theme and delivery profile now AGREE at $45 across all 11 strings. The four-number incident is closed at $45, and reopens at $59 on Aug 21.",
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T19:52Z. Admin Assets API, LIVE theme 160800145656, sections/header-group.json updated_at 2026-08-21T12:50:51-07:00 -> exactly 1 block, 1 enabled, text '<h5>FREE SHIPPING ORDERS OVER $59 - FREE GIFT AT $25 -</h5>'. 6 dead disabled promo blocks purged (commit f2f6fff). SERVED-HTML FRESH RENDER: https://teeccino.com/collections/all?tsprobe59=... HTTP 200, server-timing render;dur=286 (fresh, not cached) -> 'FREE SHIPPING ORDERS OVER $59'. POSITIVE CONTROL 'Teeccino' present. NEGATIVE CONTROL: same response carries product price '$45.99', proving the $45 detector fires -- so $45 x0 on the threshold strings is a real absence, not a blind probe.",
           "launchVerifiedBy": "themesmith",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Countdown timer",
@@ -308,11 +308,11 @@
           "group": "hardcoded",
           "teardownKind": "required",
           "launchState": "n/a",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "n/a this promo",
           "teardownTarget": "MANUAL: date is frozen at 2026-05-10 and enable_time=false. Confirm it is not rendering. | 2026-08-18 SHIP PATH SET: Justin approved ONE bundled deploy on Thu 2026-08-21. Branch feature/sws-teardown-2026-08-21 pushed to origin at bd25619 (3 commits). tmp/ship_sws_teardown.py is HUMAN-TRIGGERED, not scheduled (RULING 6), with four gates: window bounded at BOTH ends (floor Aug 21 00:00 PT, ceiling Aug 23 23:59 PT), branch integrity with a 13-file allowlist against surprise auto-sync payloads, content assertions, and merge-with-abort-on-conflict. Two gates were forced to fail before being trusted: the too-early abort fires today, and reintroducing one '$45' aborts the content gate. Post-ship it runs the RULING 2 verification itself -- Admin Assets sha1 match plus served-HTML with a positive control -- and refuses to print clean when verification is incomplete. Mission Control action themesmith-sws-teardown-ship-20260821 registered, due Aug 21 09:00 PT. | 2026-08-18 CONFLICT RESOLVED BY JUSTIN: take $59 (ours). Merge commit 08d393a on feature/sws-teardown-2026-08-21, pushed. main bc17bdf ($40->$45) vs ours bd25619 ($40->$59) on the same two lines in sections/header-group.json and templates/index.json. Verified before resolving that main touched ONLY those two threshold lines since e99d1a5, so --ours dropped nothing. Post-resolve both files are byte-identical to bd25619 modulo line endings, both read $59, neither contains a $45, CRLF intact (85/85 and 1294/1294). $45 stays live and untouched through Aug 20. ALL FIVE GATES NOW PASS under a simulated Thursday clock; the real clock still refuses. Live confirmed at 2026-08-18T17:04:50Z, theme 160800145656: announcement bar serves 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -'. main untouched.",
           "launchEvidence": null,
-          "teardownEvidence": "VERIFIED NOT RENDERING. sections/header-group.json settings: enable_time=false, date='2026-05-10/23:59:59', expired_txt=''. SERVED-HTML 2026-08-18T00:07:30Z https://teeccino.com/ render;dur=172 FRESH: the utility-bar grid carries class 'countdown--false' and the document contains no countdown node. Frozen date deliberately left in place -- it is inert while enable_time=false, and picking a replacement would be inventing a date. Latent trap documented, not armed.",
+          "teardownEvidence": "VERIFIED 2026-08-21T19:52Z. Admin Assets API, LIVE theme 160800145656, header-group.json announcement-bar section settings.enable_time = False. Frozen 2026-05-10 date cannot render expired.",
           "launchVerifiedBy": null,
           "teardownVerifiedBy": "themesmith"
         },
@@ -340,13 +340,13 @@
           "group": "data-driven",
           "teardownKind": "auto",
           "launchState": "done",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "fsd=10 -> renders 29.7-30.8%, displays 30%",
           "teardownTarget": "AUTO once fsd zeroes. fsd IS ALWAYS 10 -- it is the increment on Stay.ai's 15%, never the marketing percentage. FOTM must return to fsd=10, NEVER 0. Do not 'raise fsd to make it say 30%'. | 2026-08-18 SHIP PATH SET: Justin approved ONE bundled deploy on Thu 2026-08-21. Branch feature/sws-teardown-2026-08-21 pushed to origin at bd25619 (3 commits). tmp/ship_sws_teardown.py is HUMAN-TRIGGERED, not scheduled (RULING 6), with four gates: window bounded at BOTH ends (floor Aug 21 00:00 PT, ceiling Aug 23 23:59 PT), branch integrity with a 13-file allowlist against surprise auto-sync payloads, content assertions, and merge-with-abort-on-conflict. Two gates were forced to fail before being trusted: the too-early abort fires today, and reintroducing one '$45' aborts the content gate. Post-ship it runs the RULING 2 verification itself -- Admin Assets sha1 match plus served-HTML with a positive control -- and refuses to print clean when verification is incomplete. Mission Control action themesmith-sws-teardown-ship-20260821 registered, due Aug 21 09:00 PT. | 2026-08-18 CONFLICT RESOLVED BY JUSTIN: take $59 (ours). Merge commit 08d393a on feature/sws-teardown-2026-08-21, pushed. main bc17bdf ($40->$45) vs ours bd25619 ($40->$59) on the same two lines in sections/header-group.json and templates/index.json. Verified before resolving that main touched ONLY those two threshold lines since e99d1a5, so --ours dropped nothing. Post-resolve both files are byte-identical to bd25619 modulo line endings, both read $59, neither contains a $45, CRLF intact (85/85 and 1294/1294). $45 stays live and untouched through Aug 20. ALL FIVE GATES NOW PASS under a simulated Thursday clock; the real clock still refuses. Live confirmed at 2026-08-18T17:04:50Z, theme 160800145656: announcement bar serves 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -'. main untouched.",
           "launchEvidence": "Arithmetic verified against the renderer before any write across 4 markups. SUB leg needed NO change.",
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T20:05Z, served HTML, both probes FRESH. POSITIVE https://teeccino.com/products/french-roast-herbal-coffee?variant=... HTTP 200 render;dur=154 -> 1 data-campaign-sale-badge node reading 'Flavor of the Month' + 'Ends August 31' (correct: standing FOTM campaign runs thru Aug 31). NEGATIVE https://teeccino.com/products/instant-miraculous-mushroom-box?_p=... HTTP 200 render;dur=207 -> ZERO badge nodes, zero 'Summer Wellness Sale' / 'Ends August 20' strings. This is the SAME product cited in the launch evidence as wearing 'Summer Wellness Sale / Save 40%', so the SWS label is provably gone. The positive probe finding a badge proves the negative probe can see presence -- absence is real, not a blind probe. CATALOG CROSS-CHECK: 194 active products scanned, only 4 carry a non-zero variant custom.discount and ALL 4 are FOTM-tagged French Roast family at 20%; ZERO non-FOTM products would inherit the standing 'Flavor of the Month' label.",
           "launchVerifiedBy": "promosmith",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Free-shipping threshold",
@@ -356,13 +356,13 @@
           "group": "hardcoded",
           "teardownKind": "required",
           "launchState": "done",
-          "teardownState": "staged",
+          "teardownState": "verified",
           "launchTarget": "$45 EVERYWHERE for the remainder of the sale (Justin 2026-08-18: 'Set the shipping threshold to 45 and match all of the sale copy on the site'). Mechanical: General profile 72508342441 all 5 zones + 'Free Shipping Over $40' profile 93173678328 'Free Subscription Shipping' (242 variants). Copy: all theme strings (ThemeSmith) + 6-7 SEO global.description_tag fields (CatalogSmith) + UpCart reward tier (Justin, no agent can write it).",
           "teardownTarget": "MANUAL, ORDERED, 2026-08-21. All 13 theme strings revert $45 -> $59 (SHIP_BASE=59.0 confirmed correct). SEQUENCING RULED BY THEMESMITH 2026-08-18: COPY LEADS, ZONES FOLLOW -- in BOTH directions. Raising the threshold today ($40->$45) put copy first so the in-between state UNDER-promises (advertise $45, ship free at $40) = safe. Reverting on Aug 21 ($45->$59) makes free shipping HARDER, so copy must lead again: if zones went to $59 first the bar would still promise $45 while we charge shipping on a $50 order = live false promise, the exact defect class of the 2026-08-14 four-thresholds incident. ORDER: (1) 00:00-00:05 PT themesmith pushes the $59 copy revert to main, pre-staged on a branch on Aug 20 so midnight is a one-command push not an authoring job; (2) themesmith probes and confirms $59 rendering; (3) ONLY THEN shopkeeper fires SHIP_BASE=59.0 on the delivery zones. IF THEMESMITH HAS NOT CONFIRMED BY 00:05 PT, SHOPKEEPER HOLDS THE ZONE JOB AND PINGS -- do not fire blind. COLLISION FLAG: the SWS teardown branch feature/sws-teardown-2026-08-21 also lands Aug 21 and also touches sections/header-group.json (dead-block purge f2f6fff + overstated-claim guard 6ba66d8 + an already-staged $59 revert bd25619). Themesmith will merge these into ONE ordered ship so the branches do not fight over the same file, and will surface the combined plan to Justin before 2026-08-20. NOT COVERED BY THIS ROW's THEME LEG: UpCart tier (justin) and the SEO description_tag fields (catalogsmith) must be reverted by their own owners. || SHOPKEEPER MECHANISM IS NOW PROBE-GATED: the armed teardown runs ship_copy_probe against served HTML and REFUSES to raise the zones to $59 until the live copy advertises $59. If copy has not landed it leaves the zones at $45 (under-promises = safe direction), files a Mission Control humanAction, and marks this row 'partial-deferred' rather than done. The 01:30 PT safety net re-probes and completes it automatically if the copy lands late. This removes the need for a manual ThemeSmith->Shopkeeper signal at 00:05. || PROBE NOW COVERS THREE SURFACES AND THREE OWNERS: / and /collections/variety-packs (ThemeSmith theme strings) plus /pages/shipping-returns (CatalogSmith global.description_tag, rendered 3x as meta/og/twitter description). The zone revert cannot outrun EITHER copy owner. Without the third URL the gate would have cleared while Google was still being told $45. Controls verified live 2026-08-18: expect-45 OK on all three, expect-59 NOT CLEAN on all three.",
           "launchEvidence": "THEME COPY LEG COMPLETE (themesmith). Justin 2026-08-18: single correct sitewide threshold is $45. Shipped commit bc17bdf, FF-push feature/freeship-45 -> main (e99d1a5..bc17bdf), 2 files / 2 insertions / 2 deletions. SWEEP: live theme 160800145656 audited via Admin Assets API for $40/$45/$49/$59 across all 13 theme strings. Only TWO were wrong, both $40: sections/header-group.json (announcement bar richtext, every page) and templates/index.json leaf .sections.video_text_overlay_dBreB6.settings.sub_heading (homepage video hero). The other 11 already read $45 from the 2026-08-14 pass and were CONFIRMED not assumed: page.faq.json, page.shipping-returns.json x3, quickview-product.liquid L271 hard-coded literal, homepage-hero.liquid schema default, page.homepage-v2.json, page.subscription-savings-week.json x2, product.bundle.json. NO stale $49 or $59 remains anywhere in theme code. PRE-FLIGHT: live assets verified semantically IDENTICAL to origin/main for both files before patching, so no theme-editor drift was clobbered. EVIDENCE A (Admin Assets API, live theme 160800145656, post-ship): header-group.json updated_at 2026-08-18T09:53:49-07:00 checksum 4687c337fcb27d5dea05d72a850e623c sha1(value) e9812335e2a0bd409ac9e89fcabcefa6e91af31b; templates/index.json updated_at 2026-08-18T09:53:50-07:00 checksum 2aa99bf968142d394da6df2176fea898 sha1(value) 098f070d6d43db22298770feb60751984163917e. Both SEMANTICALLY IDENTICAL to commit bc17bdf (byte-sha1 differs only because Shopify re-serializes JSON on sync -- expected, documented). Leaf-path scan of live index.json: 0 leaves contain a stale $40/$49/$59. EVIDENCE B (served-HTML, real customer URLs, FRESH not cached): announcement bar via https://teeccino.com/collections/variety-packs?qa=<throwaway> HTTP 200, theme;desc=160800145656, pageType=collection, render;dur=148 FRESH, requestID 3de8a0a2-8581-4885-97a1-afef260f7ed6 -> renders 'FREE SHIPPING ORDERS OVER $45 - FREE GIFT AT $25 -', hits $40=0 $45=1. Homepage https://teeccino.com/ HTTP 200, pageType=index, render;dur=180 FRESH, requestID 8857749c-82db-40d8-af07-a2b5eb034b74 -> renders 'SITEWIDE DEALS & FREE SHIPPING @ $45', hits $40=0 $45=1. POSITIVE CONTROL: the SAME two probes run BEFORE the ship (render;dur=114 and 171, both fresh, same live theme) found '$40' and zero '$45' on both surfaces -- proving the probe reads the exact nodes and can see the value it is looking for. The before/after flip is therefore meaningful, not a null result. SITEWIDE SWEEP across 5 real customer URLs (/, /pages/faq, /pages/shipping-returns, /collections/all-products-v2, /products/french-roast-herbal-coffee): $45 appears 2/1/7/1/4 times respectively and STALE $40/$49/$59 appear ZERO times on all five. STILL OUT OF THEME REACH (not themesmith): delivery profiles (shopkeeper, deliberately held at $40 until this confirmation, now clear to raise); 6-7 global.description_tag SEO fields still reading 'Free shipping on orders over $59!' (catalogsmith, dispatched separately); UpCart reward tier still minAmount:59 (justin only -- this is a THIRD live number until he changes it). | *** 2026-08-18 CORRECTION, verified: the live free-shipping threshold is $45, NOT $40. *** Read directly from the Shopify delivery profile via Admin API: 'Free Shipping!' active at $45.00 on all five General profile zones (West Coast, South Central, Southeast, Northeast, Non-Continental) plus 'Free Subscription Shipping' at $45.00. The '$40 threshold, 5 zones' recorded in this row's launchTarget was stale. Justin's commit bc17bdf (2026-08-18 09:29) moved the announcement bar and homepage hero from $40 to $45 to match, so theme and delivery profile now AGREE at $45 across all 11 strings. The four-number incident is closed at $45, and reopens at $59 on Aug 21.",
-          "teardownEvidence": " || [2026-08-21T16:30:29.302768+00:00] SHOPKEEPER PORTION DELIBERATELY NOT DONE. Ran the teardown with --skip-shipping: delivery zones neither read nor written, both profiles remain at $45.0. Rationale: $59 is a 4-owner simultaneous bundle (ThemeSmith 13 theme strings on branch 08d393a awaiting Justin's go; Justin's UpCart cart-drawer tier; CatalogSmith description_tag SEO fields; then my zones). Moving the zones alone charges shipping on a $50 order while the site still promises free at $45 -- a broken promise at checkout, strictly worse than over-delivering. THIS SURFACE REMAINS OPEN.",
+          "teardownEvidence": "VERIFIED 2026-08-21T20:20Z, all four legs of the shared surface: (1) THEME COPY @themesmith -- 13 strings live on 160800145656, fresh render;dur=286, 'FREE SHIPPING ORDERS OVER $59'; (2) SEO COPY @catalogsmith -- 324 products paginated, 0 carrying $45, 7 carrying $59; (3) DELIVERY ZONES @shopkeeper -- 6 conditions 45.0->59.0 across profile 72508342441 (5 General zones) + 93173678328 (Subscription), independently re-read at 59.0 USD; (4) UPCART @justin -- rewards module disabled, zero tiers, no threshold promise; nothing to change. Ordering held on the rise: copy led, zones followed, so the in-between state under-promised. RULING 7 baseline of $59 restored.",
           "launchVerifiedBy": "themesmith",
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Cart messaging (UpCart)",
@@ -372,13 +372,13 @@
           "group": "hardcoded",
           "teardownKind": "required",
           "launchState": "pending",
-          "teardownState": "pending",
+          "teardownState": "verified",
           "launchTarget": null,
           "teardownTarget": "JUSTIN (UpCart admin). No agent can write it. Must match the post-promo shipping threshold.",
           "launchEvidence": null,
-          "teardownEvidence": null,
+          "teardownEvidence": "VERIFIED 2026-08-21T20:20Z by themesmith (front-end read; owner justin need take NO action). UpCart config IS readable server-side without the app admin: window.upcartSettings is inlined in served HTML as base64 blobs. Decoded on TWO surfaces incl. a FRESH render (products/french-roast-herbal-coffee, render;dur=104): rewardsModule=false, rewardsTiers={'tiers':[],...} (ZERO tiers), rewardsMinAmount=125, rewardsBasis=cartTotal. There is NO $45 free-shipping tier in UpCart -- the rewards module is DISABLED outright and no literal 45 appears anywhere in the upcartSettings region on either surface. So the cart drawer makes NO free-shipping threshold promise, and the $45->$59 zone rise created no cart/checkout contradiction. LATENT RISK, not a defect: rewardsMinAmount=125 and the '{AMOUNT} away from free shipping!' JSX templates are still present in the payload, so re-enabling the module without reconfiguring would surface a stale number. Worth a note before anyone turns rewards on.",
           "launchVerifiedBy": null,
-          "teardownVerifiedBy": null
+          "teardownVerifiedBy": "themesmith"
         },
         {
           "surface": "Collection page copy",
@@ -408,7 +408,7 @@
           "launchTarget": "n/a -- no promo hero on the homepage since 2026-08-03",
           "teardownTarget": "JUSTIN (Replo). Restoring the section flag would restore DEAD copy -- do not re-enable blind.",
           "launchEvidence": null,
-          "teardownEvidence": null,
+          "teardownEvidence": " || [2026-08-21T12:58:59.354671-07:00] PROMOSMITH: NOT torn down. Live hero still reads 'SUMMER WELLNESS SALE' one day after endsAt. Escalated to Justin.",
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
         },
@@ -542,8 +542,8 @@
         "teardown": {
           "result": "PASS",
           "exitCode": 0,
-          "ranAt": "2026-08-21T12:51:49.911886-07:00",
-          "ranAtAge": "1m ago",
+          "ranAt": "2026-08-21T13:00:59.023122-07:00",
+          "ranAtAge": "2m ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -601,8 +601,23 @@
           "recordedAt": "2026-08-20T11:14:35.643972-07:00"
         }
       ],
-      "openQuestions": [],
-      "log": [],
+      "openQuestions": [
+        {
+          "question": "Homepage video hero still advertises SUMMER WELLNESS SALE after the promo ended",
+          "raisedBy": "promosmith",
+          "raisedAt": "2026-08-21T12:58:59.354671-07:00",
+          "severity": "customer-facing-live",
+          "owner": "justin",
+          "detail": "LIVE DEAD-PROMO CLAIM ON THE HOMEPAGE HERO, found by PromoSmith 2026-08-21 12:59 PDT by probing served HTML after the gate already exited 0. teeccino.com HTTP 200, 1,278,986 bytes, fresh: the video hero renders VERBATIM <h1 class=\"header__heading h0 video-heading\">SUMMER WELLNESS SALE</h1> with <p class=\"h2\">SITEWIDE DEALS & FREE SHIPPING @ $59</p> and a 'Shop DEALS!' button linking to /collections/all -- where there is no longer a sale. The promo ENDED 2026-08-20T23:59:59-07:00. THIS SURFACE'S OWN launchTarget SAYS 'n/a -- no promo hero on the homepage since 2026-08-03', WHICH IS FALSE AGAINST THE LIVE PAGE. And the '@ $59' in it is TODAY'S value, which proves the surface is live and maintained, not a stale disabled section -- the threshold sweep passed straight through the hero and updated the number while leaving the dead promo NAME in place. Fixing the number inside a dead claim makes the claim look freshly maintained. WHY NOTHING CAUGHT IT: teardownState=pending, kind=required, owner=justin (Replo), and the gate classifies it human-only -- so the gate exits 0 while the homepage advertises a finished sale. This is runbook defect class #3/#4 (homepage/announcement bar advertising a dead offer) recurring. OWNER IS JUSTIN per RULING 3 and I am NOT reassigning it mid-promo; ThemeSmith is the natural executor if Justin wants it dispatched, since a section heading is a theme setting under RULING 1. CONSEQUENCE FOR THE RECORD: sws-2026-08 stays status=open. A green gate is not a closed promo."
+        }
+      ],
+      "log": [
+        {
+          "at": "2026-08-21T12:58:59.354671-07:00",
+          "by": "promosmith",
+          "entry": "Independently re-ran the teardown gate after CatalogSmith reported exit 0 (it owned only one of the two failures, so I verified rather than accepted). Gate PASS, 2 checks. Confirmed ThemeSmith's exempt-tag fix at source (settings_data.json = 'FOTM', correctly flagged latent). Confirmed free shipping now serves $59 on homepage and /collections/all. THEN probed for dead-promo claims and found the homepage hero still selling the finished sale -- see openQuestions. Record stays OPEN."
+        }
+      ],
       "narrative": [
         {
           "key": "reRatedLive2026_08_13",
@@ -732,7 +747,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -1084,7 +1099,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -1348,7 +1363,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -1631,7 +1646,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -1919,7 +1934,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -2183,7 +2198,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -2471,7 +2486,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -2754,7 +2769,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -3040,7 +3055,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -3328,7 +3343,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
@@ -3590,7 +3605,7 @@
           "block": "name / window / scope / rates / levers / evergreens",
           "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
           "present": true,
-          "generatedAt": "2026-08-17T16:40:00-07:00",
+          "generatedAt": "2026-08-21",
           "ageHuman": null,
           "stale": false,
           "owner": "promosmith",
