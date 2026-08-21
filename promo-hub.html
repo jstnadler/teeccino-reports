@@ -345,14 +345,21 @@ function analyticsHTML(c) {
     </div>`;
   }
   const l = a.live || {};
-  return `<div class="grid">
-      ${cellHTML('sales (through ' + esc(l.throughDate || '?') + ')', {v: money(l.sales)})}
-      ${cellHTML('units', {v: l.units})}
-      ${cellHTML('orders', {v: l.orders})}
-      ${cellHTML('AOV', {v: money(l.aov)})}
-      ${cellHTML('subscription starts', {v: l.subscriptionStarts})}
-      ${cellHTML('post-promo read', {v: (p && p.computed === false) ? null : null,
-         note: (p && p.reason) ? p.reason : 'read not taken'})}
+  // Spec 5.10: an ENDED promo with no computed read renders "read not taken", never
+  // blank and never as if the in-flight figures were the final read.
+  const ended = c.lifecycle === 'ENDED - TEARDOWN OPEN' || c.lifecycle === 'CLOSED';
+  const notTaken = ended ? `<div class="flag important">
+      <b>POST-PROMO READ NOT TAKEN</b> — this promo has ended and DataOps has not computed
+      its post-promo read. The figures below are the IN-FLIGHT numbers, not the final read.
+      Feed says: ${esc((p && p.reason) || 'no reason given')}</div>` : '';
+  return `${notTaken}<div class="grid">
+      ${cellHTML('sales — in-flight (through ' + esc(l.throughDate || '?') + ')', {v: money(l.sales)})}
+      ${cellHTML('units — in-flight', {v: l.units})}
+      ${cellHTML('orders — in-flight', {v: l.orders})}
+      ${cellHTML('AOV — in-flight', {v: money(l.aov)})}
+      ${cellHTML('subscription starts — in-flight', {v: l.subscriptionStarts})}
+      ${cellHTML('final post-promo read', {v: null},
+         '', )}
     </div>`;
 }
 
