@@ -11,7 +11,7 @@ body {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   min-height: 100vh; color: #fff; padding: 20px; padding-top: 70px;
 }
-.container { max-width: 1180px; margin: 0 auto; }
+.container { max-width: 1560px; margin: 0 auto; }
 .header { text-align:center; margin-bottom: 22px; }
 .header h1 {
   font-size: 2.2em; font-weight: 800; letter-spacing: -0.5px;
@@ -39,10 +39,61 @@ body {
 .banner ul { margin:8px 0 0 18px; }
 .banner li { margin:2px 0; font-family: ui-monospace,SFMono-Regular,Consolas,monospace; font-size:0.86em; }
 
-/* ---- cards ---- */
+/* ---- 3-column card grid (presentation contract, spec 7) ---- */
+.cardgrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:start; }
+@media (max-width:1200px) { .cardgrid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:780px)  { .cardgrid { grid-template-columns:minmax(0,1fr); } }
+
+/* A tile is a SUMMARY. The dossier opens full-width beneath it -- the dense
+   tables (surfaces, gates) are unreadable at a third of the page. */
+.tile {
+  background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.09);
+  border-radius:14px; padding:14px 15px 12px; cursor:pointer;
+  display:flex; flex-direction:column; gap:9px; min-height:100%;
+  transition:border-color .12s, background .12s, transform .12s;
+}
+.tile:hover { background:rgba(255,255,255,0.07); transform:translateY(-1px); }
+.tile:focus-visible { outline:2px solid #F5D784; outline-offset:2px; }
+.tile.state-LIVE       { border-color:rgba(74,222,128,0.55);  box-shadow:0 0 0 1px rgba(74,222,128,0.18); }
+.tile.state-ENDEDOPEN  { border-color:rgba(248,113,113,0.75); box-shadow:0 0 26px rgba(248,113,113,0.18); }
+.tile.state-ARMED      { border-color:rgba(96,165,250,0.45); }
+.tile.state-DECLARED   { border-color:rgba(148,163,184,0.25); }
+.tile.state-CLOSED     { border-color:rgba(100,116,139,0.35); }
+.tile.state-HISTORICAL { opacity:0.72; }
+.tile.expanded { border-color:rgba(245,215,132,0.7); background:rgba(255,255,255,0.08); }
+
+.thead { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.tname { font-size:1.06em; font-weight:750; line-height:1.3; }
+.twin  { font-size:0.82em; color:#cbd5e1; }
+.twin .tdays { color:#7f8ea3; }
+.trates { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.tleg { background:rgba(255,255,255,0.04); border-radius:8px; padding:7px 9px; }
+.tleg .tag { font-size:0.62em; font-weight:800; letter-spacing:0.07em; color:#93c5fd; }
+.tleg .fn  { font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+             font-size:0.74em; color:#a7f3d0; margin-left:5px; }
+.tleg .adv { display:block; font-weight:800; color:#F5D784; font-size:0.98em; margin-top:2px; }
+.tscope { font-size:0.76em; color:#94a3b8; line-height:1.45;
+          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.tscope b { color:#cbd5e1; font-weight:800; letter-spacing:0.04em; }
+.tpips { display:flex; flex-wrap:wrap; gap:5px; }
+.pip { font-size:0.68em; font-weight:700; padding:3px 8px; border-radius:999px; white-space:nowrap;
+       background:rgba(148,163,184,0.14); color:#cbd5e1; }
+.pip.ok   { background:rgba(74,222,128,0.16);  color:#86efac; }
+.pip.bad  { background:rgba(248,113,113,0.20); color:#fca5a5; }
+.pip.warn { background:rgba(251,191,36,0.16);  color:#fcd34d; }
+.pip.info { background:rgba(96,165,250,0.16);  color:#93c5fd; }
+.tmore { margin-top:auto; padding-top:4px; font-size:0.74em; color:#7f8ea3;
+         border-top:1px solid rgba(148,163,184,0.10); }
+.tile.expanded .tmore { color:#F5D784; }
+
+/* the full dossier -- spans every column, so tables keep their width */
+.detail { grid-column:1 / -1; display:none; }
+.detail.open { display:block; }
+
+/* ---- cards (the dossier body) ---- */
 .card {
   background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.09);
-  border-radius:14px; margin-bottom:18px; overflow:hidden;
+  border-radius:14px; margin:0 0 4px; overflow:hidden;
 }
 .card.state-LIVE            { border-color:rgba(74,222,128,0.55);  box-shadow:0 0 0 1px rgba(74,222,128,0.18); }
 .card.state-ENDEDOPEN       { border-color:rgba(248,113,113,0.75); box-shadow:0 0 26px rgba(248,113,113,0.18); }
@@ -163,7 +214,7 @@ summary::marker { color:#64748b; }
 .pasttoggle button { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
   color:#cbd5e1; padding:9px 20px; border-radius:999px; cursor:pointer; font-size:0.88em; }
 .pasttoggle button:hover { background:rgba(255,255,255,0.10); }
-.hidden { display:none; }
+.hidden { display:none !important; }
 .foot { text-align:center; color:#475569; font-size:0.74em; margin:34px 0 10px; line-height:1.8; }
 </style>
 </head>
@@ -184,18 +235,18 @@ summary::marker { color:#64748b; }
 <div class="container">
   <div class="header">
     <h1>Promo Hub</h1>
-    <div class="sub">One card per promo &mdash; is this promo actually shipped, and is it actually torn down?</div>
+    <div class="sub">One card per promo &mdash; is this promo actually shipped, and is it actually torn down?<br>Click a card to open its full dossier.</div>
     <div class="updated" id="updated">Loading…</div>
   </div>
 
   <div class="tallies" id="tallies"></div>
   <div class="banners" id="banners"></div>
-  <div id="cards"></div>
+  <div id="cards" class="cardgrid"></div>
 
   <div class="pasttoggle" id="pasttoggle" style="display:none">
     <button id="pastbtn">Show past &amp; historical (<span id="pastcount">0</span>)</button>
   </div>
-  <div id="pastcards" class="hidden"></div>
+  <div id="pastcards" class="cardgrid hidden"></div>
 
   <div class="foot">
     Cards join on the stated key <code>promoId</code> &mdash; never on name, month or date.<br>
@@ -391,7 +442,7 @@ function provHTML(list) {
     </div>`).join('')}</div>`;
 }
 
-function cardHTML(c, collapsed) {
+function dossierRows(c) {
   const sk = stateKey(c.lifecycle);
   const w = c.window || {};
   const rows = [];
@@ -466,18 +517,166 @@ function cardHTML(c, collapsed) {
   if (hasV(c.note))
     rows.push(`<div class="row"><div class="rlabel">Declaration note</div><div class="detail-body">${esc(c.note.v)}</div></div>`);
 
-  return `<div class="card state-${sk} ${collapsed?'collapsed':''}" data-id="${esc(c.promoId||c.feedId||'')}">
-    <div class="chead" onclick="this.parentNode.classList.toggle('collapsed')">
-      <span class="caret">▾</span>
-      <span class="month">${esc(c.month||'—')}</span>
-      <span class="cname">${esc(c.name||'(unnamed)')}</span>
-      <span class="badge ${esc(c.tier||'UNKNOWN')}">${esc(c.tier||'UNKNOWN')}</span>
+  return rows.join('') + provHTML(c.provenance);
+}
+
+function domId(c) {
+  return String(c.promoId || c.feedId || c.name || 'x').replace(/[^A-Za-z0-9_-]+/g, '-');
+}
+
+// ---- the SUMMARY tile (one 3-column grid cell) ---------------------------
+// A tile NEVER renders a zero as if it were a pass. 0 surfaces means "no promo
+// record exists", not "everything shipped" -- absence rendering as success is
+// the recurring defect this dashboard exists to catch.
+function tileHTML(c) {
+  const sk = stateKey(c.lifecycle);
+  const w  = c.window || {};
+  const r  = c.rates  || {};
+  const uid = domId(c);
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  const short = d => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || ''));
+    return m ? MON[+m[2] - 1] + ' ' + (+m[3]) : null;
+  };
+  const a = short(w.startsAt && w.startsAt.v), b = short(w.endsAt && w.endsAt.v);
+  const win = (a && b) ? (a + ' \u2192 ' + b)
+    : (hasV(w.raw) ? esc(w.raw.v) : '<span class="nodata">window not declared</span>');
+  const days = hasV(w.days) ? ' \u00b7 ' + esc(w.days.v) + 'd' : '';
+
+  const shortKey = k => String(k || '')
+    .replace('custom.first_subscription_discount', 'fsd')
+    .replace('custom.discount', 'd');
+
+  const leg = (tag, o) => {
+    if (!o) return `<div class="tleg"><span class="tag">${tag}</span>
+        <span class="adv"><span class="nodata">no data</span></span></div>`;
+    return `<div class="tleg">
+      <span class="tag">${tag}</span>
+      <span class="fn">${esc(shortKey(o.functionalKey))}=${hasV(o.functional) ? esc(o.functional.v) : '\u2014'}</span>
+      <span class="adv">${val(o.advertised)}</span></div>`;
+  };
+
+  // --- pips: the at-a-glance health strip -------------------------------
+  const pips = [];
+  const nDis = (c.disagreements || []).length;
+  const nDef = (c.defects || []).length;
+  const oq = c.openQuestions || [];
+  const nBlock = oq.filter(q => q.blocking).length;
+  if (nDis)   pips.push(`<span class="pip bad">\u26d4 ${nDis} disagreement${nDis > 1 ? 's' : ''}</span>`);
+  if (nDef)   pips.push(`<span class="pip bad">${nDef} defect${nDef > 1 ? 's' : ''}</span>`);
+  if (nBlock) pips.push(`<span class="pip bad">${nBlock} blocking</span>`);
+  else if (oq.length) pips.push(`<span class="pip warn">${oq.length} open q</span>`);
+
+  if (c.lifecycle !== 'HISTORICAL') {
+    const s = c.surfacesSummary;
+    if (!s || !s.total) {
+      pips.push(`<span class="pip warn">no promo record \u2014 0 surfaces</span>`);
+    } else {
+      const lc = s.launchDone   === s.total ? 'ok' : (s.launchDone   ? 'warn' : 'bad');
+      const tc = s.teardownDone === s.total ? 'ok' : (s.teardownDone ? 'warn' : 'bad');
+      pips.push(`<span class="pip ${lc}">launch ${s.launchDone}/${s.total}</span>`);
+      pips.push(`<span class="pip ${tc}">teardown ${s.teardownDone}/${s.total}</span>`);
+      if (s.unowned)    pips.push(`<span class="pip bad">${s.unowned} unowned</span>`);
+      if (s.multiOwner) pips.push(`<span class="pip bad">${s.multiOwner} multi-owner</span>`);
+    }
+    const g = c.gates || {}, ran = [];
+    ['preflight', 'launch', 'midflight', 'teardown'].forEach(k => {
+      const x = g[k];
+      if (!x || !x.result || x.result === 'not-run') return;
+      ran.push(`<span class="pip ${x.result === 'PASS' ? 'ok' : 'bad'}">${k} ${esc(x.result)}</span>`);
+    });
+    if (ran.length) pips.push.apply(pips, ran);
+    else pips.push(`<span class="pip">no gate run</span>`);
+  }
+
+  const scope = (c.scope && hasV(c.scope.value))
+    ? `<b>SCOPE</b> ${esc(c.scope.value.v)}${c.scope.derived ? ' <span class="derived">DERIVED</span>' : ''}`
+    : '<span class="nodata">scope not stated</span>';
+
+  return `<div class="tile state-${sk}" role="button" tabindex="0"
+       aria-expanded="false" aria-controls="d-${uid}" data-target="d-${uid}"
+       data-id="${esc(c.promoId || c.feedId || '')}">
+    <div class="thead">
+      <span class="month">${esc(c.month || '\u2014')}</span>
+      <span class="badge ${esc(c.tier || 'UNKNOWN')}">${esc(c.tier || 'UNKNOWN')}</span>
       <span class="chip ${sk}">${esc(c.lifecycle)}</span>
-      <span class="spacer"></span>
-      <span class="days">${esc(c.daysLabel||'')}</span>
     </div>
-    <div class="cbody">${rows.join('')}${provHTML(c.provenance)}</div>
+    <div class="tname">${esc(c.name || '(unnamed)')}</div>
+    <div class="twin">${win}${days} <span class="tdays">${esc(c.daysLabel || '')}</span></div>
+    ${c.lifecycle === 'HISTORICAL' ? '' : `<div class="trates">${leg('OTP', r.otp)}${leg('SUB', r.sub)}</div>`}
+    <div class="tscope">${scope}</div>
+    <div class="tpips">${pips.join('')}</div>
+    <div class="tmore">Open dossier \u25be</div>
   </div>`;
+}
+
+// ---- the full-width dossier panel ---------------------------------------
+function detailHTML(c) {
+  const sk = stateKey(c.lifecycle);
+  const uid = domId(c);
+  return `<div class="detail" id="d-${uid}">
+    <div class="card state-${sk}">
+      <div class="chead" data-close="d-${uid}">
+        <span class="caret">\u25b4</span>
+        <span class="month">${esc(c.month || '\u2014')}</span>
+        <span class="cname">${esc(c.name || '(unnamed)')}</span>
+        <span class="badge ${esc(c.tier || 'UNKNOWN')}">${esc(c.tier || 'UNKNOWN')}</span>
+        <span class="chip ${sk}">${esc(c.lifecycle)}</span>
+        <span class="spacer"></span>
+        <span class="days">${esc(c.daysLabel || '')} \u00b7 close</span>
+      </div>
+      <div class="cbody">${dossierRows(c)}</div>
+    </div>
+  </div>`;
+}
+
+// One delegated handler per grid -- tiles are re-rendered wholesale, so
+// per-element onclick would have to be re-bound on every render.
+function wireGrid(el) {
+  if (!el) return;
+  el.addEventListener('click', ev => {
+    const closer = ev.target.closest('[data-close]');
+    if (closer) { toggleDetail(document.getElementById(closer.dataset.close)); return; }
+    const tile = ev.target.closest('.tile');
+    if (tile) toggleDetail(document.getElementById(tile.dataset.target));
+  });
+  el.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const tile = ev.target.closest('.tile');
+    if (!tile) return;
+    ev.preventDefault();
+    toggleDetail(document.getElementById(tile.dataset.target));
+  });
+}
+
+// Move the dossier so it opens BELOW THE WHOLE ROW, not mid-row. Without this
+// the clicked tile's row-mates get pushed under the panel and the row looks
+// like it lost cards.
+function moveBelowRow(panel, tile) {
+  const grid = panel.parentNode;
+  const y = tile.getBoundingClientRect().top;
+  let last = tile;
+  grid.querySelectorAll('.tile').forEach(t => {
+    if (Math.abs(t.getBoundingClientRect().top - y) < 2) last = t;
+  });
+  if (last.nextElementSibling !== panel) last.insertAdjacentElement('afterend', panel);
+}
+
+function toggleDetail(panel) {
+  if (!panel) return;
+  if (!panel.classList.contains('open')) {
+    const t0 = panel.parentNode.querySelector('.tile[data-target="' + panel.id + '"]');
+    if (t0) moveBelowRow(panel, t0);
+  }
+  const open = panel.classList.toggle('open');
+  const tile = panel.parentNode.querySelector('.tile[data-target="' + panel.id + '"]');
+  if (!tile) return;
+  tile.classList.toggle('expanded', open);
+  tile.setAttribute('aria-expanded', open ? 'true' : 'false');
+  const more = tile.querySelector('.tmore');
+  if (more) more.textContent = open ? 'Close dossier \u25b4' : 'Open dossier \u25be';
+  if (!open) tile.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 fetch(STATE_URL + '?t=' + Date.now())
@@ -512,15 +711,24 @@ fetch(STATE_URL + '?t=' + Date.now())
     const cards = s.cards || [];
     const past = c => c.lifecycle === 'CLOSED' || c.lifecycle === 'HISTORICAL';
     document.getElementById('cards').innerHTML =
-      cards.filter(c => !past(c)).map(c => cardHTML(c, false)).join('') ||
+      cards.filter(c => !past(c)).map(c => tileHTML(c) + detailHTML(c)).join('') ||
       '<div class="nodata">No active, armed or declared promos.</div>';
+    wireGrid(document.getElementById('cards'));
+    wireGrid(document.getElementById('pastcards'));
+    // column count changes at the breakpoints -- an open panel must follow it
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('.detail.open').forEach(p => {
+        const t = p.parentNode.querySelector('.tile[data-target="' + p.id + '"]');
+        if (t) moveBelowRow(p, t);
+      });
+    });
 
     const pastCards = cards.filter(past);
     if (pastCards.length) {
       document.getElementById('pastcount').textContent = pastCards.length;
       document.getElementById('pasttoggle').style.display = '';
       document.getElementById('pastcards').innerHTML =
-        pastCards.map(c => cardHTML(c, true)).join('');
+        pastCards.map(c => tileHTML(c) + detailHTML(c)).join('');
       const btn = document.getElementById('pastbtn');
       btn.onclick = () => {
         const el = document.getElementById('pastcards');
