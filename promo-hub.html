@@ -172,8 +172,9 @@ summary::marker { color:#64748b; }
 <!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
 <div id="hub-nav"></div>
 <script>
+  // r.ok check is deliberate: without it a 404 body gets injected AS the nav.
   fetch('/teeccino-reports/_partials/nav.html')
-    .then(r => r.text())
+    .then(r => { if (!r.ok) throw new Error('nav ' + r.status); return r.text(); })
     .then(html => {
       document.getElementById('hub-nav').innerHTML = html;
       document.body.classList.add('has-hub-nav');
