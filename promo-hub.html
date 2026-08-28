@@ -658,6 +658,60 @@ function dossierRows(c) {
 
   rows.push(`<div class="row"><div class="rlabel">Post-promo read</div>${analyticsHTML(c)}</div>`);
 
+  // --- Launch sequence, teardown and residual (SPEC 3.2a) ---------------
+  const rb = c.runbook;
+  if (rb) {
+    const rs = rb.stepsSummary || {};
+    const stCls = x => {
+      const v = String(x || 'pending').toLowerCase();
+      if (v === 'done' || v === 'verified' || v === 'complete') return 'done';
+      if (v === 'blocked' || v === 'failed' || v === 'fail') return 'failed';
+      return 'pending';
+    };
+    rows.push(`<div class="row"><div class="rlabel">Launch sequence &mdash; ${esc(rs.done)}/${esc(rs.total)} done${
+        rb.phase ? ' &middot; phase <b>' + esc(rb.phase) + '</b>' : ''}</div>
+      <div class="grid">${(rb.steps || []).map(x => `
+        <div class="cell">
+          <div class="k">${esc(x.n)} &middot; ${esc(x.owner || 'unassigned')}</div>
+          <div class="v">${esc(x.name)}
+            <span class="st ${stCls(x.status)}" style="margin-left:6px">${esc(String(x.status || 'pending').toUpperCase())}</span></div>
+          ${x.note ? `<div class="hint">${esc(x.note)}</div>` : ''}
+        </div>`).join('')}</div>
+      <div class="hint">Source: promo-hub-runbook.json (shopkeeper), generated ${esc(rb.generatedAt || '')}</div></div>`);
+
+    const td = rb.teardown;
+    if (td) {
+      rows.push(`<div class="row"><div class="rlabel">Teardown &mdash; declared with the launch (RULING 4)</div>
+        <div class="grid">
+          <div class="cell"><div class="k">armed</div><div class="v">
+            <span class="st ${td.armed ? 'done' : 'pending'}">${td.armed ? 'ARMED' : 'NOT ARMED'}</span></div></div>
+          <div class="cell"><div class="k">target</div><div class="v">${esc(td.targetAt || '—')}</div></div>
+          <div class="cell"><div class="k">owner</div><div class="v">${esc(td.owner || 'unassigned')}</div></div>
+        </div>
+        <div class="grid">${(td.steps || []).map(x => (typeof x === 'string')
+          ? `<div class="cell"><div class="v">${esc(x)}</div></div>`
+          : `<div class="cell"><div class="k">${esc(x.owner || 'unassigned')}</div>
+               <div class="v">${esc(x.action)}</div>
+               <div class="hint">&rarr; ${esc(x.target || 'NO TARGET STATED')}</div></div>`).join('')}</div>
+        ${td.note ? `<div class="hint">${esc(td.note)}</div>` : ''}</div>`);
+    }
+  }
+
+  const rz = c.residual;
+  if (rz && rz.count) {
+    rows.push(`<div class="row"><div class="rlabel">Residual &mdash; ${esc(rz.count)} teardown surface${
+        rz.count > 1 ? 's' : ''} still open from this promo</div>
+      <div class="grid">${(rz.surfaces || []).map(x => `
+        <div class="cell"><div class="k">${esc(x.owner || 'UNOWNED')}</div>
+          <div class="v">${esc(x.surface)}
+            <span class="st failed" style="margin-left:6px">${esc(String(x.teardownState || 'pending').toUpperCase())}</span></div>
+          <div class="hint">${esc(x.teardownTarget || 'no target stated')}</div></div>`).join('')}</div>
+      ${rz.note ? `<div class="hint">${esc(rz.note)}</div>` : ''}
+      ${(rz.statedCount != null && rz.statedCount !== rz.count)
+        ? `<div class="hint"><b>COUNT DISAGREEMENT:</b> feed states ${esc(rz.statedCount)}, rows present ${esc(rz.count)} — rows win.</div>` : ''}
+      </div>`);
+  }
+
   if (hasV(c.note))
     rows.push(`<div class="row"><div class="rlabel">Declaration note</div><div class="detail-body">${esc(c.note.v)}</div></div>`);
 
@@ -724,6 +778,22 @@ function tileHTML(c) {
       if (s.unowned)    pips.push(`<span class="pip bad">${s.unowned} unowned</span>`);
       if (s.multiOwner) pips.push(`<span class="pip bad">${s.multiOwner} multi-owner</span>`);
     }
+    // --- runbook + residual pips (SPEC 3.2a) --------------------------
+    // Until 2026-08-27 the runbook feed was age-stamped as `ok` in the sources
+    // strip and rendered NOWHERE. A green freshness pill on an unrendered
+    // module is a lie with a timestamp on it.
+    const rb = c.runbook;
+    if (rb && rb.stepsSummary && rb.stepsSummary.total) {
+      const rs = rb.stepsSummary;
+      // 0/8 on a pre-launch promo is CORRECT and still warns -- it is not a pass.
+      const rc = rs.blocked ? 'bad' : (rs.done === rs.total ? 'ok' : 'warn');
+      pips.push(`<span class="pip ${rc}">runbook ${rs.done}/${rs.total}</span>`);
+      if (rs.blocked) pips.push(`<span class="pip bad">${rs.blocked} blocked</span>`);
+    }
+    const rz = c.residual;
+    if (rz && rz.count)
+      pips.push(`<span class="pip bad">${rz.count} residual</span>`);
+
     const g = c.gates || {}, ran = [];
     ['preflight', 'launch', 'midflight', 'teardown'].forEach(k => {
       const x = g[k];
