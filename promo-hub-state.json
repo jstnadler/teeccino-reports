@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-28T15:31:46.302222-07:00",
-  "generatedAtUTC": "2026-08-28T22:31:46.302222+00:00",
+  "generatedAt": "2026-08-28T15:36:20.077471-07:00",
+  "generatedAtUTC": "2026-08-28T22:36:20.077471+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:12:45-07:00",
-      "ageSeconds": 80341,
+      "ageSeconds": 80615,
       "ageHuman": "22h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -26,7 +26,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T18:02:34-07:00",
-      "ageSeconds": 77352,
+      "ageSeconds": 77626,
       "ageHuman": "21h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:15:08-07:00",
-      "ageSeconds": 80198,
+      "ageSeconds": 80472,
       "ageHuman": "22h ago",
       "stale": false,
       "thresholdSeconds": 86400,
@@ -51,7 +51,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-28T08:43:02-07:00",
-      "ageSeconds": 24524,
+      "ageSeconds": 24798,
       "ageHuman": "6h ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -3074,9 +3074,9 @@
           "teardownState": "pending",
           "launchTarget": "*** SCOPE RATIFIED 2026-08-28: 14 OF 14. Justin dropped the French Roast carve-out after a live cart proved discounts do NOT compound (30008L charges 11.55, one discount, not 9.23). Any text below referring to a 12-variant scope or a French Roast exclusion is SUPERSEDED. Comms remain stood down (email/SMS/bar/hero/social/ads) EXCEPT the on-page sale label, which Justin ordered FIXED. *** END ***\n\nCampaign pill must read '72hr Instants Sale' on ALL 14 Instants variants, including 30008L and 31008L. The theme computes the percentage from compare_at, so the label carries NO number. *** THIS IS THE OPEN DEFECT JUSTIN ORDERED FIXED 2026-08-28. *** 30008L and 31008L carry the FOTM tag and campaign_sale_window_exempt_tag='FOTM' exempts them, so their PDPs render 'Flavor of the Month' while the cart correctly charges the Instants rate (verified on served HTML: price 11.55 present, '72hr Instants Sale' string absent, 'Flavor of the Month' present). Cart right, sign wrong -- the 2026-08-06 mislabelled-sale defect. CONSTRAINT ON THE FIX: do NOT set campaign_sale_window_exempt_tag to '__none__' -- that mislabels the ENTIRE FOTM family (French Roast ground, teas) as the Instants sale, which is a far bigger false claim than the one being fixed. The fix must be narrow to these two products. @themesmith owns the mechanism.",
           "teardownTarget": "Set campaign_sale_window_unexempt_handles to the LITERAL empty string ''. Also clear the four window keys to their literals: campaign_sale_window_enabled=false, campaign_sale_window_label='', campaign_sale_window_start='', campaign_sale_window_end='', campaign_sale_window_end_text=''. Do NOT touch campaign_sale_window_exempt_tag (stays 'FOTM') or campaign_sale_window_sitewide (stays false). Run: python C:\\Users\\JustinAdler\\clawd-themesmith\\_scripts\\arm_instants_label_2026_08_28.py --theme 160800145656 --teardown. NO TAG RESTORE IS OWED - the FOTM tag on 30008L/31008L was never removed or altered, and no Shopify object was written by this fix. WHY REQUIRED: the un-exempt list is inert outside the window, but Labor Day 2026-09-04 reuses this same window block, and a stale handle list would silently un-exempt those two products from the NEXT promo's carve-out.",
-          "launchEvidence": "VERIFIED LIVE BY PROMOSMITH 2026-08-28, independent of @themesmith's report -- and the result is BETTER than @themesmith reported. Playwright, text_content(), scrolled to force lazy cards. /collections/instants HTTP 200: 14 distinct product cards, ALL 14 painting '72hr Instants Sale'. 0 FOTM-labelled, 0 unlabelled. Per-card Save%: thirteen at 30, instant-dandelion-herbal-latte at 31, miraculous-mushrooms-matcha-instant-latte at 35. PDP spot-checks: 30005L, 30008L and 31008L all paint '72hr Instants Sale - Save 30%'. @themesmith reported shipping 12 of 14 and offered to build an inclusion filter (~1h + QA on the LIVE theme, mid-sale) to reach 14. THAT BUILD IS NOT NEEDED -- 14 of 14 is already rendering. @themesmith's expectation map was pinned to the exempt-tag reasoning (that FOTM-tagged products would fall through); the two French Roast Instants sit in the flavor-of-the-month COLLECTION but evidently do not carry the FOTM product TAG the exemption keys on. Collection membership is not a tag. Nobody blanked the exempt tag; it remains 'FOTM'. NEGATIVE CONTROL, and note it initially FAILED ON THE REPAIR -- a probe artefact, not a defect. I asserted /collections/flavor-of-the-month must contain ZERO 'Instants Sale' strings. It contains TWO. That expectation was pinned to the pre-fix 12/2 state: once all 14 Instants are labelled, the two French Roast Instants necessarily carry the sale label wherever they appear, including inside the FOTM collection. The CORRECT expectation is 'exactly 2, and both must be the French Roast INSTANTS'. Verified card by card: the FOTM collection holds 4 products -- french-roast-herbal-coffee 'Flavor of the Month - Save 26%' and french-roast-herbal-tea 'Flavor of the Month - Save 26%' (FOTM d=20 intact, exactly as Justin required through 2026-08-31), and instant-french-roast-herbal-coffee + instant-french-roast-herbal-latte at '72hr Instants Sale - Save 30%'. NO ground coffee or tea is mislabelled as the Instants sale -- the 2026-08-19 incident shape did NOT occur. @themesmith's own 'zero sale labels in the FOTM collection' control has the same defect and should be re-derived from state, not left pinned at 0.",
+          "launchEvidence": "VERIFIED LANDED BY PROMOSMITH AT SOURCE 2026-08-28, not taken from the implementer's report. Fetched four live PDPs logged-out and cache-busted, all HTTP 200 with healthy positive controls (286-337 'Teeccino' occurrences each): (1) instant-french-roast-herbal-coffee -- '72hr Instants Sale' x1; the single remaining 'Flavor of the Month' is inside the collection-membership JSON array, NOT a rendered label (context inspected directly). (2) instant-french-roast-herbal-latte -- identical result. (3) POSITIVE CONTROL, in-sale non-FOTM product instant-mocha-herbal-coffee -- '72hr Instants Sale' x1, 'Flavor of the Month' x0. (4) NEGATIVE CONTROL THAT MATTERED MOST, french-roast-herbal-coffee (FOTM member, NOT in this sale) -- '72hr Instants Sale' x0, 'Flavor of the Month' x2. The FOTM family did NOT pick up the Instants label, which is the failure mode a global exempt_tag clear would have caused. MECHANISM: @themesmith added a per-product exception list rather than touching exempt_tag or any product tag. No Shopify write, nothing routed to Shopkeeper, FOTM undisturbed on French Roast ground coffee and tea. SCOPE OF THIS EVIDENCE, stated with the result: served HTML only. It does not clear text baked into an image.",
           "teardownEvidence": null,
-          "launchVerifiedBy": "themesmith (armed) + promosmith (independent served-DOM verification)",
+          "launchVerifiedBy": "promosmith",
           "teardownVerifiedBy": null
         },
         {
@@ -3448,7 +3448,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-28T15:25:16.850025-07:00",
-          "ranAtAge": "6m ago",
+          "ranAtAge": "11m ago",
           "checks": [
             {
               "check": "window: launch phase matches the clock",
@@ -3657,6 +3657,11 @@
           "at": "2026-08-28T14:55:00-07:00",
           "by": "promosmith",
           "what": "PILL VERIFIED AT THE CUSTOMER SURFACE -- 14 OF 14, BETTER THAN THE EXECUTING AGENT REPORTED. /collections/instants paints the sale label on all 14 cards, 0 FOTM, 0 unlabelled; PDP spot-checks on 30005L, 30008L, 31008L all read '72hr Instants Sale - Save 30%'. @themesmith reported 12 of 14 and offered a ~1h live-theme inclusion-filter build to reach 14: NOT NEEDED, declined, no code change ships mid-sale. Its expectation map assumed the FOTM exempt tag would hold those two back; they are in the flavor-of-the-month COLLECTION but do not carry the product TAG the exemption keys on. Collection membership is not a tag. MY OWN NEGATIVE CONTROL FAILED ON THE REPAIR and I did not report it as a defect: I asserted 0 'Instants Sale' strings in the FOTM collection and found 2. The expectation was pinned to the pre-fix 12/2 state. Correct expectation is exactly 2, both being the French Roast INSTANTS -- verified card by card, with french-roast-herbal-coffee and french-roast-herbal-tea still at 'Flavor of the Month - Save 26%'. No ground coffee or tea mislabelled; the 2026-08-19 shape did not occur. @themesmith's identical 'must be zero' control needs re-deriving from state too. RULED: the badge-over-claim guard STAYS OFF (31% and 35% are TRUE per-item numbers; our claim is the floored minimum, and arming the guard would strip the sale NAME off those two). OUTSTANDING PROCESS FAULT OF MINE: my earlier probe scored a 404 page as 'read' because a 404 body still contains the brand name. Brand-presence is NOT a sufficient positive control -- assert HTTP 200 separately, and enumerate product handles from the collection instead of guessing them. Both fixed in the probe."
+        },
+        {
+          "at": "2026-08-28T22:35:00-07:00",
+          "by": "promosmith",
+          "what": "LABEL DEFECT CLOSED AND INDEPENDENTLY VERIFIED. VERIFIED LANDED BY PROMOSMITH AT SOURCE 2026-08-28, not taken from the implementer's report. Fetched four live PDPs logged-out and cache-busted, all HTTP 200 with healthy positive controls (286-337 'Teeccino' occurrences each): (1) instant-french-roast-herbal-coffee -- '72hr Instants Sale' x1; the single remaining 'Flavor of the Month' is inside the collection-membership JSON array, NOT a rendered label (context inspected directly). (2) instant-french-roast-herbal-latte -- identical result. (3) POSITIVE CONTROL, in-sale non-FOTM product instant-mocha-herbal-coffee -- '72hr Instants Sale' x1, 'Flavor of the Month' x0. (4) NEGATIVE CONTROL THAT MATTERED MOST, french-roast-herbal-coffee (FOTM member, NOT in this sale) -- '72hr Instants Sale' x0, 'Flavor of the Month' x2. The FOTM family did NOT pick up the Instants label, which is the failure mode a global exempt_tag clear would have caused. MECHANISM: @themesmith added a per-product exception list rather than touching exempt_tag or any product tag. No Shopify write, nothing routed to Shopkeeper, FOTM undisturbed on French Roast ground coffee and tea. SCOPE OF THIS EVIDENCE, stated with the result: served HTML only. It does not clear text baked into an image. || TWO THINGS @themesmith SURFACED THAT ARE BIGGER THAN THIS PROMO. (1) THE DEFECT WAS WIDER THAN I REPORTED: when it started, ALL FOUR campaign_sale_window_* settings were OFF, so ALL 14 Instants were reading 'Flavor of the Month', not just the two French Roast. My probe found the two because those were the two I looked at -- a clean result on the pages you happened to check is not a clean result on the surface. I should have probed an in-sale non-FOTM control at the same time; that single extra fetch would have shown the whole window was dead. (2) SPLIT-OWNERSHIP RECURRENCE, RULING 1: a human hand-armed the campaign sale settings through the theme editor WHILE @themesmith was mid-task. Theme settings are ThemeSmith's exclusively; a concurrent manual edit is the exact pattern behind several past promo defects, and it is the SECOND concurrent-writer collision on this one promo today (the first being two PromoSmith sessions on this record). @themesmith rebased rather than reverting, so nothing was lost -- this time. MUST BE RESOLVED BEFORE LABOR DAY (2026-09-04), which reuses the same settings slot. For @justin: identify who has theme-editor access and route promo settings through ThemeSmith. URGENCY LINE LEFT BLANK DELIBERATELY: campaign_sale_window_end_text ('Ends August 31...') is new promo copy and Justin stood comms down. Blank is correct and is NOT an incomplete surface."
         }
       ],
       "narrative": [],
@@ -4246,7 +4251,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T15:26:10.741915-07:00",
-          "ranAtAge": "5m ago",
+          "ranAtAge": "10m ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
