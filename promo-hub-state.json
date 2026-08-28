@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-28T11:35:19.775886-07:00",
-  "generatedAtUTC": "2026-08-28T18:35:19.775886+00:00",
+  "generatedAt": "2026-08-28T12:20:11.170134-07:00",
+  "generatedAtUTC": "2026-08-28T19:20:11.170134+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,8 +14,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:12:45-07:00",
-      "ageSeconds": 66154,
-      "ageHuman": "18h ago",
+      "ageSeconds": 68846,
+      "ageHuman": "19h ago",
       "stale": false,
       "thresholdSeconds": 2592000
     },
@@ -26,8 +26,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T18:02:34-07:00",
-      "ageSeconds": 63165,
-      "ageHuman": "17h ago",
+      "ageSeconds": 65857,
+      "ageHuman": "18h ago",
       "stale": false,
       "thresholdSeconds": 2592000
     },
@@ -38,8 +38,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:15:08-07:00",
-      "ageSeconds": 66011,
-      "ageHuman": "18h ago",
+      "ageSeconds": 68703,
+      "ageHuman": "19h ago",
       "stale": false,
       "thresholdSeconds": 86400,
       "joinPromoId": null
@@ -51,17 +51,18 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-28T08:43:02-07:00",
-      "ageSeconds": 10337,
-      "ageHuman": "2h ago",
+      "ageSeconds": 13029,
+      "ageHuman": "3h ago",
       "stale": false,
       "thresholdSeconds": 172800
     }
   },
-  "declaredCount": 11,
-  "recordCount": 3,
+  "declaredCount": 12,
+  "recordCount": 4,
   "counts": {
     "HISTORICAL": 18,
     "ENDED - TEARDOWN OPEN": 2,
+    "LIVE": 1,
     "ARMED": 1,
     "DECLARED": 8
   },
@@ -1917,8 +1918,8 @@
         "teardown": {
           "result": "PASS",
           "exitCode": 0,
-          "ranAt": "2026-08-27T18:00:57.940117-07:00",
-          "ranAtAge": "17h ago",
+          "ranAt": "2026-08-28T12:17:55.344244-07:00",
+          "ranAtAge": "2m ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -2071,7 +2072,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2080,7 +2081,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2089,7 +2090,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2526,12 +2527,28 @@
           "teardownEvidence": " || [2026-08-21T16:30:29.302768+00:00] 'FOTM Subscription' (gid://shopify/DiscountAutomaticNode/1413770739960) reactivated EXPIRED -> ACTIVE, pct=0.1, combinesWith.productDiscounts=true, verified by independent read-back not the mutation echo. Gate held: refused to activate while Wellness SUB was ACTIVE (it was EXPIRED, so it proceeded). LIVE MONEY: French Roast 25ct subscribe line 14.44 -> 13.00 with a single 'FOTM Subscription -1.44' allocation, matching the PDP's advertised $13.00 / save 30%. No 10%+10% stack.",
           "launchVerifiedBy": "shopkeeper (write + 6 cart probes) + agentsmith (independent detector run, checks A-D)",
           "teardownVerifiedBy": "shopkeeper"
+        },
+        {
+          "surface": "Campaign window settings block (campaign_sale_window_*)",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "on-site",
+          "teardownKind": "required",
+          "launchState": "done",
+          "teardownState": "verified",
+          "launchTarget": "campaign_sale_window_enabled=true, campaign_sale_window_label='Summer Wellness Sale', campaign_sale_window_start='2026-08-13', campaign_sale_window_end='2026-08-20', campaign_sale_window_end_text='Ends August 20 at midnight'.",
+          "teardownTarget": "ADDED 2026-08-28 (Justin, via Shopkeeper's read-only audit). THE BEHAVIOUR SELF-EXPIRES; THE SETTINGS DO NOT. The block rendered inert from 2026-08-21 only because campaign_sale_window_end had passed -- it stayed enabled and still labelled 'Summer Wellness Sale' for 8 days. That is why PromoSmith's 8-page storefront sweep came back clean and still missed it: a storefront probe cannot see an armed setting. EXACT RESTORE LITERALS: campaign_sale_window_enabled=false; campaign_sale_window_label=EMPTY STRING; campaign_sale_window_start=EMPTY; campaign_sale_window_end=EMPTY; campaign_sale_window_end_text=EMPTY; campaign_sale_window_exempt_tag='FOTM' (NOT blank -- it is read through a default:'FOTM' filter, so blank is a no-op). LATENT RISK IF SKIPPED: from 2026-09-04 Labor Day arms custom.discount sitewide, and from that moment an expired date is the ONLY thing between a dead August sale name and every card on the site.",
+          "launchEvidence": "Armed for the Aug 13-20 window; see the FOTM label carve-out row for the served-HTML proof.",
+          "teardownEvidence": "SERVED-HTML VERIFIED 2026-08-28T18:37-18:40Z by themesmith. Admin Assets PUT to LIVE theme 160800145656 config/settings_data.json, checksum cbd3493223def6568786bb9e9b36871c -> b9d53f2088bb1256053b7958a8eb7210, 7 keys changed and asserted (no other key moved; line count identical). DISARM LITERALS WRITTEN: campaign_sale_window_enabled=false, campaign_sale_window_label=(empty string), campaign_sale_window_start=(empty), campaign_sale_window_end=(empty), campaign_sale_window_end_text=(empty). campaign_sale_window_exempt_tag LEFT AT 'FOTM' ON PURPOSE -- the three snippets read it through a default:'FOTM' filter, so blanking it is a silent no-op, and 'FOTM' is the correct standing value. THREE INDEPENDENT LOCKS (disabled / unnamed / undated); any one alone blocks the block. PROBES, all fresh (server-timing render;dur present, theme;desc=160800145656): 4 FOTM PDPs french-roast-herbal-coffee (render;dur=122), french-roast-herbal-tea (108), instant-french-roast-herbal-coffee (95), instant-french-roast-herbal-latte (113) -> each 1 pill, 'Flavor of the Month' + 'Save 26/26/27/27%', ZERO campaign-sale-badge__end spans. POSITIVE CONTROL: the pill itself still renders on all four, proving the probe can see what it looks for. SITE SWEEP: / (render;dur=186), /collections/herbal-coffee (233), /pages/shop-all (115) -> 0 hits for 'Summer Wellness', 'End of Summer', 'Bulk Bag', 'Ends August', 'Ends Sunday'. Ribbon reads '26% OFF AUGUST' -- the period token is derived from the CURRENT DATE, not from any setting, so it self-rolls to SEPTEMBER on 2026-09-01 with no edit. INDEPENDENT STATE CHECK: full sweep of all 538 live variants found exactly 9 with custom.discount>0, all =20, all on the 4 FOTM products -- confirming the 2026-08-21 metafield teardown was clean.",
+          "launchVerifiedBy": "themesmith",
+          "teardownVerifiedBy": "themesmith"
         }
       ],
       "surfacesSummary": {
-        "total": 18,
-        "launchDone": 7,
-        "teardownDone": 13,
+        "total": 19,
+        "launchDone": 8,
+        "teardownDone": 14,
         "unowned": 0,
         "multiOwner": 1,
         "teardownPending": 5
@@ -2583,8 +2600,8 @@
         "teardown": {
           "result": "PASS",
           "exitCode": 0,
-          "ranAt": "2026-08-28T11:17:07.400631-07:00",
-          "ranAtAge": "18m ago",
+          "ranAt": "2026-08-28T12:18:02.214071-07:00",
+          "ranAtAge": "2m ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -2868,7 +2885,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2877,7 +2894,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2886,7 +2903,660 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
+          "stale": false,
+          "owner": "dataops"
+        }
+      ]
+    },
+    {
+      "promoId": "72hr-instants-sale-2026-08",
+      "name": "72hr Instants Sale",
+      "month": "2026-08",
+      "tier": "MINOR",
+      "lifecycle": "LIVE",
+      "lifecycleReason": "now is inside 2026-08-28 .. 2026-08-31",
+      "order": 0,
+      "daysLabel": "3 days left",
+      "timeline": {
+        "startsAtDate": "2026-08-28",
+        "endsAtDate": "2026-08-31",
+        "startsAtISO": "2026-08-28T07:00:00+00:00",
+        "endsAtISO": "2026-09-01T06:59:59+00:00",
+        "earlyAccessDate": null,
+        "computedAgainst": "2026-08-28",
+        "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
+      },
+      "hasRecord": true,
+      "recordPath": "C:\\Users\\JustinAdler\\clawd\\data\\promo-records\\72hr-instants-sale-2026-08.json",
+      "window": {
+        "startsAt": {
+          "v": "2026-08-28"
+        },
+        "endsAt": {
+          "v": "2026-08-31"
+        },
+        "days": {
+          "v": 4
+        },
+        "earlyAccess": {
+          "v": null
+        },
+        "raw": {
+          "v": "2026-08-28..2026-08-31"
+        },
+        "flags": [
+          {
+            "severity": "warning",
+            "text": "only 4 days clearance to Labor Day Sale (major)"
+          }
+        ]
+      },
+      "scope": {
+        "value": {
+          "v": "Instants -- Shopify collection `instants` (gid://shopify/Collection/459122999544), ALL 14 of its 14 products/variants. SCOPE AMENDED 2026-08-28 by Justin: the French Roast Instants exclusion is DROPPED. 30008L / item 30008 (French Roast - Instant Herbal Coffee) and 31008L / item 31008 (French Roast - Instant Herbal Latte) are now IN SCOPE at the same d=23 / fsd=15 as the other twelve. This is a MINOR (product-subset scope); it is NOT August's major -- August's major was the End of Summer Wellness Sale, 2026-08-14..2026-08-21. This is August's SECOND minor (the first was 72hr Bulk Bag Sale, 2026-08-07..09), which is within the 1-2 minors/month rule."
+        },
+        "derived": false,
+        "basis": {
+          "v": "Scope enumerated at source by PromoSmith 2026-08-28 via Admin API collectionByHandle(instants) -- 14 products, 14 variants, all ACTIVE, one variant each. ALL 14 ARE NOW IN SCOPE. The prior 12-of-14 carve-out (30008L / 31008L, the two French Roast Instants, held back on August FOTM 20/10) was dropped by Justin on 2026-08-28, resolving gateway awaiting[1542960839022088264]. Canonical product names read verbatim from CatalogSmith product master items.description (base_item_no 30008 / 31008), NOT from the Shopify storefront titles (Instant French Roast Herbal Coffee / Latte), which are channel renderings. RE-VERIFIED AT SOURCE 2026-08-28 on the two newly in-scope variants: both ACTIVE, price/compareAtPrice 14.99/16.49 and 19.99/21.99, both currently carrying custom.discount=20 / custom.first_subscription_discount=10, and both STILL in collection `flavor-of-the-month` -- which is what creates the stacking precondition recorded in `stackingPrecondition`."
+        }
+      },
+      "rates": {
+        "otp": {
+          "functionalKey": "custom.discount",
+          "functional": {
+            "v": 23
+          },
+          "advertised": {
+            "v": "30% OFF"
+          },
+          "advertisedPct": {
+            "v": 30.0
+          }
+        },
+        "sub": {
+          "functionalKey": "custom.first_subscription_discount",
+          "functional": {
+            "v": 15
+          },
+          "advertised": {
+            "v": "34% OFF First Shipment"
+          },
+          "advertisedPct": {
+            "v": 34.0
+          },
+          "note": "fsd is the INCREMENT on Stay.ai's standing 15%, never the marketing percentage."
+        },
+        "advertisedDeltaPts": {
+          "v": 4.0
+        },
+        "economicDelta": {
+          "v": 0.0475,
+          "note": "(1 - d/100) - 0.85*(1 - fsd/100); >0 means subs are genuinely deeper"
+        },
+        "verified": {
+          "v": true
+        },
+        "basis": {
+          "v": "COMPUTED AT SOURCE by PromoSmith 2026-08-28 from live price/compareAtPrice on all 14 Instants variants, not inherited. badge = (compare_at - price*(1-d/100))/compare_at; pill = (compare_at - price*0.85*(1-fsd/100))/compare_at. Across all 14 IN-SCOPE variants at d=23: min 30.00%, max 34.93% -- so '30% OFF' is exactly defensible at the floor and overstates on nothing. At fsd=15: min 34.32%, max 38.95% -> '34% OFF First Shipment'. Claim is the MINIMUM displayed, floored, never rounded in our favour. THE TWO NEWLY IN-SCOPE VARIANTS WERE RE-COMPUTED, NOT ASSUMED TO MATCH: 30008L (14.99/16.49) prints badge 30.00% / pill 34.32%; 31008L (19.99/21.99) prints badge 30.00% / pill 34.32%. Both land exactly on the floor, so the 30% / 34% claims are UNCHANGED by the amendment. COPY CHANGE FROM THE AMENDMENT: the carve-out string comes OUT. 'All Instants' is now TRUE and '30% off all Instants' is now defensible -- it was false under the carve-out."
+        },
+        "flags": []
+      },
+      "levers": {
+        "addOn": {
+          "v": null
+        },
+        "gwp": {
+          "v": null,
+          "note": "gift-SKU stock state is not in any feed -- not rendered as OK"
+        },
+        "gwpStock": {
+          "v": null,
+          "note": "no feed supplies live gift-SKU inventory"
+        },
+        "freeShippingThreshold": {
+          "value": {
+            "v": 59.0
+          },
+          "baseline": true,
+          "text": "$59 (baseline)",
+          "basis": "RULING 7 -- the declaration does not explicitly change it."
+        }
+      },
+      "evergreens": {
+        "fotm": {
+          "v": "French Roast"
+        },
+        "fotmUrls": {
+          "v": [
+            "https://teeccino.com/products/french-roast-herbal-coffee",
+            "https://teeccino.com/products/french-roast-herbal-tea",
+            "https://teeccino.com/products/instant-french-roast-herbal-coffee",
+            "https://teeccino.com/products/instant-french-roast-herbal-latte"
+          ]
+        },
+        "freePacket": {
+          "v": "Hazelnut"
+        },
+        "nextMonth": {
+          "v": "2026-09"
+        },
+        "nextFotm": {
+          "v": "Hazelnut"
+        },
+        "funnelIntact": {
+          "v": true
+        },
+        "fotmRate": {
+          "v": "20/10",
+          "note": "functional FOTM metafield pair (custom.discount / custom.first_subscription_discount)"
+        }
+      },
+      "surfaces": [
+        {
+          "surface": "PDP campaign pill",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "auto",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "Campaign pill reads '72hr Instants Sale' on ALL 14 Instants variants. The theme computes the percentage from compare_at, so the label carries NO number. 30008L (30008 French Roast - Instant Herbal Coffee) and 31008L (31008 French Roast - Instant Herbal Latte) are NOW IN SCOPE at the same d=23 / fsd=15 as the other twelve -- Justin DROPPED the exclusion on 2026-08-28. Scope is ALL 14 Instants variants. THE EXEMPT-TAG MECHANISM NOW WORKS AGAINST THIS PROMO AND IS THE ONE THING TO SOLVE HERE: campaign_sale_window_exempt_tag='FOTM' exempts every FOTM-tagged product from the campaign label, and both French Roast Instants carry that tag -- so left as-is they would keep reading 'Flavor of the Month' while being charged the Instants rate. DO NOT fix that by setting the exempt tag to '__none__': the non-instant French Roast products also carry the FOTM tag and MUST keep reading 'Flavor of the Month' through 2026-08-31 per Justin, so clearing the tag would label the whole FOTM family with the Instants sale -- the 2026-08-06 mislabelled-sale defect. PROMOSMITH'S RECOMMENDED RESOLUTION, which also resolves the stacking precondition: @shopkeeper removes the FOTM tag / flavor-of-the-month collection membership from the TWO Instants products only, for the promo duration. That drops them out of the collection-scoped FOTM nodes (no stacking, whatever the empirical answer), stops the exempt tag exempting them (correct pill), leaves the non-instant French Roast family on FOTM exactly as Justin required, and needs no restore because FOTM rotates off French Roast at the 2026-09-01 changeover. If @shopkeeper judges that unacceptable (it removes two products from the live /collections/flavor-of-the-month page for 4 days), say so and @themesmith owns the fallback: a tag-based exemption cannot distinguish these two, so the fallback is to accept the wrong LABEL on two PDPs and record it. THIS PROMO IS A SUBSET, NOT SITEWIDE: do not arm anything that labels the whole catalog.",
+          "teardownTarget": "Revert the label to the evergreen 'Flavor of the Month' on 2026-09-01, in the SAME pass as the Aug 31 -> Sep 1 FOTM changeover. Target state: no product anywhere renders a pill reading '72hr Instants Sale'. A stale pill is worse than a missing one. NOTE THE FALLBACK HAZARD: when the window expires, any product still carrying custom.discount>0 wears the FOTM label at a sale rate -- the 2026-08-21 defect. Pill disappearance depends 100% on Shopkeeper re-zeroing ALL 14 in-scope variants; the theme cannot self-heal this. IF the FOTM tag was pulled from the two French Roast Instants at launch, confirm on 2026-09-01 that the Sep 1 FOTM rotation leaves them in the correct end state -- September FOTM is not French Roast, so 'not in the FOTM collection' IS the correct end state and no restore is owed. Confirm it rather than assume it.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Card badge ribbon",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "auto",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "Badge renders on ALL 14 Instants cards. Computed from compare_at, so at d=23 it prints 30% on thirteen of them and 35% on 31014L (Miraculous Mushrooms Matcha Latte, price 29.99 / compare-at 35.49). Verified by PromoSmith against live price/compareAtPrice 2026-08-28, including the two newly in-scope: 30008L (14.99/16.49) prints 30.00% and 31008L (19.99/21.99) prints 30.00% -- both land exactly on the advertised floor. 30008L (30008 French Roast - Instant Herbal Coffee) and 31008L (31008 French Roast - Instant Herbal Latte) are NOW IN SCOPE at the same d=23 / fsd=15 as the other twelve -- Justin DROPPED the exclusion on 2026-08-28. Scope is ALL 14 Instants variants.",
+          "teardownTarget": "Falls away automatically when custom.discount returns to 0 on ALL 14 in-scope variants. VERIFY on served HTML, do not assume -- absence rendering as success is the defect shape this record exists to catch. Target: no Instants card shows a badge above the FOTM baseline after 2026-09-01.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Shop All price ribbon",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "auto",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "Ribbon follows the metafield on all 14 in-scope Instants. No separate arming.",
+          "teardownTarget": "Falls away with the metafield. Verify on served (uncached) Shop All HTML after the Sep 1 sweep.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Announcement bar",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "OPTIONAL, and PromoSmith's call is DO NOT ARM IT for this promo. Reason: the announcement bar is a SITEWIDE surface and this is a 14-variant product subset. A sitewide bar advertising '30% OFF' would be false on every non-Instants product in the catalog. If a bar is wanted, it must name the scope explicitly ('30% off Instants') -- and as of the 2026-08-28 scope amendment it needs NO carve-out clause, because all 14 Instants are in scope. Free-shipping threshold stays $59 (RULING 7) -- this promo does NOT drop it.",
+          "teardownTarget": "n/a -- nothing armed, nothing to revert. If anyone arms a bar mid-flight, the target becomes: restore the evergreen bar string with threshold $59, MANUAL, by 2026-09-01. Confirm the bar carries no Instants copy on 2026-09-01 regardless, because the previous cut promo already proved a dead Instants claim can outlive its promo by 23 days.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Countdown timer",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "Not armed. A 4-day window does not need one and a countdown is a dated claim with its own teardown cost.",
+          "teardownTarget": "n/a -- nothing armed, nothing to revert. If a countdown is armed mid-flight it becomes @themesmith's row with a hard target of 'removed by 2026-09-01', because a countdown reading 00:00:00 is worse than no countdown.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Sitewide promo callout strip",
+          "owner": "shopkeeper",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "auto",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "DO NOT ARM. Same reason as the announcement bar: sitewide surface, subset promo. Recorded explicitly so nobody arms it by reflex from the last sitewide major.",
+          "teardownTarget": "n/a -- nothing armed. Confirm at source on 2026-09-01 that no callout strip carries Instants copy.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Subscription first-shipment pill",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "auto",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "Sub pill on ALL 14 in-scope Instants renders from fsd=15 -> 34% on thirteen and 38% on 31014L. The two newly in-scope French Roast Instants both print 34.32% -> 34%, identical to the other twelve. This is the POINT of the promo's second leg: at the fsd=10 originally proposed, the sub pill printed the SAME number as the OTP badge on every in-scope variant (+0 gap) and a subscriber saw no reason to subscribe. At fsd=15 the gap is +4 everywhere. Verify the pill actually prints a HIGHER number than the badge on at least one in-scope PDP before calling this shipped.",
+          "teardownTarget": "Returns to the FOTM subscription baseline of 10 when custom.first_subscription_discount is re-zeroed on all 14 in-scope variants, 2026-09-01. Target: no Instants PDP shows a first-shipment pill above the FOTM baseline.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Free-shipping threshold - delivery profile (shipping zones)",
+          "owner": "shopkeeper",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "auto",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "NO CHANGE. RULING 7: free shipping is $59 outside a sale and a promo only drops it if its declaration says so explicitly. This declaration does NOT. Leave all 5 General-profile zones at $59. Recorded as an explicit no-change so it is not silently 'handled' by copying the last promo's runbook.",
+          "teardownTarget": "$59 -- unchanged throughout. Confirm all 5 General-profile zones still read $59 on 2026-09-01. DO NOT WRITE unless a drift is found; if one is, that is a pre-existing defect from an earlier promo, not this one.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Free-shipping threshold - theme strings (bar / cart / banners)",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "NO CHANGE. Theme strings stay $59.",
+          "teardownTarget": "$59 -- confirm the theme strings still read $59 on 2026-09-01. MANUAL, and this is one of the four places the threshold lives that does NOT revert automatically. DO NOT WRITE unless drift is found.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Free-shipping threshold - slide cart tier (settings.tc_reward_2_threshold)",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "NO CHANGE. settings.tc_reward_2_threshold stays 59. Owner is @themesmith since the in-theme slide cart went live 2026-08-21..24; this is no longer a Justin-only row.",
+          "teardownTarget": "59 -- confirm settings.tc_reward_2_threshold is still 59 on 2026-09-01. DO NOT WRITE unless drift is found. Note tc-cart.js requires threshold > 0 to arm a tier, so a stray 0 here silently disarms free shipping.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Free-shipping threshold - product/collection/page SEO description fields",
+          "owner": "catalogsmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "NO CHANGE. SEO description fields stay $59.",
+          "teardownTarget": "$59 -- confirm the SEO description fields still read $59 on 2026-09-01. MANUAL. DO NOT WRITE unless drift is found; a $45 or $40 survivor here is a leftover from an earlier promo and should be reported, not silently fixed into this promo's evidence.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Cart messaging (slide cart copy)",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "DO NOT ARM promo-specific cart copy. Subset promo; cart copy is sitewide and would be false on a non-Instants cart.",
+          "teardownTarget": "n/a -- nothing armed. Confirm the slide cart carries evergreen copy only on 2026-09-01.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Collection page copy",
+          "owner": "catalogsmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "OPTIONAL and OWNED: if the /collections/instants page gets sale copy, '30% off all Instants' is NOW TRUE and needs no carve-out. 30008L (30008 French Roast - Instant Herbal Coffee) and 31008L (31008 French Roast - Instant Herbal Latte) are NOW IN SCOPE at the same d=23 / fsd=15 as the other twelve -- Justin DROPPED the exclusion on 2026-08-28. Scope is ALL 14 Instants variants. The carve-out sentence this row previously required must be REMOVED if already drafted, not reworded. If no copy is added, this row is a no-change.",
+          "teardownTarget": "Revert /collections/instants to evergreen copy by 2026-09-01. MANUAL -- collection copy does not expire. Target: the word 'sale' and any percentage claim are gone from the Instants collection page. If no copy was added at launch, the target is 'confirmed still evergreen'.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Homepage promo hero",
+          "owner": "justin",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "PromoSmith recommends NO homepage hero for this promo: it is a 14-variant subset running 4 days, and a homepage hero is the single most expensive surface to tear down (it is baked into an image, so the stale-copy probe CANNOT see it -- that is exactly where the 2026-08 stale hero claim lived). Justin's call if he wants one.",
+          "teardownTarget": "If a hero is placed: retire it by 2026-09-01. Do NOT restore the previous promo's hero -- restore the evergreen. If no hero is placed, target is 'confirmed absent'. THIS SURFACE IS INVISIBLE TO THE AUTOMATED STALE-COPY SWEEP; it must be checked by eye.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Promo landing pages / banners",
+          "owner": "justin",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "None planned. If a Replo landing page is added, notify @searchsmith so indexing and canonicals are handled.",
+          "teardownTarget": "n/a if none added. If one is added: retire it by 2026-09-01, MANUAL (Replo), and notify @searchsmith to handle the de-index/canonical.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Google Ads promotion assets",
+          "owner": "adsmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "off-site",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "OPTIONAL -- @adsmith's call whether a 4-day subset promo is worth a promotion asset. If used, the asset copy must say 'Instants' and must not imply sitewide. Advertised: 30% OFF one-time / 34% OFF first subscription shipment. AS OF THE 2026-08-28 SCOPE AMENDMENT there is no French Roast carve-out -- '30% off all Instants' is accurate across all 14. Any carve-out clause already drafted must be REMOVED.",
+          "teardownTarget": "Remove the promotion assets by 2026-09-01. THEY EXPIRE ON NOTHING and outlive the promo unless manually pulled -- this is a known repeat offender. If none were created, target is 'confirmed none exist'.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Organic social posts",
+          "owner": "socialsmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "off-site",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "@socialsmith drafts to the declared theme and dates. Copy must name the scope (Instants) and must not imply sitewide. '30% off all Instants' is accurate across all 14 as of the 2026-08-28 scope amendment. 30008L (30008 French Roast - Instant Herbal Coffee) and 31008L (31008 French Roast - Instant Herbal Latte) are NOW IN SCOPE at the same d=23 / fsd=15 as the other twelve -- Justin DROPPED the exclusion on 2026-08-28. Scope is ALL 14 Instants variants. Any French Roast carve-out clause already drafted must be REMOVED, not reworded.",
+          "teardownTarget": "Feed posts do not self-expire. Retire or annotate any promotional post by 2026-09-01 so a customer landing on it in September does not read a live offer. Target: no post presents the sale as current.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Email / SMS (Klaviyo + Attentive)",
+          "owner": "lifecyclesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "off-site",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "CRITICAL AND TIME-SENSITIVE -- these sends were ALREADY SCHEDULED for today 2026-08-28 (workbook August!G50 EMAIL, G51 SMS, both titled '72hr Instants Sale (Launch)') and have been sitting armed since the promo was CUT on 2026-08-05. Note @lifecyclesmith's counter-evidence on record: no Klaviyo campaign of that name has ever existed (1,451 records / 13 months, zero matches), so the EMAIL half is a MISSING send, not a zombie one; the Attentive/SMS half is unreadable by any agent for want of a credential. PromoSmith's earlier STAGE-FOR-CANCELLATION instruction is COUNTERMANDED -- the promo is declared and launching, so the sends should GO, but ONLY after copy correction and ONLY after the discount nodes are confirmed ACTIVE (as of 2026-08-28 they DO NOT EXIST -- see the Discount nodes row). COPY, as amended 2026-08-28: (a) the live rate is d=23, so '30% OFF' is TRUE at the floor on all 14; (b) the subscription claim must read 34% OFF FIRST SHIPMENT, not 30%; (c) THE FRENCH ROAST CARVE-OUT IS DROPPED -- a blanket 'all Instants' claim is now correct and any carve-out line must be DELETED, not reworded. A human presses send.",
+          "teardownTarget": "Stop the campaign sends and any promo-gated flow branches by 2026-09-01. Confirm NO evergreen flow carries hardcoded Instants sale copy that would outlive the campaign -- that is the exact failure that produced this incident: the cut promo's sends stayed armed for 23 days because the CUT removed the declaration but not the CLAIM. Target: zero scheduled or flow-embedded messages reference this sale after 2026-09-01.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Discount nodes + metafields",
+          "owner": "shopkeeper",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "mechanic",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "AS OF 2026-08-28 NEITHER NODE EXISTS. PromoSmith read automaticDiscountNodes at source on 2026-08-28 and the ONLY active-or-scheduled automatic nodes store-wide are FOTM OTP (1413770346744) and FOTM Subscription (1413770739960). The promo is live-dated TODAY with no discount behind it. TWO NODES, both scoped to an EXPLICIT 14-VARIANT LIST (the full `instants` set -- the two French Roast Instants are no longer excluded): '72hr Instants Sale OTP' at 23% and '72hr Instants Sale SUB' at 15%. Per-variant custom.discount=23 and custom.first_subscription_discount=15 on all 14. fsd=15 is the INCREMENT on the Stay.ai 15% baseline, NOT a marketing percentage -- do not write 34. startsAt 2026-08-28 go-live, endsAt 2026-08-31T23:59:59-07:00. DO NOT set combinesWith.productDiscounts=false -- that is the 2026-08-20 whole-order defect. HARD PRECONDITION ON THE TWO NEWLY IN-SCOPE VARIANTS, and this is the whole cost of the amendment: 30008L and 31008L are STILL in collection `flavor-of-the-month`, which both FOTM nodes are scoped to, and both FOTM nodes carry combinesWith.productDiscounts=TRUE. If a 23% Instants node compounds with FOTM 20% on those two, the result is 44.00% off compare_at -- $9.23 and $12.31, deeper than BFCM and below MAP. SETTLE IT EMPIRICALLY FIRST (real cart / cart.js or draft order on 30008L, not from documentation): Justin states the promos do not stack; the standing reference says two automatic product-class discounts DO combine at productDiscounts=true. If best-deal-wins, add the two variants and nothing else changes -- 23% simply beats 20%. If they compound, PromoSmith's ruling is: remove the FOTM tag / flavor-of-the-month membership from the TWO Instants products for the promo duration (no restore owed -- FOTM rotates off French Roast on 2026-09-01). That same move also fixes the PDP pill exempt-tag conflict, so prefer it if the empirical answer is ambiguous. LEAVE THE TWO FOTM NODES THEMSELVES COMPLETELY ALONE -- Justin ruled FOTM stays live on the non-instant French Roast SKUs through 2026-08-31. Do not change their rate, scope or dates.",
+          "teardownTarget": "TEARDOWN IS TWO OBJECTS, not one. (1) Deactivate BOTH Instants nodes. (2) ZERO custom.discount AND custom.first_subscription_discount on ALL 14 in-scope variants -- node expiry reverts the PRICE but only zeroing the metafields retracts the CLAIM, otherwise the pill inherits the next active campaign's label. Do this on 2026-09-01 in the same pass as the FOTM changeover. HARD CONSTRAINT: this is a 14-VARIANT teardown, NOT a store-wide zeroing sweep. A `--month 8` style teardown that resolves to the month's major and writes 0 across the catalog is the 2026-08-17 incident, which fired 4 days late INSIDE a live promo. Read which promo is live BEFORE writing any zero. CHANGED BY THE 2026-08-28 SCOPE AMENDMENT: 30008L and 31008L are now IN this teardown -- the prior 'DO NOT ZERO 30008L or 31008L' instruction is SUPERSEDED. They are zeroed with the other twelve, and because the Sep 1 FOTM rotation moves off French Roast, zero is their correct end state, not a regression. If their FOTM tag was pulled at launch, no restore is owed -- but confirm the Sep 1 rotation left them correct rather than assuming it.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        }
+      ],
+      "surfacesSummary": {
+        "total": 19,
+        "launchDone": 0,
+        "teardownDone": 0,
+        "unowned": 0,
+        "multiOwner": 0,
+        "teardownPending": 19
+      },
+      "gates": {
+        "preflight": {
+          "result": "FAIL",
+          "exitCode": 1,
+          "ranAt": "2026-08-28T12:13:54.833096-07:00",
+          "ranAtAge": "6m ago",
+          "checks": [
+            {
+              "check": "window: preflight phase is appropriate",
+              "owner": "promosmith",
+              "status": "FAIL",
+              "detail": "promo is LIVE (startsAt 2026-08-28 00:00:00-07:00, endsAt 2026-08-31 23:59:59-07:00) -- preflight asks \"can this LAUNCH safely?\" and cannot apply to a promo already underway or finished"
+            },
+            {
+              "check": "record: every surface has an owner (RULING 3)",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "19 surfaces, all owned"
+            },
+            {
+              "check": "record: no surface owned by committee (RULING 3)",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "every surface has exactly one owner"
+            },
+            {
+              "check": "record: teardown declared for every required surface (RULING 4)",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "all required teardowns have an explicit target"
+            },
+            {
+              "check": "questions: no blocking question unresolved",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "0 open non-blocking, 0 resolved"
+            },
+            {
+              "check": "record: rates stated (RULING 5)",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "discount=23 fsd=15"
+            },
+            {
+              "check": "scheduled jobs: safe action shape",
+              "owner": "shopkeeper",
+              "status": "FAIL",
+              "detail": "Re-run with -Repair to outer-wrap the /c payload."
+            },
+            {
+              "check": "scheduled jobs: all fire (rc=0, not just Ready)",
+              "owner": "agentsmith",
+              "status": "FAIL",
+              "detail": "[taskhealth] filed humanAction 'gateway-task-health'."
+            },
+            {
+              "check": "gift: declared, built and giftable",
+              "owner": "shopkeeper",
+              "status": "PASS",
+              "detail": "GIFT: n/a -- this promo declares no gift"
+            }
+          ],
+          "failingOwners": [
+            "agentsmith",
+            "promosmith",
+            "shopkeeper"
+          ]
+        },
+        "launch": {
+          "result": "PASS",
+          "exitCode": 0,
+          "ranAt": "2026-08-28T12:14:21.447452-07:00",
+          "ranAtAge": "5m ago",
+          "checks": [
+            {
+              "check": "window: launch phase matches the clock",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "promo is LIVE; startsAt 2026-08-28 endsAt 2026-08-31"
+            },
+            {
+              "check": "gift: declared, built and giftable",
+              "owner": "shopkeeper",
+              "status": "PASS",
+              "detail": "GIFT: n/a -- this promo declares no gift"
+            },
+            {
+              "check": "mechanic: discounts stack in every cart shape",
+              "owner": "shopkeeper",
+              "status": "PASS",
+              "detail": "CLEAN -- concurrent product discounts stack correctly, nothing double-discounts."
+            },
+            {
+              "check": "storefront: free-shipping copy agrees across owners (expect $59)",
+              "owner": "themesmith",
+              "status": "PASS",
+              "detail": "VERDICT: OK"
+            }
+          ],
+          "failingOwners": []
+        },
+        "midflight": {
+          "result": "not-run",
+          "exitCode": null,
+          "ranAt": null,
+          "checks": [],
+          "failingOwners": []
+        },
+        "teardown": {
+          "result": "not-run",
+          "exitCode": null,
+          "ranAt": null,
+          "checks": [],
+          "failingOwners": []
+        }
+      },
+      "decisions": [],
+      "openQuestions": [],
+      "log": [
+        {
+          "at": "2026-08-28T11:55:00-07:00",
+          "by": "promosmith",
+          "what": "Declared the promo and authored all 19 launch + teardown targets (RULING 4). Rates d=23/fsd=15 verified against live compare_at on all 14 Instants variants. fsd raised 10 -> 15 by PromoSmith: at 23/10 the sub pill tied the OTP badge at 30% on ALL TWELVE in-scope variants. French Roast Instants (30008L/31008L) excluded per Justin 2026-08-28."
+        },
+        {
+          "at": "2026-08-28T12:20:00-07:00",
+          "by": "promosmith",
+          "what": "SCOPE AMENDMENT on Justin's direction: the French Roast Instants exclusion is DROPPED. Scope 12 of 14 -> 14 of 14. 30008L (30008 French Roast - Instant Herbal Coffee) and 31008L (31008 French Roast - Instant Herbal Latte) added to both legs at the same d=23 / fsd=15. Rates and advertised claims UNCHANGED -- re-computed at source off live price/compareAtPrice, both added variants print badge 30.00% and pill 34.32%, i.e. exactly the 30%/34% floor. Carve-out strings removed from 8 surface rows (they must be DELETED from any drafted copy, not reworded), and the 'do not zero 30008L/31008L' teardown instruction SUPERSEDED. TWO THINGS THE AMENDMENT OPENED: (1) STACKING -- both added variants remain in collection `flavor-of-the-month`, both FOTM nodes are collection-scoped with combinesWith.productDiscounts=true, and a compounding 23%-on-20% yields 44% off compare_at ($9.23 / $12.31), below MAP. Must be settled empirically before the variants are added. (2) PDP PILL -- campaign_sale_window_exempt_tag='FOTM' would keep those two reading 'Flavor of the Month' while charging the Instants rate, and clearing the tag would mislabel the whole FOTM family. Both resolve with one move: pull the FOTM tag from the two Instants products only, for the promo duration; no restore owed because FOTM rotates off French Roast Sep 1. ALSO READ AT SOURCE: NEITHER Instants node exists. The only active/scheduled automatic nodes store-wide are the two perpetual FOTM nodes, so the promo is live-dated today with no discount behind it and this amendment cost nothing to absorb."
+        }
+      ],
+      "narrative": [],
+      "note": {
+        "v": "REVIVAL OF A CUT PROMO -- read this before touching it. A `72hr Instants Sale` at 2026-08-28..08-30, scope Instants, d=20/fsd=10, was CUT by Justin on 2026-08-05 and removed from declaredMinors (7 -> 6). Its Klaviyo email and Attentive SMS, both titled '72hr Instants Sale (Launch)', were NEVER cancelled and remained scheduled for 2026-08-28 (workbook August!G50/G51) for 23 days with no discount behind them. Justin's 2026-08-28 ruling revives the promo, which RESOLVES that zombie-send exposure rather than requiring a cancellation -- the sends now have a real offer behind them. THE SENDS' COPY IS NOW STALE IN THREE WAYS and must be corrected by LifecycleSmith before release: (a) the cut card's rate was 20% functional / '30% OFF', which was ALREADY an overstatement -- 20% yields only 27.3% off compare-at on 12 of 14 variants; the live rate is now 23%, which makes 30% true; (b) the sub claim is now 34%, not 30%; (c) SUPERSEDED 2026-08-28 by Justin's scope amendment -- the carve-out is DROPPED, all 14 Instants are in scope, and a blanket 'all Instants' claim is now TRUE. Any carve-out sentence already drafted must be REMOVED, not reworded. STACKING: do NOT implement the carve-out by setting combinesWith.productDiscounts=false -- that is the 2026-08-20 whole-order defect. Implement it by scoping the Instants nodes to an explicit 12-variant list. DISAGREEMENT ON RECORD, NOT BLOCKING THIS PROMO: Justin states 'the promos dont stack'; AgentSmith's reference says two automatic PRODUCT-class discounts DO combine when both carry combinesWith.productDiscounts=true, which both FOTM nodes do. Under the exclusion the question is MOOT here. It must be settled EMPIRICALLY before any future promo whose scope overlaps a live FOTM. | SCOPE AMENDMENT 2026-08-28: Justin dropped the French Roast Instants exclusion. Scope 12 of 14 -> 14 of 14. Rates and advertised claims UNCHANGED (both added variants print 30%/34% at 23/15). The stacking question that was MOOT under the carve-out is now a HARD PRECONDITION -- see `stackingPrecondition`. NOTHING WAS ARMED BEFORE THE AMENDMENT: read at source 2026-08-28, the only active or scheduled automatic discount nodes store-wide are the two perpetual FOTM nodes. There is no Instants node to widen and no live promo mechanic to alter, so this amendment costs nothing to absorb -- but it also means the promo is live-dated TODAY with no discount behind it."
+      },
+      "monitor": null,
+      "monitorJoined": false,
+      "runbook": null,
+      "runbookJoined": false,
+      "residual": null,
+      "residualJoined": false,
+      "analytics": null,
+      "analyticsJoined": false,
+      "postRead": {
+        "state": "no-data",
+        "text": "no data"
+      },
+      "disagreements": [],
+      "defects": [],
+      "provenance": [
+        {
+          "block": "name / window / scope / rates / levers / evergreens",
+          "source": "projects/promo-calendar-management.json -> declaredSlate|declaredMinors",
+          "present": true,
+          "generatedAt": "2026-08-28",
+          "ageHuman": null,
+          "stale": false,
+          "owner": "promosmith",
+          "authority": "SOLE TRUTH (RULING 5)"
+        },
+        {
+          "block": "lifecycle / surfaces / gates / decisions",
+          "source": "promo-records/72hr-instants-sale-2026-08.json",
+          "present": true,
+          "generatedAt": "2026-08-28T11:52:53.806445-07:00",
+          "ageHuman": null,
+          "stale": false
+        },
+        {
+          "block": "timeline mirror",
+          "source": "promo-hub-calendar.json",
+          "present": true,
+          "generatedAt": "2026-08-27T17:12:45-07:00",
+          "ageHuman": "19h ago",
+          "stale": false,
+          "owner": "shopkeeper"
+        },
+        {
+          "block": "live ops health",
+          "source": "promo-hub-monitor.json",
+          "present": true,
+          "generatedAt": "2026-08-27T17:15:08-07:00",
+          "ageHuman": "19h ago",
+          "stale": false,
+          "owner": "shopkeeper"
+        },
+        {
+          "block": "post-promo read",
+          "source": "promo-hub-analytics.json",
+          "present": true,
+          "generatedAt": "2026-08-28T08:43:02-07:00",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2982,10 +3652,10 @@
       },
       "levers": {
         "addOn": {
-          "v": "FREE GOLD SCOOP with orders over $75 (gift-with-purchase tier). Workbook September!D5 verbatim: 'FREE GOLD SCOOP With orders over $75'. Gift SKU 90055 -- the $0.00 twin, which as of 2026-08-28 DOES NOT EXIST; the paid half is gid://shopify/Product/10294467559672 'Teeccino Gold Scoop' (DRAFT, sku null, price 9.99, inventory 0, no images). Owners per the Promo Record: gift product @shopkeeper, cart tier @themesmith (slide cart tier 3 -- NOT tier 1, which holds the evergreen $25 free packet). GO/NO-GO on whether the gift ships with this promo is an open BLOCKING question for Justin. No free-shipping change is declared for this promo: the threshold stays $59 (RULING 7)."
+          "v": "FREE Gold Scoop with orders over $75 (gift tier) -- PENDING GO/NO-GO"
         },
         "gwp": {
-          "v": "FREE GOLD SCOOP with orders over $75 (gift-with-purchase tier). Workbook September!D5 verbatim: 'FREE GOLD SCOOP With orders over $75'. Gift SKU 90055 -- the $0.00 twin, which as of 2026-08-28 DOES NOT EXIST; the paid half is gid://shopify/Product/10294467559672 'Teeccino Gold Scoop' (DRAFT, sku null, price 9.99, inventory 0, no images). Owners per the Promo Record: gift product @shopkeeper, cart tier @themesmith (slide cart tier 3 -- NOT tier 1, which holds the evergreen $25 free packet). GO/NO-GO on whether the gift ships with this promo is an open BLOCKING question for Justin. No free-shipping change is declared for this promo: the threshold stays $59 (RULING 7).",
+          "v": "FREE Gold Scoop with orders over $75 (gift tier) -- PENDING GO/NO-GO",
           "note": "gift-SKU stock state is not in any feed -- not rendered as OK"
         },
         "gwpStock": {
@@ -3040,8 +3710,8 @@
           "teardownKind": "auto",
           "launchState": "pending",
           "teardownState": "pending",
-          "launchTarget": "Campaign pill reads 'Labor Day Sale'; theme computes the percentage from compare_at, so the label carries NO number.",
-          "teardownTarget": "Revert label to 'Flavor of the Month'. A stale pill is worse than a missing one -- it tells the customer the wrong promo is running.",
+          "launchTarget": "Campaign pill reads 'Labor Day Sale'; theme computes the percentage from compare_at, so the label carries NO number. | THEMESMITH ARMING SPEC (verified on live 2026-08-28T18:44Z). The Summer Wellness window was CLEARED on live at 2026-08-28 11:37 PT (auto-sync commit 011e495): campaign_sale_window_enabled=false and all four of window_label / window_start / window_end / window_end_text are now EMPTY STRINGS. Labor Day therefore arms from scratch -- flipping window_enabled alone renders NOTHING, because the snippet requires window_label AND window_start AND window_end all non-blank before _csw_active can be true. Write ALL of: campaign_sale_window_enabled=true, campaign_sale_window_label='Labor Day Sale', campaign_sale_window_start='2026-09-04', campaign_sale_window_end='2026-09-10', campaign_sale_window_end_text='Ends September 10 at midnight'. DO NOT TOUCH campaign_sale_window_exempt_tag -- it is correctly 'FOTM' on live and is what keeps the September FOTM family (Hazelnut) reading 'Flavor of the Month' at its deeper 20% instead of being mislabelled 'Labor Day Sale' at 18%. Setting it to '__none__' is the 2026-08-19 defect. NO DATE COLLISION with the standing FOTM campaign: the window is presentation-only and never touches the primary render gate, so campaign_sale_end_date stays 2026-09-30 through Labor Day. Owner: themesmith (RULING 1).",
+          "teardownTarget": "Revert label to 'Flavor of the Month'. A stale pill is worse than a missing one -- it tells the customer the wrong promo is running. | SEP 11 FALLBACK HAZARD. When the Labor Day window self-expires on 2026-09-11 every surface falls back to the PRIMARY label 'Flavor of the Month', and the primary gate stays open until 2026-09-30. Any product still carrying custom.discount>0 on Sep 11 will therefore wear the FOTM label at a sale rate -- the exact mechanism of the 2026-08-21 defect. Pill disappearance depends 100% on Shopkeeper re-zeroing the sitewide nodes; the theme cannot self-heal this.",
           "launchEvidence": null,
           "teardownEvidence": null,
           "launchVerifiedBy": null,
@@ -3056,7 +3726,7 @@
           "teardownKind": "auto",
           "launchState": "pending",
           "teardownState": "pending",
-          "launchTarget": "Badge ribbon renders 25% from custom.discount=18 against compare_at.",
+          "launchTarget": "Badge ribbon renders 25% from custom.discount=18 against compare_at. | RATE COLLISION -- NOT A DATE COLLISION. Labor Day is sitewide custom.discount=18; the September FOTM family (hazelnut-herbal-coffee, hazelnut-herbal-tea, instant-hazelnut-herbal-coffee, instant-hazelnut-herbal-latte) sits at custom.discount=20. August carved the FOTM family OUT of the sitewide rate and held it at 20. Repeat that carve-out for Hazelnut or two things break: (a) the badge drops from 26% to ~24% mid-month, and (b) a product labelled 'Flavor of the Month' would be saving LESS than its neighbours labelled 'Labor Day Sale', inverting the reason the exempt tag exists. Owner of the metafield write: shopkeeper.",
           "teardownTarget": "Falls away when custom.discount returns to the FOTM baseline. Verify, do not assume.",
           "launchEvidence": null,
           "teardownEvidence": null,
@@ -3216,8 +3886,8 @@
           "teardownKind": "required",
           "launchState": "pending",
           "teardownState": "pending",
-          "launchTarget": "Cart messaging consistent with 25% / 30% and a $59 threshold.",
-          "teardownTarget": "Revert cart messaging to evergreen. MANUAL (UpCart has no write API).",
+          "launchTarget": "[THEMESMITH 2026-08-28: the declared text said 'consistent with 25% / 30% and a $59 threshold' -- 25/30 are the PREVIOUS promo's rates, not Labor Day's. Labor Day is 18% OTP / 10% first-subscription per record rates.] Slide-cart copy consistent with 18% / 10% and a $59 free-shipping threshold (unchanged, RULING 7). Scope: tc_rewards_copy_complete currently runs on schema default 'FREE SHIPPING & FREE GIFT UNLOCKED', which is singular while a third gift tier is armed; optionally write 'FREE SHIPPING & FREE GIFTS UNLOCKED' for the window. Writing it creates a key that must be torn down.",
+          "teardownTarget": "[THEMESMITH 2026-08-28: the declared text said 'MANUAL (UpCart has no write API)'. STALE -- ownership changed 2026-08-28. The in-theme slide cart went live 2026-08-21..24; this copy is now ordinary theme settings, owned and writable by ThemeSmith. The UpCart app is still installed behind a revert shim in layout/theme.liquid; if that revert is ever pulled this row goes back to Justin-only.] If tc_rewards_copy_complete was written for the promo, restore it by DELETING the key so it returns to its schema default 'FREE SHIPPING & FREE GIFT UNLOCKED'. If it was never written, write nothing.",
           "launchEvidence": null,
           "teardownEvidence": null,
           "launchVerifiedBy": null,
@@ -3358,30 +4028,62 @@
           "ownerCount": 1,
           "group": "hardcoded",
           "teardownKind": "required",
-          "launchState": "pending",
+          "launchState": "blocked",
           "teardownState": "pending",
-          "launchTarget": "*** USE TIER 3, NOT TIER 1. The GIFT_SURFACES row name says tc_reward_1_* and that name is wrong for THIS promo. *** tc_reward_1_* currently holds the EVERGREEN $25 free packet (tc_reward_1_threshold=25 -> free-monthly-herbal-coffee-packet) and tc_reward_2_threshold=59 holds free shipping. The September workbook cell declares the $25 free packet (Mocha) as an evergreen that ALWAYS COMBINES, so writing the Gold Scoop into tier 1 would silently DELETE a declared evergreen for the promo's duration. settings_schema.json defines a THIRD tier (tc_reward_3_threshold / _label / _icon / _copy / _variant), giving a clean ascending ladder $25 packet -> $59 free shipping -> $75 Gold Scoop with nothing displaced. SET: tc_reward_3_threshold = 75; tc_reward_3_variant = the $0.00 variant of the NEW 'Free Gold Scoop' (SKU 90055) -- NOT the $9.99 paid half, and NOT any 90049 beechwood variant; tc_reward_3_label / _copy to carry 'FREE Gold Scoop with orders over $75' (workbook September!D5 verbatim: 'FREE GOLD SCOOP With orders over $75'). ThemeSmith to CONFIRM tier 3 is unused and that tc-cart.js renders three tiers before arming. Do not arm the tier until the gift product row above is verified giftable.",
-          "teardownTarget": "ZERO tc_reward_3_threshold (set 0) to disarm the tier -- tc-cart.js requires BOTH a resolvable gift variant AND threshold > 0, so a zeroed threshold is a complete disarm. Also clear tc_reward_3_variant / _label / _copy so no Gold Scoop string survives in the cart. *** DO NOT TOUCH tc_reward_1_* OR tc_reward_2_*. *** They carry the two evergreens ($25 packet, $59 free shipping) and must read exactly as they did before launch -- tc_reward_1_threshold=25 -> free-monthly-herbal-coffee-packet, tc_reward_2_threshold=59 (RULING 7: free shipping is $59 outside a sale, always). THIS IS THE ASYMMETRIC ROW: a stale discount overcharges nobody, a stale gift tier gives away real inventory on every qualifying order until someone notices.",
+          "launchTarget": "*** USE TIER 3, NOT TIER 1 -- CONFIRMED BY THEMESMITH 2026-08-28. *** TIER 3 IS FREE: live theme 160800145656 config/settings_data.json carries exactly ONE tc_* key (tc_cart_enabled=true). Every other slide-cart value runs on its schema default, so tc_reward_1_threshold=25 -> free-monthly-herbal-coffee-packet (evergreen $25 packet) and tc_reward_2_threshold=59 display-only (free shipping, RULING 7) are BOTH live-by-default and would be DESTROYED by writing the Gold Scoop into tier 1. tc_reward_3_threshold has NO schema default -> nil -> `| default: 0` -> 0 -> tier OFF. Unused. Confirmed. THREE TIERS RENDER: snippets/tc-cart-rewards.liquid carries TIER_KEYS='1,2,3', sorts active tiers ascending by threshold (10-digit zero-pad lexicographic sort) and drops any tier with threshold<=0, so the ladder renders $25 -> $59 -> $75 with no empty segment. layout/theme.liquid emits all three tiers into window.tcCartConfig.rewards; assets/tc-cart.js reconcileRewards() filters to (variantId && threshold>0) and evaluates each tier independently, so tier 3 needs no JS change. *** CORRECTION TO THE DECLARED SPEC -- SETTING _variant ALONE RENDERS AND GRANTS NOTHING. *** The declaration said 'tc_reward_3_variant = the $0.00 variant'. snippets/tc-gift-variant.liquid resolves the gift FROM THE PRODUCT HANDLE: it returns EMPTY unless `handle` is non-blank, and `override` is only a VALIDATOR against that handle's product, never a bypass. With _variant set and _product blank, tc_decl_3 is non-blank while tc_gift_3 is empty -> tier_ok=false -> the tier is SUPPRESSED from the bar entirely, and tcCartConfig emits variantId:null so reconcileRewards skips it. Silent double no-op. ARMING SPEC (write these, in this order, after the gift product row is verified giftable): tc_reward_3_threshold = 75 ; tc_reward_3_product = 'free-gold-scoop'  <-- LOAD-BEARING, this is what resolves the gift ; tc_reward_3_variant = LEAVE BLANK (the product has exactly one $0.00 variant, 50254403174648, so an override adds no safety and adds a stale-id failure mode) ; tc_reward_3_label = 'Free Gold Scoop' ; tc_reward_3_copy = \"You're [amount] away from a FREE GOLD SCOOP!\" ; tc_reward_3_icon = leave unwritten (schema default is already 'gift'). BLOCKED ON SURFACE 19: tc-gift-variant.liquid resolves via all_products[handle], which only sees products PUBLISHED TO THE ONLINE STORE. 'Free Gold Scoop' (Product/10294487679224, handle free-gold-scoop, SKU 90055, $0.00, variant 50254403174648) now EXISTS but is status DRAFT / publishedAt null / inventory 0 / 0 images. DRAFT is not resolvable -- see the new open question. Do not arm until it is UNLISTED, stocked and imaged. Owner: themesmith (RULING 1). ARMING GATE (built + dry-run 2026-08-28): C:\\Users\\JustinAdler\\clawd-themesmith\\_scripts\\arm_labor_day_gift_tier.py -- `--check` preflights, `--arm` writes the four literals above, `--teardown` writes the teardown literals. The preflight probes the STOREFRONT with a positive control (the known-good evergreen gift), not just the Admin API, because DRAFT and UNLISTED look identically 'hidden' in admin but behave oppositely in Liquid. It hard-refuses to write any tc_reward_1_* / tc_reward_2_* key, and it settles-loops the read-after-write (Admin Assets returns stale immediately after PUT). Dry-run 2026-08-28T19:50Z returned PREFLIGHT: FAIL on status DRAFT + inventory 0 + 0 images + storefront 404, with the positive control PASSing -- i.e. the gate is trustworthy and the blocker is real.",
+          "teardownTarget": "ZERO tc_reward_3_threshold (set literal 0) to disarm the tier -- tc-cart.js requires BOTH a resolvable gift variant AND threshold > 0, and tc-cart-rewards.liquid drops any tier with threshold <= 0, so a zeroed threshold is a complete disarm of both the grant and the bar segment. ALSO clear tc_reward_3_product (set to empty string ''), tc_reward_3_variant, tc_reward_3_label and tc_reward_3_copy so no Gold Scoop string survives in the cart. NOTE these keys do not exist on live today -- arming CREATES them, so teardown is a write to an explicit literal, never 'revert to default'. tc_reward_3_product IS safe to clear to blank (it has no schema default, so blank means blank, not 25/free-packet). *** DO NOT TOUCH tc_reward_1_* OR tc_reward_2_*. *** They carry the two evergreens and must remain ABSENT from settings_data.json so they keep running on their schema defaults: tc_reward_1_threshold=25 -> free-monthly-herbal-coffee-packet, tc_reward_2_threshold=59 (RULING 7). Writing them at all -- even to their current values -- converts two self-healing defaults into two more teardown obligations. THIS IS THE ASYMMETRIC ROW: a stale discount overcharges nobody, a stale gift tier gives away real inventory on every qualifying order until someone notices.",
           "launchEvidence": null,
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Campaign window settings block (campaign_sale_window_*)",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "on-site",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "ARM FOR LABOR DAY: campaign_sale_window_enabled=true; campaign_sale_window_label='Labor Day Sale' (NO percentage); campaign_sale_window_start='2026-09-04'; campaign_sale_window_end='2026-09-10'; campaign_sale_window_end_text='Ends September 10 at midnight'; campaign_sale_window_exempt_tag='FOTM' (keeps the Hazelnut family on the deeper FOTM label). This is the mechanism that swaps the PDP-pill label WITHOUT touching campaign_sale_label -- it self-arms on 09-04 and self-expires on 09-11.",
+          "teardownTarget": "ADDED 2026-08-28 (Justin, via Shopkeeper's read-only audit). THE BEHAVIOUR SELF-EXPIRES; THE SETTINGS DO NOT. The block rendered inert from 2026-08-21 only because campaign_sale_window_end had passed -- it stayed enabled and still labelled 'Summer Wellness Sale' for 8 days. That is why PromoSmith's 8-page storefront sweep came back clean and still missed it: a storefront probe cannot see an armed setting. EXACT RESTORE LITERALS: campaign_sale_window_enabled=false; campaign_sale_window_label=EMPTY STRING; campaign_sale_window_start=EMPTY; campaign_sale_window_end=EMPTY; campaign_sale_window_end_text=EMPTY; campaign_sale_window_exempt_tag='FOTM' (NOT blank -- it is read through a default:'FOTM' filter, so blank is a no-op). LATENT RISK IF SKIPPED: from 2026-09-04 Labor Day arms custom.discount sitewide, and from that moment an expired date is the ONLY thing between a dead August sale name and every card on the site.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Primary campaign end date (campaign_sale_end_date / _end_text)",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "on-site",
+          "teardownKind": "required",
+          "launchState": "done",
+          "teardownState": "n/a",
+          "launchTarget": "DO NOT RE-PIN. campaign_sale_end_date was rolled to '2026-09-30' on 2026-08-28 and must stay >= 2026-09-10 or the Labor Day pill cannot render at all -- the window override changes PRESENTATION ONLY and never touches the primary render gate. campaign_sale_end_text stays BLANK. campaign_sale_label stays 'Flavor of the Month'.",
+          "teardownTarget": "RECURRING MONTHLY OBLIGATION, NOT A ONE-OFF. campaign_sale_end_date is a hand-edited literal that does NOT move with the FOTM tag rotation. The gate is 'today > end_date -> do not render', so on the 1st of any month past the pinned date the incoming FOTM flavor keeps charging 20/10 with NO pill explaining the lower price. ROLL IT ON THE 1st OF EVERY MONTH to that month's last day (next: '2026-10-31' for Mocha on 2026-10-01). campaign_sale_end_text is deliberately BLANK and should STAY blank -- Flavor of the Month is evergreen and has no end; urgency copy belongs to campaign_sale_window_end_text, which self-expires. RECOMMENDED PERMANENT FIX (not built): derive the end date from the current month the way the Shop All ribbon already derives its month token, and this hand-edit disappears.",
+          "launchEvidence": "SERVED-HTML VERIFIED 2026-08-28T18:37-18:40Z by themesmith. Admin Assets PUT to LIVE theme 160800145656 config/settings_data.json, checksum cbd3493223def6568786bb9e9b36871c -> b9d53f2088bb1256053b7958a8eb7210, 7 keys changed and asserted (no other key moved; line count identical). DISARM LITERALS WRITTEN: campaign_sale_window_enabled=false, campaign_sale_window_label=(empty string), campaign_sale_window_start=(empty), campaign_sale_window_end=(empty), campaign_sale_window_end_text=(empty). campaign_sale_window_exempt_tag LEFT AT 'FOTM' ON PURPOSE -- the three snippets read it through a default:'FOTM' filter, so blanking it is a silent no-op, and 'FOTM' is the correct standing value. THREE INDEPENDENT LOCKS (disabled / unnamed / undated); any one alone blocks the block. PROBES, all fresh (server-timing render;dur present, theme;desc=160800145656): 4 FOTM PDPs french-roast-herbal-coffee (render;dur=122), french-roast-herbal-tea (108), instant-french-roast-herbal-coffee (95), instant-french-roast-herbal-latte (113) -> each 1 pill, 'Flavor of the Month' + 'Save 26/26/27/27%', ZERO campaign-sale-badge__end spans. POSITIVE CONTROL: the pill itself still renders on all four, proving the probe can see what it looks for. SITE SWEEP: / (render;dur=186), /collections/herbal-coffee (233), /pages/shop-all (115) -> 0 hits for 'Summer Wellness', 'End of Summer', 'Bulk Bag', 'Ends August', 'Ends Sunday'. Ribbon reads '26% OFF AUGUST' -- the period token is derived from the CURRENT DATE, not from any setting, so it self-rolls to SEPTEMBER on 2026-09-01 with no edit. INDEPENDENT STATE CHECK: full sweep of all 538 live variants found exactly 9 with custom.discount>0, all =20, all on the 4 FOTM products -- confirming the 2026-08-21 metafield teardown was clean.",
+          "teardownEvidence": null,
+          "launchVerifiedBy": "themesmith",
+          "teardownVerifiedBy": null
         }
       ],
       "surfacesSummary": {
-        "total": 21,
-        "launchDone": 0,
+        "total": 23,
+        "launchDone": 1,
         "teardownDone": 0,
         "unowned": 0,
         "multiOwner": 0,
-        "teardownPending": 21
+        "teardownPending": 23
       },
       "gates": {
         "preflight": {
           "result": "FAIL",
           "exitCode": 1,
-          "ranAt": "2026-08-28T11:35:10.696033-07:00",
-          "ranAtAge": "0m ago",
+          "ranAt": "2026-08-28T12:18:13.384813-07:00",
+          "ranAtAge": "1m ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -3393,7 +4095,7 @@
               "check": "record: every surface has an owner (RULING 3)",
               "owner": "promosmith",
               "status": "PASS",
-              "detail": "21 surfaces, all owned"
+              "detail": "23 surfaces, all owned"
             },
             {
               "check": "record: no surface owned by committee (RULING 3)",
@@ -3408,10 +4110,10 @@
               "detail": "all required teardowns have an explicit target"
             },
             {
-              "check": "questions: no blocking question unresolved",
-              "owner": "promosmith",
-              "status": "PASS",
-              "detail": "3 open non-blocking, 1 resolved"
+              "check": "question BLOCKING: DRAFT IS THE WRONG HIDDEN STATE FOR THE IN-THEME SLIDE CART ",
+              "owner": "shopkeeper",
+              "status": "FAIL",
+              "detail": "raised by themesmith 2026-08-28 -- must be resolved with Justin before launch"
             },
             {
               "check": "record: rates stated (RULING 5)",
@@ -3435,7 +4137,7 @@
               "check": "gift: declared, built and giftable",
               "owner": "shopkeeper",
               "status": "FAIL",
-              "detail": "     - gift: a product with the stated SKU exists"
+              "detail": "     - gift: free product has an image"
             }
           ],
           "failingOwners": [
@@ -3491,14 +4193,32 @@
           "raisedBy": "promosmith",
           "raisedAt": "2026-08-28T00:00:00-07:00",
           "blocking": false,
-          "resolvedAt": null,
-          "resolution": null
+          "resolvedAt": "2026-08-28T19:35:00Z",
+          "resolution": "CONFIRMED by themesmith 2026-08-28, with one correction to the declared spec. (1) Tier 3 is FREE: live settings_data.json on theme 160800145656 contains exactly one tc_* key (tc_cart_enabled=true); tc_reward_3_threshold has no schema default, resolves to 0, tier OFF. (2) Three tiers DO render: TIER_KEYS='1,2,3' in snippets/tc-cart-rewards.liquid, ascending threshold sort, threshold<=0 dropped; theme.liquid emits all three into window.tcCartConfig.rewards; reconcileRewards() in assets/tc-cart.js is tier-count agnostic. No code change needed to add the third tier. (3) The $25 and $59 tiers are UNAFFECTED provided nothing writes tc_reward_1_* / tc_reward_2_* -- they are live BY ABSENCE, on schema defaults. (4) CORRECTION: the declared 'set tc_reward_3_variant' is wrong and would silently do nothing. snippets/tc-gift-variant.liquid resolves from tc_reward_3_PRODUCT (a handle); _variant is only a validator against that handle and is not a bypass. Handle blank => resolved empty => tier suppressed AND variantId null. The load-bearing key is tc_reward_3_product='free-gold-scoop'. Surface 20 launchTarget has been rewritten with the full literal arming spec."
         },
         {
           "question": "CHECKPOINT 2026-09-01 (Tue), one day before preflight: does SKU 90055 resolve to a $0.00 variant with inventory > 0 and at least one image? *** COMPLETING THE PAID DRAFT IS NOT THE SAME AS CREATING THE GIFT. *** Justin is finishing gid://shopify/Product/10294467559672 'Teeccino Gold Scoop' -- that is the $9.99 PAID half. The object the cart actually gives away is a SEPARATE $0.00 twin, which is how 90049 already works (paid 'Teeccino Beechwood Scoop' $9.99 + free twins 'Free Beechwood Scoop' and 'Mystery Gift 2!' at $0.00, all DRAFT, all sharing one pool of 4671). So finishing the paid listing perfectly still leaves the giveaway non-existent. Someone must also create the $0.00 twin at SKU 90055 and stock it. Surface owner stays @shopkeeper per RULING 3 -- Justin's listing work is upstream input to that row, not a re-assignment of it.",
           "owner": "shopkeeper",
           "raisedBy": "promosmith",
           "raisedAt": "2026-08-28T12:00:00-07:00",
+          "blocking": false,
+          "resolvedAt": null,
+          "resolution": null
+        },
+        {
+          "question": "DRAFT IS THE WRONG HIDDEN STATE FOR THE IN-THEME SLIDE CART -- THE GIFT MUST BE **UNLISTED**. Surface 19 launchTarget instructs status DRAFT, citing the three SKU-90049 beechwood products as precedent. That precedent is from the UpCart era: UpCart resolved its gift from a variant id inside the APP's own config and never asked the theme. The in-theme slide cart (live since 2026-08-21..24) resolves the gift in LIQUID via all_products[handle] in snippets/tc-gift-variant.liquid, which only sees products PUBLISHED TO THE ONLINE STORE. A DRAFT product returns an EmptyDrop, the loop never runs, the tier resolves EMPTY and is dropped from the rewards bar -- the promo would advertise a Gold Scoop that is never shown and never added. EVIDENCE (2026-08-28): the tier-1 evergreen gift that ACTUALLY WORKS on live, 'Free Hazelnut Packet' (Product/7976160755960, handle free-monthly-herbal-coffee-packet, SKU 50060, $0.00, inv 1780) is status **UNLISTED**, publishedAt 2025-11-24, 7 resource publications. Storefront probe: /products/free-monthly-herbal-coffee-packet.js -> HTTP 200 (positive control). /products/free-gold-scoop.js -> HTTP 404. /products/free-beechwood-scoop.js -> HTTP 404. Both DRAFT. UNLISTED satisfies BOTH constraints surface 19 cares about: it is published (so Liquid can resolve it) but hidden from search, collections and sitemap (so it is not shoppable as a free product -- the ACTIVE incident is still avoided). CURRENT STATE of the gift, which has been CREATED since this record was written: 'Free Gold Scoop' gid://shopify/Product/10294487679224, handle free-gold-scoop, one variant gid://shopify/ProductVariant/50254403174648, SKU 90055, price 0.00 -- but status DRAFT, publishedAt null, inventoryQuantity 0, mediaCount 0. THREE things still block: set status UNLISTED, allocate inventory > 0 for the 7-day window, add >= 1 image (snippets/tc-cart-line-item.liquid renders an empty 96px media well when item.image is nil -- not broken, but a blank square next to the word FREE). ThemeSmith cannot arm surface 20 until all three land; the tier is marked BLOCKED.",
+          "owner": "shopkeeper",
+          "raisedBy": "themesmith",
+          "raisedAt": "2026-08-28T19:35:00Z",
+          "blocking": true,
+          "resolvedAt": null,
+          "resolution": null
+        },
+        {
+          "question": "IS $75 MEANT PRE- OR POST-DISCOUNT? The slide-cart tier compares against cart.total_price (server-rendered in snippets/tc-cart-rewards.liquid, and cart.total_price from /cart.js in reconcileRewards), which is the total AFTER the automatic discount nodes in surface 18 are applied. With 'Labor Day Sale OTP' at 18% off, a $75 tier means the customer must load ~$91.47 of merchandise to unlock the Gold Scoop, not $75. The same is true of the $59 free-shipping tier and has been all year, so this is established behaviour, not a regression -- but the gap widens with discount depth and the workbook copy says 'With orders over $75' without qualifying it. DECISION NEEDED (promosmith/justin, not themesmith): keep $75 post-discount (harder bar, protects margin on a real scoop), or lower the tier so the effective bar lands near $75 of merchandise (~62 at 18% off). ThemeSmith will arm whichever number is declared -- this is an offer-design call, not a theme constraint.",
+          "owner": "promosmith",
+          "raisedBy": "themesmith",
+          "raisedAt": "2026-08-28T19:35:00Z",
           "blocking": false,
           "resolvedAt": null,
           "resolution": null
@@ -3532,6 +4252,12 @@
           "kind": "decision",
           "by": "justin",
           "text": "GIFT GO. 'I put the sale in the right cell E5. I will complete the gold scoop listing next week. Just assume it will be done in time for sale.' The FREE GOLD SCOOP ships with Labor Day (Sep 4-10); the go/no-go is closed and is not to be re-raised. WORKBOOK TIERING FIXED AND VERIFIED AT SOURCE: re-read 2026-08-28 (snapshot_workbook.py, method=plain -- Excel now closed, so this is the saved file, not an attach). September!E5 now holds 'Labor Day Sale ... MAJOR SALE: Yes' and September!D5 reads 'NONE'. The major is in the MAJOR column and the mis-tiering I raised this morning is resolved. F5 still holds the 72hr Herbal Tea Sale, unchanged. CONSEQUENCE FOR THE GATE, stated so nobody 'helpfully' silences it later: the gift readiness check stays armed and stays RED until the store says otherwise. Justin's decision removes the DECISION blocker, not the BUILD blocker. Hard checkpoint 2026-09-01, one day before the Sep 2 preflight, so a slip is caught with a day of slack rather than on launch morning."
+        },
+        {
+          "at": "2026-08-28T13:00:00-07:00",
+          "kind": "dispatch",
+          "by": "promosmith",
+          "text": "Four surfaces dispatched after the GO. @lifecyclesmith -- Sep 3 SMS early access (declared in September!E5 and absent from every downstream brief until now) plus the campaign sends; briefed to build gift copy so the gift line lifts out without a rewrite if the 09-01 checkpoint slips. @shopkeeper -- create the $0.00 twin Free Gold Scoop SKU 90055 (DRAFT, tracked inventory > 0, >=1 image) and repair the scheduled-job action shape. @catalogsmith -- the beechwood-on-a-gold-product description (product FACT, no invented material), canonical name for 90055, MAP position, plus confirm-only on the $59 SEO description fields. @themesmith -- confirm tier 3 is free and that tc-cart.js renders three tiers BEFORE arming, and do not displace tier 1 ($25 Mocha packet) or tier 2 ($59 free shipping). Every dispatch carried the INVARIANT (the rule and the resulting mapping), not a file list."
         }
       ],
       "narrative": [
@@ -3731,7 +4457,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3740,7 +4466,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3749,7 +4475,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -3978,7 +4704,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3987,7 +4713,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3996,7 +4722,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4230,7 +4956,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4239,7 +4965,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4248,7 +4974,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4482,7 +5208,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4491,7 +5217,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4500,7 +5226,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4734,7 +5460,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4743,7 +5469,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4752,7 +5478,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4981,7 +5707,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4990,7 +5716,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4999,7 +5725,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -5231,7 +5957,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5240,7 +5966,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5249,7 +5975,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -5483,7 +6209,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5492,7 +6218,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5501,7 +6227,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -5733,7 +6459,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-08-27T17:12:45-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5742,7 +6468,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-08-27T17:15:08-07:00",
-          "ageHuman": "18h ago",
+          "ageHuman": "19h ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5751,7 +6477,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-08-28T08:43:02-07:00",
-          "ageHuman": "2h ago",
+          "ageHuman": "3h ago",
           "stale": false,
           "owner": "dataops"
         }
