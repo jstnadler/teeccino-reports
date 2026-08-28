@@ -35,6 +35,13 @@ body {
 .buildstamp.veryStale { border-color:#7f1d1d; background:#2a1414; color:#fca5a5; }
 .buildstamp.veryStale .agepill { background:#4c1414; color:#fca5a5; border-color:#7f1d1d; }
 .buildstamp code { color:inherit; opacity:0.85; }
+.logrow { border-left:2px solid #24303f; padding:5px 0 5px 10px; margin-bottom:7px; }
+.logrow .lmeta { font-size:0.76em; color:#64748b; letter-spacing:0.02em; }
+.logrow .lmeta b { color:#94a3b8; }
+.logrow .lkind { font-size:0.72em; text-transform:uppercase; letter-spacing:0.05em;
+  padding:0 5px; border-radius:3px; background:#1c2533; color:#7dd3fc; margin-left:5px; }
+.logrow .lbody { font-size:0.85em; color:#cbd5e1; white-space:pre-wrap; margin-top:2px; }
+.logrow .lkeywarn { font-size:0.72em; color:#fbbf24; margin-left:5px; }
 
 .tallies { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:14px 0 22px; }
 .tally { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
@@ -567,6 +574,28 @@ function monitorHTML(c) {
     ${(m.notScanned||[]).length ? `<div class="hint">not scanned this run: ${esc(m.notScanned.join(', '))}</div>` : ''}`;
 }
 
+// The log field drifted to four key names across records (`text` is canonical
+// per promo_record.py, but `entry` and `note` exist in the wild). Read ALL of
+// them, and SAY SO when a non-canonical key is used -- a silent coalesce fixes
+// the display and lets the drift keep spreading.
+function logHTML(list) {
+  if (!list || !list.length) return '';
+  return `<div class="loglist">${list.map(e => {
+    const key = ['text','entry','note'].find(k => e && e[k]);
+    const body = key ? e[key] : null;
+    const when = String(e.at || '').replace('T',' ').slice(0,16);
+    return `<div class="logrow">
+      <div class="lmeta"><b>${esc(e.by || 'unattributed')}</b> \u00b7 ${esc(when || 'undated')}
+        ${e.kind ? `<span class="lkind">${esc(e.kind)}</span>` : ''}
+        ${key && key !== 'text'
+            ? `<span class="lkeywarn">non-canonical key '${esc(key)}' \u2014 promo_record.py says 'text'</span>`
+            : ''}</div>
+      <div class="lbody">${body ? esc(body)
+        : '<span class="nodata">entry has no text under any known key</span>'}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function provHTML(list) {
   if (!list || !list.length) return '';
   return `<div class="prov">${list.map(p => `<div class="pline">
@@ -593,6 +622,8 @@ function dossierRows(c) {
 
   if (c.disagreements && c.disagreements.length)
     rows.push(`<div class="row"><div class="rlabel">Source disagreement</div>${disagreementsHTML(c.disagreements)}</div>`);
+  if (c.log && c.log.length)
+    rows.push(`<div class="row"><div class="rlabel">Decision log (${c.log.length})</div>${logHTML(c.log)}</div>`);
   if (c.defects && c.defects.length)
     rows.push(`<div class="row"><div class="rlabel">Defects</div>${defectsHTML(c.defects)}</div>`);
 
