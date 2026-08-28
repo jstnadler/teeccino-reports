@@ -20,6 +20,21 @@ body {
 }
 .header .sub { color:#94a3b8; margin-top:6px; font-size:0.95em; }
 .header .updated { color:#64748b; font-size:0.8em; margin-top:4px; }
+/* Build stamp -- FRESHNESS MUST BE VISIBLE.
+   On 2026-08-27 this page was 6 days stale and nothing on it said so. It also
+   claimed a sale had "ended 15h ago" when it had ended 7 days earlier, because
+   the relative phrase was frozen into the JSON at build time. The stamp below
+   is computed in the browser from `generatedAtUTC` on every load. */
+.buildstamp { display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-top:10px; padding:7px 11px; border-radius:7px; font-size:0.82em;
+  border:1px solid #24303f; background:#141b25; color:#94a3b8; }
+.buildstamp .agepill { font-weight:700; padding:1px 7px; border-radius:999px;
+  background:#1c2b1f; color:#86efac; border:1px solid #2f5136; }
+.buildstamp.stale { border-color:#7a4a12; background:#2a1e0d; color:#fcd34d; }
+.buildstamp.stale .agepill { background:#4a2b0a; color:#fbbf24; border-color:#7a4a12; }
+.buildstamp.veryStale { border-color:#7f1d1d; background:#2a1414; color:#fca5a5; }
+.buildstamp.veryStale .agepill { background:#4c1414; color:#fca5a5; border-color:#7f1d1d; }
+.buildstamp code { color:inherit; opacity:0.85; }
 
 .tallies { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:14px 0 22px; }
 .tally { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
@@ -250,6 +265,7 @@ summary::marker { color:#64748b; }
     <h1>Promo Hub</h1>
     <div class="sub">One card per promo &mdash; is this promo actually shipped, and is it actually torn down?<br>Click a card to open its full dossier.</div>
     <div class="updated" id="updated">Loading…</div>
+    <div class="buildstamp" id="buildstamp" style="display:none"></div>
   </div>
 
   <div class="tallies" id="tallies"></div>
@@ -271,6 +287,113 @@ summary::marker { color:#64748b; }
 
 <script>
 const STATE_URL = 'promo-hub-state.json';
+
+// ---- FRESHNESS IS COMPUTED HERE, NOT AT BUILD TIME ----------------------
+// Every relative phrase on this page ("in 8 days", "ended 7 days ago", "3h ago")
+// is derived in the browser from an ABSOLUTE date in the payload, against the
+// reader's own clock. Nothing relative is trusted from the JSON.
+//
+// Why: 2026-08-27. The composer had frozen "ended 15h ago" into the state file
+// at build time; the page then served that build for 6 days, so a sale that
+// ended Aug 20 still read "ended 15h ago" on Aug 27. A stale page that looks
+// fresh is worse than one that admits it -- absence renders as success.
+//
+// The math is CALENDAR days, not truncated millisecond deltas. The old server
+// code measured (now - endOfDay(endsAt)) and floored it, which was consistently
+// one day short: Aug 20 -> Aug 27 rendered "6 days ago", and Sep 4 seen from
+// Aug 27 rendered "in 7 days". Both off by one, both in the flattering
+// direction. A promo window is stated in calendar days, so this counts them.
+const MS_DAY = 86400000;
+
+function ymdToUTC(d) {                       // 'YYYY-MM-DD' -> UTC midnight ms
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(d || ''));
+  return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : null;
+}
+function todayUTCms() {                      // the reader's LOCAL calendar day
+  const n = new Date();
+  return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+}
+function calDays(fromYMD, toYMD) {           // signed calendar-day difference
+  const a = ymdToUTC(fromYMD), b = ymdToUTC(toYMD);
+  return (a === null || b === null) ? null : Math.round((b - a) / MS_DAY);
+}
+function plural(n, one, many) { return n === 1 ? one : many.replace('%d', n); }
+
+// Recompute a card's days phrase now. Falls back to the server string only when
+// the absolute dates are absent.
+function daysPhrase(card) {
+  const t = card && card.timeline;
+  if (!t) return (card && card.daysLabel) ? card.daysLabel : '';
+  const today = new Date(todayUTCms()).toISOString().slice(0, 10);
+  const lc = card.lifecycle;
+  if ((lc === 'DECLARED' || lc === 'ARMED') && t.startsAtDate) {
+    const n = calDays(today, t.startsAtDate);
+    if (n === null) return card.daysLabel || '';
+    if (n < 0) return 'start date has passed';
+    return n === 0 ? 'starts today' : plural(n, 'in 1 day', 'in %d days');
+  }
+  if (lc === 'LIVE' && t.endsAtDate) {
+    const n = calDays(today, t.endsAtDate);
+    if (n === null) return card.daysLabel || '';
+    if (n < 0) return 'window has passed';
+    return n === 0 ? 'ends today' : plural(n, '1 day left', '%d days left');
+  }
+  if (t.endsAtDate) {
+    const n = calDays(t.endsAtDate, today);
+    if (n === null) return card.daysLabel || '';
+    if (n < 0) return plural(-n, 'in 1 day', 'in %d days');
+    if (n === 0) return 'ended today';
+    return plural(n, 'ended yesterday', 'ended %d days ago');
+  }
+  return card.daysLabel || '';
+}
+
+// Age of an absolute instant, computed now. Used for the build stamp and for
+// every per-source staleness tag -- both were frozen strings before.
+function ageFrom(iso) {
+  if (!iso) return null;
+  const t = Date.parse(String(iso));
+  if (isNaN(t)) return null;
+  return Math.max(0, Date.now() - t) / 1000;
+}
+function ageHuman(sec) {
+  if (sec === null || sec === undefined) return null;
+  const s = Math.floor(sec);
+  if (s < 90) return 'just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  const d = Math.floor(s / 86400);
+  return d === 1 ? '1 day ago' : d + ' days ago';
+}
+
+// The build stamp. A page that cannot say how old it is will be read as current.
+function renderBuildStamp(s) {
+  const el = document.getElementById('buildstamp');
+  if (!el) return;
+  const iso = s.generatedAtUTC || s.generatedAt || null;
+  const sec = ageFrom(iso);
+  const warnAfter = s.staleWarnAfterSeconds || 86400;
+  el.style.display = '';
+  if (sec === null) {
+    el.className = 'buildstamp veryStale';
+    el.innerHTML = '<span class="agepill">NO BUILD STAMP</span>' +
+      '<span>This page cannot tell you how old it is. Re-run ' +
+      '<code>compose_promo_hub.py --publish</code>.</span>';
+    return;
+  }
+  const stale = sec > warnAfter;
+  const very = sec > warnAfter * 3;
+  el.className = 'buildstamp' + (very ? ' veryStale' : stale ? ' stale' : '');
+  const local = new Date(Date.parse(iso)).toLocaleString();
+  el.innerHTML =
+    '<span class="agepill">' + esc(stale ? 'STALE \u00b7 ' : 'built ') +
+      esc(ageHuman(sec)) + '</span>' +
+    '<span>composed <code>' + esc(local) + '</code> (' + esc(iso) + ')</span>' +
+    (stale ? '<span><b>Do not trust the live-state rows.</b> This build is older than '
+       + Math.round(warnAfter / 3600) + 'h \u2014 run <code>compose_promo_hub.py --publish</code>.</span>'
+     : '');
+}
+
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -450,9 +573,16 @@ function provHTML(list) {
       <span>${esc(p.block)}</span><span>←</span><code>${esc(p.source)}</code>
       ${p.owner ? `<span>(${esc(p.owner)})</span>` : ''}
       ${p.authority ? `<span class="auth-tag">${esc(p.authority)}</span>` : ''}
-      ${!p.present ? '<span class="stale-tag">MISSING</span>'
-        : p.stale ? `<span class="stale-tag">STALE ${esc(p.ageHuman||'')}</span>`
-        : p.ageHuman ? `<span class="fresh-tag">${esc(p.ageHuman)}</span>` : ''}
+      ${(() => {
+        if (!p.present) return '<span class="stale-tag">MISSING</span>';
+        // recomputed NOW from the source's absolute generatedAt -- p.ageHuman
+        // was frozen at build time and made a stale feed look freshly read
+        const live = ageHuman(ageFrom(p.generatedAt));
+        const txt = live || p.ageHuman || '';
+        if (!txt) return '';
+        return p.stale ? `<span class="stale-tag">STALE ${esc(txt)}</span>`
+                       : `<span class="fresh-tag">${esc(txt)}</span>`;
+      })()}
     </div>`).join('')}</div>`;
 }
 
@@ -617,7 +747,7 @@ function tileHTML(c) {
       <span class="chip ${sk}">${esc(c.lifecycle)}</span>
     </div>
     <div class="tname">${esc(c.name || '(unnamed)')}</div>
-    <div class="twin">${win}${days} <span class="tdays">${esc(c.daysLabel || '')}</span></div>
+    <div class="twin">${win}${days} <span class="tdays">${esc(daysPhrase(c))}</span></div>
     ${c.lifecycle === 'HISTORICAL' ? '' : `<div class="trates">${leg('OTP', r.otp)}${leg('SUB', r.sub)}</div>`}
     <div class="tscope">${scope}</div>
     <div class="tpips">${pips.join('')}</div>
@@ -638,7 +768,7 @@ function detailHTML(c) {
         <span class="badge ${esc(c.tier || 'UNKNOWN')}">${esc(c.tier || 'UNKNOWN')}</span>
         <span class="chip ${sk}">${esc(c.lifecycle)}</span>
         <span class="spacer"></span>
-        <span class="days">${esc(c.daysLabel || '')} \u00b7 close</span>
+        <span class="days">${esc(daysPhrase(c))} \u00b7 close</span>
       </div>
       <div class="cbody">${dossierRows(c)}</div>
     </div>
@@ -697,8 +827,14 @@ fetch(STATE_URL + '?t=' + Date.now())
   .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(s => {
     document.getElementById('updated').textContent =
-      'composed ' + (s.generatedAt || '?') + ' · ' + (s.composer || '') +
-      ' · join key: ' + (s.joinKey || '');
+      (s.composer || '') + ' · join key: ' + (s.joinKey || '');
+    renderBuildStamp(s);
+    // Re-stamp on a timer and whenever the tab is refocused, so a page left
+    // open overnight does not keep asserting the age it had when you opened it.
+    setInterval(function () { renderBuildStamp(s); }, 60000);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) renderBuildStamp(s);
+    });
 
     const counts = s.counts || {};
     document.getElementById('tallies').innerHTML =
