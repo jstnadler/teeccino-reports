@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-28T12:20:43.089372-07:00",
-  "generatedAtUTC": "2026-08-28T19:20:43.089372+00:00",
+  "generatedAt": "2026-08-28T12:23:19.044133-07:00",
+  "generatedAtUTC": "2026-08-28T19:23:19.044133+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:12:45-07:00",
-      "ageSeconds": 68878,
+      "ageSeconds": 69034,
       "ageHuman": "19h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -26,7 +26,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T18:02:34-07:00",
-      "ageSeconds": 65889,
+      "ageSeconds": 66045,
       "ageHuman": "18h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:15:08-07:00",
-      "ageSeconds": 68735,
+      "ageSeconds": 68891,
       "ageHuman": "19h ago",
       "stale": false,
       "thresholdSeconds": 86400,
@@ -51,7 +51,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-28T08:43:02-07:00",
-      "ageSeconds": 13061,
+      "ageSeconds": 13217,
       "ageHuman": "3h ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -1919,7 +1919,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-28T12:17:55.344244-07:00",
-          "ranAtAge": "2m ago",
+          "ranAtAge": "5m ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -2601,7 +2601,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-28T12:18:02.214071-07:00",
-          "ranAtAge": "2m ago",
+          "ranAtAge": "5m ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -3371,7 +3371,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T12:13:54.833096-07:00",
-          "ranAtAge": "6m ago",
+          "ranAtAge": "9m ago",
           "checks": [
             {
               "check": "window: preflight phase is appropriate",
@@ -3438,7 +3438,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-28T12:14:21.447452-07:00",
-          "ranAtAge": "6m ago",
+          "ranAtAge": "8m ago",
           "checks": [
             {
               "check": "window: launch phase matches the clock",
@@ -4014,8 +4014,8 @@
           "teardownKind": "required",
           "launchState": "pending",
           "teardownState": "pending",
-          "launchTarget": "CREATE the FREE twin: a NEW product 'Free Gold Scoop', SKU 90055, ONE variant at price 0.00, status DRAFT (Teeccino's cart-addable hidden state -- DRAFT/ARCHIVED qualify, ACTIVE does NOT: an ACTIVE $0 SKU is shoppable as a free product, which is its own incident), inventory tracked and > 0 with enough units to cover the 7-day window, and at least ONE image (a gift with no image renders blank in the cart drawer). STRUCTURAL PRECEDENT, verified live 2026-08-28: SKU 90049 sits on THREE draft products -- 'Teeccino Beechwood Scoop' 9.99 (paid half), 'Free Beechwood Scoop' 0.00, and 'Mystery Gift 2' 0.00 -- all three reporting inventory 4671. So the Teeccino GWP pattern is paid-half plus $0 twin(s) sharing one SKU and one inventory pool, ALL in DRAFT. The PAID half already exists as gid://shopify/Product/10294467559672 'Teeccino Gold Scoop' and is itself unfinished: sku null, price 9.99, inventoryQuantity 0, mediaCount 0. SKU 90055 currently resolves to ZERO variants store-wide. WHY THIS IS THE HIGHEST-RISK ROW: a $0 gift product at zero inventory does NOT error. The cart simply never adds it, so the promo advertises a gift it silently never gives and nobody learns until a customer complains.",
-          "teardownTarget": "DO NOT delete or archive-out the gift product -- leave it DRAFT with its inventory intact so the SKU survives for reuse. Teardown of a GWP happens at the CART TIER, not at the product. CONFIRM at teardown that the product is still DRAFT (never ACTIVE) and that the tier no longer resolves it. DO NOT WRITE unless it drifted to ACTIVE.",
+          "launchTarget": "*** CORRECTED 2026-08-28 BY SHOPKEEPER -- THE REQUIRED STATUS IS **UNLISTED**, NOT DRAFT. THE PRIOR 'status DRAFT' INSTRUCTION IN THIS ROW WAS WRONG FOR THE CURRENT STOREFRONT AND IS SUPERSEDED. *** WHY: the in-theme slide cart (live 2026-08-21..24, replacing UpCart) resolves its gift in LIQUID, not in an app config. snippets/tc-gift-variant.liquid does `assign gift_product = all_products[gift_handle]` and then loops `for v in gift_product.variants` requiring `v.available and v.price == 0`. all_products only sees products PUBLISHED TO THE ONLINE STORE; a DRAFT product yields an EmptyDrop whose .variants is nil, so the loop never runs, the snippet outputs an empty string, and snippets/tc-cart-rewards.liquid drops the tier entirely. The promo would advertise a Gold Scoop that is never shown and never added, with NO error anywhere. WHY THE OLD PRECEDENT MISLED: the three SKU-90049 beechwood products (teeccino-wooden-scoop 9.99, free-beechwood-scoop 0.00, mystery-gift-1-copy 0.00, all DRAFT, all inv 4671) are UpCart-era. UpCart resolved a gift from a variant id inside the APP's own config and never queried the theme, so DRAFT worked there and does not work now. Their DRAFT status is a fossil, not a target. THE CORRECT PRECEDENT is the tier-1 evergreen that ACTUALLY WORKS on live today: 'Free Hazelnut Packet' gid://shopify/Product/7976160755960, handle free-monthly-herbal-coffee-packet, SKU 50060, $0.00 -- status **UNLISTED**, publishedAt 2025-11-24T18:58:28Z, published to Online Store. UNLISTED satisfies BOTH constraints this row cares about: published (so Liquid resolves it) AND hidden from search, collections and sitemap (so it is NOT shoppable as a free product -- the ACTIVE $0 incident is still avoided). ACTIVE remains forbidden. TARGET OBJECT (exists since 2026-08-28, created by shopkeeper): 'Free Gold Scoop' gid://shopify/Product/10294487679224, handle free-gold-scoop, ONE variant gid://shopify/ProductVariant/50254403174648, SKU 90055, price 0.00, tracked, inventoryPolicy CONTINUE, location Oxnard (gid://shopify/Location/62347608233, the only location), tags hidden/HIDE/NOREVIEW/webproduct. THREE ACCEPTANCE CRITERIA, all required before themesmith arms surface 20: (1) status UNLISTED and published to the Online Store publication -- verify by STOREFRONT probe GET https://www.teeccino.com/products/free-gold-scoop.js == HTTP 200, always alongside the positive control /products/free-monthly-herbal-coffee-packet.js == 200 (an admin-API read cannot tell DRAFT from UNLISTED behaviourally, and a broken probe returns 404 for both); (2) inventory > 0 at Oxnard, a real allocation decided by Justin -- NOTE the failure mode differs from what this row originally claimed: because inventoryPolicy is CONTINUE, Liquid `v.available` is TRUE at quantity 0, so the tier WOULD render and the cart WOULD add. The risk at inv 0 is therefore OVERSELLING a physical item we may not have, not a silent non-add. Both are unacceptable; the fix is the same: a real number; (3) at least ONE image -- ASSETSMITH'S LANE, dispatched, not a shopkeeper write. snippets/tc-cart-line-item.liquid renders an empty 96px media well when item.image is nil: a blank square next to the word FREE. OUT OF LANE FOR THIS ROW: the product description (catalogsmith -- the paid half currently reads 'beechwood', a product FACT error), the canonical name, and stamping SKU 90055 on the paid half gid://shopify/Product/10294467559672 (SKU identity is catalogsmith).",
+          "teardownTarget": "*** CORRECTED 2026-08-28 BY SHOPKEEPER -- teardown must CONFIRM **UNLISTED**, not DRAFT. *** DO NOT delete, archive or un-publish the gift product. Leave it UNLISTED with its inventory intact so the SKU survives for reuse, exactly as the tier-1 evergreen 'Free Hazelnut Packet' has sat UNLISTED since 2025-11-24 across every promo. Reverting it to DRAFT at teardown would silently re-break the next promo that reuses it, for the same Liquid reason it was broken at launch. Teardown of a GWP happens at the CART TIER (surface 20: zero tc_reward_3_threshold and clear tc_reward_3_product), NOT at the product. CONFIRM-ONLY at teardown: (a) status is still UNLISTED -- if it drifted to ACTIVE, write it back to UNLISTED, because ACTIVE exposes a shoppable free product; if it drifted to DRAFT, write it back to UNLISTED and raise it, because that is the defect this correction exists to prevent; (b) /products/free-gold-scoop.js still returns 200 with the positive control also 200; (c) the tier no longer resolves it -- confirmed from surface 20's evidence, not from this row. DO NOT WRITE unless the status actually drifted. An identical-value productUpdate is a no-op that buys nothing and adds a teardown obligation.",
           "launchEvidence": null,
           "teardownEvidence": null,
           "launchVerifiedBy": null,
@@ -4083,7 +4083,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T12:18:13.384813-07:00",
-          "ranAtAge": "2m ago",
+          "ranAtAge": "5m ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
