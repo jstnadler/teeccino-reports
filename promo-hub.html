@@ -104,6 +104,9 @@ body {
 .tscope { font-size:0.76em; color:#94a3b8; line-height:1.45;
           display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .tscope b { color:#cbd5e1; font-weight:800; letter-spacing:0.04em; }
+.tlever { font-size:0.76em; color:#cbd5e1; line-height:1.45;
+          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.tlever b { color:#fcd34d; font-weight:800; letter-spacing:0.04em; }
 .tpips { display:flex; flex-wrap:wrap; gap:5px; }
 .pip { font-size:0.68em; font-weight:700; padding:3px 8px; border-radius:999px; white-space:nowrap;
        background:rgba(148,163,184,0.14); color:#cbd5e1; }
@@ -825,6 +828,14 @@ function tileHTML(c) {
     if (rz && rz.count)
       pips.push(`<span class="pip bad">${rz.count} residual</span>`);
 
+    // SPEC 7.2 -- a declared GWP whose gift-SKU stock nobody has read must never
+    // look armed. No feed supplies gift inventory, so gwpStock is structurally
+    // null; that is exactly why this pip is derived from state and not hardcoded.
+    // 2026-08-28 Labor Day: a TYPED allocation of 1000 turned every automated
+    // gate green on three real units.
+    if (hasV((c.levers||{}).gwp) && !hasV((c.levers||{}).gwpStock))
+      pips.push(`<span class="pip warn">gift stock unverified</span>`);
+
     const g = c.gates || {}, ran = [];
     ['preflight', 'launch', 'midflight', 'teardown'].forEach(k => {
       const x = g[k];
@@ -834,6 +845,20 @@ function tileHTML(c) {
     if (ran.length) pips.push.apply(pips, ran);
     else pips.push(`<span class="pip">no gate run</span>`);
   }
+
+  // SPEC 7.2 item 7 -- the add-on lever. Composed correctly and served fresh
+  // since 2026-08-21 and painted NOWHERE on the tile until 2026-08-31: presence
+  // rendering as absence. A promo with no lever prints nothing (see the spec
+  // table) -- silence is only safe because a declared lever is always loud.
+  const lvt = c.levers || {};
+  const leverBits = [];
+  if (hasV(lvt.gwp))       leverBits.push('<b>ADD-ON</b> ' + esc(lvt.gwp.v));
+  else if (hasV(lvt.addOn)) leverBits.push('<b>ADD-ON</b> ' + esc(lvt.addOn.v));
+  const fst = lvt.freeShippingThreshold;
+  if (fst && fst.baseline === false && fst.text)
+    leverBits.push('<b>SHIPPING</b> ' + esc(fst.text));
+  const leverLine = leverBits.length
+    ? `<div class="tlever">${leverBits.join(' · ')}</div>` : '';
 
   const scope = (c.scope && hasV(c.scope.value))
     ? `<b>SCOPE</b> ${esc(c.scope.value.v)}${c.scope.derived ? ' <span class="derived">DERIVED</span>' : ''}`
@@ -851,6 +876,7 @@ function tileHTML(c) {
     <div class="twin">${win}${days} <span class="tdays">${esc(daysPhrase(c))}</span></div>
     ${c.lifecycle === 'HISTORICAL' ? '' : `<div class="trates">${leg('OTP', r.otp)}${leg('SUB', r.sub)}</div>`}
     <div class="tscope">${scope}</div>
+    ${leverLine}
     <div class="tpips">${pips.join('')}</div>
     <div class="tmore">Open dossier \u25be</div>
   </div>`;
