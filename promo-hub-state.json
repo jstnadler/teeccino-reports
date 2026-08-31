@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-31T13:58:22.766020-07:00",
-  "generatedAtUTC": "2026-08-31T20:58:22.766020+00:00",
+  "generatedAt": "2026-08-31T14:03:36.522665-07:00",
+  "generatedAtUTC": "2026-08-31T21:03:36.522665+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:12:45-07:00",
-      "ageSeconds": 333937,
+      "ageSeconds": 334251,
       "ageHuman": "3d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -26,8 +26,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-31T13:40:21-07:00",
-      "ageSeconds": 1081,
-      "ageHuman": "18m ago",
+      "ageSeconds": 1395,
+      "ageHuman": "23m ago",
       "stale": false,
       "thresholdSeconds": 2592000
     },
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-27T17:15:08-07:00",
-      "ageSeconds": 333794,
+      "ageSeconds": 334108,
       "ageHuman": "3d ago",
       "stale": true,
       "thresholdSeconds": 86400,
@@ -51,7 +51,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-08-31T08:37:05-07:00",
-      "ageSeconds": 19277,
+      "ageSeconds": 19591,
       "ageHuman": "5h ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -4242,11 +4242,11 @@
           "ownerCount": 1,
           "group": "on-site",
           "teardownKind": "required",
-          "launchState": "pending",
+          "launchState": "ready",
           "teardownState": "pending",
           "launchTarget": "ARM FOR LABOR DAY: campaign_sale_window_enabled=true; campaign_sale_window_label='Labor Day Sale' (NO percentage); campaign_sale_window_start='2026-09-04'; campaign_sale_window_end='2026-09-10'; campaign_sale_window_end_text='Ends September 10 at midnight'; campaign_sale_window_exempt_tag='FOTM' (keeps the Hazelnut family on the deeper FOTM label). This is the mechanism that swaps the PDP-pill label WITHOUT touching campaign_sale_label -- it self-arms on 09-04 and self-expires on 09-11.",
           "teardownTarget": "ADDED 2026-08-28 (Justin, via Shopkeeper's read-only audit). THE BEHAVIOUR SELF-EXPIRES; THE SETTINGS DO NOT. The block rendered inert from 2026-08-21 only because campaign_sale_window_end had passed -- it stayed enabled and still labelled 'Summer Wellness Sale' for 8 days. That is why PromoSmith's 8-page storefront sweep came back clean and still missed it: a storefront probe cannot see an armed setting. EXACT RESTORE LITERALS: campaign_sale_window_enabled=false; campaign_sale_window_label=EMPTY STRING; campaign_sale_window_start=EMPTY; campaign_sale_window_end=EMPTY; campaign_sale_window_end_text=EMPTY; campaign_sale_window_exempt_tag='FOTM' (NOT blank -- it is read through a default:'FOTM' filter, so blank is a no-op). LATENT RISK IF SKIPPED: from 2026-09-04 Labor Day arms custom.discount sitewide, and from that moment an expired date is the ONLY thing between a dead August sale name and every card on the site.",
-          "launchEvidence": null,
+          "launchEvidence": "ThemeSmith-LaborDayArm-20260904 VERIFIED BY PROMOSMITH AT SOURCE 2026-08-31T14:02-07:00. Task exists, State Ready, LogonType Interactive, three triggers (09-04 00:32, 02:32, 09:32) so it self-retries twice. Sequenced 30 minutes after Shopkeeper's LaborDayLaunch at 00:02. Arms the campaign window block AND the tc_reward_3_* gift tier in one job. PROVEN TO EXECUTE, NOT ASSUMED: I ran Start-ScheduledTask myself and measured the job's own log grow 1129 -> 1429 bytes, with lastRunTime stamped 14:02:07 and a fresh HARD ABORT [gate A clock] line. Its gates read the live catalogue before writing -- gate A2 confirms declaredSlate still says 'Labor Day Sale' 2026-09-04..09-10 d=18, and gate B read 195 products / 286 variants with custom.discount distribution {0:265, 20:7, 23:14} (the 7 at 20 are the FOTM family, the 14 at 23 are the Instants sale ending tonight). It refuses to name a sale onto full-price products.",
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
@@ -4297,7 +4297,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-31T13:11:11.567484-07:00",
-          "ranAtAge": "47m ago",
+          "ranAtAge": "52m ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -4891,6 +4891,12 @@
           "by": "promosmith",
           "kind": "finding",
           "text": "COMPARE-AT ANCHOR AUDIT. 12 DTC items would print 18% instead of 25% on Labor Day: six gift boxes and samplers at compare_at 0.00 ($19.99-$45.99, high-ticket, in a promo whose lever is itself a gift), and six Worldwide Botanicals items at compare_at null. WWB is a separate brand -- whether it wears a Teeccino badge at all is a scope call and it is mine. Core catalogue anchors are all healthy. ALSO CORRECTED MY OWN CLAUDE.md: its long-standing '30 SKUs with no compare_at incl. 80110L/46011/86010L' note is false -- all three carry healthy DTC anchors, and the original count was counting TARGET-channel listings, which render no DTC badge. Same missing onlineStoreUrl filter that would have wrecked today's inventory pass. A number in my own operating doc is not evidence; it is a claim with an author."
+        },
+        {
+          "at": "2026-09-01T00:55:00-07:00",
+          "by": "promosmith",
+          "kind": "verification",
+          "text": "THEMESMITH'S SEP 4 ARMING VERIFIED AT SOURCE AND PROVEN TO EXECUTE. Task registered with three self-retrying triggers, sequenced 30 min after Shopkeeper's price drop, arming both the campaign window block and the gift tier, with gates that read the live catalogue and refuse to name a sale onto full-price products. ALSO CORRECTED A RULE IN MY OWN CLAUDE.md. It says a python.exe action with quoted args 'returns rc=1 without ever launching' -- all three ThemeSmith jobs use exactly that shape and read rc=1, so by my own rule I should have called them dead and had three working jobs rebuilt four days out. Measured it: Start-ScheduledTask grew the job's log by 300 bytes. It launches; the rc=1 is its own too-early guard. rc=1 cannot tell a guard-abort from a no-launch -- a byte delta on the job's own log across a manual start can, and that is the test to use from now on."
         }
       ],
       "narrative": [
