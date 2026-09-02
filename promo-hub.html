@@ -625,8 +625,6 @@ function dossierRows(c) {
 
   if (c.disagreements && c.disagreements.length)
     rows.push(`<div class="row"><div class="rlabel">Source disagreement</div>${disagreementsHTML(c.disagreements)}</div>`);
-  if (c.log && c.log.length)
-    rows.push(`<div class="row"><div class="rlabel">Decision log (${c.log.length})</div>${logHTML(c.log)}</div>`);
   if (c.defects && c.defects.length)
     rows.push(`<div class="row"><div class="rlabel">Defects</div>${defectsHTML(c.defects)}</div>`);
 
@@ -748,6 +746,15 @@ function dossierRows(c) {
 
   if (hasV(c.note))
     rows.push(`<div class="row"><div class="rlabel">Declaration note</div><div class="detail-body">${esc(c.note.v)}</div></div>`);
+
+  // Decision log LAST. Justin, 2026-09-02: "when you click on a card the first
+  // thing it shows is the decision log. I want that to actually be at the end."
+  // It was push #2 of 17, above Defects. It is history, not status -- the top of
+  // a card should answer "is this promo shipped and is anything wrong", and the
+  // narrative of how it got here belongs after that. The two ALARM rows
+  // (Source disagreement, Defects) deliberately stay at the top.
+  if (c.log && c.log.length)
+    rows.push(`<div class="row"><div class="rlabel">Decision log (${c.log.length})</div>${logHTML(c.log)}</div>`);
 
   return rows.join('') + provHTML(c.provenance);
 }
