@@ -676,13 +676,28 @@ function dossierRows(c) {
 
     rows.push(`<div class="row"><div class="rlabel">Live ops health</div>${monitorHTML(c)}</div>`);
 
-    const dec = c.decisions || [], oq = c.openQuestions || [];
+    const dec = c.decisions || [], allq = c.openQuestions || [];
+    // A RESOLVED QUESTION IS NOT AN OPEN ONE. Until 2026-09-02 every entry in
+    // openQuestions rendered as a coloured warning flag whether or not it carried
+    // a `resolution`, so 14 settled items sat on the Labor Day card looking live.
+    // That is not cosmetic: on 2026-09-02 AgentSmith read one of them -- a Gold
+    // Scoop description already corrected five days earlier -- as a live defect,
+    // reported it to Justin and spent a CatalogSmith dispatch on it. Resolved
+    // history stays available, collapsed, but it does not shout.
+    const oq = allq.filter(q => !q.resolution);
+    const rq = allq.filter(q => q.resolution);
     rows.push(`<div class="row"><div class="rlabel">Decisions &amp; open questions</div>
-      <div class="hint">${dec.length} decision(s) · ${oq.length} open question(s)</div>
+      <div class="hint">${dec.length} decision(s) · ${oq.length} open · ${rq.length} resolved</div>
       ${dec.map(d => `<details><summary>${esc(d.date||'')} — ${esc(d.question||'')} (${esc(d.decidedBy||'?')})</summary>
         <div class="detail-body">${esc(d.decision||'')}</div></details>`).join('')}
       ${oq.map(q => `<div class="flag ${q.blocking?'critical':'warning'}">
         ${q.blocking?'BLOCKING — ':''}${esc(q.question)} — owner ${esc(q.owner||'UNASSIGNED')}</div>`).join('')}
+      ${rq.length ? `<details><summary>${rq.length} resolved question(s)</summary>
+        ${rq.map(q => `<div class="detail-body"><b>RESOLVED${q.resolvedBy?' by '+esc(q.resolvedBy):''}${q.resolvedAt?' '+esc(String(q.resolvedAt).slice(0,10)):''}</b>
+${esc(q.question)}
+
+${esc(q.resolution)}</div>`).join('')}
+      </details>` : ''}
       ${(c.narrative||[]).length ? `<details><summary>${c.narrative.length} dated declaration note(s)</summary>
         ${c.narrative.map(n => `<div class="detail-body"><b>${esc(n.date||n.key)}</b>\n${esc(n.text)}</div>`).join('')}
       </details>` : ''}</div>`);
@@ -800,7 +815,10 @@ function tileHTML(c) {
   const pips = [];
   const nDis = (c.disagreements || []).length;
   const nDef = (c.defects || []).length;
-  const oq = c.openQuestions || [];
+  // Same rule on the tile. This pip read "21 open q" for Labor Day when 7 were
+  // genuinely open and 14 were resolved -- a 3x overstatement on the one number
+  // Justin glances at. A count needs its basis.
+  const oq = (c.openQuestions || []).filter(q => !q.resolution);
   const nBlock = oq.filter(q => q.blocking).length;
   if (nDis)   pips.push(`<span class="pip bad">\u26d4 ${nDis} disagreement${nDis > 1 ? 's' : ''}</span>`);
   if (nDef)   pips.push(`<span class="pip bad">${nDef} defect${nDef > 1 ? 's' : ''}</span>`);
