@@ -85,10 +85,32 @@ body {
    'in order'" + "if it's passed, make it blue". ARMED/DECLARED/CLOSED/HISTORICAL all share
    ONE blue token -- blue is the "nothing wants your attention" colour, not a state. The three
    signal colours (amber/green/red) stay unique. Past states separate by GRID, not by hue. */
-.tile.state-ARMED      { border-color:rgba(96,165,250,0.45); }
-.tile.state-DECLARED   { border-color:rgba(96,165,250,0.45); }
-.tile.state-CLOSED     { border-color:rgba(96,165,250,0.45); }
-.tile.state-HISTORICAL { border-color:rgba(96,165,250,0.45); opacity:0.72; }
+/* Justin 2026-09-02: "I want to be able to quickly see which is the upcoming
+   promo. They should have borders if it's upcoming, or if it's done, or if it's
+   the next one." The 2026-08-21 rule (promo-records/_BORDER_COLOUR_RULE.md) gave
+   ARMED / DECLARED / CLOSED / HISTORICAL the SAME blue, so eight upcoming promos
+   and every finished one read identically. Blue still means "upcoming and clean
+   OR done and dusted" per that rule -- it is now three weights of the same idea,
+   not three new colours, so green=in-progress and red=teardown-open keep their
+   meaning. */
+.tile.state-ARMED      { border-color:rgba(96,165,250,0.45); }   /* upcoming      */
+.tile.state-DECLARED   { border-color:rgba(96,165,250,0.45); }   /* upcoming      */
+/* DONE reads as done: desaturated and dimmed, so it cannot be mistaken for an
+   upcoming promo at a glance. Still bordered -- Justin asked for a border on
+   done, not for it to vanish. */
+.tile.state-CLOSED     { border-color:rgba(148,163,184,0.34); opacity:0.86; }
+.tile.state-HISTORICAL { border-color:rgba(148,163,184,0.28); opacity:0.72; }
+/* NEXT UP -- exactly one card ever carries this. Brighter, thicker, with a ring,
+   so it wins against 8 identical blues without inventing a hue. */
+.tile.is-next {
+  border-color:rgba(125,211,252,0.95);
+  box-shadow:0 0 0 2px rgba(125,211,252,0.35), 0 0 26px rgba(56,189,248,0.22);
+}
+.tile.is-next .nextpip {
+  display:inline-block; margin-left:6px; padding:1px 6px; border-radius:999px;
+  background:rgba(125,211,252,0.18); border:1px solid rgba(125,211,252,0.55);
+  color:#bae6fd; font-size:0.6em; font-weight:800; letter-spacing:0.08em;
+}
 .tile.expanded { border-color:rgba(245,215,132,0.7); background:rgba(255,255,255,0.08); }
 
 .thead { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
@@ -889,13 +911,13 @@ function tileHTML(c) {
     ? `<b>SCOPE</b> ${esc(c.scope.value.v)}${c.scope.derived ? ' <span class="derived">DERIVED</span>' : ''}`
     : '<span class="nodata">scope not stated</span>';
 
-  return `<div class="tile state-${sk}" role="button" tabindex="0"
+  return `<div class="tile state-${sk}${c.isNextUp ? ' is-next' : ''}" role="button" tabindex="0"
        aria-expanded="false" aria-controls="d-${uid}" data-target="d-${uid}"
        data-id="${esc(c.promoId || c.feedId || '')}">
     <div class="thead">
       <span class="month">${esc(c.month || '\u2014')}</span>
       <span class="badge ${esc(c.tier || 'UNKNOWN')}">${esc(c.tier || 'UNKNOWN')}</span>
-      <span class="chip ${sk}">${esc(c.lifecycle)}</span>
+      <span class="chip ${sk}">${esc(c.lifecycle)}</span>${c.isNextUp ? '<span class="nextpip">NEXT UP</span>' : ''}
     </div>
     <div class="tname">${esc(c.name || '(unnamed)')}</div>
     <div class="twin">${win}${days} <span class="tdays">${esc(daysPhrase(c))}</span></div>
