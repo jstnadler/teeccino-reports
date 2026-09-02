@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teeccino Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        /* legacy <nav> rules removed — shared hub nav now loaded from /_partials/nav.html */
+        h1 { font-size: 20px; font-weight: 600; color: #D4A843; padding: 16px 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+        .updated { text-align: right; color: #888; font-size: 13px; margin-bottom: 20px; }
+
+        /* KPI Cards Row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .kpi-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .kpi-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #8B6914;
+        }
+        .kpi-card .label {
+            font-size: 13px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        /* Section */
+        .section { margin-bottom: 40px; }
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c2c2c;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #D4A843;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #555;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #555;
+            position: sticky;
+            top: 0;
+        }
+        th:first-child, td:first-child { text-align: left; }
+        tr:hover { background: #fafaf5; }
+
+        /* Retention heatmap */
+        .retention-table td.heat {
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 4px;
+        }
+
+        /* Cohort KPI cards */
+        .cohort-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            .cohort-kpis { grid-template-columns: repeat(2, 1fr); }
+        }
+        .cohort-kpi {
+            background: #faf7f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .cohort-kpi .val { font-size: 24px; font-weight: 700; color: #6B8E23; }
+        .cohort-kpi .lbl { font-size: 12px; color: #888; }
+
+        /* Change indicators */
+        .positive { color: #6B8E23; }
+        .negative { color: #c0392b; }
+
+        canvas { max-height: 320px; }
+        .chart-sm canvas { max-height: 260px; }
+    </style>
+</head>
+<body>
+    <!-- Shared hub nav (HubSmith). Loaded from /teeccino-reports/_partials/nav.html. -->
+    <div id="hub-nav"></div>
+    <script>
+      fetch('/teeccino-reports/_partials/nav.html')
+        .then(r => r.text())
+        .then(html => {
+          document.getElementById('hub-nav').innerHTML = html;
+          document.body.classList.add('has-hub-nav');
+        });
+    </script>
+    <h1 style="text-align:center;">📊 Teeccino Analytics (DTC Only)</h1>
+    <div class="container">
+        <p class="updated">Last updated: September 02, 2026 at 04:26 PM</p>
+
+        <!-- KPI Summary -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="value">3,161</div>
+                <div class="label">Orders (30d)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">$162,664</div>
+                <div class="label">Revenue (30d)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">$51.46</div>
+                <div class="label">Avg Order Value</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">23.6%</div>
+                <div class="label">New Customer %</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">2.5%</div>
+                <div class="label">Sub Conversion</div>
+            </div>
+            <div class="kpi-card">
+                <div class="value">60,591</div>
+                <div class="label">Total Customers</div>
+            </div>
+        </div>
+
+        <!-- 1. Attribution Overview -->
+        <div class="section">
+            <h2 class="section-title">Attribution Overview</h2>
+            <div class="grid-2">
+                <div class="card chart-sm">
+                    <h3>Revenue by Channel</h3>
+                    <canvas id="channelDonut"></canvas>
+                </div>
+                <div class="card chart-sm">
+                    <h3>Days to Conversion</h3>
+                    <canvas id="daysConversion"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Monthly Revenue by Channel</h3>
+                <canvas id="monthlyRevenue"></canvas>
+            </div>
+            <div class="card">
+                <h3>Channel Breakdown</h3>
+                <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>Channel</th><th>Orders</th><th>Revenue</th><th>AOV</th><th>New Customer %</th></tr></thead>
+                    <tbody>
+                    <tr><td>Direct</td><td>106,853</td><td>$5,188,912.46</td><td>$48.56</td><td>32.2%</td></tr><tr><td>Google</td><td>50,474</td><td>$2,418,841.47</td><td>$47.92</td><td>61.9%</td></tr><tr><td>Email</td><td>41,614</td><td>$2,245,079.23</td><td>$53.95</td><td>26.3%</td></tr><tr><td>Meta</td><td>7,583</td><td>$228,536.12</td><td>$30.14</td><td>81.7%</td></tr><tr><td>Attentive</td><td>10,086</td><td>$515,974.44</td><td>$51.16</td><td>43.4%</td></tr><tr><td>Other</td><td>6,158</td><td>$304,729.76</td><td>$49.49</td><td>55.8%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Customer Cohorts -->
+        <div class="section">
+            <h2 class="section-title">Customer Cohorts</h2>
+            <div class="cohort-kpis">
+                <div class="cohort-kpi"><div class="val">60,591</div><div class="lbl">Total Customers</div></div>
+                <div class="cohort-kpi"><div class="val">$116.22</div><div class="lbl">Avg LTV</div></div>
+                <div class="cohort-kpi"><div class="val">12.0%</div><div class="lbl">Sub Conversion</div></div>
+                <div class="cohort-kpi"><div class="val">2.4</div><div class="lbl">Avg Orders</div></div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>LTV Curves by Cohort</h3>
+                    <canvas id="ltvCurves"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Monthly Subscription Conversion Rate</h3>
+                    <canvas id="subConversion"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Retention Matrix (Last 6 Cohorts)</h3>
+                <div style="overflow-x:auto">
+                <table class="retention-table">
+                    <thead><tr><th>Cohort</th><th>Customers</th><th>Month 0</th><th>Month 1</th><th>Month 2</th><th>Month 3</th><th>Month 4</th><th>Month 5</th></tr></thead>
+                    <tbody>
+                    <tr><td>2025-10</td><td>1,212</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#D4A843;color:white">16.9%</td><td class="heat" style="background:#DEB887;color:#555">9.2%</td><td class="heat" style="background:#DEB887;color:#555">8.6%</td><td class="heat" style="background:#DEB887;color:#555">7.4%</td><td class="heat" style="background:#DEB887;color:#555">6.7%</td></tr><tr><td>2025-11</td><td>2,291</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">8.7%</td><td class="heat" style="background:#DEB887;color:#555">8.1%</td><td class="heat" style="background:#DEB887;color:#555">10.4%</td><td class="heat" style="background:#DEB887;color:#555">6.4%</td><td class="heat" style="background:#DEB887;color:#555">6.6%</td></tr><tr><td>2025-12</td><td>1,323</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">10.0%</td><td class="heat" style="background:#DEB887;color:#555">9.1%</td><td class="heat" style="background:#DEB887;color:#555">9.9%</td><td class="heat" style="background:#DEB887;color:#555">7.3%</td><td class="heat" style="background:#DEB887;color:#555">5.2%</td></tr><tr><td>2026-01</td><td>1,699</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">12.9%</td><td class="heat" style="background:#DEB887;color:#555">10.8%</td><td class="heat" style="background:#DEB887;color:#555">9.7%</td><td class="heat" style="background:#DEB887;color:#555">7.8%</td><td class="heat" style="background:#DEB887;color:#555">5.7%</td></tr><tr><td>2026-02</td><td>1,759</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">12.6%</td><td class="heat" style="background:#DEB887;color:#555">10.3%</td><td class="heat" style="background:#DEB887;color:#555">8.3%</td><td class="heat" style="background:#DEB887;color:#555">6.8%</td><td class="heat" style="background:#DEB887;color:#555">5.6%</td></tr><tr><td>2026-03</td><td>1,493</td><td class="heat" style="background:#6B8E23;color:white">100.0%</td><td class="heat" style="background:#DEB887;color:#555">12.5%</td><td class="heat" style="background:#DEB887;color:#555">9.0%</td><td class="heat" style="background:#DEB887;color:#555">8.3%</td><td class="heat" style="background:#DEB887;color:#555">6.8%</td><td class="heat" style="background:#DEB887;color:#555">5.2%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SKU Performance -->
+        <div class="section">
+            <h2 class="section-title">SKU Performance</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Top 15 SKUs by Revenue</h3>
+                    <canvas id="topSkus"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Revenue vs Margin % (Top 30 SKUs)</h3>
+                    <canvas id="skuScatter"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Top 20 SKUs — Detail</h3>
+                <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>SKU</th><th>Revenue</th><th>COGS</th><th>Margin</th><th>Margin %</th><th>Discount Rate</th></tr></thead>
+                    <tbody>
+                    <tr><td>60110-FrenchRoast-5lb</td><td>$359,817.06</td><td>$82,204.66</td><td>$277,612.40</td><td>77.2%</td><td>9.8%</td></tr><tr><td>50097-Sampler</td><td>$282,375.42</td><td>$106,800.86</td><td>$175,574.56</td><td>62.2%</td><td>2.4%</td></tr><tr><td>80110L-FrenchRoast-11oz</td><td>$264,615.52</td><td>$48,943.39</td><td>$215,672.13</td><td>81.5%</td><td>6.3%</td></tr><tr><td>60060-Hazelnut-5lb</td><td>$255,286.69</td><td>$56,316.44</td><td>$198,970.25</td><td>77.9%</td><td>8.7%</td></tr><tr><td>86010L-DarkChocolate-10oz</td><td>$237,498.81</td><td>$65,304.82</td><td>$172,193.99</td><td>72.5%</td><td>6.8%</td></tr><tr><td>46011-DarkChocolate-25ct</td><td>$229,231.16</td><td>$53,486.78</td><td>$175,744.38</td><td>76.7%</td><td>5.2%</td></tr><tr><td>63110-DandelionDarkRoast-5lb</td><td>$208,090.51</td><td>$55,755.45</td><td>$152,335.06</td><td>73.2%</td><td>7.6%</td></tr><tr><td>83110L-DandelionDarkRoast-10oz</td><td>$203,367.05</td><td>$46,291.58</td><td>$157,075.47</td><td>77.2%</td><td>5.9%</td></tr><tr><td>80060L-Hazelnut-11oz</td><td>$193,406.68</td><td>$35,132.81</td><td>$158,273.87</td><td>81.8%</td><td>5.9%</td></tr><tr><td>60070-Java-5lb</td><td>$177,558.54</td><td>$36,946.93</td><td>$140,611.61</td><td>79.2%</td><td>10.6%</td></tr><tr><td>43111-DandelionDarkRoast-25ct</td><td>$172,496.32</td><td>$33,098.43</td><td>$139,397.89</td><td>80.8%</td><td>7.3%</td></tr><tr><td>43221-DandelionCaramelNut-25ct</td><td>$168,040.80</td><td>$37,521.20</td><td>$130,519.60</td><td>77.7%</td><td>5.3%</td></tr><tr><td>85020L-ChagaAshwagandhaButt-10oz</td><td>$167,547.73</td><td>$33,411.33</td><td>$134,136.40</td><td>80.1%</td><td>9.8%</td></tr><tr><td>60010-VanillaNut-5lb</td><td>$158,511.46</td><td>$44,923.26</td><td>$113,588.20</td><td>71.7%</td><td>9.7%</td></tr><tr><td>80030L-AlmondAmaretto-11oz</td><td>$145,531.62</td><td>$28,914.66</td><td>$116,616.96</td><td>80.1%</td><td>5.3%</td></tr><tr><td>40097-Sampler</td><td>$139,307.40</td><td>$25,176.52</td><td>$114,130.88</td><td>81.9%</td><td>2.4%</td></tr><tr><td>82110L-FrenchVanilla-11oz</td><td>$129,491.63</td><td>$31,551.23</td><td>$97,940.40</td><td>75.6%</td><td>4.9%</td></tr><tr><td>80010L-VanillaNut-11oz</td><td>$128,364.82</td><td>$28,843.56</td><td>$99,521.26</td><td>77.5%</td><td>6.3%</td></tr><tr><td>83220L-DandelionCaramelNut-10oz</td><td>$125,503.15</td><td>$30,867.42</td><td>$94,635.73</td><td>75.4%</td><td>5.4%</td></tr><tr><td>60080-Mocha-5lb</td><td>$125,131.72</td><td>$32,582.06</td><td>$92,549.66</td><td>74.0%</td><td>10.0%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Growing &amp; Declining SKUs (&gt;20% change, last 90d vs prior 90d)</h3>
+                <div style="overflow-x:auto">
+                <table>
+                    <thead><tr><th>SKU</th><th>Recent 90d</th><th>Prior 90d</th><th>Change</th></tr></thead>
+                    <tbody>
+                    <tr><td>90001-InstantHolidayBundle-CoffeeAl</td><td>$3,929.43</td><td>$1,209.78</td><td class="positive">+224.8%</td></tr><tr><td>62120-ChocolateRaspberry-5lb</td><td>$2,870.66</td><td>$1,418.23</td><td class="positive">+102.4%</td></tr><tr><td>63220-DandelionCaramelNut-5lb</td><td>$6,365.27</td><td>$3,421.68</td><td class="positive">+86.0%</td></tr><tr><td>63340-DandelionCoconut-5lb</td><td>$2,822.68</td><td>$1,659.09</td><td class="positive">+70.1%</td></tr><tr><td>42011-PumpkinSpice-25ct</td><td>$2,156.86</td><td>$1,366.54</td><td class="positive">+57.8%</td></tr><tr><td>60130-MacaChocolate-5lb</td><td>$3,482.28</td><td>$2,246.74</td><td class="positive">+55.0%</td></tr><tr><td>63310-DandelionMochaMint-5lb</td><td>$2,621.76</td><td>$1,770.84</td><td class="positive">+48.1%</td></tr><tr><td>60080-Mocha-5lb</td><td>$7,199.20</td><td>$4,949.45</td><td class="positive">+45.5%</td></tr><tr><td>50097-Sampler</td><td>$8,955.55</td><td>$6,354.24</td><td class="positive">+40.9%</td></tr><tr><td>62040-Snickerdoodle-5lb</td><td>$1,666.30</td><td>$1,256.85</td><td class="positive">+32.6%</td></tr><tr><td>83110L-DandelionDarkRoast-10oz</td><td>$8,051.76</td><td>$10,102.68</td><td class="negative">-20.3%</td></tr><tr><td>82080L-Irish-11oz</td><td>$2,888.30</td><td>$3,635.86</td><td class="negative">-20.6%</td></tr><tr><td>80030L-AlmondAmaretto-11oz</td><td>$6,745.03</td><td>$8,511.99</td><td class="negative">-20.8%</td></tr><tr><td>43371-BlueberryVanillaChic-25ct</td><td>$2,905.47</td><td>$3,684.06</td><td class="negative">-21.1%</td></tr><tr><td>80060L-Hazelnut-11oz</td><td>$7,339.68</td><td>$9,310.52</td><td class="negative">-21.2%</td></tr><tr><td>83370L-BlueberryVanilla-10oz</td><td>$3,361.23</td><td>$4,310.73</td><td class="negative">-22.0%</td></tr><tr><td>43321-DandelionRedChai-25ct</td><td>$2,126.88</td><td>$2,734.56</td><td class="negative">-22.2%</td></tr><tr><td>40021-ChocolatePeppermint-25ct</td><td>$2,548.50</td><td>$3,296.06</td><td class="negative">-22.7%</td></tr><tr><td>65020-ChagaAshwagandhaButt-5lb</td><td>$3,909.66</td><td>$5,059.56</td><td class="negative">-22.7%</td></tr><tr><td>83116-DandelionDarkRoast-500ggrou</td><td>$3,629.35</td><td>$4,720.89</td><td class="negative">-23.1%</td></tr><tr><td>82040L-Snickerdoodle-11oz</td><td>$1,953.78</td><td>$2,542.53</td><td class="negative">-23.2%</td></tr><tr><td>80080L-Mocha-11oz</td><td>$4,757.20</td><td>$6,218.34</td><td class="negative">-23.5%</td></tr><tr><td>82130L-MexicanChocolate-11oz</td><td>$3,499.94</td><td>$4,604.29</td><td class="negative">-24.0%</td></tr><tr><td>85050L-TurkeyTailAstragalus-10oz</td><td>$4,481.17</td><td>$5,899.01</td><td class="negative">-24.0%</td></tr><tr><td>80066A-Hazelnut-500ggrou</td><td>$1,847.16</td><td>$2,440.89</td><td class="negative">-24.3%</td></tr><tr><td>80016-VanillaNut-500ggrou</td><td>$1,377.84</td><td>$1,842.72</td><td class="negative">-25.2%</td></tr><tr><td>42081-Irish-25ct</td><td>$2,174.72</td><td>$2,922.28</td><td class="negative">-25.6%</td></tr><tr><td>40116-FrenchRoast-50tagless</td><td>$2,729.23</td><td>$3,696.28</td><td class="negative">-26.2%</td></tr><tr><td>43221-DandelionCaramelNut-25ct</td><td>$5,393.16</td><td>$7,311.15</td><td class="negative">-26.2%</td></tr><tr><td>63080-DandelionMocha-5lb</td><td>$1,609.86</td><td>$2,184.81</td><td class="negative">-26.3%</td></tr><tr><td>45031-Lion'sManeRhodiola-25ct</td><td>$2,563.65</td><td>$3,532.14</td><td class="negative">-27.4%</td></tr><tr><td>31014L-MiraculousMushrooms®-Latte</td><td>$5,049.77</td><td>$6,966.31</td><td class="negative">-27.5%</td></tr><tr><td>80050L-EnglishToffee-11oz</td><td>$4,332.45</td><td>$5,997.47</td><td class="negative">-27.8%</td></tr><tr><td>30007L-InstantMiraculousMus-Instant</td><td>$7,236.38</td><td>$10,034.98</td><td class="negative">-27.9%</td></tr><tr><td>42041-Snickerdoodle-25ct</td><td>$1,597.06</td><td>$2,225.69</td><td class="negative">-28.2%</td></tr><tr><td>40061-Hazelnut-25ct</td><td>$3,041.21</td><td>$4,247.50</td><td class="negative">-28.4%</td></tr><tr><td>50092-ChocolateBlendsSampl-Sampler</td><td>$1,395.29</td><td>$1,970.01</td><td class="negative">-29.2%</td></tr><tr><td>86010L-DarkChocolate-10oz</td><td>$12,693.65</td><td>$18,050.97</td><td class="negative">-29.7%</td></tr><tr><td>40016-VanillaNut-50tagless</td><td>$2,277.94</td><td>$3,287.97</td><td class="negative">-30.7%</td></tr><tr><td>60120-MayaChai-5lb</td><td>$681.41</td><td>$986.88</td><td class="negative">-31.0%</td></tr><tr><td>45041-CordycepsSchisandraC-25ct</td><td>$1,126.30</td><td>$1,642.26</td><td class="negative">-31.4%</td></tr><tr><td>30011L-InstantMocha-Black</td><td>$2,923.05</td><td>$4,272.15</td><td class="negative">-31.6%</td></tr><tr><td>90013</td><td>$779.87</td><td>$1,139.81</td><td class="negative">-31.6%</td></tr><tr><td>43081-DandelionMocha-25ct</td><td>$1,917.99</td><td>$2,810.52</td><td class="negative">-31.8%</td></tr><tr><td>40011-VanillaNut-25ct</td><td>$3,975.66</td><td>$5,844.56</td><td class="negative">-32.0%</td></tr><tr><td>80010L-VanillaNut-11oz</td><td>$6,167.37</td><td>$9,072.66</td><td class="negative">-32.0%</td></tr><tr><td>45021-ChagaAshwagandhaButt-25ct</td><td>$4,291.74</td><td>$6,323.67</td><td class="negative">-32.1%</td></tr><tr><td>43341-DandelionCoconut-25ct</td><td>$3,835.98</td><td>$5,753.97</td><td class="negative">-33.3%</td></tr><tr><td>40031-AlmondAmaretto-25ct</td><td>$3,160.14</td><td>$4,757.20</td><td class="negative">-33.6%</td></tr><tr><td>30005L-InstantDandelion-Black</td><td>$4,498.20</td><td>$6,847.26</td><td class="negative">-34.3%</td></tr><tr><td>31010L-InstantHazelnut-Latte</td><td>$1,419.29</td><td>$2,158.92</td><td class="negative">-34.3%</td></tr><tr><td>83220L-DandelionCaramelNut-10oz</td><td>$4,310.73</td><td>$6,589.53</td><td class="negative">-34.6%</td></tr><tr><td>40051-EnglishToffee-25ct</td><td>$2,939.27</td><td>$4,502.35</td><td class="negative">-34.7%</td></tr><tr><td>30010L-InstantHazelnut-Instant</td><td>$2,533.31</td><td>$3,912.39</td><td class="negative">-35.2%</td></tr><tr><td>NCBOXAPG-VarietyBox-HerbalCo</td><td>$559.86</td><td>$879.78</td><td class="negative">-36.4%</td></tr><tr><td>40001L-ClassicSamplerBox-SamplerBox</td><td>$868.21</td><td>$1,373.75</td><td class="negative">-36.8%</td></tr><tr><td>42061-MaplePecan-25ct</td><td>$2,871.31</td><td>$4,638.27</td><td class="negative">-38.1%</td></tr><tr><td>40132-MacaChocolate-25ct</td><td>$2,395.59</td><td>$3,924.69</td><td class="negative">-39.0%</td></tr><tr><td>30013L-MiraculousMushrooms®-Black</td><td>$7,316.34</td><td>$12,033.98</td><td class="negative">-39.2%</td></tr><tr><td>31009L-InstantVanillaNut-Latte</td><td>$1,799.10</td><td>$2,978.51</td><td class="negative">-39.6%</td></tr><tr><td>30009L-InstantVanillaNut-Instant</td><td>$1,948.70</td><td>$3,312.79</td><td class="negative">-41.2%</td></tr><tr><td>90031-GoldPourover</td><td>$683.62</td><td>$1,169.35</td><td class="negative">-41.5%</td></tr><tr><td>31011L-InstantMocha-Latte</td><td>$2,027.94</td><td>$3,475.22</td><td class="negative">-41.6%</td></tr><tr><td>90043-TealInfuserMug</td><td>$559.72</td><td>$959.52</td><td class="negative">-41.7%</td></tr><tr><td>55092-Sampler</td><td>$1,781.19</td><td>$3,078.60</td><td class="negative">-42.1%</td></tr><tr><td>90042-FrenchPressPot-20oz</td><td>$539.73</td><td>$939.53</td><td class="negative">-42.6%</td></tr><tr><td>40097-Sampler</td><td>$4,977.51</td><td>$9,155.42</td><td class="negative">-45.6%</td></tr><tr><td>46011-DarkChocolate-25ct</td><td>$12,233.88</td><td>$22,608.69</td><td class="negative">-45.9%</td></tr><tr><td>45001L-MushroomSamplerBox-SamplerBox</td><td>$1,342.88</td><td>$2,493.92</td><td class="negative">-46.2%</td></tr><tr><td>43001L-DandelionSamplerBox-SamplerBox</td><td>$1,210.99</td><td>$2,302.08</td><td class="negative">-47.4%</td></tr><tr><td>40081-Mocha-25ct</td><td>$1,223.28</td><td>$2,344.62</td><td class="negative">-47.8%</td></tr><tr><td>46010L-DarkChocolate-10ct</td><td>$879.20</td><td>$2,538.69</td><td class="negative">-65.4%</td></tr><tr><td>82070L-CandyCane-11oz</td><td>$560.67</td><td>$1,715.99</td><td class="negative">-67.3%</td></tr>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const COLORS = ["#8B6914", "#D4A843", "#6B8E23", "#CD853F", "#8FBC8F", "#DEB887"];
+    Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+    // 1. Channel Donut
+    new Chart(document.getElementById('channelDonut'), {
+        type: 'doughnut',
+        data: {
+            labels: ["Direct", "Google", "Email", "Meta", "Attentive", "Other"],
+            datasets: [{ data: [5188912.46, 2418841.47, 2245079.23, 228536.12, 515974.44, 304729.76], backgroundColor: COLORS, borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: { callbacks: { label: ctx => ctx.label + ': $' + ctx.parsed.toLocaleString() } }
+            }
+        }
+    });
+
+    // 2. Monthly Revenue Stacked Bar
+    const monthlyDS = [{"label": "Direct", "data": [83448.71, 98088.85, 139024.3, 87348.17, 94390.98, 100500.05, 99221.2, 92678.3, 93685.9, 98789.47, 109328.13, 107406.54, 4784.94]}, {"label": "Google", "data": [28674.27, 39153.07, 63223.69, 37406.47, 44476.26, 43735.4, 43129.56, 39992.41, 31716.58, 23420.25, 24941.03, 26958.13, 996.26]}, {"label": "Email", "data": [32414.68, 40127.38, 105803.76, 26009.29, 27895.82, 49669.8, 36230.72, 47295.59, 26641.42, 13574.79, 14448.68, 17564.58, 1264.08]}, {"label": "Meta", "data": [3787.05, 5993.24, 14625.27, 5930.16, 9822.75, 10170.82, 8458.98, 6689.44, 2770.43, 916.23, 1664.08, 2108.93, 124.04]}, {"label": "Attentive", "data": [9934.15, 12006.52, 18263.64, 9576.44, 8864.0, 16174.02, 13021.05, 10869.89, 8945.53, 3808.73, 6196.15, 6297.97, 525.78]}, {"label": "Other", "data": [6162.39, 7561.3, 10510.97, 6386.07, 6997.94, 5190.55, 6272.87, 6847.03, 3217.61, 2920.57, 3273.65, 3337.16, 191.75]}];
+    new Chart(document.getElementById('monthlyRevenue'), {
+        type: 'bar',
+        data: {
+            labels: ["2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"],
+            datasets: monthlyDS.map((ds, i) => ({
+                label: ds.label,
+                data: ds.data,
+                backgroundColor: COLORS[i % COLORS.length],
+            }))
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } }
+            },
+            plugins: {
+                tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString() } }
+            }
+        }
+    });
+
+    // 3. Days to Conversion
+    new Chart(document.getElementById('daysConversion'), {
+        type: 'bar',
+        data: {
+            labels: ["Same day", "2-3 days", "4-7 days", "8-14 days", "15-30 days"],
+            datasets: [{ data: [124831, 7053, 8613, 10246, 19457], backgroundColor: '#8B6914', borderRadius: 4 }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v.toLocaleString() } } }
+        }
+    });
+
+    // 4. LTV Curves
+    new Chart(document.getElementById('ltvCurves'), {
+        type: 'line',
+        data: {
+            labels: ["2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"],
+            datasets: [
+                { label: '30d LTV', data: [47.39, 47.99, 36.93, 42.6, 46.13, 43.38, 47.84, 47.35, 42.56, 41.46, 41.35, 41.06], borderColor: '#8B6914', backgroundColor: 'rgba(139,105,20,0.1)', fill: false, tension: 0.3 },
+                { label: '90d LTV', data: [55.42, 57.23, 45.21, 54.54, 57.58, 57.09, 58.26, 55.66, 51.49, 48.89, 44.14, 41.06], borderColor: '#D4A843', backgroundColor: 'rgba(212,168,67,0.1)', fill: false, tension: 0.3 },
+                { label: '365d LTV', data: [84.2, 84.62, 66.69, 80.68, 77.46, 67.89, 67.3, 61.27, 53.87, 48.89, 44.14, 41.06], borderColor: '#6B8E23', backgroundColor: 'rgba(107,142,35,0.1)', fill: false, tension: 0.3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { ticks: { callback: v => '$' + v } } },
+            plugins: { tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2) } } }
+        }
+    });
+
+    // 5. Subscription Conversion
+    new Chart(document.getElementById('subConversion'), {
+        type: 'bar',
+        data: {
+            labels: ["2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"],
+            datasets: [{ data: [2.1, 3.0, 3.0, 3.0, 3.4, 3.6, 3.2, 2.7, 2.3, 2.7, 4.1, 2.4, 2.8], backgroundColor: '#6B8E23', borderRadius: 4 }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => v + '%' } } }
+        }
+    });
+
+    // 6. Top 15 SKUs (horizontal bar)
+    new Chart(document.getElementById('topSkus'), {
+        type: 'bar',
+        data: {
+            labels: ["60110-FrenchRoast-5lb", "50097-Sampler", "80110L-FrenchRoast-11oz", "60060-Hazelnut-5lb", "86010L-DarkChocolate-10oz", "46011-DarkChocolate-25ct", "63110-DandelionDarkRoast-5lb", "83110L-DandelionDarkRoast-10oz", "80060L-Hazelnut-11oz", "60070-Java-5lb", "43111-DandelionDarkRoast-25ct", "43221-DandelionCaramelNut-25ct", "85020L-ChagaAshwagandhaButt-10oz", "60010-VanillaNut-5lb", "80030L-AlmondAmaretto-11oz"],
+            datasets: [{ data: [359817.06, 282375.42, 264615.52, 255286.69, 237498.81, 229231.16, 208090.51, 203367.05, 193406.68, 177558.54, 172496.32, 168040.8, 167547.73, 158511.46, 145531.62], backgroundColor: COLORS.concat(COLORS).concat(COLORS), borderRadius: 4 }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } } }
+        }
+    });
+
+    // 7. SKU Scatter (bubble)
+    const scatterData = [{"sku": "60110-FrenchRoast-5lb", "revenue": 359817.06, "margin_pct": 77.2, "units": 4594}, {"sku": "50097-Sampler", "revenue": 282375.42, "margin_pct": 62.2, "units": 13338}, {"sku": "80110L-FrenchRoast-11oz", "revenue": 264615.52, "margin_pct": 81.5, "units": 19561}, {"sku": "60060-Hazelnut-5lb", "revenue": 255286.69, "margin_pct": 77.9, "units": 3231}, {"sku": "86010L-DarkChocolate-10oz", "revenue": 237498.81, "margin_pct": 72.5, "units": 12719}, {"sku": "46011-DarkChocolate-25ct", "revenue": 229231.16, "margin_pct": 76.7, "units": 12684}, {"sku": "63110-DandelionDarkRoast-5lb", "revenue": 208090.51, "margin_pct": 73.2, "units": 1949}, {"sku": "83110L-DandelionDarkRoast-10oz", "revenue": 203367.05, "margin_pct": 77.2, "units": 12195}, {"sku": "80060L-Hazelnut-11oz", "revenue": 193406.68, "margin_pct": 81.8, "units": 14396}, {"sku": "60070-Java-5lb", "revenue": 177558.54, "margin_pct": 79.2, "units": 2246}, {"sku": "43111-DandelionDarkRoast-25ct", "revenue": 172496.32, "margin_pct": 80.8, "units": 10528}, {"sku": "43221-DandelionCaramelNut-25ct", "revenue": 168040.8, "margin_pct": 77.7, "units": 10390}, {"sku": "85020L-ChagaAshwagandhaButt-10oz", "revenue": 167547.73, "margin_pct": 80.1, "units": 9875}, {"sku": "60010-VanillaNut-5lb", "revenue": 158511.46, "margin_pct": 71.7, "units": 2054}, {"sku": "80030L-AlmondAmaretto-11oz", "revenue": 145531.62, "margin_pct": 80.1, "units": 10908}, {"sku": "40097-Sampler", "revenue": 139307.4, "margin_pct": 81.9, "units": 9360}, {"sku": "82110L-FrenchVanilla-11oz", "revenue": 129491.63, "margin_pct": 75.6, "units": 9087}, {"sku": "80010L-VanillaNut-11oz", "revenue": 128364.82, "margin_pct": 77.5, "units": 9426}, {"sku": "83220L-DandelionCaramelNut-10oz", "revenue": 125503.15, "margin_pct": 75.4, "units": 7485}, {"sku": "60080-Mocha-5lb", "revenue": 125131.72, "margin_pct": 74.0, "units": 1618}, {"sku": "80070L-Java-11oz", "revenue": 122309.28, "margin_pct": 82.5, "units": 9252}, {"sku": "82060L-MaplePecan-11oz", "revenue": 121938.49, "margin_pct": 75.1, "units": 8621}, {"sku": "40011-VanillaNut-25ct", "revenue": 120057.81, "margin_pct": 77.8, "units": 8999}, {"sku": "45021-ChagaAshwagandhaButt-25ct", "revenue": 118025.75, "margin_pct": 80.9, "units": 7093}, {"sku": "66010-DarkChocolate-5lb", "revenue": 116626.54, "margin_pct": 65.6, "units": 968}, {"sku": "85050L-TurkeyTailAstragalus-10oz", "revenue": 116267.37, "margin_pct": 83.0, "units": 6913}, {"sku": "40111-FrenchRoast-25ct", "revenue": 115988.28, "margin_pct": 79.4, "units": 8672}, {"sku": "85070L-MiraculousMushrooms-10oz", "revenue": 113356.76, "margin_pct": 78.4, "units": 5724}, {"sku": "83340L-DandelionCoconut-10oz", "revenue": 107394.51, "margin_pct": 77.1, "units": 6349}, {"sku": "40061-Hazelnut-25ct", "revenue": 106740.9, "margin_pct": 75.6, "units": 8010}];
+    new Chart(document.getElementById('skuScatter'), {
+        type: 'bubble',
+        data: {
+            datasets: [{
+                label: 'SKUs',
+                data: scatterData.map(s => ({ x: s.revenue, y: s.margin_pct, r: Math.max(3, Math.sqrt(s.units) / 2), sku: s.sku })),
+                backgroundColor: 'rgba(139,105,20,0.5)',
+                borderColor: '#8B6914',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: {
+                    label: ctx => {
+                        const p = ctx.raw;
+                        return p.sku + ' — Rev: $' + p.x.toLocaleString() + ', Margin: ' + p.y + '%';
+                    }
+                } }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Revenue' }, ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k' } },
+                y: { title: { display: true, text: 'Margin %' }, ticks: { callback: v => v + '%' } }
+            }
+        }
+    });
+    </script>
+</body>
+</html>
