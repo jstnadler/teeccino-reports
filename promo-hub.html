@@ -123,7 +123,10 @@ body {
    tuned for a near-black card. Lift it on this state only -- a card that is
    shouting "needs work" is the last one whose dates should be hard to read. */
 .tile.bg-notready .hint,
-.tile.bg-notready .tdates { color:rgba(255,255,255,0.82); }
+/* .tdates does not exist -- the dates line is .twin with a .tdays child, so the
+   original selector matched NOTHING and was a silent no-op. */
+.tile.bg-notready .twin,
+.tile.bg-notready .tdays { color:rgba(255,255,255,0.82); }
 /* NEXT UP's background is a touch stronger so the pinned card reads as the
    brightest thing on the board, but it must still respect notready: a next-up
    promo that needs work is YELLOW, not reassuring blue. */
@@ -849,6 +852,15 @@ function tileHTML(c) {
   const win = (a && b) ? (a + ' \u2192 ' + b)
     : (hasV(w.raw) ? esc(w.raw.v) : '<span class="nodata">window not declared</span>');
   const days = hasV(w.days) ? ' \u00b7 ' + esc(w.days.v) + 'd' : '';
+  // Justin, 2026-09-02: "the top line of the card says the year and the month
+  // in YYYY-MM Format... thats stupid, drop it, its distracting when the dates
+  // are right underneath already."
+  // Dropped exactly where his REASON holds. 15 HISTORICAL cards have NO declared
+  // window -- their date line reads "window not declared" -- and they carry
+  // generic names ("Promo 1 Minor", "Promo 2 Major"). Strip the month from those
+  // and the card becomes unidentifiable: a generic name with no date anywhere.
+  // So the month now renders ONLY when there is nothing underneath to replace it.
+  const hasWindow = (a && b) || hasV(w.raw);
 
   const shortKey = k => String(k || '')
     .replace('custom.first_subscription_discount', 'fsd')
@@ -945,7 +957,7 @@ function tileHTML(c) {
        aria-expanded="false" aria-controls="d-${uid}" data-target="d-${uid}"
        data-id="${esc(c.promoId || c.feedId || '')}">
     <div class="thead">
-      <span class="month">${esc(c.month || '\u2014')}</span>
+      ${hasWindow ? '' : `<span class="month">${esc(c.month || '\u2014')}</span>`}
       <span class="badge ${esc(c.tier || 'UNKNOWN')}">${esc(c.tier || 'UNKNOWN')}</span>
       <span class="chip ${sk}">${esc(c.lifecycle)}</span>${c.isNextUp ? '<span class="nextpip">NEXT UP</span>' : ''}
     </div>
