@@ -100,6 +100,31 @@ body {
    done, not for it to vanish. */
 .tile.state-CLOSED     { border-color:rgba(148,163,184,0.34); opacity:0.86; }
 .tile.state-HISTORICAL { border-color:rgba(148,163,184,0.28); opacity:0.72; }
+/* BACKGROUND TINTS. Justin, 2026-09-02: "make the background color of the card
+   a little light blue if it's ready to go. If its in progress, make it a little
+   green. If it's in the future and not ready make it yellow, and if it's done and
+   passed make it another color that makes sense."
+   Tints are deliberately LOW alpha -- this is a dark theme and the cards carry
+   dense text, so a saturated fill costs legibility and the borders already carry
+   the same signal. Background answers "what kind of thing is this" at a glance;
+   the border answers "which one". They must AGREE, never compete. */
+.tile.bg-ready    { background:rgba(96,165,250,0.10); }   /* upcoming, in order  */
+.tile.bg-live     { background:rgba(74,222,128,0.11); }   /* in progress         */
+.tile.bg-notready { background:rgba(251,191,36,0.11); }   /* upcoming, needs work*/
+.tile.bg-alarm    { background:rgba(248,113,113,0.10); }  /* ended, teardown open*/
+/* "another color that makes sense" for done-and-passed: slate. It is the one
+   neutral that reads as ARCHIVED rather than as a status needing action, and it
+   does not compete with blue/green/yellow for attention. */
+.tile.bg-done     { background:rgba(148,163,184,0.06); }
+/* An upcoming promo that needs work gets the amber BORDER too, so border and
+   background say the same thing. Ordered after the state- rules so it wins. */
+.tile.bg-notready { border-color:rgba(251,191,36,0.65); }
+/* NEXT UP's background is a touch stronger so the pinned card reads as the
+   brightest thing on the board, but it must still respect notready: a next-up
+   promo that needs work is YELLOW, not reassuring blue. */
+.tile.is-next.bg-ready { background:rgba(125,211,252,0.15); }
+.tile:hover { background:rgba(255,255,255,0.07); }
+
 /* NEXT UP -- exactly one card ever carries this. Brighter, thicker, with a ring,
    so it wins against 8 identical blues without inventing a hue. */
 .tile.is-next {
@@ -911,7 +936,7 @@ function tileHTML(c) {
     ? `<b>SCOPE</b> ${esc(c.scope.value.v)}${c.scope.derived ? ' <span class="derived">DERIVED</span>' : ''}`
     : '<span class="nodata">scope not stated</span>';
 
-  return `<div class="tile state-${sk}${c.isNextUp ? ' is-next' : ''}" role="button" tabindex="0"
+  return `<div class="tile state-${sk} bg-${c.bgState || 'ready'}${c.isNextUp ? ' is-next' : ''}" role="button" tabindex="0"
        aria-expanded="false" aria-controls="d-${uid}" data-target="d-${uid}"
        data-id="${esc(c.promoId || c.feedId || '')}">
     <div class="thead">
