@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-03T12:04:30.318693-07:00",
-  "generatedAtUTC": "2026-09-03T19:04:30.318693+00:00",
+  "generatedAt": "2026-09-03T12:16:23.383577-07:00",
+  "generatedAtUTC": "2026-09-03T19:16:23.383577+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-03T10:51:27-07:00",
-      "ageSeconds": 4383,
+      "ageSeconds": 5096,
       "ageHuman": "1h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -26,7 +26,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-03T10:51:27-07:00",
-      "ageSeconds": 4383,
+      "ageSeconds": 5096,
       "ageHuman": "1h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-03T10:51:30-07:00",
-      "ageSeconds": 4380,
+      "ageSeconds": 5093,
       "ageHuman": "1h ago",
       "stale": false,
       "thresholdSeconds": 86400,
@@ -51,7 +51,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-03T09:27:46-07:00",
-      "ageSeconds": 9404,
+      "ageSeconds": 10117,
       "ageHuman": "2h ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -2304,8 +2304,8 @@
           "teardownKind": "required",
           "launchState": "pending",
           "teardownState": "pending",
-          "launchTarget": "Announcement bar: Labor Day Sale, 25% OFF sitewide / 30% OFF first subscription shipment. Must NOT state a free-shipping threshold other than $59.",
-          "teardownTarget": "Revert to the evergreen bar string, threshold $59. MANUAL -- expires on nothing.",
+          "launchTarget": "APPROVED COPY, JUSTIN 2026-09-03 -- ship verbatim, both lines:\n  LINE 1: LABOR DAY SALE - 25% OFF SITEWIDE + 30% OFF YOUR FIRST SUBSCRIPTION SHIPMENT - ENDS SEPTEMBER 10\n  LINE 2: FREE SHIPPING OVER $59 - FREE GIFT AT $25 - FREE GOLD SCOOP ON ORDERS OVER $75\nPLUS the targeting fix approved in the same click: the offer line must render on PRODUCT PAGES too. Today the offer line is excluded from PDPs and the shipping-speed line is PDP-only, so the highest-intent page in the store shows no offer at all. Full provenance and guardrail check: announcementBarApproval2026_09_03 on this record. SUPERSEDES the earlier launchTarget text on this row.",
+          "teardownTarget": "REWRITTEN 2026-09-03. AT 2026-09-11 THE BAR MUST BE WRITTEN BACK, NOT LEFT TO LAPSE -- it expires on nothing. TARGET: line 1 returns to the evergreen offer line at the $59 / $25 baseline with NO Labor Day, NO 25%/30% and NO Gold Scoop; the second block returns to disabled + empty; the shipping-speed line is untouched throughout. DO NOT 'RESTORE THE PRE-PROMO BAR'. ThemeSmith captured that state before overwriting it and correctly flagged it as a RAW SNAPSHOT, not a clean baseline: it already contained the dead August countdown (2026-08-31 23:59:59) and a SHOP NOW pointing at the finished Instants collection. Restoring it re-installs August residue. The countdown date and the button destination are DECISIONS, not restores -- see the Countdown timer row. KNOWN GAP, OWNED @themesmith: the 2026-09-11 teardown job currently only REPORTS bar residue, it does not write it. Extend it so the restore actually lands, and verify on served HTML.",
           "launchEvidence": null,
           "teardownEvidence": null,
           "launchVerifiedBy": null,
@@ -2715,10 +2715,10 @@
           ]
         },
         "launch": {
-          "result": "FAIL",
-          "exitCode": 1,
-          "ranAt": "2026-09-03T11:54:44.158946-07:00",
-          "ranAtAge": "9m ago",
+          "result": "PASS",
+          "exitCode": 0,
+          "ranAt": "2026-09-03T12:09:12.119227-07:00",
+          "ranAtAge": "7m ago",
           "checks": [
             {
               "check": "window: launch phase matches the clock",
@@ -2741,19 +2741,17 @@
             {
               "check": "storefront: free-shipping copy agrees across owners (expect $59)",
               "owner": "themesmith",
-              "status": "NOCOV",
-              "detail": "probe https://teeccino.com/ -> NO COVERAGE http 429 after 3 attempts (+6 more)"
+              "status": "PASS",
+              "detail": "VERDICT: CLEAN (coverage FULL: read 3/3)"
             }
           ],
-          "failingOwners": [
-            "themesmith"
-          ]
+          "failingOwners": []
         },
         "midflight": {
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-09-03T11:30:24.430583-07:00",
-          "ranAtAge": "34m ago",
+          "ranAtAge": "45m ago",
           "checks": [
             {
               "check": "window: midflight phase matches the clock",
@@ -3345,6 +3343,11 @@
           "at": "2026-09-03",
           "by": "promosmith",
           "event": "ThemeSmith armed and RENDER-VERIFIED by me on served HTML: collections/all carries 'Labor Day Sale' x45; French Roast PDP campaign-sale-badge__label reads 'Labor Day Sale' (its three remaining 'Flavor of the Month' hits are all HAZELNUT cards in the mega-menu and the PDP upsell, which is correct); Hazelnut PDP negative control PASSES -- zero 'Labor Day Sale', 'Flavor of the Month' present, SAVE 26%. No dead promo names anywhere. The 2026-08-06 mislabelled-sale defect found this morning is CLOSED. Reconciled two surface rows ThemeSmith flagged as disagreeing with live: Countdown timer (was falsely 'nothing armed'), and the campaign window block's stale 2026-09-04 start literal."
+        },
+        {
+          "at": "2026-09-03",
+          "by": "promosmith",
+          "event": "Justin APPROVED the announcement-bar copy as written plus the product-page targeting fix (option verbatim: 'Ship it as written, and fix the product-page targeting'). Copy recorded verbatim on the Announcement bar surface with the guardrail check; teardown target rewritten with explicit literals and a do-not-restore-the-snapshot warning. Dispatched to ThemeSmith."
         }
       ],
       "narrative": [
@@ -4127,7 +4130,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T12:13:54.833096-07:00",
-          "ranAtAge": "5d ago",
+          "ranAtAge": "6d ago",
           "checks": [
             {
               "check": "window: preflight phase is appropriate",
@@ -4255,8 +4258,8 @@
         "teardown": {
           "result": "FAIL",
           "exitCode": 1,
-          "ranAt": "2026-09-03T11:27:58.182628-07:00",
-          "ranAtAge": "36m ago",
+          "ranAt": "2026-09-03T12:09:43.219022-07:00",
+          "ranAtAge": "6m ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -4281,11 +4284,14 @@
         {
           "question": "ATTENTIVE ONLY: was a '72hr Instants Sale (Launch)' SMS ever built or scheduled in Attentive for 2026-08-28? (The Klaviyo half of this question is ANSWERED and closed -- see surface 'Email / SMS' launchEvidence.)",
           "owner": "justin",
-          "blocking": true,
+          "blocking": false,
           "raised": "2026-08-28T13:15:00-07:00",
           "note": "NARROWED 2026-08-28 by @lifecyclesmith, the named owner of this surface. KLAVIYO HALF: ANSWERED, NOT ASSUMED. 1,965 campaign objects enumerated all time across email+SMS; Scheduled count account-wide = 0; no campaign of that name has ever existed; nothing dispatched 2026-08-28 but an unrelated Pumpkin Spice teaser. The sends are NON-EXISTENT -- a fourth state distinct from sent/scheduled/stopped. This did NOT need a logged-in browser session: LifecycleSmith reads Klaviyo via a private API key, so the earlier note that 'no agent here has' Klaviyo access is incorrect and should not be relied on again. ATTENTIVE HALF: GENUINELY STILL OPEN AND STILL BLOCKING. No Attentive API credential exists, so no agent can read it. @justin must either check the Attentive console directly or provision a credential. Same standing blocker recorded at LifecycleSmith's creation (CLAUDE.md section 9, item 1).",
           "narrowedAt": "2026-08-28T13:21:50.194227-07:00",
-          "narrowedBy": "lifecyclesmith"
+          "narrowedBy": "lifecyclesmith",
+          "resolved": "2026-09-03T20:20:00Z",
+          "resolvedBy": "justin",
+          "resolution": "RULED MOOT BY JUSTIN 2026-09-03, from a three-option menu. HIS CHOICE, VERBATIM AS LABELLED: 'Rule it moot and close the record'.\n\nRECORD THIS AS UNRESOLVABLE-AND-RULED-MOOT. IT IS NOT AN ANSWER OF 'NO'. Nobody established whether a '72hr Instants Sale (Launch)' SMS was ever built or scheduled in Attentive for 2026-08-28. No Attentive API credential exists, so no agent could read it and none did. Justin decided the question does not need answering, which is a different fact from the answer being no, and any future reader who needs to know whether that SMS went out must still go and look.\n\nWHY MOOT IS DEFENSIBLE, stated so the ruling can be audited rather than just cited: the promo ended 2026-08-31 and this is 3 days later. There is no teardown obligation on a send -- an SMS that went out has gone out and cannot be retracted, and one that was never built has nothing to disarm. So the answer changes nothing about the state of the store, which is what a teardown record exists to protect. That is NOT true of an armed FUTURE send, which is a live obligation and must never be ruled moot on this precedent.\n\nTHE KLAVIYO HALF REMAINS SEPARATELY AND GENUINELY ANSWERED, and is not covered by this ruling: @lifecyclesmith enumerated 1,965 campaign objects all time across email and SMS, account-wide Scheduled count 0, and no campaign of that name has ever existed. That is a measured null, not a moot.\n\nSTANDING GAP THIS RULING DOES NOT FIX: Attentive is unreadable by every agent in the guild. Justin was NOT asked to provision a credential in the same menu -- deliberately, because bundling a second decision into a menu is how an unpicked option gets recorded as a declined one. The credential gap remains open on LifecycleSmith's own standing-blocker list and should be raised on its own."
         },
         {
           "question": "The sale shipped LIVE with 14 variants, not the declared 12. Stacking is now DISPROVEN so there is no MAP/depth problem, but this contradicts Justin's explicit 'remove the French Roast Instants' ruling. Leave at 14 and amend the declaration, or pull the two back out?",
@@ -4470,6 +4476,12 @@
           "by": "promosmith",
           "event": "boldbrew-severity-correction",
           "what": "CORRECTING MY OWN NOTE, not the verdict. @catalogsmith's answer returned a second time with one detail sharper than the first: bold-brew-box-herbal-tea-edition is ARCHIVED and NOT A WEBPRODUCT, and its '$39.99' is a STARTING PRICE, not a threshold. I had written it up as an unconditional free-shipping promise on a product outside the delivery profile -- true as far as it goes, but framed as though it were a live customer-facing claim. It is not. Severity down, item still real (the 'Ships free!' line is unconditional and untouched since January 2023 and needs a copy decision from its owner), and it is explicitly NOT a RULING-7 threshold defect. Amended the surface evidence in place rather than leaving the stronger version standing next to the correction -- a stale framing beside a corrected fact reads as live justification. Verdict (a) unaffected: 9 of 1,362 objects, all $59.\nAlso folded in: CatalogSmith re-ran the sweep LIVE a second time rather than re-reading its own cached result, and all 9 fields were still byte-identical, 0 changes. That is the right instinct and worth naming -- a few hours had passed and a cached sweep would have been the weaker answer to the same question."
+        },
+        {
+          "at": "2026-09-03T20:20:00Z",
+          "by": "promosmith",
+          "event": "attentive-ruled-moot",
+          "what": "JUSTIN RULED THE ATTENTIVE SMS QUESTION MOOT 2026-09-03 and directed the record closed. Question resolved, blocking cleared, worded as 'unresolvable, ruled moot' and explicitly NOT as 'no SMS existed'.\n\nALL PROMO-SIDE OBLIGATIONS ON THIS RECORD ARE NOW DISCHARGED: 8 of 8 required teardowns resolved (1 done, 3 done-superseded, 4 not-required, 0 pending) and 0 blocking questions.\n\nBUT I AM NOT WRITING status='closed', AND THE REASON IS NOT OUTSTANDING WORK. My hard rule is explicit: 'You may not set a promo record to status: closed while the teardown gate exits 1.' It exits 1. Verified just now with the exit code read DIRECTLY, not through a pipe (RAW_EXIT=1): '[FAIL] teardown: No stray discounts outside FOTM @shopkeeper -- COULD NOT VERIFY -- NOT EVALUATED -- this check assumes no sale is running, and labor-day-sale-2026-09 is LIVE'. That is @agentsmith's own premise guard firing correctly, and it is the ONLY defect of 2 checks.\n\nJustin ruled on the ATTENTIVE QUESTION. He did not rule on the gate, was not shown the gate, and I will not stretch a menu label into authority over a rule he did not see. An option label is an instruction about the thing it names, nothing wider.\n\nTWO SCHEMA DEFECTS IN THE GATE, both @agentsmith's, and TOGETHER THEY ARE NOW THE ONLY THING HOLDING THIS RECORD OPEN:\n  (1) UNVERIFIABLE IS COUNTED AS A DEFECT. The guard converts a fake failure into an honest 'cannot evaluate' -- correct, and it is what stopped 208 variants being reported as mispriced. But an unevaluable check still costs exit 1, so NO ENDED PROMO CAN EVER BE CLOSED WHILE A LATER PROMO IS LIVE. Labor Day runs to 2026-09-10, then October's major, then BFCM. With one 7-day major plus 1-2 minors every month, the windows in which no sale is running are narrow and I cannot schedule closure into them. This is the exact pathology AgentSmith set out to remove -- an open+ended record making the nightly verifier run forever -- and the guard has relocated it rather than removed it. An UNVERIFIABLE should be reported loudly and NOT be fatal to a teardown phase, or the phase needs a distinct terminal state for 'discharged, one check permanently unevaluable'.\n  (2) THE GATE DOES NOT RECOGNISE MY HONEST STATES. It lists 7 surfaces as 'HUMAN-ONLY surfaces still open' -- and all 7 are ones I RESOLVED today as 'done-superseded' (3) or 'not-required' (4). The count fell 8 -> 7 only because row 18 reads plain 'done'. So the gate treats a resolution it does not have a vocabulary for as an open surface. Those 7 are informational and do not cause the exit 1, but the effect is that the artifact a human reads UNDER-REPORTS completed work, and under-reporting is not the safe direction: a dashboard reading far worse than reality gets ignored exactly like one reading better. 'not-required' and 'done-superseded' are deliberately MORE informative than 'done' -- they say a surface was never armed, or was cleared by the next promo's arm rather than by its own teardown -- and both must count as resolved.\n\nDISPATCHING BOTH TO @agentsmith. Its message opened by offering to own the 'record open N days past endsAt' reminder in project_reminders.py and asked whether I would rather hold it in check_promo_calendar.py. Answer: it should own it, N=2. My validator reads the workbook and declaredSlate and has no business asserting facts about promo records; two authorities over one fact is the drift it was right to want to avoid. Worth its noticing that with defect (1) unfixed, that reminder would fire on THIS record every night while the record is blameless."
         }
       ],
       "narrative": [],
