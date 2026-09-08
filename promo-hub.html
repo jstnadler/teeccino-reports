@@ -309,6 +309,75 @@ summary::marker { color:#64748b; }
 .pasttoggle button:hover { background:rgba(255,255,255,0.10); }
 .hidden { display:none !important; }
 .foot { text-align:center; color:#475569; font-size:0.74em; margin:34px 0 10px; line-height:1.8; }
+
+/* ---- SPEC 8: month calendar view -------------------------------------- */
+#calwrap{margin:0 0 30px}
+.calhd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.calhd h2{font-size:15px;letter-spacing:.10em;text-transform:uppercase;color:#94a3b8;margin:0;font-weight:600}
+.calhd .calsub{font-size:12px;color:#64748b}
+.calgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:1400px){.calgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1000px){.calgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.calgrid{grid-template-columns:1fr}}
+.mon{border:1px solid rgba(148,163,184,.22);border-radius:10px;padding:10px 10px 12px;background:rgba(15,23,42,.35)}
+.mon.past{opacity:.72}
+.mon.now{border-color:rgba(74,222,128,.45);box-shadow:0 0 0 1px rgba(74,222,128,.14)}
+.monhd{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.monnm{font-size:13px;font-weight:600;color:#e2e8f0;letter-spacing:.04em}
+.monflag{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;white-space:nowrap}
+.monflag.nomajor{background:rgba(251,191,36,.20);color:#fcd34d}
+.monflag.gap-ok{background:rgba(96,165,250,.16);color:#93c5fd}
+.monflag.gap-warn{background:rgba(251,191,36,.20);color:#fcd34d}
+.monflag.gap-crit{background:rgba(248,113,113,.22);color:#fca5a5}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 0 3px}
+.dow span{font-size:9px;text-align:center;color:#64748b;letter-spacing:.06em}
+.wk{margin:0 0 2px}
+.wkdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dcell{height:16px;border-radius:3px;background:rgba(148,163,184,.07);font-size:8.5px;line-height:16px;text-align:center;color:#64748b}
+.dcell.blank{background:transparent}
+.dcell.today{background:rgba(74,222,128,.22);color:#bbf7d0;font-weight:700}
+.wkbars{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:2px}
+.bar{height:9px;border-radius:3px;font-size:0;cursor:pointer;position:relative}
+.bar.minor{height:5px;margin-top:2px;background:transparent!important;border:1px solid}
+.bar.cont-l{border-top-left-radius:0;border-bottom-left-radius:0}
+.bar.cont-r{border-top-right-radius:0;border-bottom-right-radius:0}
+.bar:hover{outline:1px solid rgba(226,232,240,.55)}
+.barlane{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.callegend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 0;font-size:11px;color:#64748b;align-items:center}
+.callegend .sw{display:inline-block;width:18px;height:8px;border-radius:3px;vertical-align:middle;margin-right:5px}
+.callegend .sw.minor{height:5px;background:transparent;border:1px solid}
+.calnoplace{margin:12px 0 0;padding:9px 12px;border-radius:8px;background:rgba(251,191,36,.10);
+  border:1px solid rgba(251,191,36,.34);font-size:12px;color:#fcd34d}
+.calnoplace b{color:#fde68a}
+.calnoplace .names{color:#cbd5e1;font-size:11.5px;margin-top:4px;line-height:1.5}
+.monempty{font-size:10.5px;color:#64748b;font-style:italic;padding:4px 0 0}
+
+/* SPEC 8.2 -- bar colour IS the 7.5 lifecycle token. One palette, two views.
+   MAJOR = solid fill, MINOR = outlined half-height. Tier is weight, never hue. */
+.bar.state-LIVE          { background:rgba(74,222,128,0.55); }
+.bar.state-ENDEDOPEN     { background:rgba(248,113,113,0.75); }
+.bar.state-RANUNRECORDED { background:rgba(251,191,36,0.70); }
+.bar.state-ARMED         { background:rgba(96,165,250,0.45); }
+.bar.state-DECLARED      { background:rgba(96,165,250,0.45); }
+.bar.state-CLOSED        { background:rgba(96,165,250,0.45); }
+.bar.state-HISTORICAL    { background:rgba(96,165,250,0.45); opacity:0.72; }
+.bar.minor.state-LIVE          { border-color:rgba(74,222,128,0.75); }
+.bar.minor.state-ENDEDOPEN     { border-color:rgba(248,113,113,0.90); }
+.bar.minor.state-RANUNRECORDED { border-color:rgba(251,191,36,0.85); }
+.bar.minor.state-ARMED         { border-color:rgba(96,165,250,0.65); }
+.bar.minor.state-DECLARED      { border-color:rgba(96,165,250,0.65); }
+.bar.minor.state-CLOSED        { border-color:rgba(96,165,250,0.65); }
+.bar.minor.state-HISTORICAL    { border-color:rgba(96,165,250,0.65); opacity:0.72; }
+
+/* SPEC 7.5 REGRESSION FIX, 2026-09-08. These two rows still carried the SLATE
+   grey that Justin's 2026-08-21 palette ruling replaced with blue. `.card`
+   was corrected at the time and `.tile` was not, so the page has been
+   rendering CLOSED and HISTORICAL tiles in the exact grey that 7.5 names as
+   "the negative control for the grey that kept coming back" -- while the
+   probe only ever asserted the DECLARED row, so nothing caught it.
+   Spec wins over code; the code moves. */
+.tile.state-CLOSED     { border-color:rgba(96,165,250,0.45); opacity:0.86; }
+.tile.state-HISTORICAL { border-color:rgba(96,165,250,0.45); opacity:0.72; }
 </style>
 </head>
 <body>
@@ -335,6 +404,16 @@ summary::marker { color:#64748b; }
 
   <div class="tallies" id="tallies"></div>
   <div class="banners" id="banners"></div>
+  <div id="calwrap">
+    <div class="calhd">
+      <h2>Month calendar</h2>
+      <div class="calsub" id="calsub"></div>
+    </div>
+    <div id="calendar" class="calgrid"></div>
+    <div class="callegend" id="callegend"></div>
+    <div class="calnoplace" id="calnoplace" style="display:none"></div>
+  </div>
+
   <div id="cards" class="cardgrid"></div>
 
   <div class="pasttoggle" id="pasttoggle" style="display:none">
@@ -1039,6 +1118,192 @@ function toggleDetail(panel) {
   if (!open) tile.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
+
+/* ===================== SPEC 8 -- month calendar view =====================
+   Renders from the SAME cards[] array and the SAME promoId as the tiles
+   (spec 8.6). It never re-derives a date, tier or lifecycle from anywhere
+   else -- a second derivation would make this a third mirror to reconcile.
+*/
+const CAL_MON = ['January','February','March','April','May','June',
+                 'July','August','September','October','November','December'];
+
+function calYear(cards) {
+  const tally = {};
+  cards.forEach(c => {
+    const m = /^(\d{4})/.exec(String((c.timeline && c.timeline.startsAtDate) || c.month || ''));
+    if (m) tally[m[1]] = (tally[m[1]] || 0) + 1;
+  });
+  const keys = Object.keys(tally);
+  if (!keys.length) return new Date().getUTCFullYear();
+  keys.sort((a, b) => tally[b] - tally[a] || Number(b) - Number(a));
+  return Number(keys[0]);
+}
+
+// Inclusive day-span of a card, or null when it cannot be placed (spec 8.4).
+function calSpan(c) {
+  const t = c.timeline || {};
+  const a = ymdToUTC(t.startsAtDate), b = ymdToUTC(t.endsAtDate);
+  if (a == null || b == null || b < a) return null;
+  return { a: a, b: b };
+}
+
+function renderCalendar(cards) {
+  const host = document.getElementById('calendar');
+  if (!host) return;
+  const year = calYear(cards);
+  const todayMs = todayUTCms();
+
+  const placed = [], unplaced = [];
+  cards.forEach(c => {
+    const s = calSpan(c);
+    if (s) placed.push({ c: c, a: s.a, b: s.b }); else unplaced.push(c);
+  });
+  placed.sort((x, y) => x.a - y.a || String(x.c.promoId).localeCompare(String(y.c.promoId)));
+
+  // ---- clearance between consecutive MAJORS (spec 8.5) ------------------
+  const majors = placed.filter(p => String(p.c.tier || '').toUpperCase() === 'MAJOR');
+  const gapForMonth = {};                       // month index -> {days, sev, prev}
+  for (let i = 1; i < majors.length; i++) {
+    const prev = majors[i - 1], cur = majors[i];
+    const days = Math.round((cur.a - prev.b) / MS_DAY) - 1;   // clear days BETWEEN
+    const d = new Date(cur.a);
+    if (d.getUTCFullYear() !== year) continue;
+    gapForMonth[d.getUTCMonth()] = {
+      days: days,
+      sev: days >= 14 ? 'ok' : (days >= 10 ? 'warn' : 'crit'),
+      prev: prev.c.name, cur: cur.c.name
+    };
+  }
+
+  let html = '';
+  for (let m = 0; m < 12; m++) {
+    const first = Date.UTC(year, m, 1);
+    const dim = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
+    const lead = new Date(first).getUTCDay();               // 0 = Sunday
+    const monthEnd = Date.UTC(year, m, dim);
+
+    // segments of each promo that fall inside THIS month (spec 8.3)
+    const segs = placed.filter(p => p.b >= first && p.a <= monthEnd).map(p => ({
+      c: p.c,
+      from: Math.max(p.a, first),
+      to: Math.min(p.b, monthEnd),
+      contL: p.a < first,
+      contR: p.b > monthEnd
+    }));
+
+    // greedy lane assignment across the whole month so a promo keeps one lane
+    const lanes = [];
+    segs.forEach(s => {
+      let li = 0;
+      while (lanes[li] && lanes[li] > s.from) li++;
+      lanes[li] = s.to;
+      s.lane = li;
+    });
+    const laneCount = lanes.length;
+
+    const isNow = todayMs >= first && todayMs <= monthEnd;
+    const isPast = monthEnd < todayMs;
+    const hasMajor = segs.some(s => String(s.c.tier || '').toUpperCase() === 'MAJOR'
+                                    && s.from >= first && !s.contL);
+
+    let flags = '';
+    if (!hasMajor) flags += '<span class="monflag nomajor">no major</span>';
+    const g = gapForMonth[m];
+    if (g) flags += '<span class="monflag gap-' + g.sev + '" title="' +
+      esc(g.prev) + ' \u2192 ' + esc(g.cur) + '">' + g.days + 'd clear</span>';
+
+    let body = '';
+    const weeks = Math.ceil((lead + dim) / 7);
+    for (let w = 0; w < weeks; w++) {
+      let cells = '';
+      for (let col = 0; col < 7; col++) {
+        const dayNum = w * 7 + col - lead + 1;
+        if (dayNum < 1 || dayNum > dim) { cells += '<div class="dcell blank"></div>'; continue; }
+        const ms = Date.UTC(year, m, dayNum);
+        cells += '<div class="dcell' + (ms === todayMs ? ' today' : '') + '">' + dayNum + '</div>';
+      }
+      const wkStart = Date.UTC(year, m, w * 7 - lead + 1);
+      const wkEnd = Date.UTC(year, m, w * 7 - lead + 7);
+
+      let laneHTML = '';
+      for (let li = 0; li < laneCount; li++) {
+        const inLane = segs.filter(s => s.lane === li && s.to >= wkStart && s.from <= wkEnd);
+        if (!inLane.length) continue;
+        let bars = '';
+        inLane.forEach(s => {
+          const sFrom = Math.max(s.from, wkStart), sTo = Math.min(s.to, wkEnd);
+          const c0 = Math.round((sFrom - wkStart) / MS_DAY) + 1;
+          const c1 = Math.round((sTo - wkStart) / MS_DAY) + 2;
+          const sk = stateKey(s.c.lifecycle);
+          const minor = String(s.c.tier || '').toUpperCase() !== 'MAJOR';
+          const cl = ['bar', 'state-' + sk, minor ? 'minor' : 'major'];
+          if (s.contL || sFrom > s.from) cl.push('cont-l');
+          if (s.contR || sTo < s.to) cl.push('cont-r');
+          const dd = Math.round((s.c.timeline ? (ymdToUTC(s.c.timeline.endsAtDate) - ymdToUTC(s.c.timeline.startsAtDate)) / MS_DAY + 1 : 0));
+          bars += '<div class="' + cl.join(' ') + '" style="grid-column:' + c0 + '/' + c1 + '"' +
+            ' data-promo="' + esc(domId(s.c)) + '"' +
+            ' title="' + esc(s.c.name) + ' \u2014 ' + esc(s.c.tier || '') + ' \u2014 ' +
+            esc((s.c.timeline || {}).startsAtDate || '?') + ' \u2192 ' +
+            esc((s.c.timeline || {}).endsAtDate || '?') + ' (' + dd + 'd) \u2014 ' +
+            esc(s.c.lifecycle) + '"></div>';
+        });
+        laneHTML += '<div class="barlane">' + bars + '</div>';
+      }
+      body += '<div class="wk"><div class="wkdays">' + cells + '</div>' +
+              (laneHTML ? '<div class="wkbars-wrap">' + laneHTML + '</div>' : '') + '</div>';
+    }
+
+    // spec 8.4: an empty month must SAY it is empty, never render blank
+    if (!segs.length) body += '<div class="monempty">no promo declared</div>';
+
+    html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') + '">' +
+      '<div class="monhd"><span class="monnm">' + CAL_MON[m] + '</span>' + flags + '</div>' +
+      '<div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span>' +
+      '<span>T</span><span>F</span><span>S</span></div>' + body + '</div>';
+  }
+  host.innerHTML = html;
+
+  document.getElementById('calsub').textContent =
+    year + ' \u00b7 ' + placed.length + ' placed \u00b7 bar height = tier, colour = lifecycle \u00b7 click a bar to open its dossier';
+
+  document.getElementById('callegend').innerHTML =
+    '<span><span class="sw" style="background:rgba(74,222,128,.55)"></span>live</span>' +
+    '<span><span class="sw" style="background:rgba(96,165,250,.45)"></span>declared / closed</span>' +
+    '<span><span class="sw" style="background:rgba(248,113,113,.75)"></span>ended \u2014 teardown open</span>' +
+    '<span><span class="sw" style="background:rgba(251,191,36,.70)"></span>ran unrecorded</span>' +
+    '<span><span class="sw minor" style="border-color:rgba(96,165,250,.65)"></span>minor (outlined, half height)</span>';
+
+  // spec 8.4: not-placeable promos are LISTED, never silently dropped
+  const np = document.getElementById('calnoplace');
+  if (unplaced.length) {
+    np.style.display = '';
+    np.innerHTML = '<b>' + unplaced.length + ' promo' + (unplaced.length === 1 ? '' : 's') +
+      ' not placeable \u2014 no declared window.</b> They are real and they are missing from the grid above, ' +
+      'so they are named here rather than dropped.' +
+      '<div class="names">' + unplaced.map(c => esc(c.name) +
+        ' <span style="color:#64748b">(' + esc(c.month || 'no month') + ')</span>').join(' &middot; ') + '</div>';
+  } else {
+    np.style.display = 'none';
+    np.innerHTML = '';
+  }
+
+  // spec 8.6: a bar is a link to its own tile
+  host.addEventListener('click', ev => {
+    const bar = ev.target.closest('.bar');
+    if (!bar) return;
+    const uid = bar.getAttribute('data-promo');
+    const tile = document.querySelector('.tile[data-target="d-' + uid + '"]')
+              || document.querySelector('#t-' + uid);
+    const panel = document.getElementById('d-' + uid);
+    if (panel && panel.classList.contains('hidden')) {
+      const t = document.querySelector('.tile[data-target="d-' + uid + '"]');
+      if (t) t.click();
+    }
+    const target = tile || panel;
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
 fetch(STATE_URL + '?t=' + Date.now())
   .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(s => {
@@ -1081,6 +1346,7 @@ fetch(STATE_URL + '?t=' + Date.now())
       '<div class="nodata">No active, armed or declared promos.</div>';
     wireGrid(document.getElementById('cards'));
     wireGrid(document.getElementById('pastcards'));
+    renderCalendar(cards);
     // column count changes at the breakpoints -- an open panel must follow it
     window.addEventListener('resize', () => {
       document.querySelectorAll('.detail.open').forEach(p => {
