@@ -487,6 +487,29 @@ summary::marker { color:#64748b; }
    not been measured, and widening an unmeasured fix is how you trade a known
    defect for an unknown one. */
 #calfull .nodata{color:#a9b8cc}
+
+/* ---- SPEC 8.12: human-readable card content ---------------------------- */
+.lanes{display:grid;gap:5px;margin:2px 0}
+.lane{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+  background:rgba(255,255,255,0.045);border-radius:8px;padding:6px 9px}
+.lane .lname{font-size:0.72em;font-weight:800;letter-spacing:.05em;color:#a9b8cc;min-width:126px}
+.lane .ladv{font-weight:800;color:#F5D784;font-size:1.0em}
+.lane .ladv em{font-style:normal;font-size:0.72em;font-weight:700;color:#a9b8cc;
+  letter-spacing:.05em;margin-right:4px}
+.lane .lsep{color:#a9b8cc}   /* was #64748b -- measured 3.01:1, below the 8.10 floor */
+.lane .lfn{color:#cbd5e1;font-size:0.86em;font-family:ui-monospace,Consolas,monospace}
+.lane .lfn em{font-style:normal;font-family:inherit;font-size:0.82em;font-weight:700;
+  color:#a9b8cc;letter-spacing:.05em;margin-right:4px}
+.gifts{margin:2px 0;padding:7px 9px;border-radius:8px;
+  background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.22)}
+.gifts .glabel{font-size:0.64em;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:#a9b8cc;margin-bottom:3px}
+.giftrow{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:1px 0}
+.giftrow .gclaim{font-size:0.9em;font-weight:700;color:#e2e8f0}
+.giftrow .gmeta{font-size:0.74em;color:#a9b8cc}
+.giftrow .warnmeta{color:#fcd34d;font-weight:700}
+#calfull .lane .lname{min-width:132px}
+#calfull .gifts{background:rgba(96,165,250,0.10)}
 </style>
 </head>
 <body>
@@ -1033,6 +1056,93 @@ function domId(c) {
 // A tile NEVER renders a zero as if it were a pass. 0 surfaces means "no promo
 // record exists", not "everything shipped" -- absence rendering as success is
 // the recurring defect this dashboard exists to catch.
+
+/* ============ SPEC 8.12 -- human-readable card content ==================
+   Justin, 2026-09-08: these cards go to agencies and internal teams, who need
+   to know WHICH NUMBER THEY MAY PUBLISH. An outsider reading "SUB fsd=10 /
+   30% OFF First Shipment" cannot tell. So: long dates with the weekday span,
+   both rate lanes spelled out and labelled Advertised / Functional, and the
+   gift stated as its approved claim rather than as the audit trail behind it.
+*/
+const MON_LONG = ['January','February','March','April','May','June','July',
+                  'August','September','October','November','December'];
+const DOW_LONG = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function longDate(ymd) {
+  const ms = ymdToUTC(ymd);
+  if (ms == null) return null;
+  const d = new Date(ms);
+  return MON_LONG[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear();
+}
+function dowOf(ymd) {
+  const ms = ymdToUTC(ymd);
+  return ms == null ? null : DOW_LONG[new Date(ms).getUTCDay()];
+}
+/* Long window line. Weekday and day-count are COMPUTED from the stored dates,
+   never authored -- calendar days inclusive of BOTH endpoints, the same basis
+   window.days uses. */
+function windowLine(startYMD, endYMD, daysFallback) {
+  const a = longDate(startYMD), b = longDate(endYMD);
+  if (!a || !b) return null;
+  const n = (daysFallback != null) ? daysFallback
+          : (calDays(startYMD, endYMD) + 1);
+  return a + ' \u2013 ' + b + ' | ' + n + (n === 1 ? ' Day' : ' Days')
+       + ' \u00b7 ' + dowOf(startYMD) + ' \u2013 ' + dowOf(endYMD);
+}
+
+/* Rate lanes, spelled out. The SUB functional prints "10%", NOT "10% OFF":
+   fsd is an INCREMENT on Stay.ai's standing 15%, not a discount off list, and
+   an agency page is the worst possible place to make that error. */
+function rateLanesHTML(r) {
+  if (!r) return '';
+  const lane = (label, o, isSub) => {
+    if (!o) return '<div class="lane"><span class="lname">' + label +
+      '</span><span class="nodata">no data</span></div>';
+    const adv = hasV(o.advertised) ? esc(o.advertised.v) : null;
+    const fn  = hasV(o.functional) ? (o.functional.v + (isSub ? '%' : '% OFF')) : null;
+    return '<div class="lane"><span class="lname">' + label + '</span>' +
+      '<span class="ladv"><em>Advertised</em> ' +
+      (adv ? esc(adv) : '<span class="nodata">not stated</span>') + '</span>' +
+      '<span class="lsep">|</span>' +
+      '<span class="lfn"><em>Functional</em> ' +
+      (fn ? esc(fn) : '<span class="nodata">not stated</span>') + '</span></div>';
+  };
+  return '<div class="lanes">' + lane('One Time Purchase', r.otp, false) +
+         lane('First Subscription', r.sub, true) + '</div>';
+}
+
+/* Gift block: the approved CLAIM, then its evidence. Never levers.addOn prose. */
+function giftHTML(c) {
+  const g = (c.levers || {}).gift || {};
+  const ev = c.evergreens || {};
+  const rows = [];
+  if (hasV(g.claim)) {
+    let meta = [];
+    if (hasV(g.sku)) meta.push('SKU ' + esc(g.sku.v));
+    const st = g.stock;
+    if (st && hasV(st.qty)) {
+      let s = 'Shopify qty ' + Number(st.qty.v).toLocaleString('en-US');
+      if (hasV(st.asOf)) s += ' (read ' + esc(st.asOf.v) + ')';
+      meta.push(s);
+      if (hasV(st.required)) meta.push('needs ~' + esc(st.required.v));
+    } else {
+      meta.push('<span class="warnmeta">stock not read</span>');
+    }
+    rows.push('<div class="giftrow"><span class="gclaim">' + esc(g.claim.v) + '</span>' +
+      '<span class="gmeta">' + meta.join(' \u00b7 ') + '</span></div>');
+  }
+  // The $25 evergreen packet is genuinely always included, so a card that omits
+  // it under-states the offer.
+  if (hasV(ev.freePacket)) {
+    rows.push('<div class="giftrow"><span class="gclaim">Free ' + esc(ev.freePacket.v) +
+      ' packet with orders over $25</span>' +
+      '<span class="gmeta">evergreen \u2014 runs under every promo</span></div>');
+  }
+  if (!rows.length) return '';
+  return '<div class="gifts"><div class="glabel">Gift with purchase</div>' +
+         rows.join('') + '</div>';
+}
+
 function tileHTML(c) {
   const sk = stateKey(c.lifecycle);
   const w  = c.window || {};
@@ -1045,9 +1155,12 @@ function tileHTML(c) {
     return m ? MON[+m[2] - 1] + ' ' + (+m[3]) : null;
   };
   const a = short(w.startsAt && w.startsAt.v), b = short(w.endsAt && w.endsAt.v);
-  const win = (a && b) ? (a + ' \u2192 ' + b)
+  // SPEC 8.12 -- long form with the weekday span, for readers outside this system.
+  const _long = windowLine(w.startsAt && w.startsAt.v, w.endsAt && w.endsAt.v,
+                           hasV(w.days) ? w.days.v : null);
+  const win = _long ? esc(_long)
     : (hasV(w.raw) ? esc(w.raw.v) : '<span class="nodata">window not declared</span>');
-  const days = hasV(w.days) ? ' \u00b7 ' + esc(w.days.v) + 'd' : '';
+  const days = '';
   // Justin, 2026-09-02: "the top line of the card says the year and the month
   // in YYYY-MM Format... thats stupid, drop it, its distracting when the dates
   // are right underneath already."
@@ -1137,8 +1250,11 @@ function tileHTML(c) {
   // table) -- silence is only safe because a declared lever is always loud.
   const lvt = c.levers || {};
   const leverBits = [];
-  if (hasV(lvt.gwp))       leverBits.push('<b>ADD-ON</b> ' + esc(lvt.gwp.v));
-  else if (hasV(lvt.addOn)) leverBits.push('<b>ADD-ON</b> ' + esc(lvt.addOn.v));
+  // SPEC 8.12: the gift renders as its APPROVED CLAIM plus evidence, via giftHTML().
+  // levers.addOn is the agent-facing audit trail and must never be printed on a
+  // card -- Justin, 2026-09-08, seeing it on this tile: "The way that you are
+  // showing the free gift for this current sale is nonsense."
+
   const fst = lvt.freeShippingThreshold;
   if (fst && fst.baseline === false && fst.text)
     leverBits.push('<b>SHIPPING</b> ' + esc(fst.text));
@@ -1159,8 +1275,9 @@ function tileHTML(c) {
     </div>
     <div class="tname">${esc(c.name || '(unnamed)')}</div>
     <div class="twin">${win}${days} <span class="tdays">${esc(daysPhrase(c))}</span></div>
-    ${c.lifecycle === 'HISTORICAL' ? '' : `<div class="trates">${leg('OTP', r.otp)}${leg('SUB', r.sub)}</div>`}
+    ${c.lifecycle === 'HISTORICAL' ? '' : rateLanesHTML(r)}
     <div class="tscope">${scope}</div>
+    ${giftHTML(c)}
     ${leverLine}
     <div class="tpips">${pips.join('')}</div>
     <div class="tmore">Open dossier \u25be</div>
@@ -1349,9 +1466,11 @@ function openCalMonth(year, m, cards, trigger) {
       return '<div class="fp"><div class="fpn">' + esc(s.c.name) +
         ' <span style="font-size:11px;color:#64748b;font-weight:600">' + esc(s.c.tier || '') +
         ' \u00b7 ' + esc(s.c.lifecycle) + '</span></div>' +
-        '<div class="fpw">' + esc(t.startsAtDate || '?') + ' \u2192 ' + esc(t.endsAtDate || '?') +
-        ' \u00b7 ' + dd + 'd' + (s.contL || s.contR ? ' \u00b7 spans a month boundary' : '') + '</div>' +
-        '<div class="fpr">' + calRateLegs(s.c) + '</div>' +
+        '<div class="fpw">' + esc(windowLine(t.startsAtDate, t.endsAtDate, dd) ||
+          ((t.startsAtDate || '?') + ' - ' + (t.endsAtDate || '?'))) +
+        (s.contL || s.contR ? ' · spans a month boundary' : '') + '</div>' +
+        '<div class="fpr">' + rateLanesHTML(s.c.rates) + '</div>' +
+        giftHTML(s.c) +
         '<div class="fps">' + (hasV((s.c.scope || {}).value) ? esc(s.c.scope.value.v)
           : '<span class="nodata">scope not stated</span>') + '</div></div>';
     }).join('') + '</div>';
