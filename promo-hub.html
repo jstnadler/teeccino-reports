@@ -383,7 +383,11 @@ summary::marker { color:#64748b; }
 .mon{cursor:pointer}
 .mon:hover{border-color:rgba(148,163,184,.45)}
 .mon:focus-visible{outline:2px solid rgba(125,211,252,.8);outline-offset:2px}
-#calfull{position:fixed;inset:0;z-index:200;display:none}
+/* z-index 2000, raised 2026-09-08: the shared hub nav is z-index 1000/1001 and
+   was covering the overlay's title AND its close button. 'Takes up the whole
+   screen' means above the nav; Escape still worked, so the defect was silent
+   to every check that did not test OCCLUSION. */
+#calfull{position:fixed;inset:0;z-index:2000;display:none}
 #calfull.open{display:block}
 #calfull .scrim{position:absolute;inset:0;background:rgba(2,6,23,.82)}
 #calfull .sheet{position:absolute;inset:2.5vh 2.5vw;background:#0b1220;
