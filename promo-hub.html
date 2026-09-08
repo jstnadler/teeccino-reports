@@ -512,13 +512,13 @@ summary::marker { color:#64748b; }
 #calfull .gifts{background:rgba(96,165,250,0.10)}
 
 /* ---- SPEC 8.13 evergreen line ------------------------------------------ */
-.everline{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:6px;padding-top:6px;
-  border-top:1px solid rgba(148,163,184,.16);font-size:9.5px;line-height:1.5}
+.everline{display:flex;flex-wrap:wrap;gap:3px 12px;margin:0 0 7px;padding-bottom:6px;
+  border-bottom:1px solid rgba(148,163,184,.16);font-size:9.5px;line-height:1.5}
 .everline .evb{color:#a9b8cc}
 .everline .evb b{color:#e2e8f0;font-weight:700}
 .everline .evx{color:#8fa0b6}
 .everline .evconf{color:#fcd34d;font-weight:700;flex-basis:100%}
-.everline.big{font-size:13px;gap:6px 22px;margin:0 0 16px;padding:10px 12px;
+.everline.big{font-size:13px;gap:6px 22px;margin:0 0 14px;padding:10px 12px;
   border:1px solid rgba(96,165,250,.28);border-radius:9px;
   background:rgba(96,165,250,.09);border-top-color:rgba(96,165,250,.28)}
 .everline.big .evb{color:#b6c4d6}
@@ -1551,7 +1551,10 @@ function openCalMonth(year, m, cards, trigger) {
     // SPEC 8.11 (Justin, 2026-09-08: "put the list promos above the calendar").
     // The list answers "what is running this month"; the grid answers "where
     // does it fall". Reading order follows the question order.
-    list + ever +
+    // SPEC 8.13 amended 2026-09-08 (Justin): "Put it above the promos, not
+    // below." Evergreens lead -- they are the standing state of the month, so
+    // they read as context for the promos rather than as a footnote to them.
+    ever + list +
     '<div class="fdow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>' +
     '<span>Thu</span><span>Fri</span><span>Sat</span></div>' + body;
 
@@ -1716,12 +1719,14 @@ function renderCalendar(cards) {
 
     // spec 8.4: an empty month must SAY it is empty, never render blank
     if (!segs.length) body += '<div class="monempty">no promo declared</div>';
-    // spec 8.13: the evergreens run every month, promo or no promo
-    body += evergreenLineHTML(evergreenFor(year, m), false);
+
 
     html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') +
       '" data-m="' + m + '" role="button" tabindex="0" aria-label="Open ' + CAL_MON[m] + ' full screen">' +
       '<div class="monhd"><span class="monnm">' + CAL_MON[m] + '</span>' + flags + '</div>' +
+      // spec 8.13 amended: evergreens ABOVE the day grid, same order as the
+      // expanded month -- the two views must not disagree about reading order.
+      evergreenLineHTML(evergreenFor(year, m), false) +
       '<div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span>' +
       '<span>T</span><span>F</span><span>S</span></div>' + body + '</div>';
   }
