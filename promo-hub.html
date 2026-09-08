@@ -510,6 +510,20 @@ summary::marker { color:#64748b; }
 .giftrow .warnmeta{color:#fcd34d;font-weight:700}
 #calfull .lane .lname{min-width:132px}
 #calfull .gifts{background:rgba(96,165,250,0.10)}
+
+/* ---- SPEC 8.13 evergreen line ------------------------------------------ */
+.everline{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:6px;padding-top:6px;
+  border-top:1px solid rgba(148,163,184,.16);font-size:9.5px;line-height:1.5}
+.everline .evb{color:#a9b8cc}
+.everline .evb b{color:#e2e8f0;font-weight:700}
+.everline .evx{color:#8fa0b6}
+.everline .evconf{color:#fcd34d;font-weight:700;flex-basis:100%}
+.everline.big{font-size:13px;gap:6px 22px;margin:0 0 16px;padding:10px 12px;
+  border:1px solid rgba(96,165,250,.28);border-radius:9px;
+  background:rgba(96,165,250,.09);border-top-color:rgba(96,165,250,.28)}
+.everline.big .evb{color:#b6c4d6}
+.everline.big .evb b{color:#f1f5f9}
+.everline.big .evx{color:#a9b8cc}
 </style>
 </head>
 <body>
@@ -1361,6 +1375,41 @@ function toggleDetail(panel) {
 const CAL_MON = ['January','February','March','April','May','June',
                  'July','August','September','October','November','December'];
 
+
+/* ---- SPEC 8.13: evergreens on EVERY month, both views -------------------
+   Sourced from state.evergreensByMonth (all 12 months, promo-independent),
+   NOT from a promo card. Six months of 2026 have no promo, so a card-sourced
+   read renders blank there -- and a blank month is indistinguishable from a
+   month with no FOTM, which is 7.3 exactly. A per-month fact needs a
+   per-month source. */
+let EVERGREENS_BY_MONTH = {};
+
+function evergreenFor(year, m) {
+  const key = year + '-' + String(m + 1).padStart(2, '0');
+  return EVERGREENS_BY_MONTH[key] || null;
+}
+function evergreenLineHTML(e, big) {
+  if (!e) return '<div class="everline' + (big ? ' big' : '') +
+    '"><span class="nodata">evergreens not recorded</span></div>';
+  const one = (label, w, extra) => {
+    if (!hasV(w)) return '<span class="evb">' + label +
+      ' <span class="nodata">not recorded</span></span>';
+    return '<span class="evb">' + label + ' <b>' + esc(w.v) + '</b>' +
+      (extra ? ' <span class="evx">' + extra + '</span>' : '') + '</span>';
+  };
+  let conf = '';
+  (e.conflict || []).forEach(c => {
+    conf += '<span class="evconf">' + esc(c.field) + ': slate says <b>' +
+      esc(c.declaredSlate) + '</b>, rotation source says <b>' +
+      esc(c.rotationSource) + '</b></span>';
+  });
+  return '<div class="everline' + (big ? ' big' : '') + '">' +
+    one('Flavor of the Month', e.fotm, hasV(e.rate) ? esc(e.rate.v) : null) +
+    one('Free packet ($25)', e.freePacket,
+        hasV(e.freePacketSku) ? 'SKU ' + esc(e.freePacketSku.v) : null) +
+    conf + '</div>';
+}
+
 function calYear(cards) {
   const tally = {};
   cards.forEach(c => {
@@ -1489,16 +1538,11 @@ function openCalMonth(year, m, cards, trigger) {
   // August's first card by date (72hr-bulk-bag-sale-2026-08) carries exactly that,
   // so the view printed 'FOTM no data' for a month whose FOTM is French Roast --
   // present data rendering as absent, decided by sort order. Pick a card with a VALUE.
-  const evc = segs.map(s => s.c).find(c => hasV((c.evergreens || {}).fotm));
-  if (evc) {
-    const e = evc.evergreens;
-    ever = '<div class="fever">Evergreens this month: FOTM <b>' + val(e.fotm) +
-      '</b> at ' + (hasV(e.fotmRate) ? esc(e.fotmRate.v) : '20/10') +
-      ' \u00b7 $25 free packet <b>' + val(e.freePacket) + '</b></div>';
-  } else if (segs.length) {
-    ever = '<div class="fever">Evergreens this month: <span class="nodata">not ' +
-      'recorded on any promo in this month</span></div>';
-  }
+  // SPEC 8.13 -- month-keyed source, not a promo card. Superseded the earlier
+  // card-sourced read entirely: that version printed "FOTM no data" for August
+  // because the first August card BY DATE carries {v: null}, and it could never
+  // have worked at all for the six months that have no promo.
+  ever = evergreenLineHTML(evergreenFor(year, m), true);
 
   document.getElementById('calfullbody').innerHTML =
     '<div class="fhd"><h3>' + CAL_MON[m] + '</h3><span class="fyear">' + year + '</span></div>' +
@@ -1672,6 +1716,8 @@ function renderCalendar(cards) {
 
     // spec 8.4: an empty month must SAY it is empty, never render blank
     if (!segs.length) body += '<div class="monempty">no promo declared</div>';
+    // spec 8.13: the evergreens run every month, promo or no promo
+    body += evergreenLineHTML(evergreenFor(year, m), false);
 
     html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') +
       '" data-m="' + m + '" role="button" tabindex="0" aria-label="Open ' + CAL_MON[m] + ' full screen">' +
@@ -1764,6 +1810,7 @@ fetch(STATE_URL + '?t=' + Date.now())
       '<div class="nodata">No active, armed or declared promos.</div>';
     wireGrid(document.getElementById('cards'));
     wireGrid(document.getElementById('pastcards'));
+    EVERGREENS_BY_MONTH = s.evergreensByMonth || {};
     renderCalendar(cards);
     wireCalFull(cards, calYear(cards));
     // column count changes at the breakpoints -- an open panel must follow it
