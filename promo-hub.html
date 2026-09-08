@@ -378,6 +378,54 @@ summary::marker { color:#64748b; }
    Spec wins over code; the code moves. */
 .tile.state-CLOSED     { border-color:rgba(96,165,250,0.45); opacity:0.86; }
 .tile.state-HISTORICAL { border-color:rgba(96,165,250,0.45); opacity:0.72; }
+
+/* ---- SPEC 8.9: full-screen single month ------------------------------- */
+.mon{cursor:pointer}
+.mon:hover{border-color:rgba(148,163,184,.45)}
+.mon:focus-visible{outline:2px solid rgba(125,211,252,.8);outline-offset:2px}
+#calfull{position:fixed;inset:0;z-index:200;display:none}
+#calfull.open{display:block}
+#calfull .scrim{position:absolute;inset:0;background:rgba(2,6,23,.82)}
+#calfull .sheet{position:absolute;inset:2.5vh 2.5vw;background:#0b1220;
+  border:1px solid rgba(148,163,184,.28);border-radius:14px;padding:22px 26px 26px;
+  overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+#calfull .fhd{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 4px}
+#calfull h3{margin:0;font-size:26px;color:#e2e8f0;letter-spacing:.02em}
+#calfull .fyear{font-size:15px;color:#64748b}
+#calfull .fclose{position:absolute;top:14px;right:18px;background:rgba(148,163,184,.14);
+  border:1px solid rgba(148,163,184,.3);color:#cbd5e1;border-radius:8px;
+  font-size:18px;line-height:1;padding:6px 11px;cursor:pointer}
+#calfull .fclose:hover{background:rgba(148,163,184,.26)}
+#calfull .fmeta{font-size:12px;color:#94a3b8;margin:0 0 14px;display:flex;gap:16px;flex-wrap:wrap}
+#calfull .fdow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:0 0 5px}
+#calfull .fdow span{font-size:11px;letter-spacing:.10em;text-transform:uppercase;
+  color:#64748b;text-align:center}
+#calfull .fwk{margin:0 0 5px}
+#calfull .fwkdays{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+#calfull .fdcell{min-height:38px;border-radius:6px;background:rgba(148,163,184,.07);
+  font-size:12px;padding:4px 6px;color:#94a3b8}
+#calfull .fdcell.blank{background:transparent}
+#calfull .fdcell.today{background:rgba(74,222,128,.20);color:#bbf7d0;font-weight:700}
+#calfull .fbarlane{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:4px}
+#calfull .fbar{height:24px;border-radius:5px;font-size:11px;line-height:24px;
+  padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:#04121f;font-weight:700;cursor:pointer}
+#calfull .fbar.minor{background:transparent!important;border:1px solid;color:#cbd5e1;font-weight:600}
+#calfull .flist{margin:20px 0 0;display:grid;gap:10px}
+#calfull .fp{border:1px solid rgba(148,163,184,.2);border-radius:9px;padding:10px 13px;
+  background:rgba(15,23,42,.45)}
+#calfull .fp .fpn{font-size:14px;font-weight:700;color:#e2e8f0}
+#calfull .fp .fpw{font-size:12px;color:#94a3b8;margin-top:2px}
+#calfull .fp .fpr{margin-top:7px;display:flex;gap:18px;flex-wrap:wrap;font-size:12px}
+#calfull .fp .fpr .tag{font-size:9.5px;letter-spacing:.08em;color:#64748b;margin-right:5px}
+#calfull .fp .fpr .fn{color:#cbd5e1;font-family:ui-monospace,Menlo,monospace}
+#calfull .fp .fpr .adv{color:#7dd3fc;font-weight:700;margin-left:7px}
+#calfull .fp .fps{font-size:11.5px;color:#94a3b8;margin-top:6px}
+#calfull .fempty{margin:20px 0 0;padding:16px;border-radius:9px;
+  background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.32);
+  color:#fcd34d;font-size:13px}
+#calfull .fever{margin:16px 0 0;font-size:12px;color:#94a3b8}
+#calfull .fever b{color:#cbd5e1}
 </style>
 </head>
 <body>
@@ -404,6 +452,14 @@ summary::marker { color:#64748b; }
 
   <div class="tallies" id="tallies"></div>
   <div class="banners" id="banners"></div>
+  <div id="calfull" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Month detail">
+    <div class="scrim" data-calclose="1"></div>
+    <div class="sheet">
+      <button class="fclose" type="button" data-calclose="1" aria-label="Close">&times;</button>
+      <div id="calfullbody"></div>
+    </div>
+  </div>
+
   <div id="calwrap">
     <div class="calhd">
       <h2>Month calendar</h2>
@@ -1147,6 +1203,175 @@ function calSpan(c) {
   return { a: a, b: b };
 }
 
+
+/* ============ SPEC 8.9 -- full-screen single month ======================
+   The 12-up grid is the SCANNING view; at that size a bar can only carry
+   colour and length. This is the READING view for one month, and it exists
+   because the compact grid deliberately withholds detail rather than
+   shrinking it into illegibility. Same cards[], same promoId (spec 8.6).
+*/
+let CAL_LAST_TRIGGER = null;
+
+function calRateLegs(c) {
+  const r = c.rates || {};
+  const shortKey = k => String(k || '')
+    .replace('custom.first_subscription_discount', 'fsd')
+    .replace('custom.discount', 'd');
+  const leg = (tag, o) => {
+    if (!o) return '<span><span class="tag">' + tag + '</span><span class="nodata">no data</span></span>';
+    return '<span><span class="tag">' + tag + '</span>' +
+      '<span class="fn">' + esc(shortKey(o.functionalKey)) + '=' +
+      (hasV(o.functional) ? esc(o.functional.v) : '\u2014') + '</span>' +
+      '<span class="adv">' + val(o.advertised) + '</span></span>';
+  };
+  return leg('OTP', r.otp) + leg('SUB', r.sub);
+}
+
+function openCalMonth(year, m, cards, trigger) {
+  const first = Date.UTC(year, m, 1);
+  const dim = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
+  const lead = new Date(first).getUTCDay();
+  const monthEnd = Date.UTC(year, m, dim);
+  const todayMs = todayUTCms();
+
+  const placed = [];
+  cards.forEach(c => {
+    const s = calSpan(c);
+    if (s && s.b >= first && s.a <= monthEnd) placed.push({ c: c, a: s.a, b: s.b });
+  });
+  placed.sort((x, y) => x.a - y.a || String(x.c.promoId).localeCompare(String(y.c.promoId)));
+
+  const segs = placed.map(p => ({
+    c: p.c, from: Math.max(p.a, first), to: Math.min(p.b, monthEnd),
+    contL: p.a < first, contR: p.b > monthEnd
+  }));
+  const lanes = [];
+  segs.forEach(s => { let li = 0; while (lanes[li] && lanes[li] > s.from) li++; lanes[li] = s.to; s.lane = li; });
+
+  let body = '';
+  const weeks = Math.ceil((lead + dim) / 7);
+  for (let w = 0; w < weeks; w++) {
+    let cells = '';
+    for (let col = 0; col < 7; col++) {
+      const dn = w * 7 + col - lead + 1;
+      if (dn < 1 || dn > dim) { cells += '<div class="fdcell blank"></div>'; continue; }
+      const ms = Date.UTC(year, m, dn);
+      cells += '<div class="fdcell' + (ms === todayMs ? ' today' : '') + '">' + dn + '</div>';
+    }
+    const wkStart = Date.UTC(year, m, w * 7 - lead + 1);
+    const wkEnd = Date.UTC(year, m, w * 7 - lead + 7);
+    let laneHTML = '';
+    for (let li = 0; li < lanes.length; li++) {
+      const inLane = segs.filter(s => s.lane === li && s.to >= wkStart && s.from <= wkEnd);
+      if (!inLane.length) continue;
+      let bars = '';
+      inLane.forEach(s => {
+        const sFrom = Math.max(s.from, wkStart), sTo = Math.min(s.to, wkEnd);
+        const c0 = Math.round((sFrom - wkStart) / MS_DAY) + 1;
+        const c1 = Math.round((sTo - wkStart) / MS_DAY) + 2;
+        const minor = String(s.c.tier || '').toUpperCase() !== 'MAJOR';
+        bars += '<div class="fbar state-' + stateKey(s.c.lifecycle) + (minor ? ' minor' : '') +
+          '" style="grid-column:' + c0 + '/' + c1 + '" data-promo="' + esc(domId(s.c)) + '">' +
+          (s.contL ? '\u2039 ' : '') + esc(s.c.name) + (s.contR ? ' \u203a' : '') + '</div>';
+      });
+      laneHTML += '<div class="fbarlane">' + bars + '</div>';
+    }
+    body += '<div class="fwk"><div class="fwkdays">' + cells + '</div>' + laneHTML + '</div>';
+  }
+
+  // spec 8.9.1 -- every promo listed with BOTH rate legs as functional -> advertised
+  let list = '';
+  if (segs.length) {
+    list = '<div class="flist">' + segs.map(s => {
+      const t = s.c.timeline || {};
+      const dd = (ymdToUTC(t.endsAtDate) - ymdToUTC(t.startsAtDate)) / MS_DAY + 1;
+      return '<div class="fp"><div class="fpn">' + esc(s.c.name) +
+        ' <span style="font-size:11px;color:#64748b;font-weight:600">' + esc(s.c.tier || '') +
+        ' \u00b7 ' + esc(s.c.lifecycle) + '</span></div>' +
+        '<div class="fpw">' + esc(t.startsAtDate || '?') + ' \u2192 ' + esc(t.endsAtDate || '?') +
+        ' \u00b7 ' + dd + 'd' + (s.contL || s.contR ? ' \u00b7 spans a month boundary' : '') + '</div>' +
+        '<div class="fpr">' + calRateLegs(s.c) + '</div>' +
+        '<div class="fps">' + (hasV((s.c.scope || {}).value) ? esc(s.c.scope.value.v)
+          : '<span class="nodata">scope not stated</span>') + '</div></div>';
+    }).join('') + '</div>';
+  } else {
+    // spec 8.4 -- a full screen of empty calendar is the most convincing way
+    // to render absence as success. Say it out loud.
+    list = '<div class="fempty"><b>no promo declared</b> for this month. ' +
+      'Under the standing rule every month gets exactly one major promo, 7 days, sitewide.</div>';
+  }
+
+  // spec 8.9.2 -- the month's evergreens, which run underneath every month and
+  // have never had a per-month home on this page
+  let ever = '';
+  const evc = segs.map(s => s.c).find(c => (c.evergreens || {}).fotm);
+  if (evc) {
+    const e = evc.evergreens;
+    ever = '<div class="fever">Evergreens this month: FOTM <b>' + val(e.fotm) +
+      '</b> at ' + (hasV(e.fotmRate) ? esc(e.fotmRate.v) : '20/10') +
+      ' \u00b7 $25 free packet <b>' + val(e.freePacket) + '</b></div>';
+  }
+
+  document.getElementById('calfullbody').innerHTML =
+    '<div class="fhd"><h3>' + CAL_MON[m] + '</h3><span class="fyear">' + year + '</span></div>' +
+    '<div class="fmeta"><span>' + segs.length + ' promo' + (segs.length === 1 ? '' : 's') +
+    ' this month</span><span>click a bar to open its dossier</span></div>' +
+    '<div class="fdow"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>' +
+    '<span>Thu</span><span>Fri</span><span>Sat</span></div>' + body + ever + list;
+
+  const ov = document.getElementById('calfull');
+  ov.classList.add('open');
+  ov.setAttribute('aria-hidden', 'false');
+  CAL_LAST_TRIGGER = trigger || null;
+  const btn = ov.querySelector('.fclose');
+  if (btn) btn.focus();
+}
+
+function closeCalMonth() {
+  const ov = document.getElementById('calfull');
+  if (!ov || !ov.classList.contains('open')) return;
+  ov.classList.remove('open');
+  ov.setAttribute('aria-hidden', 'true');
+  document.getElementById('calfullbody').innerHTML = '';
+  if (CAL_LAST_TRIGGER && CAL_LAST_TRIGGER.focus) CAL_LAST_TRIGGER.focus();
+  CAL_LAST_TRIGGER = null;
+}
+
+function wireCalFull(cards, year) {
+  const host = document.getElementById('calendar');
+  const ov = document.getElementById('calfull');
+  if (!host || !ov) return;
+
+  host.addEventListener('click', ev => {
+    // spec 8.9: a BAR keeps its 8.6 affordance and must not also open the month
+    if (ev.target.closest('.bar')) return;
+    const mon = ev.target.closest('.mon');
+    if (!mon) return;
+    openCalMonth(year, Number(mon.getAttribute('data-m')), cards, mon);
+  });
+  host.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const mon = ev.target.closest && ev.target.closest('.mon');
+    if (!mon) return;
+    ev.preventDefault();
+    openCalMonth(year, Number(mon.getAttribute('data-m')), cards, mon);
+  });
+
+  ov.addEventListener('click', ev => {
+    if (ev.target.getAttribute && ev.target.getAttribute('data-calclose')) { closeCalMonth(); return; }
+    const bar = ev.target.closest('.fbar');
+    if (!bar) return;
+    const uid = bar.getAttribute('data-promo');
+    closeCalMonth();
+    const tile = document.querySelector('.tile[data-target="d-' + uid + '"]');
+    const panel = document.getElementById('d-' + uid);
+    if (panel && panel.classList.contains('hidden') && tile) tile.click();
+    if (tile || panel) (tile || panel).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeCalMonth(); });
+}
+
 function renderCalendar(cards) {
   const host = document.getElementById('calendar');
   if (!host) return;
@@ -1256,7 +1481,8 @@ function renderCalendar(cards) {
     // spec 8.4: an empty month must SAY it is empty, never render blank
     if (!segs.length) body += '<div class="monempty">no promo declared</div>';
 
-    html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') + '">' +
+    html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') +
+      '" data-m="' + m + '" role="button" tabindex="0" aria-label="Open ' + CAL_MON[m] + ' full screen">' +
       '<div class="monhd"><span class="monnm">' + CAL_MON[m] + '</span>' + flags + '</div>' +
       '<div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span>' +
       '<span>T</span><span>F</span><span>S</span></div>' + body + '</div>';
@@ -1347,6 +1573,7 @@ fetch(STATE_URL + '?t=' + Date.now())
     wireGrid(document.getElementById('cards'));
     wireGrid(document.getElementById('pastcards'));
     renderCalendar(cards);
+    wireCalFull(cards, calYear(cards));
     // column count changes at the breakpoints -- an open panel must follow it
     window.addEventListener('resize', () => {
       document.querySelectorAll('.detail.open').forEach(p => {
