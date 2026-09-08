@@ -415,7 +415,15 @@ summary::marker { color:#64748b; }
   padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   color:#04121f;font-weight:700;cursor:pointer}
 #calfull .fbar.minor{background:transparent!important;border:1px solid;color:#cbd5e1;font-weight:600}
-#calfull .flist{margin:4px 0 18px;display:grid;gap:10px}
+/* SPEC 8.11 amended 2026-09-08 (Justin): promos side by side, not stacked.
+   auto-fit rather than a fixed 3-up so a lone promo is not stretched across
+   the full width; 300px floor because below that the two rate legs wrap into
+   an unreadable stack, which is the defect 7.2 rule 4 exists to prevent. */
+#calfull .flist{margin:4px 0 18px;display:grid;gap:12px;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));align-items:stretch}
+#calfull .fp{display:flex;flex-direction:column}
+#calfull .fp .fps{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  overflow:hidden;margin-top:auto;padding-top:6px}
 #calfull .fp{border:1px solid rgba(148,163,184,.2);border-radius:9px;padding:10px 13px;
   background:rgba(15,23,42,.45)}
 #calfull .fp .fpn{font-size:14px;font-weight:700;color:#e2e8f0}
