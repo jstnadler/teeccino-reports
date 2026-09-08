@@ -1365,12 +1365,20 @@ function openCalMonth(year, m, cards, trigger) {
   // spec 8.9.2 -- the month's evergreens, which run underneath every month and
   // have never had a per-month home on this page
   let ever = '';
-  const evc = segs.map(s => s.c).find(c => (c.evergreens || {}).fotm);
+  // hasV(), NOT truthiness on the wrapper. FIXED 2026-09-08: this tested
+  // `(c.evergreens || {}).fotm`, a truthy OBJECT even when holding {v: null}.
+  // August's first card by date (72hr-bulk-bag-sale-2026-08) carries exactly that,
+  // so the view printed 'FOTM no data' for a month whose FOTM is French Roast --
+  // present data rendering as absent, decided by sort order. Pick a card with a VALUE.
+  const evc = segs.map(s => s.c).find(c => hasV((c.evergreens || {}).fotm));
   if (evc) {
     const e = evc.evergreens;
     ever = '<div class="fever">Evergreens this month: FOTM <b>' + val(e.fotm) +
       '</b> at ' + (hasV(e.fotmRate) ? esc(e.fotmRate.v) : '20/10') +
       ' \u00b7 $25 free packet <b>' + val(e.freePacket) + '</b></div>';
+  } else if (segs.length) {
+    ever = '<div class="fever">Evergreens this month: <span class="nodata">not ' +
+      'recorded on any promo in this month</span></div>';
   }
 
   document.getElementById('calfullbody').innerHTML =
