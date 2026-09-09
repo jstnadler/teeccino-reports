@@ -541,6 +541,22 @@ summary::marker { color:#64748b; }
 .everline.big .evskus{font-size:11.5px}
 .everline.big .evthumbs{gap:5px}
 .everline.big{align-items:flex-start;gap:10px 30px}
+/* ---- SPEC 8.15: instant hover tooltip on a calendar bar --------------
+   Justin, 2026-09-09: "I want to be able to scroll over the promo bar on the
+   calendar and at least see the promotion name." The native title= waited a
+   second and gave one plain line. .bar::before widens the hit area by 5px each
+   side because a 5px minor bar is a hard target and a tooltip you have to aim
+   for is barely a tooltip. */
+#caltip{position:fixed;z-index:3000;display:none;pointer-events:none;max-width:340px;
+  background:#101a30;border:1px solid rgba(148,163,184,.45);border-radius:9px;padding:9px 12px;
+  box-shadow:0 12px 34px rgba(0,0,0,.55);font-size:12.5px;line-height:1.5}
+#caltip.on{display:block}
+#caltip .tname{font-weight:800;font-size:14px;color:#f1f5f9;display:block;margin-bottom:2px}
+#caltip .tmeta{color:#a9b8cc;font-size:11.5px;display:block}
+#caltip .trate{color:#F5D784;font-weight:700;display:block;margin-top:5px}
+#caltip .tsub{color:#cbd5e1;font-weight:600;font-size:11.5px;display:block}
+#calendar .bar{position:relative}
+#calendar .bar::before{content:'';position:absolute;left:0;right:0;top:-5px;bottom:-5px}
 </style>
 </head>
 <body>
@@ -575,6 +591,7 @@ summary::marker { color:#64748b; }
     </div>
   </div>
 
+  <div id="caltip" role="tooltip" aria-hidden="true"></div>
   <div id="calwrap">
     <div class="calhd">
       <h2>Month calendar</h2>
@@ -1460,6 +1477,49 @@ function evergreenLineHTML(e, big) {
     conf + '</div>';
 }
 
+
+/* ---- SPEC 8.15 bar tooltip (see the CSS block for the why) ---------- */
+function wireBarTooltip(cards) {
+  const host = document.getElementById('calendar');
+  const tip = document.getElementById('caltip');
+  if (!host || !tip) return;
+  const byUid = {};
+  cards.forEach(c => { byUid[domId(c)] = c; });
+  const move = ev => {
+    const r = tip.getBoundingClientRect();
+    let x = ev.clientX + 14, y = ev.clientY + 16;
+    if (x + r.width > window.innerWidth - 8) x = ev.clientX - r.width - 14;
+    if (y + r.height > window.innerHeight - 8) y = ev.clientY - r.height - 16;
+    tip.style.left = Math.max(8, x) + 'px';
+    tip.style.top = Math.max(8, y) + 'px';
+  };
+  const hide = () => { tip.classList.remove('on'); tip.setAttribute('aria-hidden', 'true'); };
+  host.addEventListener('mouseover', ev => {
+    const bar = ev.target.closest('.bar');
+    if (!bar) return;
+    const c = byUid[bar.getAttribute('data-promo')];
+    if (!c) return;
+    const t = c.timeline || {}, r = c.rates || {};
+    const adv = o => (o && hasV(o.advertised)) ? esc(o.advertised.v) : null;
+    tip.innerHTML =
+      '<span class="tname">' + esc(c.name) + '</span>' +
+      '<span class="tmeta">' + esc(c.tier || '') + ' \u00b7 ' + esc(c.lifecycle) + '</span>' +
+      '<span class="tmeta">' + esc(windowLine(t.startsAtDate, t.endsAtDate,
+          hasV((c.window || {}).days) ? c.window.days.v : null) || '') + '</span>' +
+      (adv(r.otp) ? '<span class="trate">' + adv(r.otp) + '</span>' : '') +
+      (adv(r.sub) ? '<span class="tsub">' + adv(r.sub) + '</span>' : '');
+    tip.classList.add('on'); tip.setAttribute('aria-hidden', 'false');
+    move(ev);
+  });
+  host.addEventListener('mousemove', ev => { if (tip.classList.contains('on')) move(ev); });
+  host.addEventListener('mouseout', ev => {
+    const bar = ev.target.closest('.bar');
+    if (bar && !bar.contains(ev.relatedTarget)) hide();
+  });
+  host.addEventListener('click', hide);
+  window.addEventListener('scroll', hide, { passive: true });
+}
+
 function calYear(cards) {
   const tally = {};
   cards.forEach(c => {
@@ -1868,6 +1928,7 @@ fetch(STATE_URL + '?t=' + Date.now())
     EVERGREENS_BY_MONTH = s.evergreensByMonth || {};
     renderCalendar(cards);
     wireCalFull(cards, calYear(cards));
+    wireBarTooltip(cards);
     // column count changes at the breakpoints -- an open panel must follow it
     window.addEventListener('resize', () => {
       document.querySelectorAll('.detail.open').forEach(p => {
