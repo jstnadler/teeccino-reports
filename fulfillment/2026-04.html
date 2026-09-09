@@ -10,7 +10,10 @@
   body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
          background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); min-height:100vh;
          color:#e6e6e6; padding:20px; padding-top:70px; }
-  .container { max-width:1400px; margin:0 auto; }
+  /* min() clamp: a bare 1400px makes the DOCUMENT scroll sideways on any
+     viewport under ~1440, dragging the h1 and filters off screen. Wide-screen
+     layout is unchanged at 1400px. */
+  .container { max-width:min(1400px, 96vw); margin:0 auto; }
   h1 { font-size:1.9em; background:linear-gradient(135deg,#D4A843,#8B6914);
         -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
   .sub { color:#888; margin-bottom:18px; }
@@ -56,6 +59,17 @@
                   border-radius:8px; padding:18px; color:#7ee787; text-align:center; font-size:0.95em; }
   .empty-state-muted { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
                         border-radius:8px; padding:18px; color:#888; text-align:center; font-size:0.9em; }
+  .wd-title { color:#D4A843; font-size:0.88em; font-weight:600; margin-bottom:4px; }
+  .wd-sub { color:#888; font-size:0.78em; margin-bottom:12px; line-height:1.5; }
+  .wd-track { background:rgba(255,255,255,0.06); border-radius:3px; height:9px; width:100%; }
+  .wd-bar { background:#D4A843; border-radius:3px; height:9px; }
+  .chart-legend { display:flex; flex-wrap:wrap; gap:18px; margin-top:12px; padding:0 4px;
+                   color:#999; font-size:0.8em; }
+  .chart-legend span { display:inline-flex; align-items:center; gap:7px; }
+  .sw { width:14px; height:10px; border-radius:3px; display:inline-block; flex:none; }
+  .sw-ship { background:#D4A843; }
+  .sw-closed { background:rgba(139,147,167,0.30); border:1px solid rgba(139,147,167,0.60); }
+  .sw-avg { height:0; border-top:2px dashed #58a6ff; border-radius:0; }
 </style>
 </head>
 <body>
@@ -73,13 +87,17 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — April 2026</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-05-31 07:13. · 104,999 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-09 14:32. · 117,628 matched orders in DB.</p>
 
   
     <div class="month-picker">
         <label for="monthSelect">View:</label>
         <select id="monthSelect" onchange="navigateFulfilment(this.value)">
             <option value="rolling">Current (rolling)</option>
+<option value="2026-09">September 2026</option>
+<option value="2026-08">August 2026</option>
+<option value="2026-07">July 2026</option>
+<option value="2026-06">June 2026</option>
 <option value="2026-05">May 2026</option>
 <option value="2026-04" selected>April 2026</option>
 <option value="2026-03">March 2026</option>
@@ -110,6 +128,8 @@
 <option value="2024-02">February 2024</option>
 <option value="2024-01">January 2024</option>
 <option value="2023-12">December 2023</option>
+<option value="2021-05">May 2021</option>
+<option value="2021-04">April 2021</option>
         </select>
     </div>
     <script>
@@ -138,10 +158,15 @@
   <!-- Hero KPIs -->
   <div class="section">
     <div class="section-title">April 2026 at a Glance</div>
+    <div class="section-sub"><strong>DTC orders only, measured on order date.</strong>
+      These are service-promise metrics &mdash; how fast an order a customer placed
+      went out &mdash; so wholesale POs are correctly excluded. The throughput panel
+      lower down uses a wider set of orders on a different axis; the two are not
+      meant to reconcile.</div>
     <div class="hero-grid">
         <div class="hero-card">
             <div class="hero-label">Avg Days to Ship</div>
-            <div class="hero-value">1.14</div>
+            <div class="hero-value">1.15</div>
             <div class="hero-sub">median 1.00</div>
         </div>
         <div class="hero-card">
@@ -166,7 +191,7 @@
         </div>
         <div class="hero-card">
             <div class="hero-label">Orders</div>
-            <div class="hero-value">4,003</div>
+            <div class="hero-value">4,006</div>
             <div class="hero-sub">matched DTC orders in this window</div>
         </div></div>
   </div>
@@ -174,7 +199,7 @@
   <!-- SLA comparison -->
   <div class="section">
     <div class="section-title">SLA Performance — Comparison</div>
-    <div class="section-sub">Cumulative percentages: a higher number is better.</div>
+    <div class="section-sub">Cumulative percentages: a higher number is better. DTC orders only, on order date.</div>
     <div class="table-scroll">
         <table>
             <thead>
@@ -196,16 +221,16 @@
             <tbody>
         <tr>
             <td><strong>April 2026</strong></td>
-            <td class="num">4,003</td>
-            <td class="num">1.14</td>
+            <td class="num">4,006</td>
+            <td class="num">1.15</td>
             <td class="num">1.00</td>
             <td class="num">2.00</td>
             <td class="num">29.3%</td>
-            <td class="num">68.9%</td>
-            <td class="num">91.5%</td>
-            <td class="num">98.3%</td>
+            <td class="num">68.8%</td>
+            <td class="num">91.4%</td>
+            <td class="num">98.2%</td>
             <td class="num">99.7%</td>
-            <td class="num">99.9%</td>
+            <td class="num">99.8%</td>
             <td class="num">100.0%</td>
         </tr>
         <tr>
@@ -238,7 +263,7 @@
         </tr>
         <tr>
             <td><strong>Trailing 12 months</strong></td>
-            <td class="num">44,986</td>
+            <td class="num">44,989</td>
             <td class="num">3.30</td>
             <td class="num">3.00</td>
             <td class="num">7.00</td>
@@ -262,6 +287,127 @@
     </div>
   </div>
 
+
+  <!-- Fulfilled orders per day (ship-date axis) -->
+  <div class="section">
+    <div class="section-title">Fulfilled Orders per Day &mdash; April 2026</div>
+    <div class="section-sub">
+      <strong>This panel is measured on ship date, not order date &mdash; and on a
+      wider set of orders than the panels above it.</strong>
+      Every other panel on this page answers &ldquo;how fast did an order ship?&rdquo;
+      for <strong>DTC orders only</strong>, because that is where the service promise
+      lives. This one answers &ldquo;how much did the pick-and-pack team put out the
+      door each day?&rdquo;, so it counts <strong>DTC plus Target plus Walmart</strong>
+      &mdash; those are picked and packed here alongside everything else, and leaving
+      them out understated the team. Different question, different axis, different
+      population: a figure here does not reconcile against a figure above, by design.
+    </div>
+    <div class="hero-grid">
+        <div class="hero-card">
+            <div class="hero-label">Per Shipping Day</div>
+            <div class="hero-value">203</div>
+            <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Total Fulfilled</div>
+            <div class="hero-value">4,473</div>
+            <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Shipping Days</div>
+            <div class="hero-value">22</div>
+            <div class="hero-sub">of 30 calendar days</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Busiest Day</div>
+            <div class="hero-value">350</div>
+            <div class="hero-sub">2026-04-27</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Median Shipping Day</div>
+            <div class="hero-value">188</div>
+            <div class="hero-sub">quietest 91 on 2026-04-17</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Per Calendar Day</div>
+            <div class="hero-value">149</div>
+            <div class="hero-sub">same orders spread over all 30 days &mdash; not a throughput rate</div>
+        </div></div>
+    <div class="definitions" style="margin-top:14px;margin-bottom:18px">
+      The warehouse ships on business days, so this window contains 8 weekend days.
+      <strong>Per Shipping Day</strong> (203) divides by the
+      22 days that actually shipped and is the real throughput rate.
+      <strong>Per Calendar Day</strong> (149) divides the same orders
+      by all 30 days and so understates output by 27%
+      &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-04-30</strong>.<br>
+      Counts <strong>4,473 orders &mdash; DTC, Target and Walmart</strong>
+      &mdash; which is 99.1% of the 4,514 orders that shipped in
+      this window. The other 41: <strong>41 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match). The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
+      An order is counted once, on its <em>first</em> shipment date.
+    </div>
+    <div class="chart-grid">
+      <div class="chart-wrap"><canvas id="fulfilledChart"></canvas></div>
+      <div class="chart-wrap" style="height:auto;min-height:380px">
+        <div class="wd-title">Workload by Day of Week</div>
+        <div class="wd-sub">Averaged over days that shipped, so a closed weekend
+          does not drag a weekday down.</div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day of Week</th>
+                        <th class="num">Per Shipping Day</th>
+                        <th class="num">Total Orders</th>
+                        <th class="num">Days Shipped</th>
+                        <th style="width:30%">Relative Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td><strong>Monday</strong></td>
+                <td class="num">239</td>
+                <td class="num">955</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:96.1%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Tuesday</strong></td>
+                <td class="num">248</td>
+                <td class="num">994</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:100.0%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Wednesday</strong></td>
+                <td class="num">201</td>
+                <td class="num">1,006</td>
+                <td class="num">5</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:81.0%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Thursday</strong></td>
+                <td class="num">195</td>
+                <td class="num">975</td>
+                <td class="num">5</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:78.5%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Friday</strong></td>
+                <td class="num">136</td>
+                <td class="num">543</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:54.6%"></div></div></td>
+            </tr></tbody>
+            </table></div>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <span><i class="sw sw-ship"></i>Shipping day</span>
+      <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
+      <span><i class="sw sw-avg"></i>Average per shipping day</span>
+    </div>
+  </div>
+
   <!-- Carrier breakdown -->
   <div class="section">
     <div class="section-title">By Carrier — April 2026</div>
@@ -281,19 +427,19 @@
             <tbody>
         <tr>
             <td>DHL SmartMail</td>
-            <td class="num">2,753</td>
-            <td class="num">1.08</td>
+            <td class="num">2,755</td>
+            <td class="num">1.09</td>
             <td class="num">32.4%</td>
-            <td class="num">70.0%</td>
+            <td class="num">69.9%</td>
             <td class="num">92.5%</td>
         </tr>
         <tr>
             <td>USPS (via Stamps.com)</td>
-            <td class="num">1,244</td>
+            <td class="num">1,245</td>
             <td class="num">1.29</td>
             <td class="num">22.3%</td>
             <td class="num">66.3%</td>
-            <td class="num">89.1%</td>
+            <td class="num">89.0%</td>
         </tr>
         <tr>
             <td>FedEx</td>
@@ -324,24 +470,24 @@
             <tbody>
         <tr>
             <td>DHL SmartMail Expedited</td>
-            <td class="num">1,929</td>
+            <td class="num">1,930</td>
             <td class="num">1.05</td>
             <td class="num">71.3%</td>
             <td class="num">92.8%</td>
         </tr>
         <tr>
             <td>USPS Ground Advantage</td>
-            <td class="num">966</td>
-            <td class="num">1.22</td>
-            <td class="num">69.2%</td>
-            <td class="num">90.5%</td>
+            <td class="num">967</td>
+            <td class="num">1.23</td>
+            <td class="num">69.1%</td>
+            <td class="num">90.4%</td>
         </tr>
         <tr>
             <td>DHL SmartMail Ground</td>
-            <td class="num">577</td>
-            <td class="num">1.04</td>
-            <td class="num">70.0%</td>
-            <td class="num">92.9%</td>
+            <td class="num">578</td>
+            <td class="num">1.05</td>
+            <td class="num">69.9%</td>
+            <td class="num">92.7%</td>
         </tr>
         <tr>
             <td>DHL SM Parcel Exp Max</td>
@@ -406,6 +552,30 @@
                 <td class="num"><strong>17</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC210901</code></td>
+                <td>2026-04-26</td>
+                <td>2026-05-06</td>
+                <td class="num"><strong>10</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC210918</code></td>
+                <td>2026-04-26</td>
+                <td>2026-05-06</td>
+                <td class="num"><strong>10</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC211023</code></td>
+                <td>2026-04-26</td>
+                <td>2026-05-06</td>
+                <td class="num"><strong>10</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Ground</td>
             </tr>
             <tr>
                 <td><code>TC210907</code></td>
@@ -486,30 +656,6 @@
                 <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS First Class</td>
-            </tr>
-            <tr>
-                <td><code>TC208567</code></td>
-                <td>2026-04-10</td>
-                <td>2026-04-15</td>
-                <td class="num"><strong>5</strong></td>
-                <td>USPS (via Stamps.com)</td>
-                <td>USPS Ground Advantage</td>
-            </tr>
-            <tr>
-                <td><code>TC208568</code></td>
-                <td>2026-04-10</td>
-                <td>2026-04-15</td>
-                <td class="num"><strong>5</strong></td>
-                <td>DHL SmartMail</td>
-                <td>DHL SM Parcel Exp Max</td>
-            </tr>
-            <tr>
-                <td><code>TC208570</code></td>
-                <td>2026-04-10</td>
-                <td>2026-04-15</td>
-                <td class="num"><strong>5</strong></td>
-                <td>USPS (via Stamps.com)</td>
-                <td>USPS First Class</td>
             </tr></tbody>
         </table>
   </div>
@@ -523,7 +669,7 @@
 
 <script>
 const TREND_HIGHLIGHT_IDX = -1;
-const trendBarColors = [0.75, 0.57, 1.42, 2.35, 1.16, 0.64, 0.67, 0.45, 0.42, 1.88, 2.21, 1.53, 0.76, 0.76, 0.63, 0.58, 2.1, 2.37, 1.54, 0.79, 0.61, 0.69, 0.46, 1.33, 2.2, 1.83, 1.51, 1.1, 0.96, 0.64].map((_, i) =>
+const trendBarColors = [0.75, 0.57, 1.42, 2.35, 1.16, 0.64, 0.67, 0.45, 0.42, 1.88, 2.21, 1.53, 0.76, 0.76, 0.63, 0.58, 2.1, 2.37, 1.54, 0.79, 0.61, 0.69, 0.46, 1.33, 2.2, 1.93, 1.51, 1.1, 0.96, 0.64].map((_, i) =>
   i === TREND_HIGHLIGHT_IDX ? '#D4A843' : 'rgba(212,168,67,0.35)'
 );
 
@@ -535,11 +681,11 @@ new Chart(trendCtx, {
     datasets: [
       {
         label: 'Avg Days to Ship',
-        data: [0.75, 0.57, 1.42, 2.35, 1.16, 0.64, 0.67, 0.45, 0.42, 1.88, 2.21, 1.53, 0.76, 0.76, 0.63, 0.58, 2.1, 2.37, 1.54, 0.79, 0.61, 0.69, 0.46, 1.33, 2.2, 1.83, 1.51, 1.1, 0.96, 0.64],
+        data: [0.75, 0.57, 1.42, 2.35, 1.16, 0.64, 0.67, 0.45, 0.42, 1.88, 2.21, 1.53, 0.76, 0.76, 0.63, 0.58, 2.1, 2.37, 1.54, 0.79, 0.61, 0.69, 0.46, 1.33, 2.2, 1.93, 1.51, 1.1, 0.96, 0.64],
         borderColor: '#D4A843',
         backgroundColor: 'rgba(212,168,67,0.15)',
         pointBackgroundColor: trendBarColors,
-        pointRadius: [0.75, 0.57, 1.42, 2.35, 1.16, 0.64, 0.67, 0.45, 0.42, 1.88, 2.21, 1.53, 0.76, 0.76, 0.63, 0.58, 2.1, 2.37, 1.54, 0.79, 0.61, 0.69, 0.46, 1.33, 2.2, 1.83, 1.51, 1.1, 0.96, 0.64].map((_, i) => i === TREND_HIGHLIGHT_IDX ? 6 : 3),
+        pointRadius: [0.75, 0.57, 1.42, 2.35, 1.16, 0.64, 0.67, 0.45, 0.42, 1.88, 2.21, 1.53, 0.76, 0.76, 0.63, 0.58, 2.1, 2.37, 1.54, 0.79, 0.61, 0.69, 0.46, 1.33, 2.2, 1.93, 1.51, 1.1, 0.96, 0.64].map((_, i) => i === TREND_HIGHLIGHT_IDX ? 6 : 3),
         pointBorderWidth: 0,
         yAxisID: 'yDays',
         tension: 0.3,
@@ -547,7 +693,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 1 Day %',
-        data: [76.4, 97.6, 58.4, 0.0, 83.9, 100.0, 99.1, 96.9, 98.9, 60.8, 0.0, 47.0, 98.0, 98.0, 100.0, 99.1, 34.6, 0.0, 46.2, 100.0, 100.0, 97.3, 100.0, 55.7, 0.0, 26.9, 38.6, 68.3, 97.3, 89.8],
+        data: [76.4, 97.6, 58.4, 0.0, 83.9, 100.0, 99.1, 96.9, 98.9, 60.8, 0.0, 47.0, 98.0, 98.0, 100.0, 99.1, 34.6, 0.0, 46.2, 100.0, 100.0, 97.3, 100.0, 55.7, 0.0, 26.6, 38.6, 68.3, 97.3, 89.8],
         borderColor: '#7ee787',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -555,7 +701,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 2 Days %',
-        data: [100.0, 97.6, 58.4, 83.8, 100.0, 100.0, 99.1, 100.0, 98.9, 60.8, 79.2, 100.0, 100.0, 99.0, 100.0, 99.1, 34.6, 63.0, 100.0, 100.0, 100.0, 100.0, 100.0, 55.7, 80.0, 93.3, 98.9, 97.0, 99.1, 89.8],
+        data: [100.0, 97.6, 58.4, 83.8, 100.0, 100.0, 99.1, 100.0, 98.9, 60.8, 79.2, 100.0, 100.0, 99.0, 100.0, 99.1, 34.6, 63.0, 100.0, 100.0, 100.0, 100.0, 100.0, 55.7, 80.0, 92.1, 98.9, 97.0, 99.1, 89.8],
         borderColor: '#58a6ff',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -564,7 +710,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 3 Days %',
-        data: [100.0, 97.6, 98.9, 98.6, 100.0, 100.0, 100.0, 100.0, 98.9, 63.9, 100.0, 100.0, 100.0, 100.0, 100.0, 99.1, 86.4, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 99.2, 99.3, 98.0, 99.1, 89.8],
+        data: [100.0, 97.6, 98.9, 98.6, 100.0, 100.0, 100.0, 100.0, 98.9, 63.9, 100.0, 100.0, 100.0, 100.0, 100.0, 99.1, 86.4, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 97.9, 99.3, 98.0, 99.1, 89.8],
         borderColor: '#a371f7',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -573,7 +719,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Daily Orders',
-        data: [144, 82, 89, 74, 87, 114, 109, 96, 90, 97, 101, 100, 100, 100, 87, 112, 81, 81, 91, 152, 283, 264, 191, 158, 200, 238, 280, 202, 112, 88],
+        data: [144, 82, 89, 74, 87, 114, 109, 96, 90, 97, 101, 100, 100, 100, 87, 112, 81, 81, 91, 152, 283, 264, 191, 158, 200, 241, 280, 202, 112, 88],
         borderColor: 'rgba(200,200,200,0.55)',
         backgroundColor: 'rgba(200,200,200,0.08)',
         yAxisID: 'yOrders',
@@ -625,7 +771,7 @@ new Chart(distCtx, {
     labels: ["Same Day", "1 Day", "2 Days", "3 Days", "4\u20135 Days", "6\u20137 Days", "8\u201310 Days", "11+ Days"],
     datasets: [{
       label: 'Orders',
-      data: [1174, 1584, 903, 272, 59, 7, 2, 2],
+      data: [1174, 1584, 903, 272, 59, 7, 5, 2],
       backgroundColor: ['#7ee787','#58a6ff','#a371f7','#D4A843','#f0883e','#ff7b72','#cf222e','#8b0000'],
       borderRadius: 4,
     }]
@@ -639,7 +785,7 @@ new Chart(distCtx, {
       tooltip: {
         callbacks: {
           label: ctx => {
-            const pct = [29.3, 39.6, 22.6, 6.8, 1.5, 0.2, 0.0, 0.0][ctx.dataIndex];
+            const pct = [29.3, 39.5, 22.5, 6.8, 1.5, 0.2, 0.1, 0.0][ctx.dataIndex];
             return ctx.parsed.y.toLocaleString() + ' orders (' + pct.toFixed(1) + '%)';
           }
         }
@@ -654,6 +800,118 @@ new Chart(distCtx, {
     },
   }
 });
+
+const F_LABELS = ["2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-25", "2026-04-26", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30"];
+const F_COUNTS = [186, 259, 158, 0, 0, 230, 144, 135, 104, 106, 0, 0, 185, 181, 145, 112, 91, 0, 0, 190, 329, 266, 279, 188, 0, 0, 350, 340, 274, 221];
+const F_KINDS  = ["shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping"];
+const F_AVG    = 203.3;
+const F_KIND_TEXT = {
+  shipping: 'shipped',
+  weekend:  'weekend \u2014 warehouse closed',
+  closed:   'no shipments (holiday or shutdown)'
+};
+// One measure (orders fulfilled), one y-axis, one data series. Closed days
+// keep a visible muted stub so a closure reads as "we were shut" rather than
+// as missing data.
+const fulfilledCtx = document.getElementById('fulfilledChart').getContext('2d');
+new Chart(fulfilledCtx, {
+  type: 'bar',
+  data: {
+    labels: F_LABELS,
+    datasets: [{
+      label: 'Orders Fulfilled',
+      data: F_COUNTS,
+      backgroundColor: F_KINDS.map(k => k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.30)'),
+      borderColor:     F_KINDS.map(k => k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.60)'),
+      borderWidth:     F_KINDS.map(k => k === 'shipping' ? 0 : 1),
+      borderRadius: 4,
+      borderSkipped: false,
+      // A closed day is genuinely 0 and must not be floored to a fake value;
+      // the 3px stub is drawn only so the reader can see the day exists.
+      minBarLength: 3,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      title: { display: true,
+                text: 'Orders Fulfilled per Day',
+                color: '#D4A843', font: { size: 14 } },
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: items => items[0].label,
+          label: ctx => {
+            const k = F_KINDS[ctx.dataIndex];
+            if (k !== 'shipping') return F_KIND_TEXT[k];
+            const v = ctx.parsed.y;
+            const rel = v - F_AVG;
+            const sign = rel >= 0 ? '+' : '\u2212';
+            return v.toLocaleString() + ' orders  (' + sign
+                   + Math.abs(rel).toFixed(0) + ' vs avg)';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#888', font: { size: 9 }, maxRotation: 90, minRotation: 90,
+          autoSkip: true, maxTicksLimit: 22,
+          callback: function (v, i) { return F_LABELS[i] ? F_LABELS[i].slice(5) : ''; }
+        },
+        grid: { display: false },
+      },
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: 'Orders Fulfilled', color: '#D4A843' },
+        ticks: { color: '#888' },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+      }
+    },
+  },
+  plugins: [{
+    // Average reference line, direct-labeled so its value never has to be
+    // read off an axis.
+    id: 'avgLine',
+    afterDatasetsDraw(chart) {
+      const a = chart.chartArea, ctx = chart.ctx;
+      const y = chart.scales.y.getPixelForValue(F_AVG);
+      if (!isFinite(y)) return;
+      ctx.save();
+      ctx.strokeStyle = '#58a6ff';
+      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(a.left, y);
+      ctx.lineTo(a.right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Label sits at the LEFT edge on an opaque chip. At the right edge it
+      // landed on top of the tallest bar and became unreadable; a reference
+      // label that collides with the data is worse than no label.
+      const txt = 'avg ' + F_AVG.toFixed(0) + '/shipping day';
+      ctx.font = '600 10px -apple-system, Segoe UI, sans-serif';
+      const tw = ctx.measureText(txt).width;
+      const bx = a.left + 4, by = y - 15, bw = tw + 10, bh = 14;
+      ctx.fillStyle = 'rgba(22,33,62,0.92)';
+      ctx.strokeStyle = 'rgba(88,166,255,0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, bw, bh, 3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#58a6ff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(txt, bx + 5, by + bh / 2 + 0.5);
+      ctx.restore();
+    }
+  }]
+});
+
 </script>
 
 </body>
