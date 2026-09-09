@@ -15,6 +15,26 @@ h2{font-size:13px;letter-spacing:.10em;text-transform:uppercase;color:#a9b8cc;ma
 @media(max-width:1400px){.calgrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:1000px){.calgrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:680px){.calgrid{grid-template-columns:1fr}}
+/* ---- hover tooltip on a calendar bar --------------------------------
+   The native title= attribute technically worked, but it waits about a second
+   and shows one plain line. Justin, 2026-09-09: "I want to be able to scroll
+   over the promo bar on the calendar and at least see the promotion name."
+   So: an instant custom tooltip carrying the name, window and both advertised
+   rates.
+   The bars are also 9px (major) and 5px (minor) tall, which is a genuinely
+   hard target -- .bar::before widens the HIT AREA vertically by 5px each side
+   without changing what is drawn. A tooltip you have to aim for is not much
+   better than no tooltip. */
+#tip{position:fixed;z-index:3000;display:none;pointer-events:none;max-width:330px;
+  background:#101a30;border:1px solid rgba(148,163,184,.45);border-radius:9px;
+  padding:9px 12px;box-shadow:0 12px 34px rgba(0,0,0,.55);font-size:12.5px;line-height:1.5}
+#tip.on{display:block}
+#tip .tname{font-weight:800;font-size:14px;color:#f1f5f9;display:block;margin-bottom:2px}
+#tip .tmeta{color:#a9b8cc;font-size:11.5px;display:block}
+#tip .trate{color:#F5D784;font-weight:700;display:block;margin-top:5px}
+#tip .tsub{color:#cbd5e1;font-weight:600;font-size:11.5px;display:block}
+.bar{position:relative}
+.bar::before{content:'';position:absolute;left:0;right:0;top:-5px;bottom:-5px}
 .mon{border:1px solid rgba(148,163,184,.22);border-radius:10px;padding:10px;background:rgba(15,23,42,.35)}
 .mon.past{opacity:.72}
 .monnm{font-size:13px;font-weight:600;color:#e2e8f0;letter-spacing:.04em;margin-bottom:6px}
@@ -115,6 +135,7 @@ h2{font-size:13px;letter-spacing:.10em;text-transform:uppercase;color:#a9b8cc;ma
 <h1>Teeccino &mdash; Promotional Calendar</h1>
 <div class="sub">Prepared for agency partners &middot; teeccino.com direct-to-consumer</div>
 <div class="stamp">Prepared September 9, 2026</div>
+<div id="tip" role="tooltip" aria-hidden="true"></div>
 <div id="monthfull" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Month detail">
   <div class="scrim" data-close="1"></div>
   <div class="sheet"><button class="fclose" type="button" data-close="1" aria-label="Close">&times;</button>
@@ -183,7 +204,7 @@ function evHTML(e){
           const f=Math.max(s.from,ws), t2=Math.min(s.to,we);
           return '<div class="bar '+esc(s.p.tier)+' '+esc(s.p.status.split(' ')[0])+
             '" style="grid-column:'+(Math.round((f-ws)/MS)+1)+'/'+(Math.round((t2-ws)/MS)+2)+
-            '" title="'+esc(s.p.name)+'"></div>';}).join('')+'</div>';
+            '" data-i="'+DATA.promos.indexOf(s.p)+'" title="'+esc(s.p.name)+'"></div>';}).join('')+'</div>';
       }
       body+='<div class="wk"><div class="wkdays">'+cells+'</div>'+lh+'</div>';
     }
@@ -289,6 +310,41 @@ function evHTML(e){
     LAST_TRIGGER=null;
   }
   const cal=document.getElementById('cal');
+  /* ---- bar hover tooltip ------------------------------------------- */
+  const tip=document.getElementById('tip');
+  function showTip(p, ev){
+    tip.innerHTML='<span class="tname">'+esc(p.name)+'</span>'+
+      '<span class="tmeta">'+esc(p.tier)+' · '+esc(p.status)+'</span>'+
+      '<span class="tmeta">'+esc(longDate(p.start))+' – '+esc(longDate(p.end))+
+        ' · '+p.days+(p.days===1?' Day':' Days')+'</span>'+
+      (p.otp&&p.otp.advertised?'<span class="trate">'+esc(p.otp.advertised)+'</span>':'')+
+      (p.sub&&p.sub.advertised?'<span class="tsub">'+esc(p.sub.advertised)+'</span>':'');
+    tip.classList.add('on'); tip.setAttribute('aria-hidden','false');
+    moveTip(ev);
+  }
+  function moveTip(ev){
+    /* keep it on screen: flip left/up near the right or bottom edge, so a bar
+       in December or in the last week never opens a tooltip off the viewport */
+    const r=tip.getBoundingClientRect();
+    let x=ev.clientX+14, y=ev.clientY+16;
+    if(x+r.width>window.innerWidth-8) x=ev.clientX-r.width-14;
+    if(y+r.height>window.innerHeight-8) y=ev.clientY-r.height-16;
+    tip.style.left=Math.max(8,x)+'px'; tip.style.top=Math.max(8,y)+'px';
+  }
+  function hideTip(){ tip.classList.remove('on'); tip.setAttribute('aria-hidden','true'); }
+  cal.addEventListener('mouseover',ev=>{
+    const bar=ev.target.closest('.bar'); if(!bar) return;
+    const p=DATA.promos[Number(bar.getAttribute('data-i'))]; if(p) showTip(p,ev);
+  });
+  cal.addEventListener('mousemove',ev=>{ if(tip.classList.contains('on')) moveTip(ev); });
+  cal.addEventListener('mouseout',ev=>{
+    const bar=ev.target.closest('.bar');
+    if(bar && !bar.contains(ev.relatedTarget)) hideTip();
+  });
+  /* a tooltip that survives the click into the month view is a stuck tooltip */
+  cal.addEventListener('click',hideTip);
+  window.addEventListener('scroll',hideTip,{passive:true});
+
   cal.addEventListener('click',ev=>{ const mon=ev.target.closest('.mon');
     if(mon) openMonth(Number(mon.getAttribute('data-m')),mon); });
   cal.addEventListener('keydown',ev=>{
