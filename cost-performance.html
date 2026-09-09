@@ -54,6 +54,8 @@
   .card .num { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase; letter-spacing:.06em; }
   .card .hint { color:var(--ink2); font-size:12.5px; margin:2px 0 14px; }
   .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+  .allchk { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--ink2); cursor:pointer; user-select:none; }
+  .allchk input { margin:0; cursor:pointer; }
   .ctrls input { font:inherit; padding:8px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--ink); flex:1; min-width:220px; }
   .mtag { color:var(--muted); font-size:11px; }
   .summary { display:flex; flex-wrap:wrap; gap:8px 22px; font-size:13px; margin:2px 0 14px; }
@@ -189,7 +191,7 @@
     <h2>📦 Packing — cost to pack &amp; finish each SKU</h2>
     <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="pack"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
     <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish <b>one unit</b> (or one full case — use the switch above), from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <b>Click a SKU</b> to see every production run behind it in the selected date range. <span class="illus">Blend cost is added in Section 4.</span></p>
-    <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><span class="mtag" id="pack-n"></span></div>
+    <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><label class="allchk" title="Off by default: the list shows only SKUs that actually ran in the selected date range. Tick to include every SKU in the catalogue, including ones with no runs this period."><input type="checkbox" id="pack-all"> include SKUs not produced in this period</label><span class="mtag" id="pack-n"></span></div>
     <div class="scroll"><table id="t-pack"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="pack" id="pk-h">packing $/case</th>
     </tr></thead><tbody></tbody></table></div>
@@ -228,6 +230,7 @@
     <h2>🏭 Finished Goods — total cost to make</h2>
     <p class="hint"><b>Blend + packing = total cost to make.</b> Use the switch to state it <b>per case</b> (how production is scheduled) or <b>per unit</b> (one individual retail item) — the two differ by exactly the <b>units / case</b> column. For the selected period; click any SKU for the full breakdown. <span class="illus" id="fg-note"></span></p>
     <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off">
+      <label class="allchk" title="Off by default: the list shows only SKUs that actually ran in the selected date range. Tick to include every SKU in the catalogue, including ones with no runs this period."><input type="checkbox" id="fg-all"> include SKUs not produced in this period</label>
       <span class="mtag">state per:</span><div class="seg basis-seg" id="fg-basis" data-sec="fg"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div>
       <span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
@@ -617,12 +620,20 @@ function packHasRuns(r){ for(const it of packItems(r)){ if(PRODITEMS.has(''+it))
 function renderPack(){
   const Bp=secBasis('pack'); setTxt('pk-h','packing $/'+BW1s(Bp));
   const q=$('#pack-q').value.trim().toLowerCase();
+  // DEFAULT = only SKUs actually produced in the selected date range (Justin 2026-09-09).
+  // The catalogue is far larger than any one period's production, so an unfiltered list buried
+  // the SKUs that ran under hundreds that didn't. The checkbox restores the full catalogue.
+  const showAllP=$('#pack-all')&&$('#pack-all').checked;
   let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
+  const ranP=rows.filter(r=>packHasRuns(r)).length;
+  if(!showAllP) rows=rows.filter(r=>packHasRuns(r));
   const hasRun=new Map(); rows.forEach(r=>hasRun.set(r,packHasRuns(r)));
   // Rows with runs first (by cost desc); no-run rows sink to the bottom with no cost shown.
   rows.sort((a,b)=>{const ha=hasRun.get(a),hb=hasRun.get(b); if(ha!==hb)return ha?-1:1; return (b.make_labor||0)-(a.make_labor||0);});
   const noRun=rows.filter(r=>!hasRun.get(r)).length;
-  $('#pack-n').textContent=`${rows.length} of ${FG.length} SKUs`;
+  $('#pack-n').textContent=showAllP
+    ? `${rows.length} of ${FG.length} SKUs · ${ranP} produced this period`
+    : `${rows.length} SKU${rows.length===1?'':'s'} produced this period`;
   $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>{const hr=hasRun.get(r);
     const unknown = Bp==='unit' && r.pack_type==='case' && !r.pack_count;   // multipack, count unknown
     const cell=!hr ? `<span class="illus" title="No production runs for this SKU in the selected period. Widen the date range or pick a period when it ran.">no runs this period</span>`
@@ -630,7 +641,7 @@ function renderPack(){
       : `<span class="big">${m4(r.make_labor*factorB(r,Bp))}</span>`;
     return `<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${cell}</td></tr>`;}).join('')
-    :`<tr><td colspan="4" class="empty">No SKUs match.</td></tr>`;
+    :`<tr><td colspan="4" class="empty">${q?'No SKUs match.':'No SKUs were produced in this date range.'}${showAllP?'':' Widen the dates, or tick “include SKUs not produced in this period”.'}</td></tr>`;
   // Repack/rework is REPORTED, not hidden. These hours were spent re-boxing or re-bagging units
   // that already existed, so they are not part of any SKU's cost to make one unit — but they are
   // real money and belong on the page.
@@ -849,9 +860,15 @@ function renderMachines(rows,fin){
 /* ---------- Section 4: Finished Goods ---------- */
 function renderFG(){
   const q=$('#fg-q').value.trim().toLowerCase();
+  // DEFAULT = only SKUs actually produced in the selected date range (Justin 2026-09-09).
+  const showAllF=$('#fg-all')&&$('#fg-all').checked;
   let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
+  const ranF=rows.filter(r=>packHasRuns(r)).length;
+  if(!showAllF) rows=rows.filter(r=>packHasRuns(r));
   rows.sort((a,b)=>(b.make||0)-(a.make||0));
-  $('#fg-n').textContent=`${rows.length} of ${FG.length} SKUs`;
+  $('#fg-n').textContent=showAllF
+    ? `${rows.length} of ${FG.length} SKUs · ${ranF} produced this period`
+    : `${rows.length} SKU${rows.length===1?'':'s'} produced this period`;
   const B=secBasis('fg'), factor=r=>factorB(r,B);   // shared basis conversion (see UNITS OF MEASURE)
   setTxt('fg-makeh','make $/'+BW1s(B));
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>{const k=factor(r);
@@ -859,7 +876,7 @@ function renderFG(){
     const bl=unknown?null:r.make_blend*k, pk=unknown?null:r.make_labor*k, mk=unknown?null:r.make*k;
     return `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
     +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(bl)}</td><td>${m4(pk)}</td><td class="big" title="${B==='case'?('cost of one case — '+(unitsPerCase(r)||'?')+' units'):'cost of one individual retail unit'}">${m4(mk)}</td></tr>`;}).join('')
-    :`<tr><td colspan="6" class="empty">No SKUs match.</td></tr>`;
+    :`<tr><td colspan="6" class="empty">${q?'No SKUs match.':'No SKUs were produced in this date range.'}${showAllF?'':' Widen the dates, or tick “include SKUs not produced in this period”.'}</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
   $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
 }
@@ -958,10 +975,12 @@ fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>
   $('#dr-apply').addEventListener('click',()=>{ RANGE={from:$('#dr-from').value||null,to:$('#dr-to').value||null}; $('#dr').querySelectorAll('button').forEach(b=>b.classList.remove('on')); label(); recompute(); });
   $('#blend-q').addEventListener('input',renderBlend);
   $('#pack-q').addEventListener('input',renderPack);
+  $('#pack-all').addEventListener('change',renderPack);
   $('#mh-q').addEventListener('input',renderMH);
   $('#mh-export').addEventListener('click',exportMH);
   $('#mh-export-runs').addEventListener('click',exportRuns);
   $('#fg-q').addEventListener('input',renderFG);
+  $('#fg-all').addEventListener('change',renderFG);
   document.querySelectorAll('.basis-seg').forEach(seg=>{   // one shared explanation of the two bases
     const bc=seg.querySelector('[data-b="case"]'), bu=seg.querySelector('[data-b="unit"]');
     if(bc) bc.title='Per shipping CASE — a case is made of N individual units (the "units / case" column).';
