@@ -39,6 +39,22 @@
   .data-table td:nth-child(n+2), .data-table th:nth-child(n+2) { text-align:right; font-variant-numeric:tabular-nums; }
   .swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:7px; vertical-align:middle; }
   .updated-stamp { color:var(--text-dim); font-size:.75rem; }
+  /* Days-to-Conversion strip. Single series, so one flat fill and no legend
+     (the heading names it). #B5872F is the accent gold stepped down to pass the
+     dark-surface lightness band; var(--accent) stays on TEXT, per the rule that
+     ink wears text tokens and the mark carries identity. */
+  .dtc-row { display:grid; grid-template-columns:132px 1fr 148px; align-items:center;
+    gap:12px; padding:5px 0; }
+  .dtc-row .dtc-lab { font-size:.82rem; color:var(--text); text-align:right; white-space:nowrap; }
+  .dtc-track { background:rgba(255,255,255,.045); border-radius:4px; height:26px; overflow:hidden; }
+  .dtc-bar { height:100%; background:#B5872F; border-radius:0 4px 4px 0; min-width:2px;
+    transition:filter .12s ease; }
+  .dtc-row:hover .dtc-bar { filter:brightness(1.28); }
+  .dtc-val { font-size:.82rem; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+  .dtc-val b { color:var(--text); font-weight:600; }
+  .dtc-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .dtc-hero { font-size:1.9rem; font-weight:700; color:var(--accent); line-height:1; }
+  .dtc-hero-lab { font-size:.85rem; color:var(--text-dim); }
   .arch-block { padding:14px 18px; background:rgba(96,165,250,.05); border-left:2px solid #60a5fa;
     border-radius:0 6px 6px 0; font-size:.86rem; line-height:1.6; margin-bottom:10px; }
   .arch-block code { font-family:'SF Mono',Consolas,monospace; font-size:.82rem; background:rgba(212,168,67,.08); color:var(--accent); padding:2px 6px; border-radius:4px; }
@@ -59,7 +75,7 @@
   <div class="subtitle">
     <span class="badge" id="status-badge">…</span>
     &middot; Tracking live since 2026-06-08
-    &middot; <span class="updated-stamp">Updated 2026-09-08 09:11:06</span>
+    &middot; <span class="updated-stamp">Updated 2026-09-09 10:44:55</span>
   </div>
 </header>
 
@@ -94,6 +110,12 @@
 
 <div class="caveat" id="caveat-box"></div>
 
+<h2>Days to Conversion</h2>
+<div class="card" style="padding:20px 22px;">
+  <div id="dtc-host"></div>
+</div>
+<div class="caveat" id="dtc-caveat"></div>
+
 <h2>How this is built</h2>
 <div class="arch-block">
   <span style="color:var(--accent);font-weight:600;">Adds:</span> <code>raw_ga4_atc</code> (GA4 add_to_cart by source).
@@ -102,15 +124,22 @@
   which persists onto the Shopify order. True Gross = units &times; price-list MSRP (paid lines only); Margin = True Gross &minus; COGS.
 </div>
 <div class="arch-block">
+  <span style="color:var(--accent);font-weight:600;">Days to Conversion:</span> <code>calc_attribution.days_to_conversion</code>,
+  which carries Shopify's <code>customerJourneySummary.daysToConversion</code> &mdash; first recorded visit to first order,
+  new DTC customers only. It is a <em>separate basis</em> from the funnel above and is deliberately <strong>not</strong> split
+  by source: the journey uses Shopify's visit UTM vocabulary, not the <code>_atc_source</code> property, and it reaches back
+  years rather than starting at the tracking live date. Joining the two would invent a precision neither side has.
+</div>
+<div class="arch-block">
   <span style="color:var(--accent);font-weight:600;">Conv %</span> = units purchased / units added. The two are different grains
   (GA4 browser events vs realized Shopify orders), so read it as a <em>directional trend by source</em>, not an exact funnel ratio.
 </div>
 
 <div style="margin-top:40px;text-align:center;">
-  <span class="updated-stamp">Built by build_conversion_by_source_dashboard.py · 2026-09-08 09:11:06</span>
+  <span class="updated-stamp">Built by build_conversion_by_source_dashboard.py · 2026-09-09 10:44:55</span>
 </div>
 
-<script id="cbs-payload" type="application/json">{"built_at": "2026-09-08 09:11:06", "tracking_live_date": "2026-06-08", "has_data": true, "source_vocab": ["collection-quickadd", "pdp", "upcart-upsell", "cart", "collection", "other"], "source_meta": {"collection-quickadd": {"label": "Collection Quick-Add", "color": "#D4A843"}, "pdp": {"label": "Product Page", "color": "#60a5fa"}, "upcart-upsell": {"label": "UpCart Upsell", "color": "#a78bfa"}, "cart": {"label": "Cart Page", "color": "#4ade80"}, "collection": {"label": "Collection Grid", "color": "#fb923c"}, "other": {"label": "Other", "color": "#94a3b8"}}, "totals": {"adds": 37482, "units": 23123, "revenue": 371636.92, "true_gross": 377866.49, "margin": 302531.52, "conv_rate": 0.6169, "null_units": 11735, "null_revenue": 164887.15}, "null_share": 0.3367, "by_source": [{"source": "collection-quickadd", "label": "Collection Quick-Add", "color": "#D4A843", "adds": 7878, "units": 5978, "conv_rate": 0.7588, "revenue": 112359.0, "true_gross": 113922.93, "cogs": 21368.77, "margin": 92554.16, "margin_pct": 0.8124}, {"source": "pdp", "label": "Product Page", "color": "#60a5fa", "adds": 24414, "units": 14541, "conv_rate": 0.5956, "revenue": 247091.42, "true_gross": 251667.51, "cogs": 51115.12, "margin": 200552.39, "margin_pct": 0.7969}, {"source": "upcart-upsell", "label": "UpCart Upsell", "color": "#a78bfa", "adds": 0, "units": 0, "conv_rate": null, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}, {"source": "cart", "label": "Cart Page", "color": "#4ade80", "adds": 65, "units": 19, "conv_rate": 0.2923, "revenue": 40.98, "true_gross": 40.98, "cogs": 8.75, "margin": 32.23, "margin_pct": 0.7866}, {"source": "collection", "label": "Collection Grid", "color": "#fb923c", "adds": 3575, "units": 2142, "conv_rate": 0.5992, "revenue": 4912.61, "true_gross": 4982.36, "cogs": 1043.49, "margin": 3938.87, "margin_pct": 0.7906}, {"source": "other", "label": "Other", "color": "#94a3b8", "adds": 1550, "units": 443, "conv_rate": 0.2858, "revenue": 7232.91, "true_gross": 7252.71, "cogs": 1798.85, "margin": 5453.86, "margin_pct": 0.752}]}</script>
+<script id="cbs-payload" type="application/json">{"built_at": "2026-09-09 10:44:55", "tracking_live_date": "2026-06-08", "has_data": true, "source_vocab": ["collection-quickadd", "pdp", "upcart-upsell", "cart", "collection", "other"], "source_meta": {"collection-quickadd": {"label": "Collection Quick-Add", "color": "#D4A843"}, "pdp": {"label": "Product Page", "color": "#60a5fa"}, "upcart-upsell": {"label": "UpCart Upsell", "color": "#a78bfa"}, "cart": {"label": "Cart Page", "color": "#4ade80"}, "collection": {"label": "Collection Grid", "color": "#fb923c"}, "other": {"label": "Other", "color": "#94a3b8"}}, "totals": {"adds": 37482, "units": 23123, "revenue": 371636.92, "true_gross": 377866.49, "margin": 302531.52, "conv_rate": 0.6169, "null_units": 11735, "null_revenue": 164887.15}, "null_share": 0.3367, "by_source": [{"source": "collection-quickadd", "label": "Collection Quick-Add", "color": "#D4A843", "adds": 7878, "units": 5978, "conv_rate": 0.7588, "revenue": 112359.0, "true_gross": 113922.93, "cogs": 21368.77, "margin": 92554.16, "margin_pct": 0.8124}, {"source": "pdp", "label": "Product Page", "color": "#60a5fa", "adds": 24414, "units": 14541, "conv_rate": 0.5956, "revenue": 247091.42, "true_gross": 251667.51, "cogs": 51115.12, "margin": 200552.39, "margin_pct": 0.7969}, {"source": "upcart-upsell", "label": "UpCart Upsell", "color": "#a78bfa", "adds": 0, "units": 0, "conv_rate": null, "revenue": 0.0, "true_gross": 0.0, "cogs": 0.0, "margin": 0.0, "margin_pct": null}, {"source": "cart", "label": "Cart Page", "color": "#4ade80", "adds": 65, "units": 19, "conv_rate": 0.2923, "revenue": 40.98, "true_gross": 40.98, "cogs": 8.75, "margin": 32.23, "margin_pct": 0.7866}, {"source": "collection", "label": "Collection Grid", "color": "#fb923c", "adds": 3575, "units": 2142, "conv_rate": 0.5992, "revenue": 4912.61, "true_gross": 4982.36, "cogs": 1043.49, "margin": 3938.87, "margin_pct": 0.7906}, {"source": "other", "label": "Other", "color": "#94a3b8", "adds": 1550, "units": 443, "conv_rate": 0.2858, "revenue": 7232.91, "true_gross": 7252.71, "cogs": 1798.85, "margin": 5453.86, "margin_pct": 0.752}], "days_to_conversion": {"lookback_days": 365, "cap_days": 30, "has_data": true, "buckets": [{"label": "Same day / 1 day", "orders": 10585, "revenue": 418585.12, "share": 0.8064}, {"label": "2-3 days", "orders": 551, "revenue": 25069.7, "share": 0.042}, {"label": "4-7 days", "orders": 643, "revenue": 29559.24, "share": 0.049}, {"label": "8-14 days", "orders": 566, "revenue": 26782.44, "share": 0.0431}, {"label": "15-30 days", "orders": 781, "revenue": 38038.55, "share": 0.0595}], "counted": 13126, "day1_share": 0.8064, "new_orders": 15978, "new_with_journey": 13126, "new_coverage": 0.8215, "new_mean_days": 2.95, "ret_with_journey": 17830, "ret_coverage": 0.5558, "ret_mean_days": 5.25}}</script>
 <script>
 (() => {
   const D = JSON.parse(document.getElementById('cbs-payload').textContent);
@@ -145,6 +174,42 @@
     fmtPct(D.null_share) + ' of recent purchased units are unattributed (NULL source) — expected: ' +
     'Stay.ai recurring rebills carry no source (no cart add), OCU post-purchase lines are NULL by design, ' +
     'and coverage ramps as the new tracking JS propagates to returning shoppers.';
+
+  // ---- Days to Conversion strip -------------------------------------------
+  // Single series: magnitude is carried by bar LENGTH, so colour stays flat and
+  // there is no legend. Every bar is direct-labelled (only 5 of them, and the
+  // share IS the finding), plus a title= tooltip for the exact counts.
+  const dtc=D.days_to_conversion;
+  const dtcHost=document.getElementById('dtc-host');
+  const dtcCav=document.getElementById('dtc-caveat');
+  if(!dtc || !dtc.has_data){
+    dtcHost.innerHTML='<div class="empty">No customer-journey data in the window</div>';
+    dtcCav.style.display='none';
+  } else {
+    const mx=Math.max(...dtc.buckets.map(b=>b.orders))||1;
+    dtcHost.innerHTML=`
+      <div class="dtc-head">
+        <span class="dtc-hero">${fmtPct(dtc.day1_share)}</span>
+        <span class="dtc-hero-lab">of new customers buy on first contact &mdash;
+          trailing ${dtc.lookback_days} days, ${fmtInt(dtc.counted)} first orders,
+          mean ${dtc.new_mean_days} days</span>
+      </div>` +
+      dtc.buckets.map(b=>`
+        <div class="dtc-row" title="${b.label} — ${fmtInt(b.orders)} first orders, ${fmtMoney(b.revenue)} revenue">
+          <div class="dtc-lab">${b.label}</div>
+          <div class="dtc-track"><div class="dtc-bar" style="width:${(b.orders/mx*100).toFixed(2)}%"></div></div>
+          <div class="dtc-val"><b>${fmtPct(b.share)}</b> · ${fmtInt(b.orders)} orders</div>
+        </div>`).join('');
+
+    dtcCav.innerHTML =
+      'Shopify keeps at most ' + dtc.cap_days + ' days of pre-purchase visit history, so this field is ' +
+      '<strong>hard-capped at ' + dtc.cap_days + '</strong> — there is no &ldquo;30+ days&rdquo; bucket and there cannot be. ' +
+      'A shopper who considered for 60 days is recorded as ' + dtc.cap_days + '. ' +
+      'Coverage: ' + fmtPct(dtc.new_coverage) + ' of new-customer orders carry a journey (' +
+      fmtInt(dtc.new_with_journey) + ' of ' + fmtInt(dtc.new_orders) + '); the rest have no visit trail recorded. ' +
+      'Returning-customer orders are excluded here (' + fmtPct(dtc.ret_coverage) + ' coverage, mean ' +
+      dtc.ret_mean_days + ' days) — for a repeat buyer the clock measures browsing before a reorder, not consideration.';
+  }
 
   // margin chart (paid sources only)
   const nz=rows.filter(s=>s.margin!==0 || s.revenue!==0);
