@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T17:04:29+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-10T20:13:57+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -199,6 +199,11 @@
   color:var(--ink); white-space:nowrap; }
 .flag.hi { background:color-mix(in srgb,var(--critical) 22%,var(--surface)); }
 #src-scroll { overflow:auto; }
+/* "2 of 3" -- a line that is part of a bigger work order */
+.woline { font-size:10.5px; font-weight:700; white-space:nowrap; border-radius:4px;
+  padding:1px 6px; color:var(--series);
+  background:color-mix(in srgb,var(--series) 14%,var(--surface)); }
+.srctable tr.clk:hover td { background:color-mix(in srgb,var(--series) 8%,transparent); }
 
 /* --- trace button injected into v1's drill-down detail panels --- */
 .trace { font:inherit; font-size:12.5px; cursor:pointer; margin-top:12px;
@@ -456,6 +461,7 @@
         <input id="src-q" placeholder="Search item #, description, work order, notes&hellip;" autocomplete="off">
         <label class="allchk"><input type="checkbox" id="src-flagged"> only rows with flags</label>
         <label class="allchk"><input type="checkbox" id="src-date" checked> respect the date range above</label>
+        <label class="allchk" title="A work order often takes more than one line - a break splits it, or it finishes the next day. Tick this to see one row per work order with its lines added up."><input type="checkbox" id="src-wo"> one row per work order</label>
         <button class="linkbtn" id="src-export">export CSV</button>
       </div>
       <div class="ctrls" style="margin-top:2px">
@@ -466,6 +472,23 @@
       <div class="summary" id="src-summary"></div>
       <div class="scroll" id="src-scroll" style="max-height:620px"><table id="t-src" class="srctable"><thead><tr id="src-head"></tr></thead><tbody></tbody></table></div>
       <p class="foot" id="src-foot"></p>
+    </div>
+
+    <div class="card" id="c-wo-explain">
+      <h2>Reading a work order that spans several lines</h2>
+      <p class="hint">A work order regularly takes <b>more than one line</b> on the sheet &mdash; a
+        break splits it, or it runs past the end of the day and finishes the next. That is normal
+        paperwork, and it changes how the lines read:</p>
+      <div class="defs">
+        <div><span class="dw">plan</span><div><b>Planned quantity is repeated on every line</b>, not
+          divided between them. So a single line is never &ldquo;x% of plan&rdquo; on its own.</div></div>
+        <div><span class="dw">actual</span><div><b>Quantity, hours and downtime are split</b> across
+          the lines and have to be added up to get the job.</div></div>
+        <div><span class="dw">setup</span><div><b>Setup lands on the first line</b>, so its labor per
+          unit looks high in isolation and settles once the job finishes.</div></div>
+      </div>
+      <p class="deq" id="wo-example"></p>
+      <p class="foot" id="wo-foot"></p>
     </div>
 
     <div class="card">
@@ -1265,6 +1288,8 @@ const V2 = {
   station: null,      // active station filter on the Source tab
   cap: 500,           // rows rendered at once (the feed holds ~7.9k)
   showAll: false,
+  groupWO: false,   // one row per work order instead of one per line
+  woOpen: null,     // which work order is expanded in grouped mode
   sort: { k: 'd', dir: -1 },
 };
 
@@ -1290,15 +1315,15 @@ const FLAGDOC = {
   no_actual_time:                 ['No actual time recorded', 'The run sheet has no finish time, so the run cannot be costed or scored. It drops out of every hours figure.', 'md'],
   misdate:                        ['Date is impossible', 'The date is outside any real operating year — usually a typo in the year. Excluded from weekly and monthly views.', 'md'],
   undated_or_bad_date:            ['Date missing or unreadable', 'No usable date, so the row cannot land in a week or month. Still counted in all-time totals.', 'md'],
-  time_but_no_qty:                ['Hours but nothing made', 'A production row with time and operators but no quantity. Cost per unit divides by zero here, and the hours drag efficiency down with no output to offset them. The most common cause of a wild number.', 'hi'],
+  time_but_no_qty:                ['Hours but nothing made', 'The work order burned time and operators but recorded no quantity on any of its lines. Cost per unit divides by zero here, and the hours drag efficiency down with no output to offset them. The most common cause of a wild number. Judged on the whole work order.', 'hi'],
   qty_but_no_operators:           ['Made something, no crew size', 'Quantity and time are there but the operator count is blank, so labor hours cannot be computed for this run.', 'hi'],
   no_standard_rate:               ['No planned rate', 'Without a planned rate there is no expected-hours figure, so the run silently drops out of efficiency rather than showing as a miss.', 'md'],
   zero_standard_rate:             ['Planned rate is zero', 'A zero planned rate reads as infinite efficiency and distorts the week it sits in.', 'hi'],
-  labor_per_unit_10x_item_median: ['Labor per unit 10x this item’s norm', 'Compared against this SKU’s own history, not a plant-wide threshold. Either a genuinely bad run or a mis-keyed time or quantity.', 'hi'],
+  labor_per_unit_10x_item_median: ['Labor per unit 10x this item’s norm', 'Compared against this SKU’s own history, not a plant-wide threshold. Judged on the finished work order, so first-line setup does not read as a blowout. Either a genuinely bad job or a mis-keyed time or quantity.', 'hi'],
   run_over_16h:                   ['Run longer than 16 hours', 'Longer than any shift. Almost always an end-time typo.', 'hi'],
-  qty_under_10pct_of_plan:        ['Made under a tenth of the plan', 'Sometimes real — a run cut short. Also what a mis-keyed quantity looks like.', 'md'],
+  qty_under_10pct_of_plan:        ['Made under a tenth of the plan', 'The whole work order came in under a tenth of what it was planned for — its lines added up, not one line on its own, because planned quantity is repeated on every line. Sometimes real (a job abandoned), also what a mis-keyed quantity looks like.', 'md'],
   downtime_exceeds_runtime:       ['More downtime than run time', 'Downtime longer than the run it sits inside. One of the two is wrong.', 'hi'],
-  scrap_exceeds_output:           ['More scrapped than made', 'Bad units exceed good units on the same row.', 'hi'],
+  scrap_exceeds_output:           ['More scrapped than made', 'Bad units exceed good units over the work order.', 'hi'],
 };
 const flagLabel = f => (FLAGDOC[f] ? FLAGDOC[f][0] : f);
 const flagSev = f => (FLAGDOC[f] ? FLAGDOC[f][2] : 'md');
@@ -1615,10 +1640,119 @@ function srcRows(o) {
   });
 }
 
+/* ---------- work-order grouping ----------
+   A work order routinely spans several lines (a break, or it finishes the next day).
+   Grouping mirrors the feed's rule exactly -- (work order, item, station), with '0' and
+   blank treated as no work order -- so the page and the flags can never disagree about
+   what one job is. PLANNED qty is the MAX across lines (it is repeated verbatim on each);
+   everything else sums. */
+const WO_PLACEHOLDER = new Set(['0', '', '-', 'N/A', 'NA', 'TBD']);
+function woKeyOf(r) {
+  const wo = (r[SI.wo] || '').trim();
+  if (!wo || WO_PLACEHOLDER.has(wo.toUpperCase())) return null;
+  return wo + '\u0001' + canonId(r[SI.i]) + '\u0001' + (r[SI.st] || '');
+}
+function woGroups(rows) {
+  const byKey = new Map(), out = [];
+  rows.forEach(r => {
+    const k = woKeyOf(r);
+    if (k == null) { out.push({ key: null, wo: r[SI.wo] || null, lines: [r] }); return; }
+    let g = byKey.get(k);
+    if (!g) { g = { key: k, wo: (r[SI.wo] || '').trim(), lines: [] }; byKey.set(k, g); out.push(g); }
+    g.lines.push(r);
+  });
+  out.forEach(g => {
+    const L = g.lines, sum = i => L.reduce((s, r) => s + (r[i] || 0), 0);
+    g.item = L[0][SI.i]; g.desc = L[0][SI.ds]; g.station = L[0][SI.st];
+    g.dates = L.map(r => r[SI.d]).filter(d => d && /^\d{4}-/.test(d)).sort();
+    g.hrs = sum(SI.ah);
+    g.oph = L.reduce((s, r) => s + (r[SI.ah] || 0) * (r[SI.o] || 0), 0);
+    g.qty = sum(SI.q);
+    g.pq = Math.max(0, ...L.map(r => r[SI.pq] || 0));   // repeated per line -> max, not sum
+    g.dt = sum(SI.dt); g.bad = sum(SI.bf);
+    g.ops = Math.max(0, ...L.map(r => r[SI.o] || 0));
+    g.flags = [...new Set(L.flatMap(r => (r[SI.f] || '').split(',').filter(Boolean)))];
+    g.pctPlan = g.pq > 0 ? g.qty / g.pq : null;
+  });
+  return out;
+}
+
+function renderSrcGrouped(rows) {
+  const gs = woGroups(rows).sort((a, b) => {
+    const da = (a.dates[a.dates.length - 1] || ''), db = (b.dates[b.dates.length - 1] || '');
+    return db.localeCompare(da);
+  });
+  const multi = gs.filter(g => g.lines.length > 1).length;
+  // A line with no work order number is its own group so nothing is lost, but it is NOT a
+  // work order and must not be counted as one -- 1,753 rows (cleaning, changeovers, labor
+  // notes, blend runs) carry no WO#, and lumping them in overstated the count by ~40%.
+  const real = gs.filter(g => g.key != null).length, orphan = gs.length - real;
+  $('#src-head').innerHTML = ['Last date', 'WO #', 'lines', 'Station', 'Item #', 'Description',
+    'machine hrs', 'operator hrs', 'planned qty', 'actual qty', '% of plan', 'DT min', 'Flags']
+    .map(h => '<th>' + h + '</th>').join('');
+  const shown = V2.showAll ? gs : gs.slice(0, V2.cap);
+  $('#t-src tbody').innerHTML = shown.length ? shown.map(g => {
+    const span = g.lines.length > 1;
+    const dr = g.dates.length
+      ? (g.dates[0] === g.dates[g.dates.length - 1] ? g.dates[0]
+         : g.dates[0] + ' \u2192 ' + g.dates[g.dates.length - 1])
+      : '\u2013';
+    const pp = g.pctPlan == null ? '\u2013' : (g.pctPlan * 100).toFixed(0) + '%';
+    const ppc = g.pctPlan != null && g.pctPlan < 0.1 ? ' style="color:var(--critical);font-weight:700"' : '';
+    let html = '<tr class="clk ' + (g.flags.length ? 'flagged' : '') + '" data-wog="' + esc(g.key || '') + '">'
+      + '<td>' + esc(dr) + '</td>'
+      + '<td><b>' + esc(g.wo || '\u2013') + '</b></td>'
+      + '<td>' + (span ? '<b>' + g.lines.length + '</b>' : '1') + '</td>'
+      + '<td>' + esc(g.station || '\u2013') + '</td>'
+      + '<td>' + esc(g.item || '\u2013') + '</td>'
+      + '<td class="desc">' + esc(g.desc || '') + '</td>'
+      + '<td>' + (g.hrs ? g.hrs.toFixed(2) : '\u2013') + '</td>'
+      + '<td>' + (g.oph ? g.oph.toFixed(2) : '\u2013') + '</td>'
+      + '<td>' + (g.pq ? num(g.pq) : '\u2013') + '</td>'
+      + '<td>' + (g.qty ? num(g.qty) : '\u2013') + '</td>'
+      + '<td' + ppc + '>' + pp + '</td>'
+      + '<td>' + (g.dt ? num(g.dt) : '\u2013') + '</td>'
+      + '<td class="f">' + g.flags.map(f => '<span class="flag ' + (flagSev(f) === 'hi' ? 'hi' : '')
+        + '" title="' + esc(FLAGDOC[f] ? FLAGDOC[f][1] : f) + '">' + esc(flagLabel(f)) + '</span>').join('')
+      + '</td></tr>';
+    if (V2.woOpen && g.key === V2.woOpen) {
+      html += '<tr><td colspan="13" style="padding:0 0 10px 26px;background:color-mix(in srgb,var(--series) 5%,transparent)">'
+        + '<table style="margin:6px 0 2px"><thead><tr><th>Line</th><th>Date</th><th>Start</th><th>End</th>'
+        + '<th>ops</th><th>machine hrs</th><th>planned qty</th><th>actual qty</th><th>DT min</th></tr></thead><tbody>'
+        + g.lines.map((r, n) => '<tr><td>' + (n + 1) + ' of ' + g.lines.length + '</td>'
+          + '<td>' + esc(r[SI.d] || '\u2013') + '</td><td>' + esc(r[SI.s1] || '\u2013') + '</td>'
+          + '<td>' + esc(r[SI.s2] || '\u2013') + '</td><td>' + num(r[SI.o]) + '</td>'
+          + '<td>' + (r[SI.ah] ? (+r[SI.ah]).toFixed(2) : '\u2013') + '</td>'
+          + '<td>' + num(r[SI.pq]) + '</td><td>' + num(r[SI.q]) + '</td>'
+          + '<td>' + num(r[SI.dt]) + '</td></tr>').join('')
+        + '</tbody></table>'
+        + (g.lines.length > 1
+           ? '<p class="foot" style="margin:2px 0 0">Planned qty repeats on each line \u2014 the job was '
+             + 'planned for <b>' + num(g.pq) + '</b>, not ' + num(g.pq * g.lines.length) + '. It made <b>'
+             + num(g.qty) + '</b> (' + (g.pctPlan != null ? (g.pctPlan * 100).toFixed(0) + '% of plan' : 'no plan recorded') + ').</p>'
+           : '')
+        + '</td></tr>';
+    }
+    return html;
+  }).join('') : '<tr><td colspan="13" class="empty">No work orders match.</td></tr>';
+
+  $('#t-src tbody').onclick = ev => {
+    const tr = ev.target.closest('tr.clk'); if (!tr) return;
+    V2.woOpen = (V2.woOpen === tr.dataset.wog) ? null : (tr.dataset.wog || null);
+    renderSrc();
+  };
+  return { count: gs.length, real, orphan, multi };
+}
+
 function renderSrc() {
   if (!V2.src) return;
   const cols = V2.src.columns;
-  if (!$('#src-head').children.length) {
+  // The header layout differs between line mode and work-order mode, so it is rebuilt
+  // whenever the mode flips (not just once).
+  if (V2._headMode !== (V2.groupWO ? 'wo' : 'line')) {
+    $('#src-head').innerHTML = ''; V2._headMode = V2.groupWO ? 'wo' : 'line';
+  }
+  if (!V2.groupWO && !$('#src-head').children.length) {
     $('#src-head').innerHTML = cols.map(c => '<th data-sk="' + c.key + '">' + esc(c.label) + '</th>').join('');
     $('#src-head').onclick = ev => {
       const th = ev.target.closest('th'); if (!th) return;
@@ -1626,6 +1760,8 @@ function renderSrc() {
       V2.sort = { k, dir: (V2.sort.k === k ? -V2.sort.dir : (k === 'd' ? -1 : 1)) };
       renderSrc();
     };
+  }
+  if (!$('#src-station').children.length) {
     const st = [...new Set(V2.src.rows.map(r => r[SI.st]).filter(Boolean))].sort();
     $('#src-station').innerHTML = '<button data-s="__all" class="on">All stations</button>'
       + st.map(s => '<button data-s="' + esc(s) + '">' + esc(s) + '</button>').join('');
@@ -1674,7 +1810,36 @@ function renderSrc() {
     + '<div><b>' + num(Math.round(hrs)) + '</b> <span>machine hrs</span></div>'
     + '<div><b>' + num(Math.round(oph)) + '</b> <span>operator hrs</span></div>';
 
+  if (V2.groupWO) {
+    const g = renderSrcGrouped(rows);
+    $('#src-summary').innerHTML =
+        '<div><b>' + num(g.real) + '</b> <span>work orders</span></div>'
+      + '<div><b>' + num(rows.length) + '</b> <span>lines behind them</span></div>'
+      + '<div><b>' + num(nFlag) + '</b> <span>lines with flags</span></div>'
+      + '<div><b>' + num(Math.round(hrs)) + '</b> <span>machine hrs</span></div>'
+      + '<div><b>' + num(Math.round(oph)) + '</b> <span>operator hrs</span></div>';
+    let gf = '';
+    if (!V2.showAll && g.count > V2.cap) {
+      gf += 'Showing the first <b>' + num(V2.cap) + '</b> of ' + num(g.count)
+        + ' groups. <button class="linkbtn" id="src-more">show all ' + num(g.count) + '</button> \u00b7 ';
+    }
+    gf += '<b>' + num(g.real) + '</b> work orders, <b>' + num(g.multi)
+      + '</b> of them spanning more than one line'
+      + (g.orphan ? ', plus <b>' + num(g.orphan) + '</b> lines with no work order number '
+                    + '(cleaning, changeovers, labor notes and blend runs, shown one per row '
+                    + 'because there is nothing to group them by)' : '')
+      + '. Click a work order to see its lines. Planned quantity is the plan for the job '
+      + '(repeated per line on the sheet, not added up); hours and actual quantity are its '
+      + 'lines summed.';
+    $('#src-foot').innerHTML = gf;
+    const gm = $('#src-more'); if (gm) gm.onclick = () => { V2.showAll = true; renderSrc(); };
+    setTxt('tc-src', nFlag ? String(nFlag) : '');
+    const gtc = $('#tc-src'); if (gtc) gtc.style.display = nFlag ? '' : 'none';
+    return;
+  }
+
   const shown = V2.showAll ? rows : rows.slice(0, V2.cap);
+  $('#t-src tbody').onclick = null;
   $('#t-src tbody').innerHTML = shown.length ? shown.map(r => {
     const fl = (r[SI.f] || '').split(',').filter(Boolean);
     return '<tr class="' + (fl.length ? 'flagged' : '') + '">' + cols.map(c => {
@@ -1683,6 +1848,9 @@ function renderSrc() {
         '<span class="flag ' + (flagSev(f) === 'hi' ? 'hi' : '') + '" title="' + esc(FLAGDOC[f] ? FLAGDOC[f][1] : f)
         + '">' + esc(flagLabel(f)) + '</span>').join('') + '</td>';
       if (c.key === 'n') return '<td class="n">' + esc(v == null ? '' : v) + '</td>';
+      // "2 of 3" -- present only when the work order spans lines, so it reads as a signal
+      if (c.key === 'wn') return v ? '<td><span class="woline">' + esc(v) + '</span></td>'
+                                   : '<td class="mtag">\u2013</td>';
       if (v == null || v === '') return '<td class="mtag">–</td>';
       if (c.kind === 'hours') return '<td>' + (+v).toFixed(2) + '</td>';
       if (c.kind === 'rate') return '<td>' + (+v).toFixed(5) + '</td>';
@@ -1713,6 +1881,27 @@ function renderSrc() {
 
   setTxt('tc-src', nFlag ? String(nFlag) : '');
   const tc = $('#tc-src'); if (tc) tc.style.display = nFlag ? '' : 'none';
+}
+
+function renderWoExplain() {
+  const m = V2.src._meta;
+  // Pull a REAL multi-line work order out of the feed for the worked example rather than
+  // writing one into the page -- an invented example goes stale and cannot be checked.
+  const gs = woGroups(V2.src.rows).filter(g => g.lines.length >= 3 && g.qty && g.pq)
+    .sort((a, b) => b.lines.length - a.lines.length);
+  const ex = gs.find(g => Math.abs((g.pctPlan || 0) - 1) < 0.2) || gs[0];
+  if (ex) {
+    $('#wo-example').innerHTML = 'Work order <b>' + esc(ex.wo) + '</b> (' + esc(ex.item) + ', '
+      + esc(ex.station) + ') ran over <b>' + ex.lines.length + ' lines</b>: '
+      + ex.lines.map(r => num(r[SI.q])).join(' + ') + ' = <b>' + num(ex.qty) + '</b> made, '
+      + 'against a plan of <b>' + num(ex.pq) + '</b> \u2014 not '
+      + num(ex.pq * ex.lines.length) + ', which is what adding the planned column would give.';
+  }
+  $('#wo-foot').innerHTML = '<b>' + num(m.work_orders_spanning_multiple_lines) + '</b> of '
+    + num(m.work_orders) + ' work orders span more than one line. Checks that compare output '
+    + 'against a plan, or against a per-unit norm, are judged on the <b>whole work order</b> for '
+    + 'this reason. Checks about one sitting at the machine \u2014 a run over 16 hours, downtime '
+    + 'longer than its run, a missing crew size \u2014 stay per line.';
 }
 
 function renderGlossary() {
@@ -1821,13 +2010,16 @@ $('#src-q').addEventListener('input', () => { V2.showAll = false; renderSrc(); }
 $('#src-flagged').addEventListener('change', () => { V2.showAll = false; renderSrc(); });
 $('#src-date').addEventListener('change', () => { V2.showAll = false; renderSrc(); });
 $('#src-export').addEventListener('click', exportSrc);
+$('#src-wo').addEventListener('change', () => {
+  V2.groupWO = $('#src-wo').checked; V2.showAll = false; V2.woOpen = null; renderSrc();
+});
 
 Promise.all([
   fetch('production-source-feed.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('source feed', e); return null; }),
   fetch('product-type-map.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('type map', e); return null; }),
 ]).then(([src, tmap]) => {
   V2.src = src; V2.tmap = tmap;
-  if (src) { src.columns.forEach((c, i) => SI[c.key] = i); renderGlossary(); }
+  if (src) { src.columns.forEach((c, i) => SI[c.key] = i); renderGlossary(); renderWoExplain(); }
   else $('#src-foot').innerHTML = '<b>Could not load the source feed.</b> The other tabs are unaffected.';
   v2Render();
 });
