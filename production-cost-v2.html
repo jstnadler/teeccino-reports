@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<title>Production Cost &amp; Machine Hours (v2)</title>
+<!-- Built 2026-09-10T17:04:29+00:00 by CostSmith/automations/build_v2_page.py.
+     v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
+     untouched and still live. The costing core below is spliced from v1 so the
+     numbers agree exactly; only the navigation, the Overview, the product-type
+     view and the Source Data tab are new. -->
+<style>
+
+  :root {
+    --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,0.10);
+    --series:#2a78d6; --good:#0ca30c; --warning:#fab219; --critical:#d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,0.10);
+      --series:#3987e5; --good:#0ca30c;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--plane); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.5; }
+  .wrap { max-width:1160px; margin:0 auto; padding:24px 20px 64px; }
+  h1 { font-size:24px; margin:8px 0 2px; }
+  .sub { color:var(--ink2); margin:0 0 8px; }
+  .stepbar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:var(--muted);
+    font-size:13px; margin:0 0 18px; }
+  .stepbar b { color:var(--ink); }
+  .stepbar .arrow { color:var(--series); font-weight:700; }
+  .drange { position:sticky; top:0; z-index:15; display:flex; flex-wrap:wrap; gap:10px 14px;
+    align-items:center; background:color-mix(in srgb,var(--series) 8%,var(--surface));
+    border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:22px; }
+  .drange .lbl { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase; letter-spacing:.04em; }
+  .seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .seg button { font:inherit; padding:6px 11px; border:0; border-right:1px solid var(--border);
+    background:var(--surface); color:var(--ink2); cursor:pointer; }
+  .seg button:last-child { border-right:0; }
+  .seg button.on { background:var(--series); color:#fff; }
+  .drange .custom { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink2); }
+  .drange input[type=date] { font:inherit; padding:6px 8px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--ink); }
+  .drange .rlabel { margin-left:auto; font-size:12px; color:var(--ink2); font-variant-numeric:tabular-nums; }
+  .drange .rlabel b { color:var(--ink); }
+  .linkbtn { background:none; border:0; color:var(--series); cursor:pointer; font:inherit; text-decoration:underline; padding:0; }
+  .pagenav { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 22px; }
+  .pagenav a { font-size:12.5px; text-decoration:none; color:var(--ink2); white-space:nowrap;
+    background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:6px 12px;
+    transition:background .12s, color .12s, border-color .12s; }
+  .pagenav a:hover { background:color-mix(in srgb,var(--series) 12%,var(--surface)); color:var(--ink); border-color:var(--series); }
+  :target { scroll-margin-top:16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:22px; }
+  .card h2 { font-size:18px; margin:0 0 4px; letter-spacing:.01em; }
+  .card .num { font-size:12px; font-weight:700; color:var(--series); text-transform:uppercase; letter-spacing:.06em; }
+  .card .hint { color:var(--ink2); font-size:12.5px; margin:2px 0 14px; }
+  .ctrls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
+  .allchk { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--ink2); cursor:pointer; user-select:none; }
+  .allchk input { margin:0; cursor:pointer; }
+  .ctrls input { font:inherit; padding:8px 11px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--ink); flex:1; min-width:220px; }
+  .mtag { color:var(--muted); font-size:11px; }
+  .summary { display:flex; flex-wrap:wrap; gap:8px 22px; font-size:13px; margin:2px 0 14px; }
+  .summary b { font-size:18px; font-weight:700; }
+  .summary span { color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  th,td { text-align:right; padding:7px 9px; border-bottom:1px solid var(--grid); white-space:nowrap; }
+  th:first-child,td:first-child { text-align:left; }
+  th:nth-child(2),td:nth-child(2){ text-align:left; }
+  th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em;
+    position:sticky; top:0; background:var(--surface); z-index:1; cursor:pointer; user-select:none; }
+  th::after{ content:"↕"; opacity:.35; margin-left:3px; font-size:10px; }
+  td.desc { color:var(--ink2); max-width:300px; overflow:hidden; text-overflow:ellipsis; }
+  td.big { font-weight:700; font-size:15px; }
+  .scroll { max-height:460px; overflow:auto; border:1px solid var(--grid); border-radius:8px; }
+  .foot { color:var(--muted); font-size:12px; margin-top:10px; }
+  .restate { border-left:3px solid var(--warning); background:var(--surface); padding:10px 14px;
+             margin:0 0 12px; font-size:13px; color:var(--ink2); border-radius:0 6px 6px 0; }
+  .restate b { color:var(--ink); }
+  .illus { color:var(--muted); font-style:italic; }
+  .empty { color:var(--muted); padding:16px 8px; font-style:italic; }
+  tr.clk { cursor:pointer; }
+  tr.clk:hover td { background:color-mix(in srgb,var(--series) 8%,transparent); }
+  .detail { margin-top:14px; background:color-mix(in srgb,var(--series) 6%,var(--surface)); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; }
+  svg { width:100%; display:block; }
+  /* cases-and-units glossary */
+  .defs { display:flex; flex-direction:column; gap:7px; font-size:13px; color:var(--ink2); line-height:1.5; }
+  .defs > div { display:flex; gap:10px; align-items:baseline; }
+  .defs b { color:var(--ink); }
+  .dw { flex:0 0 58px; font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--series);
+    text-transform:uppercase; text-align:right; padding-top:1px; }
+  .deq { margin-top:2px; padding:7px 10px; border-radius:7px; font-variant-numeric:tabular-nums;
+    background:color-mix(in srgb,var(--series) 8%,var(--surface)); border:1px solid var(--grid); display:block !important; }
+
+/* ---------------- v2 shell: header, tabs, panels ----------------
+   Layered ON TOP of v1's stylesheet, which supplies the tokens (--series, --good,
+   --warning, --critical, surfaces, table + card rules). Nothing here redefines a
+   v1 token, so the two pages stay visually identical where they show the same thing. */
+
+/* Categorical series slots, validated for both modes (dataviz six checks, adjacent
+   pairlist: worst CVD dE 9.1 light / 8.4 dark; worst normal-vision dE 19.6 / 19.3).
+   Three light slots sit under 3:1 on the light surface, so every chart using them
+   ships a legend AND the same numbers as a table -- the relief rule, satisfied. */
+:root {
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; }
+}
+
+.wrap { max-width:1280px; }
+
+.v2head { display:flex; flex-wrap:wrap; gap:12px 24px; align-items:flex-start;
+  justify-content:space-between; margin:6px 0 14px; }
+.v2title { flex:1 1 460px; }
+.v2title h1 { margin:0 0 3px; }
+.v2badge { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  vertical-align:middle; color:#fff; background:var(--series); border-radius:999px;
+  padding:3px 9px; margin-left:6px; }
+.v1link { color:var(--series); text-decoration:none; border-bottom:1px solid transparent; white-space:nowrap; }
+.v1link:hover { border-bottom-color:var(--series); }
+.v2fresh { font-size:12px; color:var(--ink2); text-align:right; line-height:1.65;
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:9px 13px; min-width:210px; }
+.v2fresh b { color:var(--ink); }
+.v2fresh .stale { color:var(--warning); font-weight:700; }
+
+/* --- tabs --- */
+.tabs { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 20px;
+  border-bottom:1px solid var(--border); padding-bottom:0; }
+.tabs button { font:inherit; font-size:13.5px; padding:9px 15px; border:0; cursor:pointer;
+  background:none; color:var(--ink2); border-bottom:2.5px solid transparent;
+  margin-bottom:-1px; border-radius:6px 6px 0 0; white-space:nowrap; }
+.tabs button:hover { color:var(--ink); background:color-mix(in srgb,var(--series) 8%,transparent); }
+.tabs button.on { color:var(--series); border-bottom-color:var(--series); font-weight:600; }
+.tabcount { font-size:10.5px; font-weight:700; background:var(--warning); color:#241a00;
+  border-radius:999px; padding:1px 6px; margin-left:5px; vertical-align:1px; }
+.panel { display:none; }
+.panel.on { display:block; }
+.lead { color:var(--ink2); font-size:13.5px; max-width:88ch; margin:0 0 18px; }
+.lead b { color:var(--ink); }
+
+/* --- KPI row (dataviz stat tiles: no plot, so no hover layer needed) --- */
+.kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px; margin:4px 0 12px; }
+.kpi { background:color-mix(in srgb,var(--series) 5%,var(--surface));
+  border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+.kpi .k { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+.kpi .v { font-size:25px; font-weight:700; font-variant-numeric:tabular-nums; margin:3px 0 1px; line-height:1.15; }
+.kpi .n { font-size:11.5px; color:var(--ink2); }
+.kpi.hero { background:color-mix(in srgb,var(--series) 12%,var(--surface)); border-color:var(--series); }
+.kpi.hero .v { font-size:31px; }
+.kpi .v.good { color:var(--good); } .kpi .v.warn { color:var(--warning); } .kpi .v.bad { color:var(--critical); }
+
+.scopebar { font-size:12.5px; color:var(--ink2); border-left:3px solid var(--series);
+  background:color-mix(in srgb,var(--series) 5%,var(--surface)); padding:9px 13px;
+  border-radius:0 6px 6px 0; }
+.scopebar b { color:var(--ink); }
+
+/* --- legend: identity is never colour-alone (label always present) --- */
+.legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12px; color:var(--ink2); margin:0 0 8px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+.legend i { width:11px; height:11px; border-radius:3px; display:inline-block; flex:none;
+  box-shadow:0 0 0 2px var(--surface); }
+
+/* v1's .ctrls rule stretches every input to flex:1, which pushes a checkbox away from
+   its own label. Scope that back to text inputs. */
+.ctrls .allchk { flex:none; }
+.ctrls .allchk input[type=checkbox] { flex:none; min-width:0; width:auto; }
+.ctrls input[type=checkbox] { flex:none; min-width:0; }
+
+/* --- flag chips --- */
+.chips { display:flex; flex-wrap:wrap; gap:7px; margin:2px 0 10px; }
+.chip { font:inherit; font-size:12px; cursor:pointer; background:var(--surface);
+  border:1px solid var(--border); border-radius:999px; padding:5px 11px; color:var(--ink2);
+  display:inline-flex; align-items:center; gap:7px; }
+.chip:hover { border-color:var(--series); color:var(--ink); }
+.chip.on { background:var(--series); border-color:var(--series); color:#fff; }
+.chip b { font-variant-numeric:tabular-nums; }
+.chip.sev-hi { border-left:3px solid var(--critical); }
+.chip.sev-md { border-left:3px solid var(--warning); }
+.chip.none { color:var(--good); border-color:color-mix(in srgb,var(--good) 40%,var(--border)); cursor:default; }
+.chip.none:hover { border-color:color-mix(in srgb,var(--good) 40%,var(--border)); }
+
+/* --- source table: many narrow columns, so tighten and allow horizontal scroll --- */
+.srctable { font-size:12px; }
+.srctable th, .srctable td { padding:5px 7px; }
+.srctable td.f { white-space:normal; max-width:210px; }
+.srctable td.n { color:var(--ink2); white-space:normal; max-width:190px; }
+.srctable th { cursor:pointer; }
+.srctable tr.flagged td:first-child { box-shadow:inset 3px 0 0 var(--warning); }
+.srctable tr.hit td { background:color-mix(in srgb,var(--warning) 18%,transparent); }
+.flag { font-size:10.5px; font-weight:700; border-radius:4px; padding:1px 5px; margin-right:3px;
+  display:inline-block; background:color-mix(in srgb,var(--warning) 24%,var(--surface));
+  color:var(--ink); white-space:nowrap; }
+.flag.hi { background:color-mix(in srgb,var(--critical) 22%,var(--surface)); }
+#src-scroll { overflow:auto; }
+
+/* --- trace button injected into v1's drill-down detail panels --- */
+.trace { font:inherit; font-size:12.5px; cursor:pointer; margin-top:12px;
+  background:var(--series); color:#fff; border:0; border-radius:8px; padding:7px 13px; }
+.trace:hover { filter:brightness(1.08); }
+.tracehint { font-size:12px; color:var(--muted); margin-left:9px; }
+
+@media (max-width:720px) {
+  .v2fresh { text-align:left; }
+  .kpi .v { font-size:21px; } .kpi.hero .v { font-size:25px; }
+}
+
+</style>
+</head>
+<body data-palette="#2a78d6,#eb6834,#1baf7a,#eda100,#e87ba4,#008300">
+<div class="wrap">
+  <header class="v2head">
+    <div class="v2title">
+      <h1>Production Cost &amp; Machine Hours <span class="v2badge">v2 trial</span></h1>
+      <p class="sub">What it costs to <b>make</b> a pack, from <b>actual production runs</b>.
+        <b>Blending + packing labor only</b> &mdash; raw ingredients and packaging are not in any
+        number on this page. <a class="v1link" href="cost-performance.html">the current v1 page &rarr;</a></p>
+    </div>
+    <div class="v2fresh" id="v2-fresh">loading&hellip;</div>
+  </header>
+
+  <!-- Date range, promoted out of the page body so it governs every tab. -->
+  <div class="drange">
+    <span class="lbl">📅 Date range</span>
+    <div class="seg" id="dr">
+      <button data-p="all" class="on">All</button>
+      <button data-p="ytd">This year</button>
+      <button data-p="90">Last 90d</button>
+      <button data-p="30">Last 30d</button>
+      <button data-p="2025">2025</button>
+    </div>
+    <span class="custom">from <input type="date" id="dr-from"> to <input type="date" id="dr-to"> <button class="linkbtn" id="dr-apply">apply</button></span>
+    <span class="rlabel" id="dr-label"></span>
+  </div>
+
+  <nav class="tabs" id="v2-tabs" aria-label="Sections">
+    <button data-t="overview">Overview</button>
+    <button data-t="efficiency">Weekly efficiency</button>
+    <button data-t="blending">Blending cost</button>
+    <button data-t="packing">Packing cost</button>
+    <button data-t="total">Total cost</button>
+    <button data-t="hours">Machine hours</button>
+    <button data-t="source">Source data <span class="tabcount" id="tc-src"></span></button>
+  </nav>
+
+  <!-- ================= OVERVIEW ================= -->
+  <section class="panel" data-p="overview">
+    <div class="card">
+      <h2>Cost to make, for the selected period</h2>
+      <p class="hint">The two stages that make up the whole figure. <b>Blending</b> is roasting and
+        blending the base, costed per blend-hour. <b>Packing</b> is the finished-goods lines, costed
+        as run time &times; operators &times; wage. Everything else &mdash; chicory, dates, nuts,
+        bags, boxes, cartons, freight, overhead &mdash; is <b>not here</b>.</p>
+      <div class="kpis" id="ov-kpis"></div>
+      <div class="scopebar" id="ov-scope"></div>
+    </div>
+
+    <div class="card">
+      <h2>Where the money goes, month by month</h2>
+      <p class="hint">Labor dollars per month, split by stage. Blending is priced at the loaded
+        blend-labor rate; packing at the confirmed production wage.</p>
+      <div class="legend" id="ov-legend"></div>
+      <svg id="ov-chart" viewBox="0 0 900 220" style="height:220px"></svg>
+      <div class="foot" id="ov-chart-foot"></div>
+      <div class="scroll" style="margin-top:12px;max-height:280px"><table id="t-ov-mo"><thead><tr>
+        <th>Month</th><th>blending $</th><th>packing $</th><th>total $</th><th>units made</th><th>$ / unit</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <!-- v1's Production Activity card: volume + per-machine activity for the same period.
+         Kept on Overview because it answers "how much did we make", next to "what did it
+         cost". The per-machine COST view lives on the Machine hours tab, not here. -->
+  <div class="card" id="c-act">
+    <h2>📅 What happened on the machines</h2>
+    <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="act"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
+    <p class="hint">Everything that ran on the finished-goods lines in the selected period — volume made, machine &amp; operator hours, labor cost — with the monthly trend and a per-machine breakdown. Volume follows the switch above: <b>cases</b> or the <b>units</b> inside them.</p>
+    <div class="summary" id="act-summary"></div>
+    <svg id="act-chart" viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px"></svg>
+    <div class="foot" id="act-chart-foot"></div>
+    <table id="t-act" style="margin-top:14px"><thead><tr>
+      <th>Machine</th><th>runs</th><th>items</th><th id="ah-vol">cases</th><th>run hrs</th><th>op hrs</th><th>labor $</th><th>DT %</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+
+    <div class="card" id="c-health">
+      <h2>Does the data look trustworthy?</h2>
+      <p class="hint">When a cost or efficiency figure looks wrong, it is usually a run sheet, not the
+        math. These are the rows in the selected period whose numbers cannot be right. Nothing is
+        thrown away &mdash; every one is flagged and clickable straight through to the spreadsheet row.</p>
+      <div class="chips" id="hl-chips"></div>
+      <p class="foot" id="hl-foot"></p>
+    </div>
+
+  <div class="card" id="c-defs" style="padding:14px 18px">
+    <h2 style="margin:0 0 8px;font-size:15px">📏 How we count — cases and units</h2>
+    <div class="defs">
+      <div><span class="dw">UNIT</span><b>one individual retail item</b> — a single bag, box or canister a customer buys. The smallest thing we make. Every <b>“per unit”</b> figure on this page means exactly this.</div>
+      <div><span class="dw">CASE</span><b>one shipping case, made of units.</b> How many is the <b>units&nbsp;/&nbsp;case</b> column in every table — e.g. a case of loose 11&nbsp;oz French Roast is 24 units; a 6-pack case is 6 units.</div>
+      <div class="deq"><b>All cases are made of units:</b> &nbsp;units = cases × units/case &nbsp;·&nbsp; $/case = $/unit × units/case. &nbsp;Both hold exactly, in every section.</div>
+    </div>
+    <p class="hint" style="margin:10px 0 0">Every section has a <b>Per case / Per unit</b> switch. It changes only the basis the numbers are stated in — never which runs are included. Production is scheduled and counted by the case, so <b>Per case</b> is the default. <span class="illus">Plant-wide totals (Sections 1, 1a, 3a, 3b) count every item that ran, including component tea bags, which are units in their own right — use the per-SKU sections for like-for-like comparison.</span></p>
+  </div>
+
+    <p class="foot" id="built"></p>
+  </section>
+
+  <!-- ================= WEEKLY EFFICIENCY ================= -->
+  <section class="panel" data-p="efficiency">
+    <p class="lead">Planned versus actual labor hours, by week. This is the production-floor
+      scorecard: 100% means the week's runs took exactly the hours the plan says they should.
+      Click a week to see the SKUs behind it, then trace any odd one to its run sheet.</p>
+  <div class="card" id="c-eff">
+    <h2>📊 Weekly production efficiency — planned vs actual</h2>
+    <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="eff"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
+    <p class="hint">For each week: how many labor-hours the runs <b>should</b> have taken (<b>expected hrs</b> = the planned rate × how much was actually made) versus how many they <b>actually</b> took (<b>actual hrs</b> = run time × operators). <b>Efficiency = expected ÷ actual</b> — 100% means we hit plan; under 100% means a run took longer than planned. The gap is priced at the confirmed $26.06/hr wage → the <b>overrun $</b> is real labor money. Finished-goods lines only (blending is its own stage); labor only, no machine overhead. A <b>⚠</b> in a week's detail means that SKU's planned rate looks wrong vs its own history — fix the plan, don't blame the line. Click a week to drill in.</p>
+    <div class="ctrls" style="margin:2px 0 14px;gap:8px">
+      <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series)">Machine</span>
+      <div class="seg" id="eff-mach"></div>
+    </div>
+    <div class="summary" id="eff-summary"></div>
+    <svg id="eff-chart" viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px"></svg>
+    <div class="foot" id="eff-chart-foot"></div>
+    <div class="scroll" style="margin-top:14px"><table id="t-eff"><thead><tr>
+      <th>Week of</th><th>runs</th><th id="eh-vol">cases</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun hrs</th><th>overrun $</th><th>DT %</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="eff-detail" class="detail" hidden></div>
+    <p class="foot" id="eff-foot"></p>
+  </div>
+  </section>
+
+  <!-- ================= BLENDING ================= -->
+  <section class="panel" data-p="blending">
+    <p class="lead">Blending is costed per pound of blend produced. Roast and blend labor only
+      &mdash; not the chicory, carob, barley, dates or nuts going into it.</p>
+  <div class="card" id="c-blend">
+    <h2>🌀 Blending — cost to make each bulk blend</h2>
+    <p class="hint">Cost to blend one <b>pound</b> of each bulk blend (BBP) in the selected period, at the fully-loaded blend-labor rate (<span id="blendrate"></span>/hr). Click a blend for its pounds-over-time chart &amp; run list.</p>
+    <div class="ctrls"><input id="blend-q" placeholder="Search blend # or description…" autocomplete="off"><span class="mtag" id="blend-n"></span></div>
+    <div class="scroll"><table id="t-blend"><thead><tr>
+      <th data-k="blend">Blend</th><th data-k="desc">Description</th><th data-k="blender">Blender</th>
+      <th data-k="total_lbs">total lbs</th><th data-k="blend_hours">blend hrs</th><th data-k="cost_per_lb">cost $/lb</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="blend-detail" class="detail" hidden></div>
+    <p class="foot" id="blend-foot"></p>
+  </div>
+  </section>
+
+  <!-- ================= PACKING ================= -->
+  <section class="panel" data-p="packing">
+    <p class="lead">Packing is the finished-goods lines &mdash; weighing, bagging, tea-bag
+      machines and sampler assembly. Cleaning, changeovers and repack/rework are held out of
+      cost-per-unit and reported separately, because their output already exists.</p>
+  <div class="card" id="c-pack">
+    <h2>📦 Packing — cost to pack &amp; finish each SKU</h2>
+    <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="pack"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
+    <p class="hint"><b>Production labor</b> to weigh, pack &amp; finish <b>one unit</b> (or one full case — use the switch above), from actual runs in the selected period ($26.06/hr). Bundles roll up their component bags + assembly. <b>Click a SKU</b> to see every production run behind it in the selected date range. <span class="illus">Blend cost is added in Section 4.</span></p>
+    <div class="ctrls"><input id="pack-q" placeholder="Search SKU or product…" autocomplete="off"><label class="allchk" title="Off by default: the list shows only SKUs that actually ran in the selected date range. Tick to include every SKU in the catalogue, including ones with no runs this period."><input type="checkbox" id="pack-all"> include SKUs not produced in this period</label><span class="mtag" id="pack-n"></span></div>
+    <div class="scroll"><table id="t-pack"><thead><tr>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="pack" id="pk-h">packing $/case</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="pack-detail" class="detail" hidden></div>
+    <p class="foot" id="pack-foot"></p>
+  </div>
+  </section>
+
+  <!-- ================= TOTAL COST ================= -->
+  <section class="panel" data-p="total">
+    <p class="lead">Blending + packing = total cost to make, per SKU. <b>This is not COGS.</b>
+      Ingredients and packaging are not included, so a real landed cost will be higher than
+      anything on this tab.</p>
+  <div class="card" id="c-fg">
+    <h2>🏭 Finished Goods — total cost to make</h2>
+    <p class="hint"><b>Blend + packing = total cost to make.</b> Use the switch to state it <b>per case</b> (how production is scheduled) or <b>per unit</b> (one individual retail item) — the two differ by exactly the <b>units / case</b> column. For the selected period; click any SKU for the full breakdown. <span class="illus" id="fg-note"></span></p>
+    <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off">
+      <label class="allchk" title="Off by default: the list shows only SKUs that actually ran in the selected date range. Tick to include every SKU in the catalogue, including ones with no runs this period."><input type="checkbox" id="fg-all"> include SKUs not produced in this period</label>
+      <span class="mtag">state per:</span><div class="seg basis-seg" id="fg-basis" data-sec="fg"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div>
+      <span class="mtag" id="fg-n"></span></div>
+    <div class="scroll"><table id="t-fg"><thead><tr>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="blend">blend $</th>
+      <th data-k="pack">packing $</th><th data-k="make" id="fg-makeh">make $/case</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="fg-detail" class="detail" hidden></div>
+    <p class="foot" id="fg-foot"></p>
+  </div>
+  </section>
+
+  <!-- ================= MACHINE HOURS ================= -->
+  <section class="panel" data-p="hours">
+    <p class="lead">Where machine time actually went. Three ways to cut it: by product type, by
+      SKU, and by machine.</p>
+
+    <div class="card" id="c-type">
+      <h2>By product type</h2>
+      <p class="hint">Machine hours and output grouped into product types. Type comes from the
+        governed product classification where we have it, and is inferred from the line for the rest
+        &mdash; the split is shown so you know which. <b>Tea and everything else are not directly
+        comparable per hour</b>: a tea-bag machine and a bagging line make different things.</p>
+      <div class="ctrls" style="margin:2px 0 12px">
+        <span class="mtag">state per:</span>
+        <div class="seg basis-seg" id="ty-basis" data-sec="ty"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div>
+      </div>
+      <div class="legend" id="ty-legend"></div>
+      <svg id="ty-chart" viewBox="0 0 900 200" style="height:200px"></svg>
+      <div class="foot" id="ty-chart-foot"></div>
+      <div class="scroll" style="margin-top:12px"><table id="t-type"><thead><tr>
+        <th>Product type</th><th>SKUs</th><th>runs</th><th id="th-ty-vol">cases</th><th>machine hrs</th>
+        <th>operator hrs</th><th id="th-ty-per">per hr</th><th>labor $</th><th id="th-ty-cost">$ / case</th><th>DT %</th>
+      </tr></thead><tbody></tbody></table></div>
+      <div id="ty-detail" class="detail" hidden></div>
+      <p class="foot" id="ty-foot"></p>
+    </div>
+
+  <div class="card" id="c-mh">
+    <h2>⏱️ Machine hours by SKU</h2>
+    <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="mh"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
+    <p class="hint">Actual <b>machine run-hours</b> per finished good in the selected period, split by machine/stage. The <b>machine(s)</b> column shows where each SKU ran; click a SKU for the hours breakdown. Volume and the hours-per-1k rate follow the switch above — the <b>CSV export always contains both</b> (per case and per unit columns side by side). Rows here are a <b>rollup over the whole period</b> — for <b>dated, per-run</b> detail use <b>Export runs</b>.</p>
+    <div class="ctrls"><input id="mh-q" placeholder="Search SKU or product…" autocomplete="off"><button class="linkbtn" id="mh-export" title="Download the rows below as CSV — one row per SKU × machine, with per-case AND per-unit volume and hrs/1k columns side by side (ignores the toggle)">⬇ Export CSV</button><button class="linkbtn" id="mh-export-runs" title="Download the underlying run log — ONE ROW PER RUN with its date, machine, item, quantity, operators, hours, labor $ and efficiency vs plan. Use this when you need dates; the rollup above spans the whole period.">⬇ Export runs (dated)</button><span class="mtag" id="mh-n"></span></div>
+    <div class="scroll"><table id="t-mh"><thead><tr>
+      <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="machines">machine(s)</th><th data-k="units" id="mh-vol">cases made</th>
+      <th data-k="hrs">machine hrs</th><th data-k="hper1k" id="mh-per1k">hrs / 1k cases</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div id="mh-detail" class="detail" hidden></div>
+    <p class="foot" id="mh-foot"></p>
+    <p class="foot"><b>Note on AMS:</b> the AMS stage includes <b>handpack</b> runs from before the AMS machine went live (~Feb&nbsp;23,&nbsp;2026). Machine vs. handpack is distinguishable by crew size — <b>3 operators = handpack, 4 = machine</b> — so pre-March AMS hours are largely handpack, not machine time.</p>
+  </div>
+  <div class="card" id="c-machines">
+    <h2>🏭 By production machine / stage</h2>
+    <div class="ctrls" style="margin:2px 0 10px"><span class="mtag">state per:</span><div class="seg basis-seg" data-sec="mach"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div></div>
+    <p class="hint">Totals per packing/finishing machine in the selected period. Volume and labor $ follow the switch above. <span class="illus">Labor only, $26.06/hr; blending is its own stage (Section 2).</span></p>
+    <table id="t-machines"><thead><tr>
+      <th>Machine</th><th>runs</th><th>items</th><th id="mh2-vol">cases</th><th>run hrs</th><th>op hrs</th><th id="mh2-lab">labor $/case</th><th>labor $ total</th><th>DT %</th>
+    </tr></thead><tbody></tbody></table>
+    <p class="foot" id="machines-foot"></p>
+  </div>
+  </section>
+
+  <!-- ================= SOURCE DATA ================= -->
+  <section class="panel" data-p="source">
+    <p class="lead">The production schedule, as recorded. This is the sheet behind every number on
+      the other tabs &mdash; so when a figure looks outrageous you can find the row that caused it
+      here instead of opening the workbook.</p>
+
+    <div class="card" id="c-src">
+      <h2>Production schedule rows</h2>
+      <p class="hint">Values are shown exactly as entered, with two additions: <b>actual hrs
+        (resolved)</b> sits beside <b>actual time (as written)</b> so you can see the clock
+        convention being applied, and <b>flags</b> marks rows whose numbers cannot be right.
+        <span class="illus">Read-only mirror &mdash; edits must be made in the workbook.</span></p>
+      <div class="ctrls">
+        <input id="src-q" placeholder="Search item #, description, work order, notes&hellip;" autocomplete="off">
+        <label class="allchk"><input type="checkbox" id="src-flagged"> only rows with flags</label>
+        <label class="allchk"><input type="checkbox" id="src-date" checked> respect the date range above</label>
+        <button class="linkbtn" id="src-export">export CSV</button>
+      </div>
+      <div class="ctrls" style="margin-top:2px">
+        <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series)">Station</span>
+        <div class="seg" id="src-station"></div>
+      </div>
+      <div class="chips" id="src-chips"></div>
+      <div class="summary" id="src-summary"></div>
+      <div class="scroll" id="src-scroll" style="max-height:620px"><table id="t-src" class="srctable"><thead><tr id="src-head"></tr></thead><tbody></tbody></table></div>
+      <p class="foot" id="src-foot"></p>
+    </div>
+
+    <div class="card">
+      <h2>What the flags mean</h2>
+      <p class="hint">A flag is a prompt to look at the row, not a verdict. Some are legitimate
+        &mdash; a genuinely short run, a one-off rework. The point is that you no longer have to
+        find them by eye.</p>
+      <div class="defs" id="src-glossary"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+
+const $=s=>document.querySelector(s);
+const num=n=>n==null?'–':Math.round(n).toLocaleString();
+// like num() but keeps one decimal when the value isn't whole (partial cases are real)
+const n1=n=>n==null?'–':(Math.abs(n-Math.round(n))<0.05?Math.round(n).toLocaleString()
+  :(+n).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1}));
+const m2=n=>n==null?'–':'$'+(+n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});  /* v2: grouped thousands (see build_v2_page.py) */
+const m4=n=>n==null?'–':'$'+(+n).toFixed(4);
+/* =====================================================================================
+   UNITS OF MEASURE — the page has exactly TWO, and every number on it is one of them.
+
+     UNIT  = one individual retail item — a single bag, box or canister a customer buys.
+             The smallest thing we make. This is the ONLY meaning of "unit" on the page.
+     CASE  = one shipping case, made of N UNITS. N = "units / case" (shown in every table).
+
+     ALL CASES ARE MADE OF UNITS:   units = cases × units-per-case   (exactly, everywhere)
+                                    $/case = $/unit × units-per-case (exactly, everywhere)
+
+   The warehouse counts production in whatever the line handles — a loose bag, or a
+   6-pack. That intermediate count is NEVER displayed; it is converted on the way out:
+     cases = run qty ÷ case_size          units = run qty × units-per-run-item
+   ===================================================================================== */
+// units contained in one of the things a production run counts (1 for a loose bag, 6 for a 6-pack)
+let PACKINFO={}, DISPMAP={};   // production item# -> {pack_type, pack_count} / display name; filled in recompute()
+/* Item #s are hand-typed into the workbook, so one item shows up as 'NTB0110' and 'ntb0110',
+   'TB602'/'tb602', 'Clean'/'CLEAN'/'cLEAN'. CANONICAL id = trimmed + upper-cased. Every lookup
+   tries the raw key first, then the canonical one — a lowercase variant then still finds its case
+   size / pack config instead of silently falling back to 1. */
+const canonId=i=>(''+i).trim().toUpperCase();
+const upi=i=>{const p=PACKINFO[''+i]||PACKINFO[canonId(i)]; return (p&&p.pack_count)||1;};    // units per run item
+const upiUnknown=i=>{const p=PACKINFO[''+i]||PACKINFO[canonId(i)]; return !!(p&&p.pack_type==='case'&&!p.pack_count);};
+/* Not every "Item #" is a product. The schedule also logs machine cleaning, allergen tests,
+   tooling changeovers and free-text labor notes in the same column. They are real machine hours but
+   they belong to NO SKU, so they must not sit in a per-SKU table inflating the SKU count — and must
+   not be dropped either. Classified, bucketed, and reported separately. Matched on the CANONICAL id
+   so 'Clean'/'CLEAN'/'cLEAN' are one bucket. Anything unmatched is production. */
+const NONPROD_RULES=[
+  [/^(AIR |DEEP )?CLEAN/,                                                    'Cleaning / allergen test'],
+  [/^(DIFFERENT TOOLING|CONVERTING JOBS|DISSAMBLING JOBS)/,                  'Changeover / tooling'],
+  [/^(GO TO |HANDPACK|HELP |ASSIST |WORK ON OTHER|RUNNING AMY|QUICK NOTE|ASSEMBLY$)/, 'Unallocated labor note'],
+];
+function runClass(i){ const c=canonId(i); for(const [rx,lab] of NONPROD_RULES) if(rx.test(c)) return lab; return null; }
+const isProd=i=>runClass(i)===null;
+// UNITS PER CASE for a catalog row = (units per its pack) × (packs per shipping case).
+// e.g. loose 80110L: 1×24=24 ; 6-pack 80110: 6×1=6 ; loose 10ct 40110L: 1×36=36.
+const unitsPerCase=r=> r ? (r.pack_count||1)*(r.case_size||1) : null;
+const singlesPerCase=unitsPerCase;   // legacy alias
+// cost of ONE UNIT, derived from the LIVE re-priced make so it always matches the $/unit
+// column across date ranges. Multipack with an unknown unit count -> null (never guessed).
+const perSingle=r=> r&&r.pack_type==='case' ? (r.pack_count ? r.make/r.pack_count : null) : (r?r.make:null);
+// cost of ONE CASE = cost of what a run counts × how many of those go in a case
+const caseCost=r=> (r&&r.case_size) ? r.make*r.case_size : null;
+// units per shipping case for a production item# (Item Listing col H, "Case Pack Units")
+const csz=i=> (RAW&&RAW.case_sizes&&(RAW.case_sizes[i]!=null?RAW.case_sizes[i]:RAW.case_sizes[canonId(i)]))||1;
+// clean product name (CatalogSmith) with fallback to the raw warehouse title.
+const pname=r=> (r&&(r.display_name||r.title))||'';
+const casesOf=f=> f&&f.q ? f.q/csz(f.i) : 0;
+/* Basis conversion — ONE definition, shared by every section (each toggles independently,
+   state read from the DOM). volB restates a RUN's volume; factorB restates a per-run-item COST.
+   They are exact reciprocals, so volume × $/volume = labor $ in either basis. */
+const volB=(f,b)=> (!f||!f.q)?0:(b==='unit'? f.q*upi(f.i) : f.q/csz(f.i));
+const factorB=(r,b)=> b==='unit'? 1/((r.pack_count)||1) : ((r.case_size)||1);
+const secBasis=sec=>{const el=document.querySelector('.basis-seg[data-sec="'+sec+'"] button.on'); return el?el.dataset.b:'case';};
+// same as volB, but returns null (rather than guessing 1) for a multipack whose unit count is unknown
+const runVol=(f,b)=>{ if(!f||!f.q) return 0; if(b!=='unit') return f.q/csz(f.i); return upiUnknown(f.i)?null:f.q*upi(f.i); };
+const BWs=b=> b==='unit'?'units':'cases';
+const BW1s=b=> b==='unit'?'unit':'case';
+// tooltip that spells out the conversion both ways, so "cases are made of units" is always visible
+const volTip=(f,b)=>{ if(!f||!f.q) return ''; const c=f.q/csz(f.i), u=f.q*upi(f.i), n=csz(f.i)*upi(f.i);
+  return b==='unit' ? `${n1(u)} units = ${n1(c)} cases × ${n1(n)} units/case`
+                    : `${n1(c)} cases = ${n1(u)} units ÷ ${n1(n)} units/case`; };
+const setTxt=(id,t)=>{const e=document.getElementById(id); if(e)e.textContent=t;};
+// Product-cell badge: only the Amazon channel marker. Pack/case counts live in the $/case "/N"
+// column (consistent for every row) — no more asymmetric "case ×N" badge on some rows only.
+const packBadge=r=> r&&r.pack_type==='amazon' ? ` <span class="mtag" title="Amazon pack variant">AMZN</span>` : '';
+let RAW=null, RANGE={from:null,to:null};
+let PACKBY={}, BLENDLB={}, WAGE=26.06, LOADED=105.85, FG=[], BLENDS=[], MH=[], MHNP={}, EFF={weeks:[],tot:null,cov:null};
+let PRODITEMS=new Set();   // production item#s with ≥1 finished-stage run in the active range (drives "no runs this period")
+let STDHIST={};   // 'sku|machine' -> all-time efficiency vs plan (range-independent) for the plausibility flag
+let EFFMACH=new Set();   // machine filter for the efficiency section ONLY (empty = all machines)
+
+const active=()=>!!(RANGE.from||RANGE.to);
+const inR=d=>(!RANGE.from||d>=RANGE.from)&&(!RANGE.to||d<=RANGE.to);
+function fRows(){ return active()? RAW.facts.filter(f=>f.d&&inR(f.d)) : RAW.facts; }
+function finSet(){ return new Set(RAW.finished_stages||['WeighRight','AMS','Maisa 1','Maisa 2+3','Assembly']); }
+/* "Cost to make" must count only runs that CREATED the units they consumed hours against.
+   The pack station also logs repack/rework (re-boxing tea bags the Maisas already made) and
+   cleaning. Those hours are real spend, but their output already exists -- charging them into
+   cost-per-unit inflated 19 tea SKUs by a mean 17.4% (worst 57%). Excluded here and reported
+   separately below, never silently dropped. f.wt is absent on normal production runs. */
+const isMake=f=>!f.wt||f.wt==='production';
+let REPACK={runs:0,units:0,ophrs:0};
+
+/* ---------- generic monthly bar chart ---------- */
+function barChart(map,unit){
+  const keys=Object.keys(map).sort(); if(!keys.length) return {svg:'',foot:'No data in range.'};
+  const W=900,H=180,pad=30,step=(W-2*pad)/keys.length,bw=Math.max(2,step*0.78),max=Math.max(...keys.map(k=>map[k]),1);
+  const bars=keys.map((k,i)=>{const x=pad+i*step,h=(map[k]/max)*(H-42);
+    return `<rect x="${x.toFixed(1)}" y="${(H-24-h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="var(--series)"><title>${k}: ${Math.round(map[k]).toLocaleString()} ${unit}</title></rect>`;}).join('');
+  const labs=[...new Set([0,Math.floor((keys.length-1)/2),keys.length-1])].map(i=>
+    `<text x="${(pad+i*step).toFixed(1)}" y="${H-6}" font-size="10" fill="var(--muted)">${keys[i]}</text>`).join('');
+  return {svg:bars+labs, foot:`${keys.length} month(s) · peak ${Math.round(max).toLocaleString()} ${unit}`};
+}
+
+/* ---------- ISO week helpers + efficiency chart ---------- */
+// ISO-8601 week for a "YYYY-MM-DD" string → {key:'2026-W28', mon:'2026-07-06', wk, wy}
+function isoWeek(dstr){
+  const [y,m,dd]=dstr.split('-').map(Number);
+  const th=new Date(Date.UTC(y,m-1,dd)); const day=th.getUTCDay()||7;
+  th.setUTCDate(th.getUTCDate()+4-day);                 // shift to the week's Thursday
+  const ys=new Date(Date.UTC(th.getUTCFullYear(),0,1));
+  const wk=Math.ceil(((th-ys)/86400000+1)/7);
+  const mon=new Date(Date.UTC(y,m-1,dd)); mon.setUTCDate(mon.getUTCDate()-(day-1));
+  return {key:th.getUTCFullYear()+'-W'+String(wk).padStart(2,'0'), mon:mon.toISOString().slice(0,10), wk, wy:th.getUTCFullYear()};
+}
+const effColor=e=>e==null?'var(--muted)':e>=0.95?'var(--good)':e>=0.80?'var(--warning)':'var(--critical)';
+// efficiency% bars around a 100% baseline (capped display at 130%)
+function effChart(weeks){
+  if(!weeks.length) return {svg:'',foot:'No scored weeks in range.'};
+  const W=900,H=180,pad=30,top=14,base=H-24,capV=1.3,step=(W-2*pad)/weeks.length,bw=Math.max(2,step*0.72);
+  const yOf=v=>base-(Math.min(v,capV)/capV)*(base-top);
+  const y100=yOf(1);
+  const bars=weeks.map((w,i)=>{const x=pad+i*step,e=w.eff==null?0:w.eff,yy=yOf(e);
+    return `<rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${bw.toFixed(1)}" height="${(base-yy).toFixed(1)}" rx="1.5" fill="${effColor(w.eff)}"><title>${w.mon}: ${w.eff==null?'n/a':(w.eff*100).toFixed(0)+'% efficiency'} · overrun ${m2(w.overUsd)}</title></rect>`;}).join('');
+  const ref=`<line x1="${pad}" y1="${y100.toFixed(1)}" x2="${W-pad}" y2="${y100.toFixed(1)}" stroke="var(--axis)" stroke-dasharray="4 4"/><text x="${W-pad}" y="${(y100-4).toFixed(1)}" font-size="10" fill="var(--muted)" text-anchor="end">100% = plan</text>`;
+  const labs=[...new Set([0,Math.floor((weeks.length-1)/2),weeks.length-1])].map(i=>
+    `<text x="${(pad+i*step).toFixed(1)}" y="${H-6}" font-size="10" fill="var(--muted)">${weeks[i].mon.slice(5)}</text>`).join('');
+  return {svg:ref+bars+labs, foot:`${weeks.length} week(s) · bar height = efficiency vs 100% plan (green ≥95%, amber ≥80%, red <80%)`};
+}
+
+/* ---------- recompute everything for current range ---------- */
+function recompute(){
+  WAGE=RAW.wage_rate||26.06; LOADED=RAW.blend_loaded_rate||105.85;
+  const rows=fRows(), fin=finSet();
+  REPACK={runs:0,units:0,ophrs:0};
+  const pk={}, bl={}, blMeta={};
+  rows.forEach(f=>{
+    if(fin.has(f.m)){ if(f.t&&f.o&&f.q){ if(isMake(f)){ const a=pk[f.i]||(pk[f.i]=[0,0]); a[0]+=f.t*f.o; a[1]+=f.q; }
+        else if(f.wt==='repack_rework'){ REPACK.runs++; REPACK.units+=f.q; REPACK.ophrs+=f.t*f.o; } } }
+    else if(f.m==='Blending'&&String(f.i).toUpperCase().endsWith('BBP')){
+      const m=blMeta[f.i]||(blMeta[f.i]={lbs:0,hrs:0,runs:0,by:{}}); m.runs++; if(f.bl)m.by[f.bl]=(m.by[f.bl]||0)+1;
+      if(f.t&&f.q){ const a=bl[f.i]||(bl[f.i]=[0,0]); a[0]+=f.t; a[1]+=f.q; m.hrs+=f.t; m.lbs+=f.q; } }
+  });
+  PACKBY={}; for(const k in pk) PACKBY[k]=pk[k][0]/pk[k][1]*WAGE;
+  // Any finished-stage run in range counts as production (even a time-flagged one), so the Packing
+  // table can say "no runs this period" instead of falling back to an all-time cost for SKUs that
+  // didn't run. Keyed by production item# — matches the drill-down's run set.
+  PRODITEMS=new Set(); rows.forEach(f=>{ if(fin.has(f.m)&&f.i!=null) PRODITEMS.add(''+f.i); });
+  BLENDLB={}; for(const k in bl) BLENDLB[k]=bl[k][0]*LOADED/bl[k][1];
+  // blend rows for Section 2
+  BLENDS=Object.keys(blMeta).filter(k=>blMeta[k].lbs>0).map(k=>{const m=blMeta[k];
+    return {blend:k,desc:(RAW.items[k]||{}).desc||'',blender:Object.keys(m.by).sort((a,b)=>m.by[b]-m.by[a])[0]||null,
+      total_lbs:Math.round(m.lbs),blend_hours:+m.hrs.toFixed(2),cost_per_lb:+(m.hrs*LOADED/m.lbs).toFixed(5)};}).sort((a,b)=>b.total_lbs-a.total_lbs);
+  // cost-to-make (re-priced) for Section 3 & 4
+  FG=(RAW.bom_cogs.items||[]).map(it=>{const r=makeOf(it); return {...it,make:r.make,make_blend:r.blend,make_labor:r.pack,priced:r.priced};});
+  // SKU -> size (10ct / 11oz / 25ct / Sampler...) lookup, keyed by every id a row might use
+  // Registered under the raw key AND the canonical (upper-cased) key, so a lowercase Item # variant
+  // in the schedule still resolves its size / pack config / display name.
+  const SIZE={}, PACK={}, DISP={}; (RAW.bom_cogs.items||[]).forEach(it=>{ [it.sku,it.fg,it.finished_good].forEach(k0=>{ if(k0) [''+k0,canonId(k0)].forEach(k=>{ if(it.size)SIZE[k]=it.size; if(it.pack_type)PACK[k]={pack_type:it.pack_type,pack_count:it.pack_count}; if(it.display_name)DISP[k]=it.display_name; }); }); });
+  PACKINFO=PACK;   // production item# -> {pack_type,pack_count}; used by the basis-aware drill-downs
+  DISPMAP=DISP;    // production item# -> clean display name; used by the run-level CSV export
+  // machine hours by SKU (3a)
+  const Bmh=secBasis('mh'); setTxt('mh-vol',BWs(Bmh)+' made'); setTxt('mh-per1k','hrs / 1k '+BWs(Bmh));
+  const mhacc={};
+  // Grouped by CANONICAL Item # so hand-typed case variants ('NTB0110'/'ntb0110') are one SKU.
+  // `units` follows the section toggle (drives the table); uCase/uUnit hold BOTH bases at once so the
+  // CSV export can put per-case and per-unit side by side regardless of which way the toggle is set.
+  // Non-production rows (cleaning / changeover / labor notes) go to their own bucket, never the SKU table.
+  MHNP={};
+  rows.forEach(f=>{ if(!fin.has(f.m)||f.t==null) return;
+    const cls=runClass(f.i);
+    if(cls){ const b=MHNP[cls]||(MHNP[cls]={label:cls,hrs:0,runs:0,ids:new Set(),by:{}});
+      b.hrs+=f.t; b.runs++; b.ids.add(canonId(f.i)); b.by[f.m]=(b.by[f.m]||0)+f.t; return; }
+    const k=canonId(f.i);
+    const o=mhacc[k]||(mhacc[k]={sku:k,title:'',display_name:'',size:'',pack_type:undefined,pack_count:undefined,case_size:1,hrs:0,units:0,uCase:0,uUnit:0,uUnitUnknown:false,runs:0,first:null,last:null,by:{}});
+    // meta filled from whichever id variant actually carries it (raw first, then canonical)
+    if(!o.title) o.title=((RAW.items[f.i]||RAW.items[k]||{}).desc)||'';
+    if(!o.display_name) o.display_name=DISP[f.i]||DISP[k]||'';
+    if(!o.size) o.size=SIZE[f.i]||SIZE[k]||'';
+    if(o.pack_type===undefined){ const p=PACK[f.i]||PACK[k]; if(p){o.pack_type=p.pack_type; o.pack_count=p.pack_count;} }
+    if(o.case_size===1) o.case_size=csz(f.i);
+    o.hrs+=f.t; o.runs++;
+    if(f.d){ if(!o.first||f.d<o.first)o.first=f.d; if(!o.last||f.d>o.last)o.last=f.d; }
+    if(f.q){ o.units+=volB(f,Bmh); o.uCase+=volB(f,'case'); const uu=runVol(f,'unit'); if(uu==null) o.uUnitUnknown=true; else o.uUnit+=uu; }
+    o.by[f.m]=(o.by[f.m]||0)+f.t; });
+  MH=Object.values(mhacc).map(o=>({...o,hrs:+o.hrs.toFixed(2),hper1k:o.units?+((o.hrs/o.units)*1000).toFixed(3):null}));
+  computeEff(rows,fin);
+  renderActivity(rows,fin);
+  renderEff(); renderBlend(); renderPack(); renderFG(); renderMH(); renderMachines(rows,fin);
+  $('#eff-detail').hidden=true; $('#blend-detail').hidden=true; $('#mh-detail').hidden=true; $('#fg-detail').hidden=true; $('#pack-detail').hidden=true;
+}
+function priceNode(l){
+  if(l.type==='blend'){ const per=(l.id in BLENDLB)?BLENDLB[l.id]:l.per_lb; return {t:'blend',node:l,per,usd:l.lbs*per}; }
+  if(l.type==='pack_labor'){ const v=(l.item&&(l.item in PACKBY))?PACKBY[l.item]:l.usd; return {t:'pack',node:l,usd:v,range:(l.item in PACKBY)}; }
+  if(l.type==='component'){ const subs=(l.sub||[]).map(priceNode); const u=l.qty*subs.reduce((s,x)=>s+x.usd,0); return {t:'comp',node:l,qty:l.qty,subs,usd:u}; }
+  return {t:'x',node:l,usd:0};
+}
+function makeOf(it){
+  const priced=(it.make_breakdown||[]).map(priceNode);
+  const make=priced.reduce((s,x)=>s+x.usd,0);
+  let blend=0,pack=0;
+  (function tb(ps,mult){ps.forEach(x=>{ if(x.t==='blend')blend+=x.usd*mult; else if(x.t==='pack')pack+=x.usd*mult; else if(x.t==='comp')tb(x.subs,mult*x.qty);});})(priced,1);
+  // keep 6 dp internally: these get multiplied by case size (up to ×36), so rounding to the
+  // displayed 4 dp first made the table disagree with the drill-down by a few hundredths of a cent
+  return {make:+make.toFixed(6),blend:+blend.toFixed(6),pack:+pack.toFixed(6),priced};
+}
+
+/* ---------- Section 1: Production Activity ---------- */
+function renderActivity(rows,fin){
+  const B=secBasis('act'); setTxt('ah-vol',BWs(B));
+  const mo={}; let runs=0,units=0,rh=0,oh=0,dn=0; const mac={};
+  rows.forEach(f=>{ if(!fin.has(f.m)) return; runs++; const cs=volB(f,B); if(cs)units+=cs; if(f.t){rh+=f.t; if(f.o)oh+=f.t*f.o;} if(f.dn)dn+=f.dn;
+    if(f.d&&cs) mo[f.d.slice(0,7)]=(mo[f.d.slice(0,7)]||0)+cs;
+    const a=mac[f.m]||(mac[f.m]={runs:0,items:new Set(),units:0,rh:0,oh:0,dn:0}); a.runs++; if(f.i)a.items.add(f.i); if(cs)a.units+=cs; if(f.t){a.rh+=f.t; if(f.o)a.oh+=f.t*f.o;} if(f.dn)a.dn+=f.dn;
+  });
+  $('#act-summary').innerHTML=`<div><b>${n1(units)}</b> <span>${BWs(B)} made</span></div><div><b>${num(runs)}</b> <span>runs</span></div>`
+    +`<div><b>${num(Math.round(rh))}</b> <span>machine hrs</span></div><div><b>${num(Math.round(oh))}</b> <span>operator hrs</span></div>`
+    +`<div><b>${m2(oh*WAGE)}</b> <span>packing labor</span></div>`;
+  const c=barChart(mo,BWs(B)); $('#act-chart').innerHTML=c.svg; $('#act-chart-foot').textContent=(B==='unit'?'Units':'Cases')+' produced per month · '+c.foot;
+  const order=(RAW.finished_stages||[]); const mrows=order.filter(m=>mac[m]).map(m=>{const a=mac[m];
+    return `<tr><td><b>${m}</b></td><td>${num(a.runs)}</td><td>${num(a.items.size)}</td><td>${n1(a.units)}</td><td>${num(Math.round(a.rh))}</td><td>${num(Math.round(a.oh))}</td><td>${m2(a.oh*WAGE)}</td><td>${a.rh?((a.dn/(a.rh*60))*100).toFixed(1)+'%':'–'}</td></tr>`;}).join('');
+  $('#t-act tbody').innerHTML=mrows||`<tr><td colspan="8" class="empty">No production runs in this range.</td></tr>`;
+}
+
+/* ---------- planned-rate plausibility (all-time, range-independent) ----------
+   A SKU's planned rate looks wrong when, across its WHOLE history (≥3 scored runs),
+   its quantity-weighted efficiency is chronically extreme — too tight (<40%, reads
+   permanently slow) or too loose (>175%, reads permanently fast). One bad week is
+   operational; a persistent skew is the standard, not the crew. Computed once from
+   ALL facts so the flag doesn't flicker as the date filter changes. */
+function computeStdHist(){
+  const fin=finSet(), acc={};
+  (RAW.facts||[]).forEach(f=>{
+    if(!fin.has(f.m)||!(f.s>0&&f.t>0&&f.o>0&&f.q>0)) return;
+    if(!f.d) return; const yr=+f.d.slice(0,4); if(yr<2024||yr>2027) return;
+    const k=f.i+'|'+f.m, a=acc[k]||(acc[k]={act:0,earn:0,units:0,runs:0});
+    a.act+=f.t*f.o; a.earn+=f.s*f.q; a.units+=casesOf(f); a.runs++;
+  });
+  STDHIST={};
+  for(const k in acc){ const a=acc[k]; if(a.act<=0) continue;
+    const eff=a.earn/a.act, flag=a.runs>=3&&(eff<0.40||eff>1.75);
+    STDHIST[k]={eff,runs:a.runs,units:Math.round(a.units),flag,dir:eff<1?'tight':'loose'}; }
+}
+const stdOf=(sku,mac)=>STDHIST[sku+'|'+mac]||null;
+
+/* ---------- Section 1a: Weekly production efficiency ---------- */
+// A row is SCORABLE only if it carries a standard (s), actual time (t), operators (o) and units (q).
+// earned hrs = s×q (what standard says the output should cost in labor-hrs);
+// actual hrs = t×o. We SUM hours per week (quantity-weighted) so big runs dominate — never average %.
+function computeEff(rows,fin){
+  const Beff=secBasis('eff'); setTxt('eh-vol',BWs(Beff));
+  const wk={}; let scoredUnits=0, unscoredUnits=0, badDate=0;
+  rows.forEach(f=>{
+    if(!fin.has(f.m)) return;
+    if(EFFMACH.size && !EFFMACH.has(f.m)) return;   // machine filter (this section only)
+    const scorable=f.s>0&&f.t>0&&f.o>0&&f.q>0;
+    const vol=volB(f,Beff);   // coverage counted in the SAME basis the section is showing
+    if(!scorable){ if(f.q) unscoredUnits+=vol; return; }
+    if(!f.d){ badDate++; unscoredUnits+=vol; return; }
+    const yr=+f.d.slice(0,4);
+    if(yr<2024||yr>2027){ badDate++; unscoredUnits+=vol; return; }   // mis-dated → hygiene bucket, not a fake week
+    const w=isoWeek(f.d), k=w.key;
+    const a=wk[k]||(wk[k]={key:k,mon:w.mon,wk:w.wk,runs:0,units:0,act:0,earn:0,rh:0,dn:0,
+                           items:new Set(),mac:{},contrib:{}});
+    a.runs++; a.units+=volB(f,Beff); a.act+=f.t*f.o; a.earn+=f.s*f.q; a.rh+=f.t; if(f.dn)a.dn+=f.dn;
+    a.items.add(f.i);
+    // per-machine + per-(sku×machine) accumulation for the accountability drill-down
+    const m=a.mac[f.m]||(a.mac[f.m]={act:0,earn:0,units:0}); m.act+=f.t*f.o; m.earn+=f.s*f.q; m.units+=volB(f,Beff);
+    const ck=f.i+'|'+f.m, c=a.contrib[ck]||(a.contrib[ck]={sku:f.i,mac:f.m,act:0,earn:0,units:0,runs:0});
+    c.act+=f.t*f.o; c.earn+=f.s*f.q; c.units+=volB(f,Beff); c.runs++;
+    scoredUnits+=vol;
+  });
+  const weeks=Object.values(wk).map(a=>{
+    const over=a.act-a.earn;
+    return {...a, eff:a.act>0?a.earn/a.act:null, over, overUsd:over*WAGE,
+            dtPct:a.rh?(a.dn/(a.rh*60))*100:null};
+  }).sort((x,y)=>x.key.localeCompare(y.key));   // chronological for the chart
+  const act=weeks.reduce((s,w)=>s+w.act,0), earn=weeks.reduce((s,w)=>s+w.earn,0);
+  EFF={weeks,
+       tot:{act,earn,over:act-earn,overUsd:(act-earn)*WAGE,eff:act>0?earn/act:null,
+            units:weeks.reduce((s,w)=>s+w.units,0),runs:weeks.reduce((s,w)=>s+w.runs,0)},
+       cov:{scoredUnits,unscoredUnits,badDate}};
+}
+function renderEff(){
+  const t=EFF.tot, w=EFF.weeks, c=EFF.cov;
+  const eff=t&&t.eff!=null?(t.eff*100).toFixed(1)+'%':'–';
+  $('#eff-summary').innerHTML=
+     `<div><b style="color:${effColor(t?t.eff:null)}">${eff}</b> <span>overall efficiency</span></div>`
+    +`<div><b>${num(t?Math.round(t.act):0)}</b> <span>actual labor hrs</span></div>`
+    +`<div><b>${num(t?Math.round(t.earn):0)}</b> <span>expected hrs</span></div>`
+    +`<div><b>${num(t?Math.round(t.over):0)}</b> <span>overrun hrs</span></div>`
+    +`<div><b>${m2(t?t.overUsd:0)}</b> <span>overrun labor $</span></div>`
+    +`<div><b>${num(w.length)}</b> <span>weeks</span></div>`;
+  const ch=effChart(w); $('#eff-chart').innerHTML=ch.svg; $('#eff-chart-foot').textContent='Weekly efficiency vs plan · '+ch.foot;
+  const rows=[...w].reverse();   // most-recent week first in the table
+  $('#t-eff tbody').innerHTML=rows.length?rows.map(r=>
+     `<tr class="clk" data-eff="${r.key}"><td><b>${r.mon}</b> <span class="mtag">W${r.wk}</span></td>`
+    +`<td>${num(r.runs)}</td><td>${n1(r.units)}</td><td>${num(Math.round(r.act))}</td><td>${num(Math.round(r.earn))}</td>`
+    +`<td class="big" style="color:${effColor(r.eff)}">${r.eff==null?'–':(r.eff*100).toFixed(0)+'%'}</td>`
+    +`<td>${num(Math.round(r.over))}</td><td>${m2(r.overUsd)}</td>`
+    +`<td>${r.dtPct==null?'–':r.dtPct.toFixed(1)+'%'}</td></tr>`).join('')
+    :`<tr><td colspan="9" class="empty">No scorable runs in this range.</td></tr>`;
+  // ⚠ how many SKU×machine combos that ran in-range have a chronically questionable planned rate
+  const seen=new Set(); w.forEach(wk=>Object.values(wk.contrib).forEach(c=>seen.add(c.sku+'|'+c.mac)));
+  let nFlag=0; seen.forEach(k=>{ if(STDHIST[k]&&STDHIST[k].flag) nFlag++; });
+  let cov='';
+  if(EFFMACH.size) cov+=`<b>Showing ${[...EFFMACH].join(', ')} only.</b> `;
+  if(c){ const tot=c.scoredUnits+c.unscoredUnits;
+    cov=`Scored <b>${num(c.scoredUnits)}</b> of ${num(tot)} ${BWs(secBasis('eff'))} (${tot?((c.scoredUnits/tot)*100).toFixed(0):0}% — a row is scored only when it has both a planned rate and actual time/operators/quantity).`;
+    if(c.badDate) cov+=` <span class="illus">${num(c.badDate)} run(s) excluded for a missing or implausible date.</span>`; }
+  if(nFlag) cov+=` <b style="color:var(--warning)">⚠ ${nFlag} SKU/machine combo(s) in range have a questionable planned rate</b> — open a week to see which (their efficiency is a data issue, not a crew issue).`;
+  $('#eff-foot').innerHTML=cov+` <span class="illus">Labor only at $${WAGE}/hr (confirmed wage); no machine overhead. Blending excluded — see Section 2.</span>`;
+}
+function showEffWeek(key){
+  const w=EFF.weeks.find(x=>x.key===key), box=$('#eff-detail');
+  if(!w){box.hidden=true;return;}
+  const Beff=secBasis('eff');   // the week detail states volume in the section's basis
+  // contributors ranked by overrun $ (the accountability view): who cost us the most vs standard
+  const contrib=Object.values(w.contrib).map(c=>{const over=c.act-c.earn;
+     return {...c,over,overUsd:over*WAGE,eff:c.act>0?c.earn/c.act:null};})
+     .sort((a,b)=>b.over-a.over);
+  const macRows=Object.entries(w.mac).map(([m,v])=>{const over=v.act-v.earn;
+     return `<tr><td>${m}</td><td>${n1(v.units)}</td><td>${num(Math.round(v.act))}</td><td>${num(Math.round(v.earn))}</td>`
+       +`<td style="color:${effColor(v.act>0?v.earn/v.act:null)}">${v.act>0?((v.earn/v.act)*100).toFixed(0)+'%':'–'}</td><td>${m2(over*WAGE)}</td></tr>`;}).join('');
+  const top=contrib.slice(0,15).map(c=>{
+    const h=stdOf(c.sku,c.mac);
+    const warn=h&&h.flag?` <span title="Planned rate looks ${h.dir==='tight'?'too tight (reads slow)':'too loose (reads fast)'} — ${h.runs} runs all-time avg ${(h.eff*100).toFixed(0)}%. Fix the plan, not the crew." style="color:var(--warning)">⚠</span>`:'';
+    const hist=h?`<span style="color:${effColor(h.eff)}">${(h.eff*100).toFixed(0)}%</span> <span class="mtag">${h.runs} run${h.runs===1?'':'s'}</span>`:'<span class="mtag">1st run</span>';
+    return `<tr><td>${c.sku}${warn}</td><td class="desc" title="${((RAW.items[c.sku]||{}).desc||'').replace(/"/g,'&quot;')}">${(RAW.items[c.sku]||{}).desc||''}</td>`
+    +`<td>${c.mac}</td><td>${n1(c.units)}</td><td>${num(Math.round(c.act))}</td><td>${num(Math.round(c.earn))}</td>`
+    +`<td style="color:${effColor(c.eff)}">${c.eff==null?'–':(c.eff*100).toFixed(0)+'%'}</td><td>${hist}</td><td class="big">${m2(c.overUsd)}</td></tr>`;}).join('');
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">Week of ${w.mon} (W${w.wk}) — ${w.eff==null?'–':(w.eff*100).toFixed(0)+'%'} efficiency, ${m2(w.overUsd)} overrun</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('eff-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:8px 0 4px"><b>By machine</b> this week:</p>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Machine</th><th>${BWs(Beff)}</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${macRows||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>`
+    +`<p class="hint" style="margin:14px 0 4px"><b>Biggest overruns</b> (SKU × machine, ranked by labor $ over plan). <b>vs history</b> = this SKU's all-time efficiency on that machine; a <b style="color:var(--warning)">⚠</b> means the planned rate itself looks wrong (chronic across ≥3 runs) — fix the plan, don't blame the line:</p>`
+    +`<div class="scroll" style="max-height:300px"><table style="font-size:12.5px"><thead><tr><th>SKU</th><th>Product</th><th>machine</th><th>${BWs(Beff)}</th><th>actual hrs</th><th>expected hrs</th><th>this run</th><th>vs history</th><th>overrun $</th></tr></thead><tbody>${top||'<tr><td colspan="9" class="empty">—</td></tr>'}</tbody></table></div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- Section 2: Blending ---------- */
+function renderBlend(){
+  const q=$('#blend-q').value.trim().toLowerCase();
+  const rows=BLENDS.filter(b=>!q||(''+b.blend).toLowerCase().includes(q)||(b.desc||'').toLowerCase().includes(q));
+  $('#blend-n').textContent=`${rows.length} of ${BLENDS.length} blends`;
+  $('#t-blend tbody').innerHTML=rows.length?rows.map(b=>`<tr class="clk" data-blend="${b.blend}"><td>${b.blend}</td>`
+    +`<td class="desc" title="${(b.desc||'').replace(/"/g,'&quot;')}">${b.desc||''}</td><td>${b.blender||'–'}</td>`
+    +`<td>${num(b.total_lbs)}</td><td>${num(b.blend_hours)}</td><td class="big">${m4(b.cost_per_lb)}</td></tr>`).join('')
+    :`<tr><td colspan="6" class="empty">No blend runs in this range.</td></tr>`;
+  $('#blend-foot').innerHTML=`${BLENDS.length} blends ran in range · loaded blend-labor ${m2(LOADED)}/hr. <span class="illus">Labor only — excludes ingredients, machine overhead &amp; packaging.</span>`;
+}
+function showBlend(id){
+  const runs=fRows().filter(f=>f.m==='Blending'&&(''+f.i)===(''+id)&&f.q);
+  const box=$('#blend-detail'); if(!runs.length){box.hidden=true;return;}
+  const desc=(RAW.items[id]||{}).desc||''; const mo={}; runs.filter(f=>f.d).forEach(f=>mo[f.d.slice(0,7)]=(mo[f.d.slice(0,7)]||0)+f.q);
+  const c=barChart(mo,'lb'); runs.sort((a,b)=>(b.d||'').localeCompare(a.d||''));
+  const total=runs.reduce((s,f)=>s+(f.q||0),0),hrs=runs.reduce((s,f)=>s+(f.t||0),0);
+  const list=runs.map(f=>`<tr><td>${f.d||'—'}</td><td>${f.bl||'–'}</td><td>${num(f.q)}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}</td><td>${(f.t!=null&&f.q>0)?m4(f.t*LOADED/f.q):'–'}</td></tr>`).join('');
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${id} — ${desc}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('blend-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:6px 0"><b>${num(runs.length)}</b> runs · <b>${num(total)}</b> lb · <b>${num(hrs)}</b> blend-hrs. Pounds per month:</p>`
+    +`<svg viewBox="0 0 900 180" preserveAspectRatio="none" style="height:180px">${c.svg}</svg>`
+    +`<div class="scroll" style="max-height:240px;margin-top:10px"><table><thead><tr><th>Date</th><th>Blender</th><th>lbs</th><th>blend hrs</th><th>cost $/lb</th></tr></thead><tbody>${list}</tbody></table></div>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- Section 3: Packing ---------- */
+// Did this SKU actually run in the selected period? True iff any of its pack item#s had a
+// finished-stage run in range. When false, we DON'T show a packing $ (which would otherwise
+// silently fall back to the all-time cost) — we say so instead.
+function packHasRuns(r){ for(const it of packItems(r)){ if(PRODITEMS.has(''+it)) return true; } return false; }
+function renderPack(){
+  const Bp=secBasis('pack'); setTxt('pk-h','packing $/'+BW1s(Bp));
+  const q=$('#pack-q').value.trim().toLowerCase();
+  // DEFAULT = only SKUs actually produced in the selected date range (Justin 2026-09-09).
+  // The catalogue is far larger than any one period's production, so an unfiltered list buried
+  // the SKUs that ran under hundreds that didn't. The checkbox restores the full catalogue.
+  const showAllP=$('#pack-all')&&$('#pack-all').checked;
+  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
+  const ranP=rows.filter(r=>packHasRuns(r)).length;
+  if(!showAllP) rows=rows.filter(r=>packHasRuns(r));
+  const hasRun=new Map(); rows.forEach(r=>hasRun.set(r,packHasRuns(r)));
+  // Rows with runs first (by cost desc); no-run rows sink to the bottom with no cost shown.
+  rows.sort((a,b)=>{const ha=hasRun.get(a),hb=hasRun.get(b); if(ha!==hb)return ha?-1:1; return (b.make_labor||0)-(a.make_labor||0);});
+  const noRun=rows.filter(r=>!hasRun.get(r)).length;
+  $('#pack-n').textContent=showAllP
+    ? `${rows.length} of ${FG.length} SKUs · ${ranP} produced this period`
+    : `${rows.length} SKU${rows.length===1?'':'s'} produced this period`;
+  $('#t-pack tbody').innerHTML=rows.length?rows.map(r=>{const hr=hasRun.get(r);
+    const unknown = Bp==='unit' && r.pack_type==='case' && !r.pack_count;   // multipack, count unknown
+    const cell=!hr ? `<span class="illus" title="No production runs for this SKU in the selected period. Widen the date range or pick a period when it ran.">no runs this period</span>`
+      : unknown ? `<span class="illus" title="Multipack whose unit count is unknown — a per-unit cost can't be derived without it. Switch to Per case.">units/case unknown</span>`
+      : `<span class="big">${m4(r.make_labor*factorB(r,Bp))}</span>`;
+    return `<tr class="clk" data-pack="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${cell}</td></tr>`;}).join('')
+    :`<tr><td colspan="4" class="empty">${q?'No SKUs match.':'No SKUs were produced in this date range.'}${showAllP?'':' Widen the dates, or tick “include SKUs not produced in this period”.'}</td></tr>`;
+  // Repack/rework is REPORTED, not hidden. These hours were spent re-boxing or re-bagging units
+  // that already existed, so they are not part of any SKU's cost to make one unit — but they are
+  // real money and belong on the page.
+  const rpNote=REPACK.runs
+    ? `<span class="illus">Excluded from cost to make: <b>${num(REPACK.runs)}</b> repack/rework run(s) — `
+      +`${num(Math.round(REPACK.units))} units re-handled, ${REPACK.ophrs.toFixed(0)} operator-hours `
+      +`($${num(Math.round(REPACK.ophrs*WAGE))} of labor). These re-handle units that already exist, so charging `
+      +`them into cost-per-unit would double-count the making of them.</span>`
+    : '';
+  const nrNote=noRun
+    ? `<span class="illus">${num(noRun)} of ${num(rows.length)} SKU(s) had no production runs in this period — shown at the bottom with no cost (a cost here would only be an all-time figure, not this period's).</span>`
+    : '';
+  $('#pack-foot').innerHTML=[nrNote,rpNote].filter(Boolean).join('<br>');
+}
+// The production item#(s) whose packing runs drive this SKU's packing cost. A simple SKU maps to
+// one item; a bundle/sampler rolls up its component bags, so it can map to several. Collected from
+// the same make_breakdown the packing $ was computed from, so the runs match the number shown.
+function packItems(r){
+  const set=new Set();
+  (function walk(ls){(ls||[]).forEach(l=>{
+    if(l&&l.type==='pack_labor'&&l.item!=null) set.add(''+l.item);
+    else if(l&&l.type==='component') walk(l.sub);
+  });})(r&&r.make_breakdown);
+  if(!set.size){ if(r&&r.fg!=null)set.add(''+r.fg); if(r&&r.sku!=null)set.add(''+r.sku); }  // fallback for minimal breakdowns
+  return set;
+}
+// Drill-down: every finished-stage production run behind a packing SKU, within the active date range.
+function showPack(sku){
+  const r=FG.find(x=>(''+(x.sku||''))===(''+sku)); const box=$('#pack-detail');
+  if(!r){box.hidden=true;return;}
+  const items=packItems(r), fin=finSet();
+  const Bp=secBasis('pack'), volW=BWs(Bp), volW1=BW1s(Bp);   // follow the section's Per case / Per unit toggle
+  const runs=fRows().filter(f=>fin.has(f.m)&&items.has(''+f.i))
+                    .sort((a,b)=>(''+(b.d||'')).localeCompare(''+(a.d||'')));  // newest first
+  const rangeTxt=active()?`${RANGE.from||'start'} → ${RANGE.to||'end'}`:'all time';
+  box.hidden=false; box.dataset.sku=sku;   // remember which SKU is open (survive a basis toggle)
+  if(!runs.length){
+    box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}</h3>`
+      +`<button class="linkbtn" onclick="document.getElementById('pack-detail').hidden=true">close ✕</button></div>`
+      +`<p class="hint" style="margin:6px 0">No production runs for this SKU in <b>${rangeTxt}</b>.`
+      +` <span class="illus">(pack item${items.size>1?'s':''}: ${[...items].join(', ')})</span></p>`;
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+  let tRuns=0,tVol=0,tMh=0,tOh=0,tLab=0,nUnk=0;
+  // costed subtotals = runs that reported BOTH output and labor. The weighted average is computed on
+  // these only, so it reconciles with the Packing table. Runs that logged time but no quantity are
+  // reported separately as a data-quality note instead of silently inflating the $/unit.
+  let cVol=0,cLab=0,oRuns=0,oLab=0,oMh=0;
+  const byItem={};
+  const rowsH=runs.map(f=>{
+    // restate the run's produced-pack qty in the selected basis (cases, or individual retail units)
+    const vol=runVol(f,Bp), oh=(f.t!=null&&f.o!=null)?f.t*f.o:null, lab=oh!=null?oh*WAGE:null;
+    const perVol=(lab!=null&&vol)?lab/vol:null;
+    tRuns++; if(vol==null)nUnk++; else tVol+=vol;
+    if(f.t!=null)tMh+=f.t; if(oh!=null)tOh+=oh; if(lab!=null)tLab+=lab;
+    if(vol&&lab!=null){ cVol+=vol; cLab+=lab; const a=byItem[f.i]||(byItem[f.i]={vol:0,lab:0,runs:0}); a.vol+=vol; a.lab+=lab; a.runs++; }
+    else if(lab!=null&&!vol){ oRuns++; oLab+=lab; if(f.t!=null)oMh+=f.t; }   // time logged, no quantity
+    const flag=f.dq?` <span class="mtag" title="Run time looked physically impossible (End-Time typo) — time excluded, packs kept">⚠ time</span>`:'';
+    const volTd=vol==null
+      ? `<td class="illus" title="Multipack whose unit count is unknown — can't state this run in units.">?</td>`
+      : `<td title="${volTip(f,Bp)}">${n1(vol)}</td>`;
+    return `<tr><td>${f.d||'–'}</td><td>${f.m}</td><td><code>${f.i}</code></td>${volTd}`
+      +`<td>${f.o!=null?f.o:'–'}</td><td>${f.t!=null?(+f.t).toFixed(2):'–'}${flag}</td>`
+      +`<td>${lab!=null?m2(lab):'–'}</td><td>${m4(perVol)}</td></tr>`;
+  }).join('');
+  const multi=Object.keys(byItem).length>1;   // bundle: rolls up its own runs + component runs
+  const wAvg=(!multi&&cVol)?cLab/cVol:null;   // only meaningful when every run counts the same thing
+  // Bundles mix units of measure (finished bundles vs component bags/boxes) — never add those volumes
+  // into one $/unit. Show each item on its own line instead and point at the table for the SKU figure.
+  const itemTbl=!multi?'':`<p class="hint" style="margin:10px 0 4px"><b>By production item</b> `
+    +`<span class="illus">— this SKU rolls up more than one item, and their volumes are different things `
+    +`(finished ${volW} vs component tea bags/boxes), so they are NOT added into a single $/${volW1}. `
+    +`The SKU's cost per ${volW1} is the one in the table above.</span></p>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Item&nbsp;#</th><th>Description</th><th>runs</th><th>${volW} made</th><th>labor $</th><th>$/${volW1}</th></tr></thead><tbody>`
+    +Object.entries(byItem).sort((a,b)=>b[1].lab-a[1].lab).map(([i,a])=>
+      `<tr><td><code>${i}</code></td><td class="desc">${(RAW.items[i]||{}).desc||''}</td><td>${num(a.runs)}</td>`
+      +`<td>${n1(a.vol)}</td><td>${m2(a.lab)}</td><td>${m4(a.vol?a.lab/a.vol:null)}</td></tr>`).join('')
+    +`</tbody></table>`;
+  const notes=[];
+  if(oRuns) notes.push(`<b>${oRuns}</b> run${oRuns===1?'':'s'} logged time but no quantity `
+    +`(${(+oMh).toFixed(2)} machine hrs, ${m2(oLab)} labor) — counted in the labor total, excluded from the $/${volW1} average.`);
+  if(nUnk) notes.push(`<b>${nUnk}</b> run${nUnk===1?'':'s'} on a multipack whose unit count is unknown — can't be stated per unit.`);
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('pack-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:6px 0"><b>${num(tRuns)}</b> run${tRuns===1?'':'s'} · `
+    +(multi?`output <b>by item below</b>`:`<b>${n1(tVol)}</b> ${volW} made`)
+    +` · <b>${num(tMh)}</b> machine hrs · <b>${m2(tLab)}</b> packing labor`
+    +` <span class="illus">· ${rangeTxt} · showing <b>per ${volW1}</b>${multi?` · rolls up items ${[...items].join(', ')}`:''}</span></p>`
+    +`<div class="scroll"><table style="font-size:12.5px"><thead><tr><th>Date</th><th>Machine / stage</th><th>Item&nbsp;#</th><th>${volW} made</th><th>ops</th><th>machine hrs</th><th>labor $</th><th>$/${volW1}</th></tr></thead>`
+    +`<tbody>${rowsH}</tbody>`
+    +`<tfoot><tr><td colspan="3" style="text-align:right"><b>total${multi?'':' / weighted avg'}</b></td>`
+    +(multi?`<td class="illus" title="Different items, different units of measure — not additive. See the by-item table below.">n/a</td>`:`<td>${n1(tVol)}</td>`)
+    +`<td>–</td><td>${(+tMh).toFixed(2)}</td><td>${m2(tLab)}</td>`
+    +(multi
+      ? `<td class="illus" title="Mixed units of measure across items — see the by-item table below.">n/a</td>`
+      : `<td class="big" title="Weighted average over the ${n1(cVol)} ${volW} that reported both output and labor.">${m4(wAvg)}</td>`)
+    +`</tr></tfoot></table></div>`
+    +itemTbl
+    +(notes.length?`<p class="foot" style="margin-top:8px">${notes.map(n=>'⚠ '+n).join('<br>')}</p>`:'');
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- Section 3a: Machine hours by SKU ---------- */
+// machines a SKU ran on, ordered by hours desc
+function mhMachines(r){ return Object.entries(r.by||{}).sort((a,b)=>b[1]-a[1]).map(x=>x[0]); }
+function mhFiltered(){
+  const q=$('#mh-q').value.trim().toLowerCase();
+  return MH.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q))
+          .sort((a,b)=>b.hrs-a.hrs);
+}
+function renderMH(){
+  const rows=mhFiltered();
+  $('#mh-n').textContent=`${rows.length} of ${MH.length} SKUs`;
+  $('#t-mh tbody').innerHTML=rows.length?rows.map(r=>{const ms=mhMachines(r);
+    return `<tr class="clk" data-mh="${r.sku}"><td>${r.sku}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td>`
+    +`<td class="desc" title="${ms.join(', ')}">${ms.join(', ')||'–'}</td><td>${n1(r.units)}</td>`
+    +`<td class="big">${num(r.hrs)}</td><td>${r.hper1k==null?'–':r.hper1k.toFixed(2)}</td></tr>`;}).join('')
+    :`<tr><td colspan="7" class="empty">No machine runs in this range.</td></tr>`;
+  const totH=MH.reduce((s,r)=>s+r.hrs,0);
+  // Non-SKU machine time is reported, not hidden — it is real capacity, just not attributable to a product.
+  const np=Object.values(MHNP).sort((a,b)=>b.hrs-a.hrs), npH=np.reduce((s,b)=>s+b.hrs,0);
+  $('#mh-foot').innerHTML=`${num(MH.length)} SKUs with runs · ${num(totH)} machine hrs on products in range.`
+    +(np.length?`<br>Plus <b>${num(npH)}</b> machine hrs (${num(np.reduce((s,b)=>s+b.runs,0))} runs) logged to something that is <b>not a product</b> — `
+      +np.map(b=>`${b.label.toLowerCase()} <b>${num(b.hrs)}</b> hrs`).join(' · ')
+      +`. Excluded from the SKU table above (it belongs to no SKU); included in the CSV exports with a <i>run type</i> column.`:'');
+}
+/* CSV export — one row per SKU × machine so "which machine" is explicit */
+function csvCell(v){ v=(v==null?'':''+v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function downloadCSV(name,rows){
+  const csv=rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+// The CSV carries BOTH bases side by side (per case AND per unit) — it does not follow the toggle,
+// so one download answers either question. cases × units/case = units, exactly, on every row.
+function exportMH(){
+  const rows=mhFiltered();
+  const out=[['SKU','Product','Run type','runs','first run','last run','units / case',
+              'Machine / stage','machine hrs on this machine',
+              '% of SKU machine hrs','SKU total machine hrs',
+              'SKU total cases made','SKU total units made',
+              'machine hrs / 1k cases','machine hrs / 1k units']];
+  rows.forEach(r=>{
+    const upc=unitsPerCase(r), uC=r.uCase||0, uU=r.uUnitUnknown?null:(r.uUnit||0);
+    mhMachines(r).forEach(m=>{ const h=r.by[m];
+      out.push([r.sku, pname(r), 'Production', r.runs, r.first||'', r.last||'', upc||'', m, (+h).toFixed(2),
+        r.hrs?((h/r.hrs)*100).toFixed(1):'', r.hrs,
+        uC?+uC.toFixed(4):'', uU?Math.round(uU):'',   // 4dp so cases × units/case = units reconciles even at 1200 units/case
+        uC?((h/uC)*1000).toFixed(3):'', uU?((h/uU)*1000).toFixed(3):'']); }); });
+  // Non-SKU machine time, labelled — so the CSV's hours still reconcile to the plant total and
+  // nothing disappears just because it isn't a product.
+  if(!$('#mh-q').value.trim()) Object.values(MHNP).sort((a,b)=>b.hrs-a.hrs).forEach(b=>{
+    Object.entries(b.by).sort((x,y)=>y[1]-x[1]).forEach(([m,h])=>{
+      out.push([`(${b.label})`, `${b.ids.size} code${b.ids.size===1?'':'s'}: ${[...b.ids].sort().join(' / ')}`,
+        b.label, b.runs, '', '', '', m, (+h).toFixed(2),
+        b.hrs?((h/b.hrs)*100).toFixed(1):'', +b.hrs.toFixed(2), '', '', '', '']); }); });
+  const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
+  downloadCSV(`machine-hours-by-sku_per-case-and-per-unit_${tag}.csv`,out);
+}
+
+/* Run-level export — ONE ROW PER RUN, with its date. The rollup above is one row per SKU × machine
+   across the whole selected period, so a row there can span dozens of runs over months and has no
+   single date to show. This is the underlying run log: every field is per-run.
+   Labor $ = operator hours × confirmed $26.06/hr wage — LABOR ONLY, no materials/packaging/overhead. */
+function exportRuns(){
+  const q=$('#mh-q').value.trim().toLowerCase(), fin=finSet();
+  const nameOf=i=>DISPMAP[i]||DISPMAP[canonId(i)]||((RAW.items[i]||RAW.items[canonId(i)]||{}).desc)||'';
+  const rows=fRows().filter(f=>fin.has(f.m))
+    .filter(f=>!q||(''+f.i).toLowerCase().includes(q)||nameOf(f.i).toLowerCase().includes(q))
+    .sort((a,b)=>(a.d?0:1)-(b.d?0:1)||(a.d||'').localeCompare(b.d||'')||(''+a.m).localeCompare(''+b.m));  // undated runs last, not first
+  const out=[['Date','ISO week','Month','Machine / stage','Item #','Product','Run type','units / case',
+              'cases made','units made','operators','machine hrs','operator hrs','labor $',
+              'labor $ / case','labor $ / unit','planned hrs per unit','expected operator hrs',
+              'efficiency vs plan','downtime min','bad finished units','bad component units','data-quality flag']];
+  rows.forEach(f=>{
+    const cls=runClass(f.i), upc=csz(f.i)*upi(f.i);
+    const cases=f.q?f.q/csz(f.i):null, units=(f.q&&!upiUnknown(f.i))?f.q*upi(f.i):null;
+    const oh=(f.t!=null&&f.o)?f.t*f.o:null, lab=oh!=null?oh*WAGE:null, exp=(f.s&&f.q)?f.s*f.q:null;
+    out.push([f.d||'', f.d?isoWeek(f.d).key:'', f.d?f.d.slice(0,7):'', f.m, f.i,
+      cls?`(${cls})`:nameOf(f.i), cls||'Production',
+      cls?'':upc, cls?'':(cases!=null?+cases.toFixed(4):''), cls?'':(units!=null?Math.round(units):''),
+      f.o==null?'':f.o, f.t==null?'':+f.t.toFixed(2), oh==null?'':+oh.toFixed(2), lab==null?'':lab.toFixed(2),
+      (!cls&&lab!=null&&cases)?(lab/cases).toFixed(4):'', (!cls&&lab!=null&&units)?(lab/units).toFixed(4):'',
+      f.s==null?'':f.s, exp==null?'':+exp.toFixed(2), (exp!=null&&oh)?(exp/oh).toFixed(3):'',
+      f.dn==null?'':f.dn, f.bf==null?'':f.bf, f.bc==null?'':f.bc, f.dq||(f.d?'':'undated_run')]);
+  });
+  const tag=active()?`${RANGE.from||'start'}_${RANGE.to||'end'}`:'all-time';
+  downloadCSV(`machine-runs-detail_${tag}.csv`,out);
+}
+function showMH(sku){
+  const r=MH.find(x=>(''+x.sku)===(''+sku)); const box=$('#mh-detail'); if(!r){box.hidden=true;return;}
+  const machs=Object.entries(r.by).sort((a,b)=>b[1]-a[1]);
+  box.hidden=false;
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('mh-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:6px 0"><b>${num(r.hrs)}</b> machine hrs · <b>${n1(r.units)}</b> ${BWs(secBasis('mh'))}. By machine:</p>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Machine / stage</th><th>machine hrs</th><th>share</th></tr></thead><tbody>`
+    +machs.map(([m,h])=>`<tr><td>${m}</td><td>${num(+h.toFixed(2))}</td><td>${r.hrs?((h/r.hrs)*100).toFixed(0):0}%</td></tr>`).join('')+`</tbody></table>`;
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- Section 3b: By production machine ---------- */
+function renderMachines(rows,fin){
+  const Bmach=secBasis('mach'); setTxt('mh2-vol',BWs(Bmach)); setTxt('mh2-lab','labor $/'+BW1s(Bmach));
+  const agg={};
+  rows.forEach(f=>{ if(!fin.has(f.m)) return; const a=agg[f.m]||(agg[f.m]={runs:0,items:new Set(),units:0,rh:0,oh:0,dn:0}); a.runs++; if(f.i)a.items.add(f.i); if(f.q)a.units+=volB(f,Bmach); if(f.t){a.rh+=f.t; if(f.o)a.oh+=f.t*f.o;} if(f.dn)a.dn+=f.dn; });
+  const order=(RAW.finished_stages||[]); const out=order.filter(m=>agg[m]).map(m=>{const a=agg[m],lt=a.oh*WAGE;
+    return `<tr><td><b>${m}</b></td><td>${num(a.runs)}</td><td>${num(a.items.size)}</td><td>${n1(a.units)}</td><td>${num(Math.round(a.rh))}</td><td>${num(Math.round(a.oh))}</td><td>${m4(a.units?lt/a.units:null)}</td><td>${m2(lt)}</td><td>${a.rh?((a.dn/(a.rh*60))*100).toFixed(1)+'%':'–'}</td></tr>`;}).join('');
+  $('#t-machines tbody').innerHTML=out||`<tr><td colspan="9" class="empty">No runs in this range.</td></tr>`;
+  $('#machines-foot').innerHTML=`<span class="illus">Labor only, $${WAGE}/hr; excludes machine overhead.</span>`;
+}
+
+/* ---------- Section 4: Finished Goods ---------- */
+function renderFG(){
+  const q=$('#fg-q').value.trim().toLowerCase();
+  // DEFAULT = only SKUs actually produced in the selected date range (Justin 2026-09-09).
+  const showAllF=$('#fg-all')&&$('#fg-all').checked;
+  let rows=FG.filter(r=>!q||(''+r.sku).toLowerCase().includes(q)||(pname(r)+' '+(r.title||'')).toLowerCase().includes(q));
+  const ranF=rows.filter(r=>packHasRuns(r)).length;
+  if(!showAllF) rows=rows.filter(r=>packHasRuns(r));
+  rows.sort((a,b)=>(b.make||0)-(a.make||0));
+  $('#fg-n').textContent=showAllF
+    ? `${rows.length} of ${FG.length} SKUs · ${ranF} produced this period`
+    : `${rows.length} SKU${rows.length===1?'':'s'} produced this period`;
+  const B=secBasis('fg'), factor=r=>factorB(r,B);   // shared basis conversion (see UNITS OF MEASURE)
+  setTxt('fg-makeh','make $/'+BW1s(B));
+  $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>{const k=factor(r);
+    const unknown = B==='unit' && r.pack_type==='case' && !r.pack_count;   // multipack w/ unknown unit count
+    const bl=unknown?null:r.make_blend*k, pk=unknown?null:r.make_labor*k, mk=unknown?null:r.make*k;
+    return `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(bl)}</td><td>${m4(pk)}</td><td class="big" title="${B==='case'?('cost of one case — '+(unitsPerCase(r)||'?')+' units'):'cost of one individual retail unit'}">${m4(mk)}</td></tr>`;}).join('')
+    :`<tr><td colspan="6" class="empty">${q?'No SKUs match.':'No SKUs were produced in this date range.'}${showAllF?'':' Widen the dates, or tick “include SKUs not produced in this period”.'}</td></tr>`;
+  const disc=FG.filter(x=>x.discontinued).length;
+  $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
+}
+// every line is scaled by k into the basis on display, so the lines add up to the total shown
+function fgLine(p,ind,k){
+  k=k==null?1:k;
+  const l=p.node,pad=`padding-left:${ind*16}px`;
+  if(p.t==='blend') return `<tr><td style="${pad}">🌀 blend <code>${l.id}</code>${(l.id in BLENDLB)?'':' <span class="illus">(all-time)</span>'}</td><td class="desc">${l.desc||''}</td><td>${(+l.lbs*k).toFixed(4)} lb × ${m4(p.per)}/lb</td><td>${m4(p.usd*k)}</td></tr>`;
+  if(p.t==='pack') return `<tr><td style="${pad}">📦 packing labor</td><td class="desc">weigh / pack / finish</td><td>${p.range?'actual runs':'<span class="illus">all-time (no run in range)</span>'}</td><td>${m4(p.usd*k)}</td></tr>`;
+  if(p.t==='comp'){ let h=`<tr><td style="${pad}">📦 contains <code>${l.id}</code> × ${(+l.qty*k).toFixed(3)}</td><td class="desc">${l.desc||''}</td><td>make ${m4(l.qty?p.usd/l.qty:0)}/ea</td><td>${m4(p.usd*k)}</td></tr>`; p.subs.forEach(s=>h+=fgLine(s,ind+1,k)); return h; }
+  return '';
+}
+// Complete Acctivate BOM for a SKU (collapsible). Labor lines carry their real $; every
+// material/packaging line is shown at $0.0000 — those costs aren't sourced yet (by design).
+function fgBom(r,k,w){
+  k=k==null?1:k; w=w||'unit';
+  const m=r.math||{}; const labor=(m.labor_lines||[]).filter(Boolean);
+  const comps=(m.components||[]).slice()
+    .sort((a,b)=>(''+(a.cls||'')).localeCompare(''+(b.cls||''))||(''+a.id).localeCompare(''+b.id));
+  if(!labor.length && !comps.length) return '';
+  const clsLabel={packaging:'📦 packaging', raw_material:'🌿 raw material', blend:'🌀 blend'};
+  const lrows=labor.map(l=>`<tr><td><code>${l.code||''}</code></td><td class="desc">${l.desc||''}</td>`
+    +`<td>${l.hours!=null?(+l.hours*k).toFixed(4)+' hr':''}</td><td>labor</td><td>${m4((l.usd||0)*k)}</td></tr>`).join('');
+  const crows=comps.map(c=>`<tr><td><code>${c.id||''}</code></td><td class="desc">${c.desc||''}</td>`
+    +`<td>${c.qty!=null?(+c.qty*k).toFixed(4):''}</td><td>${clsLabel[c.cls]||c.cls||''}</td>`
+    +`<td class="illus">${m4(0)}</td></tr>`).join('');
+  return `<details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;font-size:12.5px">`
+    +`📋 Complete bill of materials — ${labor.length+comps.length} lines `
+    +`<span class="illus">(materials &amp; packaging not yet costed → shown at ${m4(0)})</span></summary>`
+    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Code</th><th>Description</th><th>Qty / ${w}</th><th>Type</th><th>$/${w}</th></tr></thead>`
+    +`<tbody>${lrows}${crows}</tbody></table></details>`;
+}
+function showFG(fg,sku){
+  const r=FG.find(x=>(''+(x.fg||''))===(''+fg)&&(''+(x.sku||''))===(''+sku))||FG.find(x=>(''+(x.sku||''))===(''+sku));
+  const box=$('#fg-detail'); if(!r||!r.priced){box.hidden=true;return;}
+  // State every line in the section's basis. A multipack with an unknown unit count can't be put on
+  // a per-unit basis at all, so we say so and fall back to per case rather than guess a divisor.
+  const want=secBasis('fg'), noUnits=(r.pack_type==='case'&&!r.pack_count);
+  const B=(want==='unit'&&noUnits)?'case':want, w=BW1s(B), k=factorB(r,B), upc=unitsPerCase(r);
+  const lines=r.priced.map(p=>fgLine(p,0,k)).join('')||`<tr><td colspan="4" class="empty">No steps.</td></tr>`;
+  box.hidden=false; box.dataset.fg=fg; box.dataset.sku=sku;   // remember which SKU is open (survive a basis toggle)
+  box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
+    +`<button class="linkbtn" onclick="document.getElementById('fg-detail').hidden=true">close ✕</button></div>`
+    +`<p class="hint" style="margin:6px 0">Every line below is the cost of making <b>one ${w}</b>`
+    +(B==='case'?` — a case of <b>${upc||'?'}</b> unit${upc===1?'':'s'}`:'')+`.`
+    +(want==='unit'&&noUnits?` <span class="illus">Per-unit isn't derivable for this SKU (multipack with an unknown unit count) — showing per case.</span>`:'')+`</p>`
+    +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/${w}</th></tr></thead><tbody>${lines}</tbody>`
+    +`<tfoot><tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend*k)}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right">packing subtotal</td><td>${m4(r.make_labor*k)}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right"><b>= cost to make one ${w}</b></td><td class="big">${m4(r.make*k)}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right">cross-check — <b>per unit</b> <span class="mtag">1 unit</span></td><td>${m4(perSingle(r))}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right">cross-check — <b>per case</b> <span class="mtag">${upc?upc+' unit'+(upc===1?'':'s'):'? units'}</span></td><td>${m4(caseCost(r))}</td></tr></tfoot></table>`
+    +fgBom(r,k,w);
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- date range control ---------- */
+function fmt(d){ return d.toISOString().slice(0,10); }
+function setPreset(p,btn){
+  const now=new Date();
+  if(p==='all') RANGE={from:null,to:null};
+  else if(p==='ytd') RANGE={from:fmt(new Date(Date.UTC(now.getUTCFullYear(),0,1))),to:fmt(now)};
+  else if(p==='90'){ const d=new Date(now); d.setUTCDate(d.getUTCDate()-90); RANGE={from:fmt(d),to:fmt(now)}; }
+  else if(p==='30'){ const d=new Date(now); d.setUTCDate(d.getUTCDate()-30); RANGE={from:fmt(d),to:fmt(now)}; }
+  else if(p==='2025') RANGE={from:'2025-01-01',to:'2025-12-31'};
+  $('#dr').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===btn));
+  $('#dr-from').value=RANGE.from||''; $('#dr-to').value=RANGE.to||'';
+  label(); recompute();
+}
+function label(){
+  const el=$('#dr-label');
+  if(!active()){ el.innerHTML=`<b>All time</b> · ${RAW.date_min||''} → ${RAW.date_max||''}`; return; }
+  el.innerHTML=`<b>${RANGE.from||'…'}</b> → <b>${RANGE.to||'…'}</b>`;
+}
+
+/* machine filter for the efficiency section (multi-select; empty = all) */
+function buildMachButtons(){
+  const stages=RAW.finished_stages||[]; const seg=$('#eff-mach');
+  seg.innerHTML=`<button data-m="__all" class="on">All machines</button>`+stages.map(m=>`<button data-m="${m}">${m}</button>`).join('');
+  seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    const m=b.dataset.m;
+    if(m==='__all') EFFMACH.clear();
+    else { EFFMACH.has(m)?EFFMACH.delete(m):EFFMACH.add(m); }
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',
+      x.dataset.m==='__all' ? EFFMACH.size===0 : EFFMACH.has(x.dataset.m)));
+    recompute();
+  });
+}
+
+fetch('cost-performance-facts.json?_='+Date.now()).then(r=>r.json()).then(data=>{
+  RAW=data;
+  $('#blendrate').textContent=m2(RAW.blend_loaded_rate);
+  $('#fg-note').textContent='Actual-run based; raw ingredients & packaging excluded by design.';
+  $('#built').textContent=`Source: ${(RAW.bom_cogs||{}).source_file||'production schedule'} · built ${(RAW.built_at||'').slice(0,10)} · ${num(RAW.facts.length)} run records.`;
+  $('#dr').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setPreset(b.dataset.p,b); });
+  $('#dr-apply').addEventListener('click',()=>{ RANGE={from:$('#dr-from').value||null,to:$('#dr-to').value||null}; $('#dr').querySelectorAll('button').forEach(b=>b.classList.remove('on')); label(); recompute(); });
+  $('#blend-q').addEventListener('input',renderBlend);
+  $('#pack-q').addEventListener('input',renderPack);
+  $('#pack-all').addEventListener('change',renderPack);
+  $('#mh-q').addEventListener('input',renderMH);
+  $('#mh-export').addEventListener('click',exportMH);
+  $('#mh-export-runs').addEventListener('click',exportRuns);
+  $('#fg-q').addEventListener('input',renderFG);
+  $('#fg-all').addEventListener('change',renderFG);
+  document.querySelectorAll('.basis-seg').forEach(seg=>{   // one shared explanation of the two bases
+    const bc=seg.querySelector('[data-b="case"]'), bu=seg.querySelector('[data-b="unit"]');
+    if(bc) bc.title='Per shipping CASE — a case is made of N individual units (the "units / case" column).';
+    if(bu) bu.title='Per individual retail UNIT — one bag, box or canister a customer buys.';
+  });
+  document.querySelectorAll('.basis-seg').forEach(seg=> seg.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    // keep an open drill-down open across a toggle — and re-render it on the new basis
+    const fgd=$('#fg-detail'), reFG=(fgd && !fgd.hidden)?{fg:fgd.dataset.fg,sku:fgd.dataset.sku}:null;
+    const pkd=$('#pack-detail'), rePack=(pkd && !pkd.hidden)?pkd.dataset.sku:null;
+    recompute();
+    if(reFG) showFG(reFG.fg,reFG.sku);
+    if(rePack) showPack(rePack); }));
+  $('#t-eff tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showEffWeek(tr.dataset.eff);});
+  $('#t-blend tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showBlend(tr.dataset.blend);});
+  $('#t-pack tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showPack(tr.dataset.pack);});
+  $('#t-mh tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showMH(tr.dataset.mh);});
+  $('#t-fg tbody').addEventListener('click',e=>{const tr=e.target.closest('tr.clk');if(tr)showFG(tr.dataset.fg,tr.dataset.sku);});
+  computeStdHist();
+  buildMachButtons();
+  label(); recompute();
+}).catch(e=>{ $('#c-act').insertAdjacentHTML('beforebegin','<p class="empty">Could not load cost-performance-facts.json — '+e+'</p>'); });
+
+</script>
+<script>
+/* =====================================================================================
+   v2 SHELL. Runs AFTER v1's script, in the same global scope, so every v1 helper
+   (volB, csz, canonId, secBasis, isMake, finSet, EFF, FG, MH, RAW, RANGE, m2, num...)
+   is reused rather than reimplemented. That is deliberate: the costing logic in v1 is
+   the product of a lot of corrections, and v2's job is presentation, not arithmetic.
+
+   v2 adds, and only adds:
+     - tabbed navigation over v1's sections
+     - an Overview that states blending + packing as one figure
+     - machine hours by PRODUCT TYPE
+     - the SOURCE DATA tab: the production schedule as recorded, so an outrageous
+       number can be traced to the row that caused it
+     - "see the spreadsheet rows" tracing out of every drill-down
+   ===================================================================================== */
+
+const V2 = {
+  src: null,          // production-source-feed.json
+  tmap: null,         // product-type-map.json
+  tab: 'overview',
+  flags: new Set(),   // active flag filter on the Source tab
+  station: null,      // active station filter on the Source tab
+  cap: 500,           // rows rendered at once (the feed holds ~7.9k)
+  showAll: false,
+  sort: { k: 'd', dir: -1 },
+};
+
+/* Categorical slots, validated in both modes. Identity is carried by a labelled legend
+   and by the table beside every chart -- never by colour alone. */
+const SER = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)', 'var(--s6)'];
+/* One fixed slot per governed product type. Keyed on the type NAME so the colour follows
+   the entity: changing the date range or dropping a type never repaints the others.
+   Anything outside CatalogSmith's enum is an ABSENCE of type, not a type -- it renders
+   neutral and is identified by its label, so no hue is ever cycled or invented. */
+const TYPE_HUE = { Tea:'var(--s1)', APG:'var(--s2)', Instant:'var(--s3)',
+                   Sampler:'var(--s4)', Bundle:'var(--s5)', Accessory:'var(--s6)' };
+const hueOfType = t => TYPE_HUE[t] || 'var(--axis)';
+/* Money that adapts to magnitude. A per-UNIT cost of $0.1765 needs 4 dp; a per-CASE
+   cost of $2.0692 does not, and "$110.2767" reads as false precision. Same column
+   carries both bases, so the precision follows the value. */
+const mAuto = n => n == null ? '–' : (Math.abs(+n) >= 1 ? m2(n) : m4(n));
+const pct = (n, d) => (d ? (n / d * 100) : 0);
+const esc = s => (s == null ? '' : String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])));
+
+/* ---------- flag glossary: what each flag means in plain words ---------- */
+const FLAGDOC = {
+  no_actual_time:                 ['No actual time recorded', 'The run sheet has no finish time, so the run cannot be costed or scored. It drops out of every hours figure.', 'md'],
+  misdate:                        ['Date is impossible', 'The date is outside any real operating year — usually a typo in the year. Excluded from weekly and monthly views.', 'md'],
+  undated_or_bad_date:            ['Date missing or unreadable', 'No usable date, so the row cannot land in a week or month. Still counted in all-time totals.', 'md'],
+  time_but_no_qty:                ['Hours but nothing made', 'A production row with time and operators but no quantity. Cost per unit divides by zero here, and the hours drag efficiency down with no output to offset them. The most common cause of a wild number.', 'hi'],
+  qty_but_no_operators:           ['Made something, no crew size', 'Quantity and time are there but the operator count is blank, so labor hours cannot be computed for this run.', 'hi'],
+  no_standard_rate:               ['No planned rate', 'Without a planned rate there is no expected-hours figure, so the run silently drops out of efficiency rather than showing as a miss.', 'md'],
+  zero_standard_rate:             ['Planned rate is zero', 'A zero planned rate reads as infinite efficiency and distorts the week it sits in.', 'hi'],
+  labor_per_unit_10x_item_median: ['Labor per unit 10x this item’s norm', 'Compared against this SKU’s own history, not a plant-wide threshold. Either a genuinely bad run or a mis-keyed time or quantity.', 'hi'],
+  run_over_16h:                   ['Run longer than 16 hours', 'Longer than any shift. Almost always an end-time typo.', 'hi'],
+  qty_under_10pct_of_plan:        ['Made under a tenth of the plan', 'Sometimes real — a run cut short. Also what a mis-keyed quantity looks like.', 'md'],
+  downtime_exceeds_runtime:       ['More downtime than run time', 'Downtime longer than the run it sits inside. One of the two is wrong.', 'hi'],
+  scrap_exceeds_output:           ['More scrapped than made', 'Bad units exceed good units on the same row.', 'hi'],
+};
+const flagLabel = f => (FLAGDOC[f] ? FLAGDOC[f][0] : f);
+const flagSev = f => (FLAGDOC[f] ? FLAGDOC[f][2] : 'md');
+
+/* ---------- tabs ---------- */
+function goTab(t, opts) {
+  V2.tab = t;
+  document.querySelectorAll('#v2-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.dataset.p === t));
+  if (!(opts && opts.keepScroll)) window.scrollTo({ top: 0, behavior: 'instant' });
+  if (history.replaceState) history.replaceState(null, '', '#' + t);
+}
+const tabFromHash = () => {
+  const h = (location.hash || '').replace('#', '');
+  return document.querySelector('.panel[data-p="' + h + '"]') ? h : null;
+};
+function initTabs() {
+  document.querySelectorAll('#v2-tabs button').forEach(b =>
+    b.addEventListener('click', () => goTab(b.dataset.t)));
+  // A tab link has to work when the page is ALREADY open -- pasting #efficiency into the
+  // address bar, or hitting Back, is a same-document navigation that never re-runs this
+  // script. Without this the URL changes and the page silently doesn't. (Deep links are
+  // the point: "here's the efficiency tab" needs to land on the efficiency tab.)
+  window.addEventListener('hashchange', () => { const t = tabFromHash(); if (t && t !== V2.tab) goTab(t); });
+  goTab(tabFromHash() || 'overview');
+}
+
+/* =====================================================================================
+   STAGE TOTALS -- the one place v2 computes anything, and it computes it the same way
+   v1's sections do so the tabs cannot disagree with each other.
+     packing $ = run hours x operators x confirmed wage, production rows only
+     blending $ = blend hours x the loaded blend-labor rate (one blender, not per-operator)
+   ===================================================================================== */
+function stageTotals(basis) {
+  const rows = fRows(), fin = finSet();
+  const mo = {};
+  let packUsd = 0, blendUsd = 0, units = 0, lbs = 0, packHrs = 0, blendHrs = 0, runs = 0, blendRuns = 0;
+  let misdated = 0, otherUsd = 0, otherHrs = 0, otherRuns = 0;
+  rows.forEach(f => {
+    if (fin.has(f.m)) {
+      if (f.t == null) return;
+      // Cleaning, changeovers and repack/rework are REAL packing labor, but they create no
+      // new units, so charging them into cost-per-unit would inflate it. They are held out
+      // here and reported as their own figure -- never dropped, because the two must tie:
+      //   all packing labor = cost-to-make labor + this.
+      if (!isMake(f)) {
+        otherUsd += (f.o ? f.t * f.o : 0) * WAGE; otherHrs += f.t * (f.o || 0); otherRuns++;
+        return;
+      }
+      const key = plausibleYear(f.d) ? f.d.slice(0, 7) : null;
+      if (f.d && !plausibleYear(f.d)) misdated++;
+      const usd = (f.o ? f.t * f.o : 0) * WAGE;
+      const v = volB(f, basis);
+      packUsd += usd; packHrs += f.t * (f.o || 0); units += v; runs++;
+      if (key) { const a = mo[key] || (mo[key] = { pack: 0, blend: 0, units: 0 }); a.pack += usd; a.units += v; }
+    } else if (f.m === 'Blending' && String(f.i).toUpperCase().endsWith('BBP')) {
+      if (f.t == null) return;
+      const usd = f.t * LOADED;
+      blendUsd += usd; blendHrs += f.t; blendRuns++; if (f.q) lbs += f.q;
+      const key = plausibleYear(f.d) ? f.d.slice(0, 7) : null;
+      if (f.d && !plausibleYear(f.d)) misdated++;
+      if (key) { const a = mo[key] || (mo[key] = { pack: 0, blend: 0, units: 0 }); a.blend += usd; }
+    }
+  });
+  return { packUsd, blendUsd, units, lbs, packHrs, blendHrs, runs, blendRuns, mo, misdated,
+           otherUsd, otherHrs, otherRuns };
+}
+
+/* A mis-keyed year (the workbook has 2028s and a 2029) would otherwise open its own
+   month column, squash 24 real months into a corner and head the table with a $28 row.
+   Self-maintaining window rather than a hardcoded pair of years; excluded rows are
+   COUNTED and reported, never silently dropped. */
+const NOWY = new Date().getUTCFullYear();
+const plausibleYear = d => { if (!d || !/^\d{4}-/.test(d)) return false; const y = +d.slice(0, 4); return y >= NOWY - 3 && y <= NOWY + 1; };
+
+/* ---------- OVERVIEW ---------- */
+function renderOverview() {
+  const B = 'unit';                                   // Justin's ruling: a unit is one retail item
+  const T = stageTotals(B), tot = T.packUsd + T.blendUsd;
+  const e = EFF && EFF.tot;
+  const effTxt = (e && e.eff != null) ? (e.eff * 100).toFixed(1) + '%' : '–';
+  const effCls = (!e || e.eff == null) ? '' : (e.eff >= 0.95 ? 'good' : e.eff >= 0.80 ? 'warn' : 'bad');
+
+  $('#ov-kpis').innerHTML =
+      kpi('Total cost to make', m0(tot), 'blending + packing labor, selected period', 'hero')
+    + kpi('Blending', m0(T.blendUsd), n1(Math.round(T.lbs)) + ' lb blended · ' + num(Math.round(T.blendHrs)) + ' blend hrs')
+    + kpi('Packing', m0(T.packUsd), num(Math.round(T.packHrs)) + ' operator hrs · ' + num(T.runs) + ' runs')
+    + kpi('Units made', n1(T.units), 'individual retail units on the packing lines')
+    + kpi('Average per unit', T.units ? m4(tot / T.units) : '–', 'plant-wide average, not a SKU cost')
+    + kpi('Weekly efficiency', effTxt, e ? ('overrun ' + m0(e.overUsd) + ' of labor') : 'no scorable runs', '', effCls);
+
+  $('#ov-scope').innerHTML = '<b>What is in this number:</b> blending labor at ' + m2(LOADED)
+    + '/blend-hour (loaded) and packing labor at ' + m2(WAGE) + '/hour (confirmed wage). '
+    + '<b>What is not:</b> chicory, carob, barley, dates, nuts and every other ingredient; bags, boxes '
+    + 'and cartons; freight; machine electricity and maintenance; overhead. A landed cost will be '
+    + 'higher than this &mdash; how much higher we cannot say until a priced bill of materials exists. '
+    + '<b>The average per unit is a plant-wide average</b>: blending and packing do not line up '
+    + 'run-for-run inside a short window, because a blend made in one week is packed in another. '
+    + 'For a real per-SKU figure use the <b>Total cost</b> tab.'
+    + (T.otherUsd > 0
+       ? ' <b>Why the packing figure is lower than the activity card below:</b> a further '
+         + '<b>' + m0(T.otherUsd) + '</b> of packing labor (' + num(Math.round(T.otherHrs))
+         + ' operator hrs over ' + num(T.otherRuns) + ' runs) went to cleaning, changeovers and '
+         + 'repack/rework. That is real money, but it makes no new units, so putting it in '
+         + 'cost-per-unit would overstate every SKU. The two tie exactly: ' + m0(T.packUsd)
+         + ' + ' + m0(T.otherUsd) + ' = ' + m0(T.packUsd + T.otherUsd) + ' of all packing labor.'
+       : '');
+
+  // monthly stacked bars: two parts of one whole, over time
+  const keys = Object.keys(T.mo).sort();
+  const svg = stackChart(keys, T.mo);
+  $('#ov-chart').innerHTML = svg.svg;
+  $('#ov-chart-foot').innerHTML = svg.foot
+    + (T.misdated ? ' · <b style="color:var(--warning)">' + num(T.misdated) + ' run(s) left out of the monthly split</b>'
+       + ' because the date is outside ' + (NOWY - 3) + '&ndash;' + (NOWY + 1)
+       + ' &mdash; they are still in the totals above. Find them under <b>Date is impossible</b> on Source data.' : '');
+  $('#ov-legend').innerHTML =
+      '<span><i style="background:' + SER[0] + '"></i>Blending labor</span>'
+    + '<span><i style="background:' + SER[1] + '"></i>Packing labor</span>';
+
+  $('#t-ov-mo tbody').innerHTML = keys.length ? keys.slice().reverse().map(k => {
+    const a = T.mo[k], t = a.pack + a.blend;
+    return '<tr><td><b>' + k + '</b></td><td>' + m0(a.blend) + '</td><td>' + m0(a.pack) + '</td>'
+      + '<td class="big">' + m0(t) + '</td><td>' + n1(a.units) + '</td><td>'
+      + (a.units ? m4(t / a.units) : '–') + '</td></tr>';
+  }).join('') : '<tr><td colspan="6" class="empty">No dated runs in this range.</td></tr>';
+}
+function kpi(k, v, n, cls, vcls) {
+  return '<div class="kpi ' + (cls || '') + '"><div class="k">' + k + '</div>'
+    + '<div class="v ' + (vcls || '') + '">' + v + '</div><div class="n">' + n + '</div></div>';
+}
+const m0 = n => n == null ? '–' : '$' + Math.round(+n).toLocaleString();
+
+/* stacked bars, 2px surface gap between the two segments (dataviz mark spec) */
+function stackChart(keys, mo) {
+  if (!keys.length) return { svg: '', foot: 'No data in range.' };
+  const W = 900, H = 220, padL = 52, padR = 12, base = H - 26, top = 12;
+  const step = (W - padL - padR) / keys.length, bw = Math.max(2, Math.min(46, step * 0.72));
+  const max = Math.max(...keys.map(k => mo[k].pack + mo[k].blend), 1);
+  const y = v => base - (v / max) * (base - top);
+  let out = '';
+  // recessive gridlines + axis in money, so the bars can go unlabelled
+  for (let i = 1; i <= 4; i++) {
+    const v = max * i / 4;
+    out += '<line x1="' + padL + '" y1="' + y(v).toFixed(1) + '" x2="' + (W - padR) + '" y2="' + y(v).toFixed(1)
+      + '" stroke="var(--grid)"/><text x="' + (padL - 6) + '" y="' + (y(v) + 3.5).toFixed(1)
+      + '" font-size="10" fill="var(--muted)" text-anchor="end">' + m0(v) + '</text>';
+  }
+  out += '<line x1="' + padL + '" y1="' + base + '" x2="' + (W - padR) + '" y2="' + base + '" stroke="var(--axis)"/>';
+  keys.forEach((k, i) => {
+    const a = mo[k], x = padL + i * step + (step - bw) / 2, t = a.pack + a.blend;
+    const hb = base - y(a.blend), hp = (base - y(t)) - hb;
+    const tip = k + ' — blending ' + m0(a.blend) + ', packing ' + m0(a.pack) + ', total ' + m0(t)
+      + (a.units ? ' · ' + n1(a.units) + ' units · ' + m4(t / a.units) + '/unit' : '');
+    // blending sits on the baseline with a 4px rounded data-end; packing stacks above it
+    out += '<g><title>' + esc(tip) + '</title>'
+      + '<rect x="' + x.toFixed(1) + '" y="' + (base - hb).toFixed(1) + '" width="' + bw.toFixed(1)
+      + '" height="' + Math.max(0, hb).toFixed(1) + '" rx="1" fill="' + SER[0] + '"/>'
+      + '<rect x="' + x.toFixed(1) + '" y="' + (base - hb - hp - 2).toFixed(1) + '" width="' + bw.toFixed(1)
+      + '" height="' + Math.max(0, hp).toFixed(1) + '" rx="4" fill="' + SER[1] + '"/></g>';
+  });
+  const idx = [...new Set([0, Math.floor((keys.length - 1) / 2), keys.length - 1])];
+  out += idx.map(i => '<text x="' + (padL + i * step + step / 2).toFixed(1) + '" y="' + (H - 8)
+    + '" font-size="10" fill="var(--muted)" text-anchor="middle">' + keys[i] + '</text>').join('');
+  return { svg: out, foot: keys.length + ' month(s) · hover a bar for the split · peak ' + m0(max) };
+}
+
+/* ---------- DATA HEALTH (Overview) ---------- */
+function renderHealth() {
+  if (!V2.src) { $('#hl-chips').innerHTML = '<span class="mtag">loading the source feed…</span>'; return; }
+  const rows = srcRows({ ignoreFlagFilter: true, ignoreStation: true, respectDate: true, q: '', onlyFlagged: false });
+  const cnt = {};
+  rows.forEach(r => (r[SI.f] || '').split(',').filter(Boolean).forEach(f => cnt[f] = (cnt[f] || 0) + 1));
+  const ord = Object.keys(cnt).sort((a, b) => (flagSev(b) === 'hi') - (flagSev(a) === 'hi') || cnt[b] - cnt[a]);
+  $('#hl-chips').innerHTML = ord.length ? ord.map(f =>
+    '<button class="chip sev-' + flagSev(f) + '" data-hl="' + f + '" title="' + esc(FLAGDOC[f] ? FLAGDOC[f][1] : f)
+    + '">' + esc(flagLabel(f)) + ' <b>' + cnt[f] + '</b></button>').join('')
+    : '<span class="chip none">Nothing looks wrong in this period — every row has the fields it needs.</span>';
+  const nBad = rows.filter(r => r[SI.f]).length;
+  $('#hl-foot').innerHTML = nBad
+    ? '<b>' + num(nBad) + '</b> of ' + num(rows.length) + ' run rows in this period carry at least one flag ('
+      + pct(nBad, rows.length).toFixed(1) + '%). Click any flag to open those exact rows in <b>Source data</b>.'
+    : num(rows.length) + ' run rows in this period, none flagged.';
+  document.querySelectorAll('[data-hl]').forEach(b => b.addEventListener('click', () => {
+    V2.flags = new Set([b.dataset.hl]); V2.station = null; V2.showAll = false;
+    $('#src-flagged').checked = false; $('#src-q').value = ''; $('#src-date').checked = true;
+    renderSrc(); goTab('source');
+  }));
+}
+
+/* ---------- MACHINE HOURS BY PRODUCT TYPE ---------- */
+function typeOf(item) {
+  if (!V2.tmap) return null;
+  const k = canonId(item);
+  return V2.tmap.types[k] || V2.tmap.types['' + item] || null;
+}
+function renderTypes() {
+  const B = secBasis('ty'), rows = fRows(), fin = finSet();
+  setTxt('th-ty-vol', BWs(B)); setTxt('th-ty-per', BWs(B) + ' / machine hr'); setTxt('th-ty-cost', '$ / ' + BW1s(B));
+  const acc = {}; let govHrs = 0, allHrs = 0;
+  rows.forEach(f => {
+    if (!fin.has(f.m) || f.t == null) return;
+    if (runClass(f.i)) return;                        // cleaning / changeover / labor notes: not a product
+    const t = typeOf(f.i) || 'Unclassified';
+    const a = acc[t] || (acc[t] = { type: t, hrs: 0, oph: 0, units: 0, runs: 0, dn: 0, skus: new Set(), by: {}, usd: 0 });
+    a.hrs += f.t; a.runs++; a.skus.add(canonId(f.i));
+    if (f.o) { a.oph += f.t * f.o; a.usd += f.t * f.o * WAGE; }
+    if (f.q) a.units += volB(f, B);
+    if (f.dn) a.dn += f.dn;
+    a.by[f.m] = (a.by[f.m] || 0) + f.t;
+    allHrs += f.t; if (typeOf(f.i)) govHrs += f.t;
+  });
+  const order = (V2.tmap && V2.tmap._meta.type_order) || [];
+  const list = Object.values(acc).sort((a, b) => {
+    const ia = order.indexOf(a.type), ib = order.indexOf(b.type);
+    if (ia !== ib) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    return b.hrs - a.hrs;
+  });
+  const colorOf = {}; list.forEach(r => colorOf[r.type] = hueOfType(r.type));
+
+  $('#ty-legend').innerHTML = list.map(r =>
+    '<span><i style="background:' + colorOf[r.type] + '"></i>' + esc(r.type)
+    + (TYPE_HUE[r.type] ? '' : ' <span class="mtag">(no type)</span>') + '</span>').join('');
+  const ch = barsH('ty-chart', list.map(r => ({ label: r.type, v: r.hrs, color: colorOf[r.type],
+    tip: r.type + ' — ' + num(Math.round(r.hrs)) + ' machine hrs, ' + n1(r.units) + ' ' + BWs(B)
+       + ', ' + num(r.skus.size) + ' SKUs' })), 'machine hrs');
+  $('#ty-chart-foot').textContent = ch.foot;
+
+  $('#t-type tbody').innerHTML = list.length ? list.map(r =>
+    '<tr class="clk" data-ty="' + esc(r.type) + '"><td><b>' + esc(r.type) + '</b>'
+    + (TYPE_HUE[r.type] ? '' : ' <span class="mtag">no product type on record</span>') + '</td>'
+    + '<td>' + num(r.skus.size) + '</td><td>' + num(r.runs) + '</td><td>' + n1(r.units) + '</td>'
+    + '<td>' + num(Math.round(r.hrs)) + '</td><td>' + num(Math.round(r.oph)) + '</td>'
+    + '<td class="big">' + (r.hrs ? n1(r.units / r.hrs) : '–') + '</td>'
+    + '<td>' + m0(r.usd) + '</td><td>' + (r.units ? mAuto(r.usd / r.units) : '–') + '</td>'
+    + '<td>' + (r.hrs ? pct(r.dn, r.hrs * 60).toFixed(1) + '%' : '–') + '</td></tr>').join('')
+    : '<tr><td colspan="10" class="empty">No production runs in this range.</td></tr>';
+
+  const gm = V2.tmap ? V2.tmap._meta : null;
+  $('#ty-foot').innerHTML = (allHrs
+    ? '<b>' + pct(govHrs, allHrs).toFixed(0) + '%</b> of machine hours in this period belong to a SKU with a product type on record'
+      + (gm ? ' (' + num(gm.governed_entries) + ' types declared by the catalog, ' + num(gm.inferred_entries) + ' inferred from the line it ran on)' : '') + '. '
+    : '')
+    + 'The <b>Unclassified</b> row is the queue: those SKUs need a type in the product master before they can be grouped. '
+    + '<span class="illus">Cleaning, changeovers and labor notes are excluded here — they are real hours but belong to no product. '
+    + 'Per-hour rates are not comparable between types: a tea-bag machine and a bagging line make different things.</span>';
+
+  $('#t-type tbody').onclick = ev => {
+    const tr = ev.target.closest('tr.clk'); if (!tr) return;
+    const r = acc[tr.dataset.ty]; if (!r) return;
+    const by = Object.entries(r.by).sort((a, b) => b[1] - a[1]);
+    $('#ty-detail').hidden = false;
+    $('#ty-detail').innerHTML = '<b>' + esc(r.type) + '</b> — machine hours by line'
+      + '<table style="margin-top:8px"><thead><tr><th>Line</th><th>machine hrs</th><th>share</th></tr></thead><tbody>'
+      + by.map(([m, h]) => '<tr><td>' + esc(m) + '</td><td>' + num(Math.round(h)) + '</td><td>'
+        + pct(h, r.hrs).toFixed(1) + '%</td></tr>').join('')
+      + '</tbody></table>'
+      + traceBtn({ type: r.type }, num(r.runs) + ' runs across ' + num(r.skus.size) + ' SKUs');
+    wireTrace();
+  };
+}
+/* horizontal bars: magnitude by category, direct-labelled (satisfies the light-mode
+   relief rule -- three of the light slots sit under 3:1 on the light surface, so the
+   value is always written next to the bar and repeated in the table below). */
+function barsH(hostId, items, unit) {
+  const el = document.getElementById(hostId);
+  if (!el) return { foot: '' };
+  if (!items.length) { el.innerHTML = ''; return { foot: 'No data in range.' }; }
+  const W = 900, rowH = 27, padL = 118, padR = 104, H = Math.max(54, items.length * rowH + 14);
+  const max = Math.max(...items.map(i => i.v), 1);
+  el.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  el.style.height = H + 'px';
+  el.innerHTML = items.map((it, i) => {
+    const y = 7 + i * rowH, w = (it.v / max) * (W - padL - padR);
+    return '<g><title>' + esc(it.tip || '') + '</title>'
+      + '<text x="' + (padL - 9) + '" y="' + (y + 13) + '" font-size="11.5" fill="var(--ink2)" text-anchor="end">' + esc(it.label) + '</text>'
+      + '<rect x="' + padL + '" y="' + y + '" width="' + Math.max(1, w).toFixed(1) + '" height="16" rx="4" fill="' + it.color + '"/>'
+      + '<text x="' + (padL + w + 8).toFixed(1) + '" y="' + (y + 13) + '" font-size="11.5" fill="var(--ink2)" font-variant-numeric="tabular-nums">'
+      + Math.round(it.v).toLocaleString() + '</text></g>';
+  }).join('');
+  return { foot: unit + ', selected period · hover a bar for the detail' };
+}
+
+/* =====================================================================================
+   SOURCE DATA -- the workbook, as recorded.
+   ===================================================================================== */
+let SI = {};   // column key -> index in a feed row
+
+function srcRows(o) {
+  o = o || {};
+  const R = V2.src.rows;
+  const respectDate = o.respectDate != null ? o.respectDate : $('#src-date').checked;
+  const q = (o.q != null ? o.q : $('#src-q').value).trim().toLowerCase();
+  const onlyFlagged = o.onlyFlagged != null ? o.onlyFlagged : $('#src-flagged').checked;
+  return R.filter(r => {
+    if (respectDate && (RANGE.from || RANGE.to)) {
+      const d = r[SI.d];
+      // A row with no usable date cannot be range-filtered. It is KEPT when a flag filter
+      // is on -- an undated row is exactly the kind of thing you came here to find.
+      if (!d || !/^\d{4}-/.test(d)) { if (!V2.flags.size && !onlyFlagged) return false; }
+      else if ((RANGE.from && d < RANGE.from) || (RANGE.to && d > RANGE.to)) return false;
+    }
+    if (!o.ignoreStation && V2.station && r[SI.st] !== V2.station) return false;
+    if (!o.ignoreFlagFilter) {
+      if (onlyFlagged && !r[SI.f]) return false;
+      if (V2.flags.size) { const fs = (r[SI.f] || '').split(','); if (![...V2.flags].some(x => fs.includes(x))) return false; }
+    }
+    if (o.item && canonId(r[SI.i]) !== canonId(o.item)) return false;
+    if (q) {
+      const hay = [r[SI.i], r[SI.ds], r[SI.wo], r[SI.n], r[SI.st], r[SI.c]].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderSrc() {
+  if (!V2.src) return;
+  const cols = V2.src.columns;
+  if (!$('#src-head').children.length) {
+    $('#src-head').innerHTML = cols.map(c => '<th data-sk="' + c.key + '">' + esc(c.label) + '</th>').join('');
+    $('#src-head').onclick = ev => {
+      const th = ev.target.closest('th'); if (!th) return;
+      const k = th.dataset.sk;
+      V2.sort = { k, dir: (V2.sort.k === k ? -V2.sort.dir : (k === 'd' ? -1 : 1)) };
+      renderSrc();
+    };
+    const st = [...new Set(V2.src.rows.map(r => r[SI.st]).filter(Boolean))].sort();
+    $('#src-station').innerHTML = '<button data-s="__all" class="on">All stations</button>'
+      + st.map(s => '<button data-s="' + esc(s) + '">' + esc(s) + '</button>').join('');
+    $('#src-station').onclick = ev => {
+      const b = ev.target.closest('button'); if (!b) return;
+      V2.station = b.dataset.s === '__all' ? null : b.dataset.s;
+      renderSrc();
+    };
+  }
+  $('#src-station').querySelectorAll('button').forEach(b =>
+    b.classList.toggle('on', b.dataset.s === '__all' ? !V2.station : b.dataset.s === V2.station));
+
+  // flag chips, counted over everything the other filters leave in
+  const base = srcRows({ ignoreFlagFilter: true });
+  const cnt = {};
+  base.forEach(r => (r[SI.f] || '').split(',').filter(Boolean).forEach(f => cnt[f] = (cnt[f] || 0) + 1));
+  const ord = Object.keys(cnt).sort((a, b) => (flagSev(b) === 'hi') - (flagSev(a) === 'hi') || cnt[b] - cnt[a]);
+  $('#src-chips').innerHTML = ord.map(f =>
+    '<button class="chip sev-' + flagSev(f) + (V2.flags.has(f) ? ' on' : '') + '" data-fl="' + f + '" title="'
+    + esc(FLAGDOC[f] ? FLAGDOC[f][1] : f) + '">' + esc(flagLabel(f)) + ' <b>' + cnt[f] + '</b></button>').join('')
+    + (V2.flags.size ? ' <button class="chip" data-fl="__clear">clear flag filter</button>' : '');
+  $('#src-chips').onclick = ev => {
+    const b = ev.target.closest('[data-fl]'); if (!b) return;
+    if (b.dataset.fl === '__clear') V2.flags.clear();
+    else V2.flags.has(b.dataset.fl) ? V2.flags.delete(b.dataset.fl) : V2.flags.add(b.dataset.fl);
+    V2.showAll = false; renderSrc();
+  };
+
+  let rows = srcRows();
+  const si = SI[V2.sort.k] != null ? SI[V2.sort.k] : SI.d, dir = V2.sort.dir;
+  rows = rows.slice().sort((a, b) => {
+    const x = a[si], y = b[si];
+    if (x == null && y == null) return 0;
+    if (x == null) return 1;                          // blanks last, whichever way it sorts
+    if (y == null) return -1;
+    if (typeof x === 'number' && typeof y === 'number') return (x - y) * dir;
+    return String(x).localeCompare(String(y)) * dir;
+  });
+
+  const nFlag = rows.filter(r => r[SI.f]).length;
+  const hrs = rows.reduce((s, r) => s + (r[SI.ah] || 0), 0);
+  const oph = rows.reduce((s, r) => s + ((r[SI.ah] || 0) * (r[SI.o] || 0)), 0);
+  $('#src-summary').innerHTML =
+      '<div><b>' + num(rows.length) + '</b> <span>rows shown</span></div>'
+    + '<div><b>' + num(nFlag) + '</b> <span>with flags</span></div>'
+    + '<div><b>' + num(Math.round(hrs)) + '</b> <span>machine hrs</span></div>'
+    + '<div><b>' + num(Math.round(oph)) + '</b> <span>operator hrs</span></div>';
+
+  const shown = V2.showAll ? rows : rows.slice(0, V2.cap);
+  $('#t-src tbody').innerHTML = shown.length ? shown.map(r => {
+    const fl = (r[SI.f] || '').split(',').filter(Boolean);
+    return '<tr class="' + (fl.length ? 'flagged' : '') + '">' + cols.map(c => {
+      const v = r[SI[c.key]];
+      if (c.key === 'f') return '<td class="f">' + fl.map(f =>
+        '<span class="flag ' + (flagSev(f) === 'hi' ? 'hi' : '') + '" title="' + esc(FLAGDOC[f] ? FLAGDOC[f][1] : f)
+        + '">' + esc(flagLabel(f)) + '</span>').join('') + '</td>';
+      if (c.key === 'n') return '<td class="n">' + esc(v == null ? '' : v) + '</td>';
+      if (v == null || v === '') return '<td class="mtag">–</td>';
+      if (c.kind === 'hours') return '<td>' + (+v).toFixed(2) + '</td>';
+      if (c.kind === 'rate') return '<td>' + (+v).toFixed(5) + '</td>';
+      if (c.kind === 'int') return '<td>' + num(v) + '</td>';
+      if (c.kind === 'raw') return '<td>' + v + '</td>';
+      return '<td>' + esc(v) + '</td>';
+    }).join('') + '</tr>';
+  }).join('') : '<tr><td colspan="' + cols.length + '" class="empty">No rows match. Widen the dates, clear a flag filter, or untick &ldquo;respect the date range&rdquo;.</td></tr>';
+
+  const m = V2.src._meta;
+  let foot = '';
+  if (!V2.showAll && rows.length > V2.cap) {
+    foot += 'Showing the first <b>' + num(V2.cap) + '</b> of ' + num(rows.length)
+      + ' matching rows. <button class="linkbtn" id="src-more">show all ' + num(rows.length) + '</button> · ';
+  }
+  foot += 'Mirror of <b>' + m.source_files.join('</b>, <b>') + '</b>, last read <b>'
+    + (m.db_last_ingest || '').replace('T', ' ').slice(0, 16) + ' UTC</b> (refreshes every morning). '
+    + num(m.row_count) + ' rows total. <span class="illus">Read-only — corrections must be made in the '
+    + 'workbook, and will show up here after the next refresh.</span>'
+    + (m.notes_redacted
+       ? ' <b>The Notes column is withheld here</b> — this site is readable by anyone with the '
+         + 'link, and the run-sheet notes mention supplier sourcing and stock-on-hand. The notes do '
+         + 'exist in the workbook. Ask Justin if you want them switched on.'
+       : '');
+  $('#src-foot').innerHTML = foot;
+  const more = $('#src-more');
+  if (more) more.onclick = () => { V2.showAll = true; renderSrc(); };
+
+  setTxt('tc-src', nFlag ? String(nFlag) : '');
+  const tc = $('#tc-src'); if (tc) tc.style.display = nFlag ? '' : 'none';
+}
+
+function renderGlossary() {
+  const cnt = (V2.src && V2.src._meta.suspect_counts) || {};
+  $('#src-glossary').innerHTML = Object.keys(FLAGDOC).map(f =>
+    '<div><span class="dw">' + (flagSev(f) === 'hi' ? 'high' : 'check') + '</span><div><b>'
+    + esc(FLAGDOC[f][0]) + '</b>' + (cnt[f] ? ' <span class="mtag">' + num(cnt[f]) + ' all-time</span>' : '')
+    + '<br>' + esc(FLAGDOC[f][1]) + '</div></div>').join('');
+}
+
+/* ---------- CSV export of whatever the Source tab is showing ---------- */
+function exportSrc() {
+  const cols = V2.src.columns, rows = srcRows();
+  const q = s => s == null ? '' : (/[",\n]/.test('' + s) ? '"' + ('' + s).replace(/"/g, '""') + '"' : '' + s);
+  const csv = [cols.map(c => q(c.label)).join(',')]
+    .concat(rows.map(r => cols.map(c => q(r[SI[c.key]])).join(','))).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'production-schedule-rows-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* =====================================================================================
+   TRACING -- the reason this page exists. Any drill-down can hand its subject to the
+   Source tab, pre-filtered, so "that number looks wrong" becomes "here is the row".
+   ===================================================================================== */
+function traceBtn(target, hint) {
+  return '<button class="trace" data-trace=\'' + JSON.stringify(target).replace(/'/g, '&#39;')
+    + '\'>See the spreadsheet rows &rarr;</button>'
+    + (hint ? '<span class="tracehint">' + esc(hint) + '</span>' : '');
+}
+function wireTrace() {
+  document.querySelectorAll('[data-trace]').forEach(b => {
+    if (b._wired) return; b._wired = true;
+    b.addEventListener('click', () => {
+      let t = {}; try { t = JSON.parse(b.dataset.trace); } catch (e) { }
+      V2.flags.clear(); V2.showAll = false;
+      $('#src-flagged').checked = false;
+      $('#src-date').checked = true;
+      V2.station = t.station || null;
+      $('#src-q').value = t.q || t.item || '';
+      renderSrc(); goTab('source');
+    });
+  });
+}
+/* v1 populates its detail panels on row click. We listen on the same tbodies AFTER v1's
+   handler and append a trace button to whatever it just rendered -- no edits to v1's code. */
+function initTraceHooks() {
+  const hook = (tb, detail, get) => {
+    const el = $(tb); if (!el) return;
+    el.addEventListener('click', ev => {
+      const tr = ev.target.closest('tr.clk'); if (!tr) return;
+      setTimeout(() => {
+        const d = $(detail); if (!d || d.hidden || d.querySelector('[data-trace]')) return;
+        d.insertAdjacentHTML('beforeend', traceBtn(get(tr), 'opens the run sheet rows behind this'));
+        wireTrace();
+      }, 0);
+    });
+  };
+  hook('#t-eff tbody', '#eff-detail', tr => ({ q: '' }));
+  hook('#t-blend tbody', '#blend-detail', tr => ({ item: tr.dataset.blend, station: 'Blending' }));
+  hook('#t-pack tbody', '#pack-detail', tr => ({ item: tr.dataset.pack }));
+  hook('#t-mh tbody', '#mh-detail', tr => ({ item: tr.dataset.mh }));
+  hook('#t-fg tbody', '#fg-detail', tr => ({ item: tr.dataset.sku || tr.dataset.fg }));
+}
+
+/* ---------- freshness / provenance header ---------- */
+function renderFresh() {
+  const parts = [];
+  if (RAW) parts.push('Cost figures built <b>' + (RAW.built_at || '').slice(0, 10) + '</b>');
+  if (V2.src) {
+    const iso = V2.src._meta.db_last_ingest || '';
+    const days = iso ? Math.floor((Date.now() - Date.parse(iso)) / 86400000) : null;
+    parts.push('Schedule read <b class="' + (days != null && days > 2 ? 'stale' : '') + '">'
+      + (days === 0 ? 'today' : days === 1 ? 'yesterday' : days + ' days ago') + '</b>');
+    parts.push(num(V2.src._meta.row_count) + ' run rows');
+  }
+  $('#v2-fresh').innerHTML = parts.join('<br>') || 'loading…';
+}
+
+/* ---------- orchestration ---------- */
+function v2Render() {
+  // The two feeds and v1's cost facts load independently, so whichever wins the race
+  // calls this first. Panels that need RAW sit out that round; the recompute() wrap
+  // below re-renders them the moment v1's facts land.
+  if (RAW) {
+    try { renderOverview(); } catch (e) { console.error('overview', e); }
+    try { renderTypes(); } catch (e) { console.error('types', e); }
+  }
+  try { renderHealth(); } catch (e) { console.error('health', e); }
+  try { if (V2.src) renderSrc(); } catch (e) { console.error('source', e); }
+  renderFresh();
+}
+/* Re-run the v2 panels whenever v1 recomputes (date range, basis toggle, machine filter). */
+const _v1recompute = recompute;
+recompute = function () { _v1recompute.apply(this, arguments); v2Render(); };
+
+initTabs();
+initTraceHooks();
+document.querySelectorAll('.basis-seg[data-sec="ty"]').forEach(seg => seg.addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  seg.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  renderTypes();
+}));
+$('#src-q').addEventListener('input', () => { V2.showAll = false; renderSrc(); });
+$('#src-flagged').addEventListener('change', () => { V2.showAll = false; renderSrc(); });
+$('#src-date').addEventListener('change', () => { V2.showAll = false; renderSrc(); });
+$('#src-export').addEventListener('click', exportSrc);
+
+Promise.all([
+  fetch('production-source-feed.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('source feed', e); return null; }),
+  fetch('product-type-map.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('type map', e); return null; }),
+]).then(([src, tmap]) => {
+  V2.src = src; V2.tmap = tmap;
+  if (src) { src.columns.forEach((c, i) => SI[c.key] = i); renderGlossary(); }
+  else $('#src-foot').innerHTML = '<b>Could not load the source feed.</b> The other tabs are unaffected.';
+  v2Render();
+});
+
+</script>
+</body>
+</html>
