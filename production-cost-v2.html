@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T22:01:46+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-10T22:25:05+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -216,6 +216,20 @@
   background:color-mix(in srgb,var(--axis) 12%,var(--surface)); padding:8px 12px;
   border-radius:0 6px 6px 0; margin:2px 0 10px; }
 .bydesignbar b { color:var(--ink); }
+
+/* derived vs workbook columns. Deliberately understated -- this is provenance, not a
+   warning -- but never invisible, because an unmarked derived column reads as source data. */
+#t-src thead th.derivedcol { font-style:italic; }
+.dmark { font-style:normal; font-weight:700; opacity:.75; font-size:11px;
+  text-transform:none;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+.originbar { font-size:12.5px; color:var(--ink2); border-left:3px solid var(--series);
+  background:color-mix(in srgb,var(--series) 7%,var(--surface)); padding:8px 12px;
+  border-radius:0 6px 6px 0; margin:2px 0 10px; line-height:1.55; }
+.originbar b { color:var(--ink); }
+.dpill { display:inline-block; font-size:11px; font-weight:600; font-style:italic;
+  border:1px solid color-mix(in srgb,var(--series) 35%,transparent); border-radius:4px;
+  padding:0 5px; margin:1px 1px; cursor:help; white-space:nowrap; }
 
 /* the workbook address of a row -- monospace so it reads as a reference, not a number */
 .rowref { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px;
@@ -505,6 +519,7 @@
         <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series);margin-left:8px" title="A job dated today, or with no end time yet, has not finished - so it has not made anything YET.">Job state</span>
         <div class="seg" id="src-jstate"></div>
       </div>
+      <div id="src-origin"></div>
       <div id="src-exempt"></div>
       <div id="src-undated"></div>
       <div class="chips" id="src-chips"></div>
@@ -1830,7 +1845,21 @@ function renderSrc() {
     $('#src-head').innerHTML = ''; V2._headMode = V2.groupWO ? 'wo' : 'line';
   }
   if (!V2.groupWO && !$('#src-head').children.length) {
-    $('#src-head').innerHTML = cols.map(c => '<th data-sk="' + c.key + '">' + esc(c.label) + '</th>').join('');
+    // A derived column is marked in the header and carries its reasoning in the tooltip.
+    // Without this a worked-out value is indistinguishable from a workbook cell, which is
+    // how "pack method: boxpacker" came to look like something the production team wrote
+    // down when it is really one date comparison (Justin, 2026-09-10).
+    $('#src-head').innerHTML = cols.map(c => {
+      const der = c.origin === 'derived';
+      // Use the column's own explanation whenever it has one -- the address columns are not
+      // derived but still need saying, and "check it against Sheet row" is circular on the
+      // Sheet row column itself.
+      const tip = c.basis || (der ? 'Worked out here, not a workbook field.'
+                                  : 'Straight from the workbook cell. Check it against Sheet row.');
+      return '<th data-sk="' + c.key + '" class="' + (der ? 'derivedcol' : 'sheetcol')
+        + '" title="' + esc(tip) + '">' + esc(c.label)
+        + (der ? ' <span class="dmark" aria-label="worked out here">ƒ</span>' : '') + '</th>';
+    }).join('');
     $('#src-head').onclick = ev => {
       const th = ev.target.closest('th'); if (!th) return;
       const k = th.dataset.sk;
@@ -1883,6 +1912,17 @@ function renderSrc() {
   const cnt = {};
   base.forEach(r => (r[SI.f] || '').split(',').filter(Boolean).forEach(f => cnt[f] = (cnt[f] || 0) + 1));
   const ord = Object.keys(cnt).sort((a, b) => (flagSev(b) === 'hi') - (flagSev(a) === 'hi') || cnt[b] - cnt[a]);
+  if (!$('#src-origin').innerHTML) {
+    const der = (V2.src.columns || []).filter(c => c.origin === 'derived');
+    $('#src-origin').innerHTML = '<div class="originbar">Most columns here are the workbook '
+      + 'cell, exactly as recorded &mdash; use <b>Sheet row</b> to check any of them against '
+      + 'the file. <b>' + der.length + '</b> columns are <b>worked out by us</b> rather than '
+      + 'written down by anyone, and are marked <span class="dmark">ƒ</span> in the '
+      + 'header: ' + der.map(c => '<span class="dpill" title="' + esc(c.basis || '') + '">'
+      + esc(c.label) + '</span>').join(' ') + '. Hover any column heading to see where its '
+      + 'value comes from. <b>Pack method is the weakest of them</b> &mdash; nothing on the '
+      + 'run sheet records which packer was used, so it is inferred from the date.</div>';
+  }
   $('#src-exempt').innerHTML = exemptStrip(base);
 
   // The unplaceable-rows switch. Only meaningful while a date range is actually set: with
