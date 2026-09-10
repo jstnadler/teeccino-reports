@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T21:05:44+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-10T21:19:00+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -1357,7 +1357,9 @@ const esc = s => (s == null ? '' : String(s).replace(/[&<>"]/g, c => ({ '&': '&a
 
 /* ---------- flag glossary: what each flag means in plain words ---------- */
 const FLAGDOC = {
-  no_actual_time:                 ['No actual time recorded', 'The run sheet has no finish time, so the run cannot be costed or scored. It drops out of every hours figure.', 'md'],
+  no_actual_time:                 ['No actual time recorded', 'Start or finish time is genuinely blank on the run sheet, so the run cannot be costed or scored. It drops out of every hours figure.', 'md'],
+  start_equals_end:               ['Start and end are the same time', 'The start and the end are the same minute, so the run works out to no duration at all — the sheet’s own Actual Time cell reads 0.00. Almost always the end time was never updated when the job finished. The times on the sheet are real; the elapsed time is what is missing, so the run still cannot be costed.', 'md'],
+  time_cell_not_a_time:           ['A dot where a time should be', 'The start or end cell holds a placeholder such as “.” instead of a clock time, so no duration can be worked out. Someone marked the row rather than recording the hours.', 'md'],
   misdate:                        ['Date is impossible', 'The date is outside any real operating year — usually a typo in the year. Excluded from weekly and monthly views.', 'md'],
   undated_or_bad_date:            ['Date missing or unreadable', 'No usable date, so the row cannot land in a week or month. Still counted in all-time totals.', 'md'],
   time_but_no_qty:                ['Hours but nothing made', 'A PRODUCT work order that is FINISHED, burned time and operators, and still recorded no quantity on any of its lines. Cost per unit divides by zero here. Washing, cleaning, changeovers and labor notes are excluded — they produce nothing by design — and so are jobs still running, which have made nothing yet.', 'hi'],
