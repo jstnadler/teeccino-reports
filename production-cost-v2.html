@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T20:43:45+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-10T21:05:44+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -216,6 +216,18 @@
   background:color-mix(in srgb,var(--axis) 12%,var(--surface)); padding:8px 12px;
   border-radius:0 6px 6px 0; margin:2px 0 10px; }
 .bydesignbar b { color:var(--ink); }
+
+/* the unplaceable-rows switch -- a stated consequence, not a silent default */
+.undatedbar { font-size:12.5px; color:var(--ink2); border-left:3px solid var(--warn,#b26b00);
+  background:color-mix(in srgb,var(--warn,#b26b00) 8%,var(--surface)); padding:8px 12px;
+  border-radius:0 6px 6px 0; margin:2px 0 10px; }
+.undatedbar.on { border-left-color:var(--series);
+  background:color-mix(in srgb,var(--series) 10%,var(--surface)); }
+.undatedbar b { color:var(--ink); }
+.undatedbar button { margin-left:6px; font:inherit; font-weight:700; cursor:pointer;
+  color:var(--series); background:none; border:1px solid currentColor; border-radius:5px;
+  padding:1px 8px; }
+.undatedbar button:hover { background:color-mix(in srgb,var(--series) 12%,transparent); }
 
 /* --- trace button injected into v1's drill-down detail panels --- */
 .trace { font:inherit; font-size:12.5px; cursor:pointer; margin-top:12px;
@@ -488,6 +500,7 @@
         <div class="seg" id="src-jstate"></div>
       </div>
       <div id="src-exempt"></div>
+      <div id="src-undated"></div>
       <div class="chips" id="src-chips"></div>
       <div class="summary" id="src-summary"></div>
       <div class="scroll" id="src-scroll" style="max-height:620px"><table id="t-src" class="srctable"><thead><tr id="src-head"></tr></thead><tbody></tbody></table></div>
@@ -1317,6 +1330,7 @@ const V2 = {
   station: null,      // active station filter on the Source tab
   kind: null,         // 'product' | a task kind | null = all
   jstate: null,       // 'finished' | 'still running' | 'sheet not filled in yet' | null
+  undated: false,     // show rows with no readable date, which no date range can contain
   cap: 500,           // rows rendered at once (the feed holds ~7.9k)
   showAll: false,
   groupWO: false,   // one row per work order instead of one per line
@@ -1525,7 +1539,14 @@ function stackChart(keys, mo) {
 /* ---------- DATA HEALTH (Overview) ---------- */
 function renderHealth() {
   if (!V2.src) { $('#hl-chips').innerHTML = '<span class="mtag">loading the source feed…</span>'; return; }
-  const rows = srcRows({ ignoreFlagFilter: true, ignoreStation: true, respectDate: true, q: '', onlyFlagged: false });
+  const rows = srcRows({ ignoreFlagFilter: true, ignoreStation: true, respectDate: true,
+                         q: '', onlyFlagged: false, undated: false });
+  // Rows with no readable date belong to no period, so they are not in the count above.
+  // That is not a reason for them to disappear -- a broken date is a real problem.
+  const unplaceable = (RANGE.from || RANGE.to)
+    ? srcRows({ ignoreFlagFilter: true, ignoreStation: true, respectDate: false, q: '',
+                onlyFlagged: false }).filter(r => { const d = r[SI.d]; return !d || !/^\d{4}-/.test(d); }).length
+    : 0;
   const cnt = {};
   rows.forEach(r => (r[SI.f] || '').split(',').filter(Boolean).forEach(f => cnt[f] = (cnt[f] || 0) + 1));
   const ord = Object.keys(cnt).sort((a, b) => (flagSev(b) === 'hi') - (flagSev(a) === 'hi') || cnt[b] - cnt[a]);
@@ -1539,6 +1560,9 @@ function renderHealth() {
     ? '<b>' + num(nBad) + '</b> of ' + num(rows.length) + ' run rows in this period carry at least one flag ('
       + pct(nBad, rows.length).toFixed(1) + '%). Click any flag to open those exact rows in <b>Source data</b>.'
     : num(rows.length) + ' run rows in this period, none flagged.';
+  if (unplaceable) $('#hl-foot').innerHTML += ' Separately, <b>' + num(unplaceable)
+    + '</b> rows have no date we can read, so they sit in no period at all and are not in '
+    + 'that count &mdash; they are listed under <b>Source data</b>.';
   document.querySelectorAll('[data-hl]').forEach(b => b.addEventListener('click', () => {
     V2.flags = new Set([b.dataset.hl]); V2.station = null; V2.showAll = false;
     $('#src-flagged').checked = false; $('#src-q').value = ''; $('#src-date').checked = true;
@@ -1650,12 +1674,20 @@ function srcRows(o) {
   const respectDate = o.respectDate != null ? o.respectDate : $('#src-date').checked;
   const q = (o.q != null ? o.q : $('#src-q').value).trim().toLowerCase();
   const onlyFlagged = o.onlyFlagged != null ? o.onlyFlagged : $('#src-flagged').checked;
+  const undated = o.undated != null ? o.undated : V2.undated;
   return R.filter(r => {
     if (respectDate && (RANGE.from || RANGE.to)) {
       const d = r[SI.d];
-      // A row with no usable date cannot be range-filtered. It is KEPT when a flag filter
-      // is on -- an undated row is exactly the kind of thing you came here to find.
-      if (!d || !/^\d{4}-/.test(d)) { if (!V2.flags.size && !onlyFlagged) return false; }
+      // A row with no readable date cannot be placed inside a date range, so a range
+      // excludes it -- ALWAYS, and never as a side effect of some other filter.
+      //
+      // This used to readmit undated rows whenever a flag filter was on, on the reasoning
+      // that a bad date is what you came here to find. That was wrong: it made clicking a
+      // filter ADD rows, so the count printed on a chip was not the count you got when you
+      // clicked it (Justin, 2026-09-10: "No actual time recorded 1" became 300). Whether
+      // these rows are in the population is now one explicit switch the reader owns, shown
+      // on the page, and it is the only thing that moves them.
+      if (!d || !/^\d{4}-/.test(d)) { if (!undated) return false; }
       else if ((RANGE.from && d < RANGE.from) || (RANGE.to && d > RANGE.to)) return false;
     }
     if (!o.ignoreStation && V2.station && r[SI.st] !== V2.station) return false;
@@ -1841,6 +1873,22 @@ function renderSrc() {
   base.forEach(r => (r[SI.f] || '').split(',').filter(Boolean).forEach(f => cnt[f] = (cnt[f] || 0) + 1));
   const ord = Object.keys(cnt).sort((a, b) => (flagSev(b) === 'hi') - (flagSev(a) === 'hi') || cnt[b] - cnt[a]);
   $('#src-exempt').innerHTML = exemptStrip(base);
+
+  // The unplaceable-rows switch. Only meaningful while a date range is actually set: with
+  // no range there is nothing for a row to fall outside of.
+  const dateOn = $('#src-date').checked && (RANGE.from || RANGE.to);
+  const nUndated = dateOn ? srcRows({ ignoreFlagFilter: true, respectDate: false, undated: true })
+    .filter(r => { const d = r[SI.d]; return !d || !/^\d{4}-/.test(d); }).length : 0;
+  $('#src-undated').innerHTML = !nUndated ? '' : (V2.undated
+    ? '<div class="undatedbar on"><b>' + num(nUndated) + '</b> rows with no readable date are '
+      + 'being shown alongside the date range. They are <b>not</b> inside it &mdash; no range '
+      + 'can contain them &mdash; so the hours and totals below cover more than the dates you '
+      + 'picked. <button data-und="0">Hide them</button></div>'
+    : '<div class="undatedbar"><b>' + num(nUndated) + '</b> rows have no date we can read, so a '
+      + 'date range cannot place them and they are hidden while one is set. '
+      + '<button data-und="1">Show them anyway</button></div>');
+  const ub = $('#src-undated').querySelector('[data-und]');
+  if (ub) ub.onclick = () => { V2.undated = ub.dataset.und === '1'; V2.showAll = false; renderSrc(); };
   $('#src-chips').innerHTML = ord.map(f =>
     '<button class="chip sev-' + flagSev(f) + (V2.flags.has(f) ? ' on' : '') + '" data-fl="' + f + '" title="'
     + esc(FLAGDOC[f] ? FLAGDOC[f][1] : f) + '">' + esc(flagLabel(f)) + ' <b>' + cnt[f] + '</b></button>').join('')
