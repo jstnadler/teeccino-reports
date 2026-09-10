@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T22:39:19+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-10T22:56:40+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -217,6 +217,26 @@
   border-radius:0 6px 6px 0; margin:2px 0 10px; }
 .bydesignbar b { color:var(--ink); }
 
+/* the two case numbers, side by side -- the whole point of the SKU tab */
+.twocase { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:10px 0 4px; }
+.twocase > div { border:1px solid var(--axis); border-radius:8px; padding:11px 13px;
+  background:color-mix(in srgb,var(--axis) 7%,var(--surface)); }
+.twocase p { margin:5px 0 0; font-size:12.5px; color:var(--ink2); line-height:1.5; }
+.twocase b { color:var(--ink); }
+.tcname { font-weight:700; font-size:13.5px; color:var(--ink); }
+.tcsrc { font-size:11px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  margin-top:1px; }
+.tcuse { margin-top:7px !important; padding-top:6px; border-top:1px dashed var(--axis);
+  color:var(--series) !important; font-weight:600; }
+@media (max-width:760px) { .twocase { grid-template-columns:1fr; } }
+
+/* a case number that needs care */
+.multi { font-size:10.5px; font-weight:700; border-radius:4px; padding:1px 6px; white-space:nowrap;
+  color:var(--ink2); background:color-mix(in srgb,var(--warn,#b26b00) 15%,var(--surface)); }
+.same  { font-size:10.5px; color:var(--muted); }
+.notecell { font-size:11.5px; color:var(--ink2); max-width:340px; white-space:normal;
+  line-height:1.45; }
+
 /* derived vs workbook columns. Deliberately understated -- this is provenance, not a
    warning -- but never invisible, because an unmarked derived column reads as source data. */
 #t-src thead th.derivedcol { font-style:italic; }
@@ -296,6 +316,7 @@
     <button data-t="total">Total cost</button>
     <button data-t="hours">Machine hours</button>
     <button data-t="source">Source data <span class="tabcount" id="tc-src"></span></button>
+    <button data-t="sku">SKU data <span class="tabcount" id="tc-sku"></span></button>
   </nav>
 
   <!-- ================= OVERVIEW ================= -->
@@ -491,6 +512,65 @@
   </section>
 
   <!-- ================= SOURCE DATA ================= -->
+  <section class="panel" data-p="sku">
+    <p class="lead">The per-SKU numbers the cost maths depends on. Look up an item to see how many
+      units are in a case &mdash; and check that the figure being used is the right one.</p>
+
+    <div class="card" id="c-sku">
+      <h2>The two case numbers</h2>
+      <p class="hint">&ldquo;How many units in a case&rdquo; has <b>two</b> answers on the Item
+        Listing tab, and they measure different things. Both are correct. Using one where the
+        other belongs is the mistake, and it changes an answer by the pack count.</p>
+      <div class="twocase">
+        <div>
+          <div class="tcname">Units per case</div>
+          <div class="tcsrc">Item Listing col H &middot; &ldquo;Case Pack Units&rdquo;</div>
+          <p><b>Individual retail units</b> in a shipping case. A case of French Roast 11oz holds
+            <b>6</b> bags.</p>
+          <p class="tcuse">Cost per <b>case</b> = cost per unit &times; this</p>
+        </div>
+        <div>
+          <div class="tcname">Case size</div>
+          <div class="tcsrc">Item Listing col D &middot; &ldquo;Case Size&rdquo;</div>
+          <p>Packs per case <b>in the unit the sheet counts</b>. If the line records six-packs,
+            this is <b>1</b> &mdash; one six-pack per case.</p>
+          <p class="tcuse">Cases made = recorded quantity &divide; this</p>
+        </div>
+      </div>
+      <p class="restate">They differ for <b id="sku-nmulti">&mdash;</b> items, and every one is a
+        <b>multipack</b> &mdash; expected, not an error. <b>Case size</b> is the one copied onto
+        every run sheet, so it is the number you see on <b>Source data</b>. <b>Units per case</b>
+        is the one cost-per-case uses. The <b>Recorded unit</b> column below says which thing a
+        quantity on that SKU is actually counting.</p>
+    </div>
+
+    <div class="card" id="c-skutbl">
+      <h2>SKU lookup</h2>
+      <p class="hint">One row per item. <b>Notes</b> flags anything worth knowing before you trust
+        a case number on that SKU.
+        <span class="illus">The <b>Allergen</b> column on the Item Listing tab is deliberately not
+        published here: it reads &ldquo;None&rdquo; for all 845 rows, so it carries no information,
+        and showing it would invite reading &ldquo;None&rdquo; as &ldquo;contains no
+        allergens&rdquo;. Allergen facts come from packaging and CatalogSmith, never from this
+        sheet.</span></p>
+      <div class="ctrls">
+        <input id="sku-q" placeholder="Search item #, name, category&hellip;" autocomplete="off">
+        <button class="linkbtn" id="sku-export">export CSV</button>
+      </div>
+      <div class="ctrls" style="margin-top:2px">
+        <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series)">Show</span>
+        <div class="seg" id="sku-filter"></div>
+      </div>
+      <div id="sku-origin"></div>
+      <div class="chips" id="sku-chips"></div>
+      <p class="tblsum" id="sku-summary"></p>
+      <div class="tblwrap">
+        <table id="t-sku"><thead><tr id="sku-head"></tr></thead><tbody></tbody></table>
+      </div>
+      <p class="foot" id="sku-foot"></p>
+    </div>
+  </section>
+
   <section class="panel" data-p="source">
     <p class="lead">The production schedule, as recorded. This is the sheet behind every number on
       the other tabs &mdash; so when a figure looks outrageous you can find the row that caused it
@@ -1352,6 +1432,9 @@ const V2 = {
   kind: null,         // 'product' | a task kind | null = all
   jstate: null,       // 'finished' | 'still running' | 'sheet not filled in yet' | null
   undated: false,     // show rows with no readable date, which no date range can contain
+  sku: null,          // the SKU feed
+  skuFilter: '__all', // active SKU filter
+  skuSort: null, skuDesc: false, skuAll: false,
   cap: 500,           // rows rendered at once (the feed holds ~7.9k)
   showAll: false,
   groupWO: false,   // one row per work order instead of one per line
@@ -2213,13 +2296,154 @@ $('#src-wo').addEventListener('change', () => {
   V2.groupWO = $('#src-wo').checked; V2.showAll = false; V2.woOpen = null; renderSrc();
 });
 
+/* =====================================================================================
+   SKU DATA -- the per-SKU inputs the cost maths depends on.
+
+   Justin asked for this so a units-per-case figure can be looked up and checked. The
+   thing worth understanding is that there are TWO case numbers measuring different
+   things, so the tab leads with that rather than picking one and hoping.
+   ===================================================================================== */
+let KI = {};   // column key -> index in a sku-feed row
+
+const SKU_FILTERS = [
+  ['__all',     'Everything',        () => true],
+  ['multi',     'Multipacks',        r => r[KI.eq] === 'multipack'],
+  ['notes',     'Has a note',        r => !!r[KI.f]],
+  ['drift',     'Case size moved',   r => (r[KI.f] || '').includes('Case Size')],
+  ['nocase',    'No units per case', r => r[KI.up] == null],
+  ['made',      'Produced',          r => !!r[KI.rn]],
+  ['nevermade', 'Never produced',    r => !r[KI.rn]],
+];
+
+function skuRows() {
+  if (!V2.sku) return [];
+  const q = ($('#sku-q').value || '').trim().toLowerCase();
+  const f = (SKU_FILTERS.find(x => x[0] === (V2.skuFilter || '__all')) || SKU_FILTERS[0])[2];
+  return V2.sku.rows.filter(r => {
+    if (!f(r)) return false;
+    if (!q) return true;
+    return [r[KI.i], r[KI.nm], r[KI.cn], r[KI.c], r[KI.st]].join(' ').toLowerCase().includes(q);
+  });
+}
+
+function renderSku() {
+  if (!V2.sku) {
+    $('#sku-foot').innerHTML = '<b>Could not load the SKU feed.</b> The other tabs are unaffected.';
+    return;
+  }
+  const cols = V2.sku.columns, meta = V2.sku._meta || {}, cnt = meta.counts || {};
+  setTxt('sku-nmulti', num(cnt.case_numbers_differ || 0));
+
+  if (!$('#sku-filter').children.length) {
+    $('#sku-filter').innerHTML = SKU_FILTERS.map(([k, lbl]) =>
+      '<button data-f="' + k + '"' + (k === '__all' ? ' class="on"' : '') + '>' + esc(lbl)
+      + '</button>').join('');
+    $('#sku-filter').onclick = ev => {
+      const b = ev.target.closest('button'); if (!b) return;
+      V2.skuFilter = b.dataset.f; V2.skuAll = false; renderSku();
+    };
+    // Same provenance discipline as Source data: a worked-out column never looks recorded.
+    const der = cols.filter(c => c.origin === 'derived');
+    $('#sku-origin').innerHTML = '<div class="originbar">The case numbers, name, category and '
+      + 'packing rate are the <b>Item Listing</b> tab as recorded. <b>' + der.length + '</b> '
+      + 'columns are <b>worked out by us</b> and are marked <span class="dmark">ƒ</span>: '
+      + der.map(c => '<span class="dpill" title="' + esc(c.basis || '') + '">' + esc(c.label)
+      + '</span>').join(' ') + '. Hover any heading for where its value comes from.</div>';
+    $('#sku-head').innerHTML = cols.map(c => {
+      const d = c.origin === 'derived';
+      return '<th data-sk="' + c.key + '" class="' + (d ? 'derivedcol' : 'sheetcol') + '" title="'
+        + esc(c.basis || 'Straight from the Item Listing tab of the workbook.') + '">'
+        + esc(c.label) + (d ? ' <span class="dmark">ƒ</span>' : '') + '</th>';
+    }).join('');
+    $('#sku-head').onclick = ev => {
+      const th = ev.target.closest('th'); if (!th) return;
+      const k = th.dataset.sk;
+      if (V2.skuSort === k) V2.skuDesc = !V2.skuDesc; else { V2.skuSort = k; V2.skuDesc = false; }
+      renderSku();
+    };
+  }
+  $('#sku-filter').querySelectorAll('button').forEach(b =>
+    b.classList.toggle('on', b.dataset.f === (V2.skuFilter || '__all')));
+
+  // the counts that make the tab worth opening
+  $('#sku-chips').innerHTML = [
+    ['case_numbers_differ',          'Multipack — the two case numbers differ', 'md'],
+    ['case_size_changed_over_time',  'Case size changed over time', 'hi'],
+    ['run_sheet_disagrees',          'Runs disagree with the listing', 'hi'],
+    ['missing_units_per_case',       'No units per case', 'hi'],
+    ['produced_but_unlisted',        'Produced but not in the Item Listing', 'hi'],
+    ['listed_never_produced',        'Listed but never produced', 'lo'],
+  ].filter(([k]) => cnt[k]).map(([k, lbl, sev]) =>
+    '<span class="chip sev-' + sev + '">' + esc(lbl) + ' <b>' + num(cnt[k]) + '</b></span>').join('');
+
+  let rows = skuRows();
+  if (V2.skuSort) {
+    const k = KI[V2.skuSort], dir = V2.skuDesc ? -1 : 1;
+    rows = rows.slice().sort((a, b) => {
+      const x = a[k], y = b[k];
+      if (x == null && y == null) return 0;
+      if (x == null) return 1;          // blanks last, whichever way it is sorted
+      if (y == null) return -1;
+      return (typeof x === 'number' && typeof y === 'number')
+        ? (x - y) * dir : String(x).localeCompare(String(y)) * dir;
+    });
+  }
+  const shown = rows.slice(0, V2.skuAll ? rows.length : 300);
+  $('#sku-summary').innerHTML = '<b>' + num(rows.length) + '</b> <span class="mtag">items shown</span>'
+    + (rows.length > shown.length
+        ? ' <button class="linkbtn" id="sku-more">show all ' + num(rows.length) + '</button>' : '');
+
+  $('#t-sku').querySelector('tbody').innerHTML = shown.length ? shown.map(r =>
+    '<tr>' + cols.map(c => {
+      const v = r[KI[c.key]];
+      if (c.key === 'eq') return v === 'multipack' ? '<td><span class="multi">multipack</span></td>'
+        : v ? '<td class="same">same</td>' : '<td class="mtag">–</td>';
+      if (c.key === 'i') return '<td><b>' + esc(v) + '</b></td>';
+      if (c.key === 'f') return v ? '<td class="notecell">' + esc(v) + '</td>'
+                                  : '<td class="mtag">–</td>';
+      if (v == null || v === '') return '<td class="mtag">–</td>';
+      if (c.kind === 'int') return '<td class="n">' + num(Math.round(v)) + '</td>';
+      if (c.kind === 'num') return '<td class="n">'
+        + (+v).toLocaleString(undefined, { maximumFractionDigits: 5 }) + '</td>';
+      return '<td>' + esc(v) + '</td>';
+    }).join('') + '</tr>').join('')
+    : '<tr><td colspan="' + cols.length + '" class="empty">No items match. Clear the search or '
+      + 'pick a different filter.</td></tr>';
+  const mb = $('#sku-more');
+  if (mb) mb.onclick = () => { V2.skuAll = true; renderSku(); };
+
+  $('#sku-foot').innerHTML = 'From the <b>Item Listing</b> tab of '
+    + (meta.source_files || []).map(f => '<b>' + esc(f) + '</b>').join(', ')
+    + ', joined to the run rows. <b>Catalog name</b> comes from CatalogSmith&rsquo;s product '
+    + 'master. <i>Read-only &mdash; case numbers are corrected in the workbook, and will show up '
+    + 'here after the next refresh.</i>';
+  setTxt('tc-sku', num(V2.sku.rows.length));
+}
+
+function exportSku() {
+  const cols = V2.sku.columns, rows = skuRows();
+  const q = v => v == null ? ''
+    : (/[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
+  const csv = [cols.map(c => q(c.label)).join(',')]
+    .concat(rows.map(r => cols.map(c => q(r[KI[c.key]])).join(','))).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'teeccino-sku-data.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+$('#sku-q').addEventListener('input', () => { V2.skuAll = false; renderSku(); });
+$('#sku-export').addEventListener('click', exportSku);
+
 Promise.all([
   fetch('production-source-feed.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('source feed', e); return null; }),
   fetch('product-type-map.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('type map', e); return null; }),
-]).then(([src, tmap]) => {
-  V2.src = src; V2.tmap = tmap;
+  fetch('production-sku-feed.json?_=' + Date.now()).then(r => r.json()).catch(e => { console.error('sku feed', e); return null; }),
+]).then(([src, tmap, sku]) => {
+  V2.src = src; V2.tmap = tmap; V2.sku = sku;
   if (src) { src.columns.forEach((c, i) => SI[c.key] = i); renderGlossary(); renderWoExplain(); }
   else $('#src-foot').innerHTML = '<b>Could not load the source feed.</b> The other tabs are unaffected.';
+  if (sku) sku.columns.forEach((c, i) => KI[c.key] = i);
+  renderSku();
   v2Render();
 });
 
