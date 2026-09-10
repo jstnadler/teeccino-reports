@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T22:56:40+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-10T23:41:58+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -2313,6 +2313,8 @@ const SKU_FILTERS = [
   ['nocase',    'No units per case', r => r[KI.up] == null],
   ['made',      'Produced',          r => !!r[KI.rn]],
   ['nevermade', 'Never produced',    r => !r[KI.rn]],
+  ['casechk',   'Case pack cross-checked', r => r[KI.cp] != null],
+  ['nolabor',   'No labor cost yet', r => r[KI.lu] == null && !!r[KI.rn]],
 ];
 
 function skuRows() {
@@ -2403,6 +2405,9 @@ function renderSku() {
                                   : '<td class="mtag">–</td>';
       if (v == null || v === '') return '<td class="mtag">–</td>';
       if (c.kind === 'int') return '<td class="n">' + num(Math.round(v)) + '</td>';
+      if (c.kind === 'money') return '<td class="n">$'
+        + (+v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        + '</td>';
       if (c.kind === 'num') return '<td class="n">'
         + (+v).toLocaleString(undefined, { maximumFractionDigits: 5 }) + '</td>';
       return '<td>' + esc(v) + '</td>';
