@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-11T00:14:49+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-11T00:22:26+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -246,6 +246,13 @@
   background:color-mix(in srgb,var(--axis) 12%,var(--surface)); padding:8px 12px;
   border-radius:0 6px 6px 0; margin:2px 0 10px; }
 .bydesignbar b { color:var(--ink); }
+
+/* what a trace click applied -- arriving at a silently re-scoped table would be the same
+   defect this page exists to remove */
+.tracebar { font-size:12.5px; color:var(--ink2); border-left:3px solid var(--series);
+  background:color-mix(in srgb,var(--series) 9%,var(--surface)); padding:8px 12px;
+  border-radius:0 6px 6px 0; margin:2px 0 10px; }
+.tracebar b { color:var(--ink); }
 
 /* the column picker -- 24 columns will not fit a screen, so the reader chooses */
 .colpick { border:1px solid var(--axis); border-radius:8px; margin:4px 0 10px;
@@ -652,6 +659,7 @@ button.chip.on { outline:2px solid var(--series); outline-offset:1px; }
         <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series);margin-left:8px" title="A job dated today, or with no end time yet, has not finished - so it has not made anything YET.">Job state</span>
         <div class="seg" id="src-jstate"></div>
       </div>
+      <div id="src-trace"></div>
       <div id="src-origin"></div>
       <div id="src-exempt"></div>
       <div id="src-undated"></div>
@@ -1485,6 +1493,7 @@ const V2 = {
   kind: null,         // 'product' | a task kind | null = all
   jstate: null,       // 'finished' | 'still running' | 'sheet not filled in yet' | null
   undated: false,     // show rows with no readable date, which no date range can contain
+  traceNote: null,    // what a "see the spreadsheet rows" click applied, stated on the tab
   sku: null,          // the SKU feed
   skuFilter: '__all', // active SKU filter
   skuSort: null, skuDesc: false, skuAll: false,
@@ -2064,6 +2073,24 @@ function renderSrc() {
       + 'value comes from. <b>Pack method is the weakest of them</b> &mdash; nothing on the '
       + 'run sheet records which packer was used, so it is inferred from the date.</div>';
   }
+  $('#src-trace').innerHTML = V2.traceNote
+    ? '<div class="tracebar">' + V2.traceNote
+      + ' <button class="linkbtn" id="src-untrace">clear it and show everything</button></div>'
+    : '';
+  const ut = $('#src-untrace');
+  if (ut) ut.onclick = () => {
+    V2.traceNote = null; V2.station = null; V2.showAll = false;
+    $('#src-q').value = '';
+    RANGE = { from: null, to: null };
+    const fi = $('#dr-from'), ti = $('#dr-to');
+    if (fi) fi.value = ''; if (ti) ti.value = '';
+    const dr = $('#dr');
+    if (dr) { dr.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+              const allb = dr.querySelector('[data-p="all"]'); if (allb) allb.classList.add('on'); }
+    try { label(); } catch (e) {}
+    try { recompute(); } catch (e) {}
+    renderSrc();
+  };
   $('#src-exempt').innerHTML = exemptStrip(base);
 
   // The unplaceable-rows switch. Only meaningful while a date range is actually set: with
@@ -2268,6 +2295,14 @@ function exportSrc() {
    TRACING -- the reason this page exists. Any drill-down can hand its subject to the
    Source tab, pre-filtered, so "that number looks wrong" becomes "here is the row".
    ===================================================================================== */
+/* ISO date + n days, in UTC so it cannot drift across a timezone boundary. */
+function addDaysISO(iso, n) {
+  const d = new Date(iso + 'T00:00:00Z');
+  if (isNaN(d)) return iso;
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 function traceBtn(target, hint) {
   return '<button class="trace" data-trace=\'' + JSON.stringify(target).replace(/'/g, '&#39;')
     + '\'>See the spreadsheet rows &rarr;</button>'
@@ -2279,10 +2314,52 @@ function wireTrace() {
     b.addEventListener('click', () => {
       let t = {}; try { t = JSON.parse(b.dataset.trace); } catch (e) { }
       V2.flags.clear(); V2.showAll = false;
+      V2.kind = null; V2.jstate = null; V2.undated = false;
       $('#src-flagged').checked = false;
       $('#src-date').checked = true;
       V2.station = t.station || null;
       $('#src-q').value = t.q || t.item || '';
+
+      // A date span narrows the SHARED range control, so it is applied the same way v1's
+      // own "apply" button does -- set RANGE, sync the inputs, drop the preset highlight,
+      // relabel, recompute. Skipping recompute() would leave the other tabs showing the
+      // old window.
+      const parts = [];
+      if (t.from && t.to) {
+        RANGE = { from: t.from, to: t.to };
+        const fi = $('#dr-from'), ti = $('#dr-to');
+        if (fi) fi.value = t.from;
+        if (ti) ti.value = t.to;
+        const dr = $('#dr');
+        if (dr) dr.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+        try { label(); } catch (e) {}
+        try { recompute(); } catch (e) {}
+        parts.push('<b>' + esc(t.label || (t.from + ' to ' + t.to)) + '</b>');
+      }
+      if (t.station) parts.push('station <b>' + esc(t.station) + '</b>');
+      else if (t.machines && t.machines.length > 1) {
+        parts.push('<b>all stations</b> &mdash; that panel covered '
+          + esc(t.machines.join(', ')) + ', and this table filters one station at a time');
+      }
+      if (t.item) parts.push('item <b>' + esc(t.item) + '</b>');
+
+      // Say what was applied and where it came from. The whole point of the button is
+      // tracing a number to its rows; arriving at a silently re-scoped table would be the
+      // same defect in a new place.
+      // The efficiency figure scores only runs that have BOTH a planned rate and actual
+      // time, operators and quantity. This list is every run-sheet row for that week and
+      // station, so it is routinely LONGER -- 52 of 92 Assembly weeks differ, 117 rows in
+      // total. Saying so here stops the two numbers looking like a contradiction.
+      const caveat = t.source === 'Weekly efficiency'
+        ? ' <span class="mtag">Every run-sheet row for that week and station &mdash; the '
+          + 'efficiency figure scores only the runs that have a planned rate AND actual '
+          + 'time, operators and quantity, so this list can be longer.</span>'
+        : '';
+      V2.traceNote = parts.length
+        ? 'Filtered from <b>' + esc(t.source || 'the report above') + '</b>: '
+          + parts.join(' &middot; ') + '.' + caveat
+        : null;
+
       renderSrc(); goTab('source');
     });
   });
@@ -2301,11 +2378,28 @@ function initTraceHooks() {
       }, 0);
     });
   };
-  hook('#t-eff tbody', '#eff-detail', tr => ({ q: '' }));
-  hook('#t-blend tbody', '#blend-detail', tr => ({ item: tr.dataset.blend, station: 'Blending' }));
-  hook('#t-pack tbody', '#pack-detail', tr => ({ item: tr.dataset.pack }));
-  hook('#t-mh tbody', '#mh-detail', tr => ({ item: tr.dataset.mh }));
-  hook('#t-fg tbody', '#fg-detail', tr => ({ item: tr.dataset.sku || tr.dataset.fg }));
+  // A week row on the efficiency table. The rows behind it are THAT WEEK on the machines
+  // the section is filtered to -- both were being thrown away.
+  hook('#t-eff tbody', '#eff-detail', tr => {
+    const key = tr.dataset.eff;
+    const wk = ((typeof EFF !== 'undefined' && EFF && EFF.weeks) || []).find(x => x.key === key);
+    const macs = (typeof EFFMACH !== 'undefined' && EFFMACH) ? [...EFFMACH] : [];
+    return {
+      // The Source station control is single-select, so only a single machine can be
+      // represented there. With several chosen we leave it unset and SAY SO rather than
+      // light up a filter that is not really applied.
+      station: macs.length === 1 ? macs[0] : null,
+      machines: macs,
+      from: wk ? wk.mon : null,
+      to: wk ? addDaysISO(wk.mon, 6) : null,
+      label: wk ? ('week of ' + wk.mon + ' (W' + wk.wk + ')') : null,
+      source: 'Weekly efficiency',
+    };
+  });
+  hook('#t-blend tbody', '#blend-detail', tr => ({ item: tr.dataset.blend, station: 'Blending', source: 'Blending cost' }));
+  hook('#t-pack tbody', '#pack-detail', tr => ({ item: tr.dataset.pack, source: 'Packing cost' }));
+  hook('#t-mh tbody', '#mh-detail', tr => ({ item: tr.dataset.mh, source: 'Machine hours' }));
+  hook('#t-fg tbody', '#fg-detail', tr => ({ item: tr.dataset.sku || tr.dataset.fg, source: 'Total cost' }));
 }
 
 /* ---------- freshness / provenance header ---------- */
