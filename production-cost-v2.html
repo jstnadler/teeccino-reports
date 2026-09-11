@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-11T00:03:21+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-11T00:14:49+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -131,15 +131,45 @@
 .v2fresh .stale { color:var(--warning); font-weight:700; }
 
 /* --- tabs --- */
-.tabs { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 20px;
-  border-bottom:1px solid var(--border); padding-bottom:0; }
-.tabs button { font:inherit; font-size:13.5px; padding:9px 15px; border:0; cursor:pointer;
-  background:none; color:var(--ink2); border-bottom:2.5px solid transparent;
-  margin-bottom:-1px; border-radius:6px 6px 0 0; white-space:nowrap; }
-.tabs button:hover { color:var(--ink); background:color-mix(in srgb,var(--series) 8%,transparent); }
-.tabs button.on { color:var(--series); border-bottom-color:var(--series); font-weight:600; }
+/* --- SECTION NAVIGATION -------------------------------------------------------------
+   A TRAY of pressable tabs, not a row of text. The previous version was bare text with a
+   2.5px underline on the active one; on a page this dense it read as a sentence rather
+   than a control (Justin, 2026-09-11: "hard to tell that those are for navigation").
+
+   Deliberately larger and looser than the `.seg` filter controls so primary navigation
+   outranks an inline filter rather than imitating it.
+
+   The active fill is MEASURED. A flat var(--series) fails WCAG AA in light mode (4.42:1
+   against white). Series mixed 85% toward --ink, with the text taken from --surface,
+   passes in both schemes because both vars flip with the theme:
+       light  #2568b8 on #fcfcfb -> 5.45:1      dark  #5799e9 on #1a1a19 -> 5.92:1        */
+.navrow { display:flex; align-items:center; gap:10px; margin:0 0 20px; flex-wrap:wrap; }
+.navlabel { font-size:10.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--muted); flex:none; }
+.tabs { display:flex; flex-wrap:wrap; gap:3px; padding:5px;
+  border:1px solid var(--axis); border-radius:11px;
+  background:color-mix(in srgb,var(--axis) 26%,var(--surface)); }
+/* Each resting tab carries its own surface and border so it reads as ONE OF EIGHT
+   discrete controls even before hover. Transparent-on-tray was still too close to text,
+   which was the original complaint. */
+.tabs button { font:inherit; font-size:14px; font-weight:600; padding:9px 15px; cursor:pointer;
+  background:var(--surface); color:var(--ink2); border:1px solid var(--border); border-radius:7px;
+  white-space:nowrap; transition:background .12s, color .12s, border-color .12s, box-shadow .12s; }
+.tabs button:hover { color:var(--ink); border-color:var(--series);
+  box-shadow:0 1px 2px rgba(0,0,0,.10); }
+.tabs button.on, .tabs button.on:hover {
+  background:color-mix(in srgb,var(--series) 85%,var(--ink));
+  color:var(--surface); border-color:transparent; font-weight:700;
+  box-shadow:0 1px 3px rgba(0,0,0,.18); }
+.tabs button:focus-visible { outline:2px solid var(--series); outline-offset:2px; }
 .tabcount { font-size:10.5px; font-weight:700; background:var(--warning); color:#241a00;
   border-radius:999px; padding:1px 6px; margin-left:5px; vertical-align:1px; }
+/* on the filled active tab the badge needs its own contrast, not the tab's */
+.tabs button.on .tabcount { background:var(--surface); color:var(--ink); }
+@media (max-width:620px) {
+  .tabs { width:100%; }
+  .tabs button { flex:1 1 auto; text-align:center; }
+}
 .panel { display:none; }
 .panel.on { display:block; }
 .lead { color:var(--ink2); font-size:13.5px; max-width:88ch; margin:0 0 18px; }
@@ -327,6 +357,8 @@ button.chip.on { outline:2px solid var(--series); outline-offset:1px; }
     <span class="rlabel" id="dr-label"></span>
   </div>
 
+  <div class="navrow">
+    <span class="navlabel" aria-hidden="true">View</span>
   <nav class="tabs" id="v2-tabs" aria-label="Sections">
     <button data-t="overview">Overview</button>
     <button data-t="efficiency">Weekly efficiency</button>
@@ -337,6 +369,7 @@ button.chip.on { outline:2px solid var(--series); outline-offset:1px; }
     <button data-t="source">Source data <span class="tabcount" id="tc-src"></span></button>
     <button data-t="sku">SKU data <span class="tabcount" id="tc-sku"></span></button>
   </nav>
+  </div>
 
   <!-- ================= OVERVIEW ================= -->
   <section class="panel" data-p="overview">
@@ -1502,7 +1535,12 @@ const flagSev = f => (FLAGDOC[f] ? FLAGDOC[f][2] : 'md');
 /* ---------- tabs ---------- */
 function goTab(t, opts) {
   V2.tab = t;
-  document.querySelectorAll('#v2-tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.querySelectorAll('#v2-tabs button').forEach(b => {
+    const on = b.dataset.t === t;
+    b.classList.toggle('on', on);
+    // announce the current section to a screen reader, not just colour it
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.dataset.p === t));
   if (!(opts && opts.keepScroll)) window.scrollTo({ top: 0, behavior: 'instant' });
   if (history.replaceState) history.replaceState(null, '', '#' + t);
