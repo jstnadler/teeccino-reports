@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-11T13:00:09+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-11T20:40:47+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -246,6 +246,14 @@
   background:color-mix(in srgb,var(--axis) 12%,var(--surface)); padding:8px 12px;
   border-radius:0 6px 6px 0; margin:2px 0 10px; }
 .bydesignbar b { color:var(--ink); }
+
+/* a sortable header must look sortable -- v1 shipped the data-k markup with no handler,
+   so these read as sortable and were not */
+th.sortable { cursor:pointer; user-select:none; white-space:nowrap; }
+th.sortable:hover { color:var(--ink); background:color-mix(in srgb,var(--series) 9%,transparent); }
+th.sortable.sorted { color:var(--series); }
+.sortmark { font-size:10px; opacity:.9; }
+th.sortable:not(.sorted)::after { content:'\2195'; font-size:9px; opacity:.28; margin-left:4px; }
 
 /* what a trace click applied -- arriving at a silently re-scoped table would be the same
    defect this page exists to remove */
@@ -1494,6 +1502,7 @@ const V2 = {
   jstate: null,       // 'finished' | 'still running' | 'sheet not filled in yet' | null
   undated: false,     // show rows with no readable date, which no date range can contain
   traceNote: null,    // what a "see the spreadsheet rows" click applied, stated on the tab
+  tsort: {},          // per-table chosen sort, re-applied after v1 re-renders
   sku: null,          // the SKU feed
   skuFilter: '__all', // active SKU filter
   skuSort: null, skuDesc: false, skuAll: false,
@@ -2402,6 +2411,116 @@ function initTraceHooks() {
   hook('#t-fg tbody', '#fg-detail', tr => ({ item: tr.dataset.sku || tr.dataset.fg, source: 'Total cost' }));
 }
 
+/* =====================================================================================
+   SORTABLE TABLES -- v1 marks its drill-down headers with data-k and never wired a
+   handler, so four tables looked sortable and were not (Justin, 2026-09-11).
+
+   Sorting happens on the RENDERED ROWS, not in v1's data layer: v1's script is the live
+   v1 report and this page only splices it. Re-appending the same <tr> elements keeps
+   v1's drill-down working, because that listener is delegated on the tbody.
+   ===================================================================================== */
+const SORTABLE = ['t-fg', 't-pack', 't-blend', 't-mh'];
+
+/* A cell as a sortable value. Cells arrive formatted -- "$1.07", "1,234", "46%", "–" --
+   so strip the presentation and decide numeric vs text ONCE per column, from the column,
+   not per cell: a column where most cells are numbers must not fall back to string order
+   because one of them reads "–". */
+function cellText(tr, i) {
+  const td = tr.children[i];
+  return td ? (td.innerText || '').trim() : '';
+}
+function asNumber(s) {
+  if (!s) return null;
+  const t = s.replace(/[$,%\s]/g, '').replace(/[–—]/g, '');
+  if (!t || !/\d/.test(t)) return null;
+  const n = parseFloat(t.replace(/[^0-9.\-]/g, ''));
+  return isFinite(n) ? n : null;
+}
+
+function sortTable(id) {
+  const st = V2.tsort[id];
+  const tb = document.querySelector('#' + id + ' tbody');
+  if (!tb || !st) return;
+  const rows = [...tb.querySelectorAll('tr')].filter(r => !r.querySelector('td[colspan]'));
+  if (rows.length < 2) return;
+
+  // numeric if MOST of the populated cells parse as numbers
+  let num = 0, filled = 0;
+  rows.forEach(r => { const s = cellText(r, st.i); if (s && s !== '–') { filled++; if (asNumber(s) != null) num++; } });
+  // Column 0 is the identifier; compare it as text so 40010 and 40010L stay together and
+  // a suffixed code never gets read as a quantity. localeCompare's numeric option still
+  // orders 9 before 10 within that.
+  const numeric = st.i !== 0 && filled > 0 && num / filled > 0.6;
+  const dir = st.desc ? -1 : 1;
+
+  rows.sort((a, b) => {
+    const sa = cellText(a, st.i), sb = cellText(b, st.i);
+    if (numeric) {
+      const na = asNumber(sa), nb = asNumber(sb);
+      // a blank has no position on a number line -- always last, whichever way we sort
+      if (na == null && nb == null) return 0;
+      if (na == null) return 1;
+      if (nb == null) return -1;
+      return (na - nb) * dir;
+    }
+    if (!sa && !sb) return 0;
+    if (!sa) return 1;
+    if (!sb) return -1;
+    return sa.localeCompare(sb, undefined, { numeric: true, sensitivity: 'base' }) * dir;
+  });
+  const frag = document.createDocumentFragment();
+  rows.forEach(r => frag.appendChild(r));
+  tb.appendChild(frag);
+
+  document.querySelectorAll('#' + id + ' thead th').forEach((th, i) => {
+    th.classList.toggle('sorted', i === st.i);
+    th.setAttribute('aria-sort', i === st.i ? (st.desc ? 'descending' : 'ascending') : 'none');
+    const mark = th.querySelector('.sortmark');
+    if (mark) mark.textContent = i === st.i ? (st.desc ? ' ▾' : ' ▴') : '';
+  });
+}
+
+function initSortable() {
+  SORTABLE.forEach(id => {
+    const thead = document.querySelector('#' + id + ' thead');
+    if (!thead || thead._sortWired) return;
+    thead._sortWired = true;
+    // a header that sorts must LOOK like it sorts
+    thead.querySelectorAll('th').forEach(th => {
+      th.classList.add('sortable');
+      if (!th.querySelector('.sortmark')) th.insertAdjacentHTML('beforeend', '<span class="sortmark"></span>');
+      th.setAttribute('aria-sort', 'none');
+      if (!th.title) th.title = 'Click to sort by this column';
+    });
+    thead.addEventListener('click', ev => {
+      const th = ev.target.closest('th'); if (!th) return;
+      const i = [...th.parentNode.children].indexOf(th);
+      const cur = V2.tsort[id];
+      // First click on a NUMBER column gives biggest-first, which is what anyone opening a
+      // cost table wants; a text column starts A-Z.
+      let desc;
+      if (cur && cur.i === i) desc = !cur.desc;
+      else if (i === 0) desc = false;
+      else {
+        // Column 0 is the identifier on all four of these tables -- SKU, SKU, SKU, Blend
+        // code -- and an identifier is not a magnitude. A SKU column full of digits would
+        // otherwise open at "90060 first", which is nobody's idea of sorted by SKU.
+        const tb = document.querySelector('#' + id + ' tbody');
+        const probe = [...(tb ? tb.querySelectorAll('tr') : [])].filter(r => !r.querySelector('td[colspan]')).slice(0, 12);
+        let n = 0, f = 0;
+        probe.forEach(r => { const s = cellText(r, i); if (s && s !== '–') { f++; if (asNumber(s) != null) n++; } });
+        desc = f > 0 && n / f > 0.6;
+      }
+      V2.tsort[id] = { i, desc };
+      sortTable(id);
+    });
+  });
+}
+
+/* v1 rebuilds these tbodies on every recompute (date range, basis, machine filter), which
+   would silently drop the reader's chosen order. Re-apply after each render instead. */
+function reapplySorts() { SORTABLE.forEach(id => { if (V2.tsort[id]) sortTable(id); }); }
+
 /* ---------- freshness / provenance header ---------- */
 function renderFresh() {
   const parts = [];
@@ -2418,6 +2537,9 @@ function renderFresh() {
 
 /* ---------- orchestration ---------- */
 function v2Render() {
+  // v1 has just rebuilt its tables, so (re)attach the header handlers and restore the
+  // reader's chosen order before anything else reads the DOM.
+  try { initSortable(); reapplySorts(); } catch (e) { console.error('sortable', e); }
   // The two feeds and v1's cost facts load independently, so whichever wins the race
   // calls this first. Panels that need RAW sit out that round; the recompute() wrap
   // below re-renders them the moment v1's facts land.
