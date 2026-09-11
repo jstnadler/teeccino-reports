@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <title>Production Cost &amp; Machine Hours (v2)</title>
-<!-- Built 2026-09-10T23:41:58+00:00 by CostSmith/automations/build_v2_page.py.
+<!-- Built 2026-09-11T00:03:21+00:00 by CostSmith/automations/build_v2_page.py.
      v2 SIDE-BY-SIDE TRIAL. cost-performance.html and cost-throughput.html are
      untouched and still live. The costing core below is spliced from v1 so the
      numbers agree exactly; only the navigation, the Overview, the product-type
@@ -216,6 +216,25 @@
   background:color-mix(in srgb,var(--axis) 12%,var(--surface)); padding:8px 12px;
   border-radius:0 6px 6px 0; margin:2px 0 10px; }
 .bydesignbar b { color:var(--ink); }
+
+/* the column picker -- 24 columns will not fit a screen, so the reader chooses */
+.colpick { border:1px solid var(--axis); border-radius:8px; margin:4px 0 10px;
+  background:color-mix(in srgb,var(--axis) 5%,var(--surface)); }
+.colpickhd { display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding:7px 11px; border-bottom:1px solid var(--axis); font-size:12.5px; }
+.colpickhd b { color:var(--ink); }
+.colpickbody { display:grid; grid-template-columns:repeat(auto-fill,minmax(178px,1fr));
+  gap:2px 12px; padding:8px 11px 10px; }
+.colpickbody label { display:flex; align-items:center; gap:5px; font-size:12px;
+  color:var(--ink2); cursor:pointer; line-height:1.7; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; }
+.colpickbody label:hover { color:var(--ink); }
+.colpickbody input { margin:0; flex:none; }
+
+/* a chip that filters is a button and must look pressable */
+button.chip { cursor:pointer; font:inherit; }
+button.chip.on { outline:2px solid var(--series); outline-offset:1px; }
+.clearchip { color:var(--ink2); }
 
 /* the two case numbers, side by side -- the whole point of the SKU tab */
 .twocase { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:10px 0 4px; }
@@ -561,6 +580,7 @@
         <span class="mtag" style="font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--series)">Show</span>
         <div class="seg" id="sku-filter"></div>
       </div>
+      <div id="sku-cols"></div>
       <div id="sku-origin"></div>
       <div class="chips" id="sku-chips"></div>
       <p class="tblsum" id="sku-summary"></p>
@@ -2305,27 +2325,74 @@ $('#src-wo').addEventListener('change', () => {
    ===================================================================================== */
 let KI = {};   // column key -> index in a sku-feed row
 
+/* ONE filter registry. The segment buttons and the count chips both write the SAME
+   V2.skuFilter, so there is only ever one active selection and it is lit in both places.
+   `seg` shows it in the Show row; `chip` gives it a counted chip. A chip is a BUTTON --
+   they were spans with no handler, which looked exactly like the working chips on Source
+   data and did nothing (Justin, 2026-09-11). */
 const SKU_FILTERS = [
-  ['__all',     'Everything',        () => true],
-  ['multi',     'Multipacks',        r => r[KI.eq] === 'multipack'],
-  ['notes',     'Has a note',        r => !!r[KI.f]],
-  ['drift',     'Case size moved',   r => (r[KI.f] || '').includes('Case Size')],
-  ['nocase',    'No units per case', r => r[KI.up] == null],
-  ['made',      'Produced',          r => !!r[KI.rn]],
-  ['nevermade', 'Never produced',    r => !r[KI.rn]],
-  ['casechk',   'Case pack cross-checked', r => r[KI.cp] != null],
-  ['nolabor',   'No labor cost yet', r => r[KI.lu] == null && !!r[KI.rn]],
+  ['__all',     'Everything',              () => true,                                   { seg: 1 }],
+  ['made',      'Produced',                r => !!r[KI.rn],                              { seg: 1 }],
+  ['nevermade', 'Never produced',          r => !r[KI.rn],                               { seg: 1, chip: 'Listed but never produced', sev: 'lo' }],
+  ['notes',     'Has a note',              r => !!r[KI.f],                               { seg: 1 }],
+  ['multi',     'Multipack — the two case numbers differ',
+                                           r => r[KI.eq] === 'multipack',                { chip: 1, sev: 'md' }],
+  ['drift',     'Case size changed over time',
+                                           r => (r[KI.f] || '').includes('changed over time'), { chip: 1, sev: 'hi' }],
+  ['stale',     'Runs disagree with the listing',
+                                           r => (r[KI.f] || '').includes('runs recorded Case Size'), { chip: 1, sev: 'hi' }],
+  ['pricelist', 'Price lists count a different case',
+                                           r => (r[KI.f] || '').includes('price lists count'), { chip: 1, sev: 'md' }],
+  ['nocase',    'No units per case',       r => r[KI.up] == null,                        { chip: 1, sev: 'hi' }],
+  ['unlisted',  'Produced but not in the Item Listing',
+                                           r => (r[KI.f] || '').includes('not in Item Listing'), { chip: 1, sev: 'hi' }],
+  ['casechk',   'Case pack cross-checked', r => r[KI.cp] != null,                        { seg: 1 }],
+  ['nolabor',   'No labor cost yet',       r => r[KI.lu] == null && !!r[KI.rn],          { seg: 1 }],
 ];
+const skuFilterDef = k => SKU_FILTERS.find(x => x[0] === (k || '__all')) || SKU_FILTERS[0];
 
-function skuRows() {
+/* Columns the reader has chosen to see. Justin's default: the identity and the case
+   numbers, nothing else. The other 19 are one checkbox away. Persisted so the choice
+   survives a reload. */
+const SKU_COLS_DEFAULT = ['i', 'cn', 'up', 'cz', 'pr'];
+const SKU_COLS_KEY = 'costsmith.v2.skucols';
+
+function skuColsChosen() {
+  if (V2.skuCols) return V2.skuCols;
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(SKU_COLS_KEY) || 'null'); } catch (e) { saved = null; }
+  V2.skuCols = new Set(Array.isArray(saved) && saved.length ? saved : SKU_COLS_DEFAULT);
+  return V2.skuCols;
+}
+function skuColsSave() {
+  try { localStorage.setItem(SKU_COLS_KEY, JSON.stringify([...skuColsChosen()])); } catch (e) {}
+}
+/* Notes explains WHY a row was caught, so hiding it while a note-based filter is active
+   would show a filtered list with the reason removed. It is revealed automatically in that
+   case rather than silently withheld. */
+function skuNoteFilterActive() {
+  const d = skuFilterDef(V2.skuFilter);
+  return ['notes', 'drift', 'stale', 'pricelist', 'unlisted'].includes(d[0]);
+}
+function skuVisibleCols() {
+  const chosen = skuColsChosen();
+  return V2.sku.columns.filter(c => chosen.has(c.key)
+    || (c.key === 'f' && skuNoteFilterActive()));
+}
+
+/* The search box narrows the POPULATION; the filter then narrows that. Chip counts are
+   computed over skuSearched() -- not over the whole feed -- so the number on a chip is
+   exactly what you get when you click it, even with a search active. */
+function skuSearched() {
   if (!V2.sku) return [];
   const q = ($('#sku-q').value || '').trim().toLowerCase();
-  const f = (SKU_FILTERS.find(x => x[0] === (V2.skuFilter || '__all')) || SKU_FILTERS[0])[2];
-  return V2.sku.rows.filter(r => {
-    if (!f(r)) return false;
-    if (!q) return true;
-    return [r[KI.i], r[KI.nm], r[KI.cn], r[KI.c], r[KI.st]].join(' ').toLowerCase().includes(q);
-  });
+  if (!q) return V2.sku.rows;
+  return V2.sku.rows.filter(r =>
+    [r[KI.i], r[KI.nm], r[KI.cn], r[KI.c], r[KI.st]].join(' ').toLowerCase().includes(q));
+}
+function skuRows() {
+  const f = skuFilterDef(V2.skuFilter)[2];
+  return skuSearched().filter(f);
 }
 
 function renderSku() {
@@ -2336,27 +2403,44 @@ function renderSku() {
   const cols = V2.sku.columns, meta = V2.sku._meta || {}, cnt = meta.counts || {};
   setTxt('sku-nmulti', num(cnt.case_numbers_differ || 0));
 
+  const vis = skuVisibleCols();
+
   if (!$('#sku-filter').children.length) {
-    $('#sku-filter').innerHTML = SKU_FILTERS.map(([k, lbl]) =>
-      '<button data-f="' + k + '"' + (k === '__all' ? ' class="on"' : '') + '>' + esc(lbl)
-      + '</button>').join('');
+    $('#sku-filter').innerHTML = SKU_FILTERS.filter(x => x[3] && x[3].seg)
+      .map(([k, lbl]) => '<button data-f="' + k + '">' + esc(lbl) + '</button>').join('');
     $('#sku-filter').onclick = ev => {
       const b = ev.target.closest('button'); if (!b) return;
       V2.skuFilter = b.dataset.f; V2.skuAll = false; renderSku();
     };
+    // the column picker
+    $('#sku-cols').innerHTML = '<div class="colpick"><div class="colpickhd">'
+      + '<b>Columns</b> <span class="mtag">tick what you want to see</span>'
+      + '<button class="linkbtn" data-cols="default">back to the default five</button>'
+      + '<button class="linkbtn" data-cols="all">show every column</button></div>'
+      + '<div class="colpickbody">' + cols.map(c =>
+          '<label title="' + esc(c.basis || 'Straight from the Item Listing tab.') + '">'
+          + '<input type="checkbox" data-col="' + c.key + '"> ' + esc(c.label)
+          + (c.origin === 'derived' ? ' <span class="dmark">ƒ</span>' : '') + '</label>').join('')
+      + '</div></div>';
+    $('#sku-cols').addEventListener('change', ev => {
+      const cb = ev.target.closest('[data-col]'); if (!cb) return;
+      const chosen = skuColsChosen();
+      if (cb.checked) chosen.add(cb.dataset.col); else chosen.delete(cb.dataset.col);
+      if (!chosen.size) chosen.add('i');        // never leave an empty table
+      skuColsSave(); renderSku();
+    });
+    $('#sku-cols').addEventListener('click', ev => {
+      const b = ev.target.closest('[data-cols]'); if (!b) return;
+      V2.skuCols = new Set(b.dataset.cols === 'all' ? cols.map(c => c.key) : SKU_COLS_DEFAULT);
+      skuColsSave(); renderSku();
+    });
     // Same provenance discipline as Source data: a worked-out column never looks recorded.
     const der = cols.filter(c => c.origin === 'derived');
     $('#sku-origin').innerHTML = '<div class="originbar">The case numbers, name, category and '
-      + 'packing rate are the <b>Item Listing</b> tab as recorded. <b>' + der.length + '</b> '
-      + 'columns are <b>worked out by us</b> and are marked <span class="dmark">ƒ</span>: '
-      + der.map(c => '<span class="dpill" title="' + esc(c.basis || '') + '">' + esc(c.label)
-      + '</span>').join(' ') + '. Hover any heading for where its value comes from.</div>';
-    $('#sku-head').innerHTML = cols.map(c => {
-      const d = c.origin === 'derived';
-      return '<th data-sk="' + c.key + '" class="' + (d ? 'derivedcol' : 'sheetcol') + '" title="'
-        + esc(c.basis || 'Straight from the Item Listing tab of the workbook.') + '">'
-        + esc(c.label) + (d ? ' <span class="dmark">ƒ</span>' : '') + '</th>';
-    }).join('');
+      + 'packing rate are the <b>Item Listing</b> tab as recorded. <b>' + der.length + '</b> of '
+      + 'the ' + cols.length + ' columns are <b>worked out by us</b> and are marked '
+      + '<span class="dmark">ƒ</span> wherever they appear. Hover any heading, or any name in '
+      + 'the column list, for where its value comes from.</div>';
     $('#sku-head').onclick = ev => {
       const th = ev.target.closest('th'); if (!th) return;
       const k = th.dataset.sk;
@@ -2364,19 +2448,36 @@ function renderSku() {
       renderSku();
     };
   }
+  // the header is rebuilt every render -- the visible set changes
+  $('#sku-head').innerHTML = vis.map(c => {
+    const d = c.origin === 'derived';
+    const sorted = V2.skuSort === c.key ? (V2.skuDesc ? ' ↓' : ' ↑') : '';
+    return '<th data-sk="' + c.key + '" class="' + (d ? 'derivedcol' : 'sheetcol') + '" title="'
+      + esc(c.basis || 'Straight from the Item Listing tab of the workbook.') + '">'
+      + esc(c.label) + (d ? ' <span class="dmark">ƒ</span>' : '') + sorted + '</th>';
+  }).join('');
   $('#sku-filter').querySelectorAll('button').forEach(b =>
     b.classList.toggle('on', b.dataset.f === (V2.skuFilter || '__all')));
+  const chosenNow = skuColsChosen();
+  $('#sku-cols').querySelectorAll('[data-col]').forEach(cb =>
+    cb.checked = chosenNow.has(cb.dataset.col));
 
-  // the counts that make the tab worth opening
-  $('#sku-chips').innerHTML = [
-    ['case_numbers_differ',          'Multipack — the two case numbers differ', 'md'],
-    ['case_size_changed_over_time',  'Case size changed over time', 'hi'],
-    ['run_sheet_disagrees',          'Runs disagree with the listing', 'hi'],
-    ['missing_units_per_case',       'No units per case', 'hi'],
-    ['produced_but_unlisted',        'Produced but not in the Item Listing', 'hi'],
-    ['listed_never_produced',        'Listed but never produced', 'lo'],
-  ].filter(([k]) => cnt[k]).map(([k, lbl, sev]) =>
-    '<span class="chip sev-' + sev + '">' + esc(lbl) + ' <b>' + num(cnt[k]) + '</b></span>').join('');
+  // The counted chips, as BUTTONS that actually filter. Counts come from the searched
+  // population so a chip's number is exactly what clicking it returns.
+  const base = skuSearched();
+  $('#sku-chips').innerHTML = SKU_FILTERS.filter(x => x[3] && x[3].chip).map(([k, lbl, fn, o]) => {
+    const n = base.filter(fn).length;
+    if (!n) return '';
+    const label = typeof o.chip === 'string' ? o.chip : lbl;
+    return '<button class="chip sev-' + (o.sev || 'md') + (V2.skuFilter === k ? ' on' : '')
+      + '" data-f="' + k + '">' + esc(label) + ' <b>' + num(n) + '</b></button>';
+  }).join('') + (V2.skuFilter && V2.skuFilter !== '__all'
+      ? '<button class="chip clearchip" data-f="__all">clear filter</button>' : '');
+  $('#sku-chips').onclick = ev => {
+    const b = ev.target.closest('[data-f]'); if (!b) return;
+    V2.skuFilter = (V2.skuFilter === b.dataset.f) ? '__all' : b.dataset.f;
+    V2.skuAll = false; renderSku();
+  };
 
   let rows = skuRows();
   if (V2.skuSort) {
@@ -2391,12 +2492,16 @@ function renderSku() {
     });
   }
   const shown = rows.slice(0, V2.skuAll ? rows.length : 300);
-  $('#sku-summary').innerHTML = '<b>' + num(rows.length) + '</b> <span class="mtag">items shown</span>'
+  const activeLbl = skuFilterDef(V2.skuFilter);
+  $('#sku-summary').innerHTML = '<b>' + num(rows.length) + '</b> <span class="mtag">items'
+    + (V2.skuFilter && V2.skuFilter !== '__all' ? ' &middot; ' + esc(activeLbl[1]) : '')
+    + '</span> <span class="mtag">&middot; ' + vis.length + ' of ' + cols.length
+    + ' columns shown</span>'
     + (rows.length > shown.length
         ? ' <button class="linkbtn" id="sku-more">show all ' + num(rows.length) + '</button>' : '');
 
   $('#t-sku').querySelector('tbody').innerHTML = shown.length ? shown.map(r =>
-    '<tr>' + cols.map(c => {
+    '<tr>' + vis.map(c => {
       const v = r[KI[c.key]];
       if (c.key === 'eq') return v === 'multipack' ? '<td><span class="multi">multipack</span></td>'
         : v ? '<td class="same">same</td>' : '<td class="mtag">–</td>';
@@ -2412,7 +2517,7 @@ function renderSku() {
         + (+v).toLocaleString(undefined, { maximumFractionDigits: 5 }) + '</td>';
       return '<td>' + esc(v) + '</td>';
     }).join('') + '</tr>').join('')
-    : '<tr><td colspan="' + cols.length + '" class="empty">No items match. Clear the search or '
+    : '<tr><td colspan="' + vis.length + '" class="empty">No items match. Clear the search or '
       + 'pick a different filter.</td></tr>';
   const mb = $('#sku-more');
   if (mb) mb.onclick = () => { V2.skuAll = true; renderSku(); };
@@ -2426,7 +2531,9 @@ function renderSku() {
 }
 
 function exportSku() {
-  const cols = V2.sku.columns, rows = skuRows();
+  // Export what is ON SCREEN -- the visible columns and the active filter. An export that
+  // silently differs from the table is its own small lie.
+  const cols = skuVisibleCols(), rows = skuRows();
   const q = v => v == null ? ''
     : (/[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v));
   const csv = [cols.map(c => q(c.label)).join(',')]
