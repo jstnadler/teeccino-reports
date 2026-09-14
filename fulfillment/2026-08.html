@@ -93,7 +93,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — August 2026</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-14 13:01. · 118,326 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-14 13:14. · 118,326 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -420,7 +420,11 @@
     <div class="section-title">Daily Detail &mdash; August 2026</div>
     <div class="section-sub">
       The figures behind the chart above, one row per calendar day
-      (31 days, 21 of them shipping days).
+      (31 days, 21 of them shipping days and
+      10 closed). <strong>Closed days are shown by
+      default</strong> &mdash; a day the warehouse did not ship is the reason a
+      gap exists, so hiding it turns the gap into an unexplained jump in the
+      date column.
       <strong>Order counts are DTC + Target + Walmart</strong> (the team&rsquo;s
       workload); <strong>the SLA columns are DTC only</strong> (the service
       promise). They are different populations on purpose &mdash; a figure in one
@@ -428,7 +432,7 @@
     </div>
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <label style="color:#888;font-size:0.85em">
-        <input type="checkbox" id="dtOnlyShip" checked> Shipping days only
+        <input type="checkbox" id="dtOnlyShip"> Shipping days only
       </label>
       <label style="color:#888;font-size:0.85em">Rows
         <select id="dtPageSize">
@@ -456,7 +460,9 @@
     </div>
     <div id="dtPager" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"></div>
     <div class="definitions" style="margin-top:14px">
-      Click a column header to sort. <strong>Days with no shipments show a dash, not
+      Click a column header to sort. Tick <em>Shipping days only</em> to drop the
+      closed days; the row count above then names how many were withheld.
+      <strong>Days with no shipments show a dash, not
       a zero</strong> &mdash; the warehouse ships business days only, and a closed
       Saturday rendered as &ldquo;0 orders, 0% on time&rdquo; reads as a failure
       instead of a weekend. A row marked <em>in progress</em> is the current ship
@@ -1029,9 +1035,15 @@ function dtRender() {
       + '<td class="num">' + pct(r.p1) + '</td><td class="num">' + pct(r.p2) + '</td>'
       + '<td class="num">' + lateCell + '</td></tr>';
   }).join('');
-  // Counts recompute against the LIVE filter set, never a fixed number.
+  // Counts recompute against the LIVE filter set, never a fixed number -- and a
+  // withheld row the reader cannot see was withheld makes the table a subset
+  // with no way to know it, so the hidden count rides on the toggle. Same rule
+  // as the 0-unit rows on product-units.html.
+  const dtHidden = DT_ROWS.length - rows.length;
   document.getElementById('dtCount').textContent =
-    rows.length + ' day(s)' + (size === Infinity ? '' : ' · page ' + dtPage + ' of ' + pages);
+    rows.length + ' day(s)'
+    + (dtHidden ? ' · ' + dtHidden + ' closed day(s) hidden' : '')
+    + (size === Infinity ? '' : ' · page ' + dtPage + ' of ' + pages);
   const pg = document.getElementById('dtPager');
   pg.innerHTML = (pages <= 1 || size === Infinity) ? '' :
     Array.from({length: pages}, (_, i) => i + 1).map(i =>
