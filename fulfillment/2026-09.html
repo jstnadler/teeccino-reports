@@ -93,7 +93,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — September 2026</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-14 13:14. · 118,326 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-14 13:32. · 118,326 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -429,6 +429,11 @@
       workload); <strong>the SLA columns are DTC only</strong> (the service
       promise). They are different populations on purpose &mdash; a figure in one
       group does not reconcile against a figure in the other.
+      <strong>Orders Placed</strong> is the same channel scope as the shipped
+      columns (DTC + Target + Walmart), counted on the day the order came in
+      &mdash; so it is the demand that arrived against the work that went out.
+      It is deliberately still shown on closed days: weekend orders do not
+      vanish, they queue up and become Monday. <strong>Orders Placed is complete through 2026-09-13</strong> &mdash; the order feed lands a day behind the shipping feed, so the 1 newer day(s) show a dash rather than a zero. A dash there means <em>not in yet</em>, not <em>nobody ordered</em>.
     </div>
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <label style="color:#888;font-size:0.85em">
@@ -450,6 +455,7 @@
           <th class="num" data-k="target">Target</th>
           <th class="num" data-k="walmart">Walmart</th>
           <th class="num" data-k="total">Total Shipped</th>
+          <th class="num" data-k="placed">Orders Placed</th>
           <th class="num" data-k="avg">Avg Days (DTC)</th>
           <th class="num" data-k="p1">&le; 1 Day</th>
           <th class="num" data-k="p2">&le; 2 Days</th>
@@ -468,6 +474,10 @@
       instead of a weekend. A row marked <em>in progress</em> is the current ship
       day: it is still being worked, its averages are a partial read, and it is
       shown so the day is not mistaken for missing.
+      <strong>Orders Placed counts orders by the day they were placed</strong>,
+      not by the day they shipped, so it will not tie out to the shipped columns
+      on any single row &mdash; an order placed Sunday ships Monday. Over a full
+      window the two converge, minus whatever is still in the queue.
     </div>
   </div>
 
@@ -978,7 +988,7 @@ new Chart(fulfilledCtx, {
 });
 
 
-const DT_ROWS = [{"date": "2026-09-01", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 175, "target": 6, "walmart": 0, "total": 181, "sla_n": 175, "avg": 1.15, "p1": 76.6, "p2": 94.3, "late": 6}, {"date": "2026-09-02", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 131, "target": 5, "walmart": 0, "total": 136, "sla_n": 131, "avg": 0.89, "p1": 98.5, "p2": 98.5, "late": 1}, {"date": "2026-09-03", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 114, "target": 7, "walmart": 0, "total": 121, "sla_n": 114, "avg": 1.03, "p1": 76.3, "p2": 100.0, "late": 0}, {"date": "2026-09-04", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 157, "target": 3, "walmart": 0, "total": 160, "sla_n": 157, "avg": 0.51, "p1": 97.5, "p2": 100.0, "late": 0}, {"date": "2026-09-05", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-06", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-07", "dow": "Mon", "kind": "closed", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-08", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 357, "target": 30, "walmart": 0, "total": 387, "sla_n": 357, "avg": 3.1, "p1": 0.0, "p2": 21.8, "late": 112}, {"date": "2026-09-09", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 193, "target": 16, "walmart": 0, "total": 209, "sla_n": 193, "avg": 2.42, "p1": 0.0, "p2": 58.0, "late": 0}, {"date": "2026-09-10", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 214, "target": 3, "walmart": 0, "total": 217, "sla_n": 214, "avg": 2.6, "p1": 0.9, "p2": 42.5, "late": 7}, {"date": "2026-09-11", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 5, "walmart": 0, "total": 146, "sla_n": 141, "avg": 2.6, "p1": 0.7, "p2": 44.0, "late": 1}, {"date": "2026-09-12", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-13", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-14", "dow": "Mon", "kind": "shipping", "partial": true, "dtc": 19, "target": 11, "walmart": 0, "total": 30, "sla_n": 19, "avg": 4.84, "p1": 5.3, "p2": 10.5, "late": 16}];
+const DT_ROWS = [{"date": "2026-09-01", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 175, "target": 6, "walmart": 0, "total": 181, "placed": 176, "sla_n": 175, "avg": 1.15, "p1": 76.6, "p2": 94.3, "late": 6}, {"date": "2026-09-02", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 131, "target": 5, "walmart": 0, "total": 136, "placed": 108, "sla_n": 131, "avg": 0.89, "p1": 98.5, "p2": 98.5, "late": 1}, {"date": "2026-09-03", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 114, "target": 7, "walmart": 0, "total": 121, "placed": 101, "sla_n": 114, "avg": 1.03, "p1": 76.3, "p2": 100.0, "late": 0}, {"date": "2026-09-04", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 157, "target": 3, "walmart": 0, "total": 160, "placed": 197, "sla_n": 157, "avg": 0.51, "p1": 97.5, "p2": 100.0, "late": 0}, {"date": "2026-09-05", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 179, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-06", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 173, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-07", "dow": "Mon", "kind": "closed", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 234, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-08", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 357, "target": 30, "walmart": 0, "total": 387, "placed": 189, "sla_n": 357, "avg": 3.1, "p1": 0.0, "p2": 21.8, "late": 112}, {"date": "2026-09-09", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 193, "target": 16, "walmart": 0, "total": 209, "placed": 162, "sla_n": 193, "avg": 2.42, "p1": 0.0, "p2": 58.0, "late": 0}, {"date": "2026-09-10", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 214, "target": 3, "walmart": 0, "total": 217, "placed": 231, "sla_n": 214, "avg": 2.6, "p1": 0.9, "p2": 42.5, "late": 7}, {"date": "2026-09-11", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 5, "walmart": 0, "total": 146, "placed": 112, "sla_n": 141, "avg": 2.6, "p1": 0.7, "p2": 44.0, "late": 1}, {"date": "2026-09-12", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 57, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-13", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 84, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-14", "dow": "Mon", "kind": "shipping", "partial": true, "dtc": 19, "target": 11, "walmart": 0, "total": 30, "placed": null, "sla_n": 19, "avg": 4.84, "p1": 5.3, "p2": 10.5, "late": 16}];
 let dtSortKey = 'date', dtSortDir = -1, dtPage = 1;
 
 function dtPageSize() {
@@ -1031,6 +1041,10 @@ function dtRender() {
       + '<td class="num">' + (r.total ? r.target : num(null)) + '</td>'
       + '<td class="num">' + (r.total ? r.walmart : num(null)) + '</td>'
       + '<td class="num"><strong>' + (r.total ? r.total : num(null)) + '</strong></td>'
+      // NOT gated on r.total: a closed day still takes orders, and that is the
+      // single most useful thing this column says. Brighter than its neighbours
+      // so it stays legible through the dimming applied to a non-shipping row.
+      + '<td class="num" style="color:#e6edf3">' + num(r.placed) + '</td>'
       + '<td class="num">' + (r.avg == null ? num(null) : r.avg.toFixed(2)) + '</td>'
       + '<td class="num">' + pct(r.p1) + '</td><td class="num">' + pct(r.p2) + '</td>'
       + '<td class="num">' + lateCell + '</td></tr>';
