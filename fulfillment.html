@@ -43,6 +43,12 @@
   .hero-value { font-size:1.9em; font-weight:700; color:#fff; }
   .hero-sub { font-size:0.78em; color:#777; margin-top:4px; }
   .chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; }
+  /* minmax(0,1fr), not 1fr: an `fr` track has an implicit min-content floor, so
+     a long unbreakable label silently widens the track past its container and
+     the DOCUMENT scrolls sideways. The floor is what has to go, not the text. */
+  .bl-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:18px; }
+  .bl-grid td:first-child { white-space:normal; }
+  @media (max-width: 1100px) { .bl-grid { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
   .chart-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
                  border-radius:10px; padding:18px; height:380px; }
@@ -87,7 +93,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-09 14:32. · 117,628 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-14 13:01. · 118,326 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -142,7 +148,7 @@
     }
     </script>
 
-  <div class="banner banner-bad">Slow — only 35% of orders shipped within 1 day.</div>
+  <div class="banner banner-bad">Slow — only 29% of orders shipped within 1 day.</div>
 
   <div class="definitions">
     <strong>Definitions:</strong><br>
@@ -166,22 +172,22 @@
     <div class="hero-grid">
         <div class="hero-card">
             <div class="hero-label">Avg Days to Ship</div>
-            <div class="hero-value">2.13</div>
+            <div class="hero-value">2.18</div>
             <div class="hero-sub">median 2.00</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Same-Day Ship</div>
-            <div class="hero-value">10%</div>
+            <div class="hero-value">9%</div>
             <div class="hero-sub">order placed and shipped same calendar day</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Within 1 Day</div>
-            <div class="hero-value">35%</div>
+            <div class="hero-value">29%</div>
             <div class="hero-sub">cumulative — same day or next day</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Within 2 Days</div>
-            <div class="hero-value">64%</div>
+            <div class="hero-value">62%</div>
             <div class="hero-sub">cumulative — within 48 hours</div>
         </div>
         <div class="hero-card">
@@ -191,7 +197,7 @@
         </div>
         <div class="hero-card">
             <div class="hero-label">Orders</div>
-            <div class="hero-value">2,868</div>
+            <div class="hero-value">3,101</div>
             <div class="hero-sub">matched DTC orders in this window</div>
         </div></div>
   </div>
@@ -221,43 +227,43 @@
             <tbody>
         <tr>
             <td><strong>Last 30 days</strong></td>
-            <td class="num">2,868</td>
-            <td class="num">2.13</td>
+            <td class="num">3,101</td>
+            <td class="num">2.18</td>
             <td class="num">2.00</td>
             <td class="num">4.00</td>
-            <td class="num">9.6%</td>
-            <td class="num">35.4%</td>
-            <td class="num">63.7%</td>
-            <td class="num">85.0%</td>
-            <td class="num">98.3%</td>
+            <td class="num">8.9%</td>
+            <td class="num">29.0%</td>
+            <td class="num">62.3%</td>
+            <td class="num">87.1%</td>
+            <td class="num">98.8%</td>
             <td class="num">99.6%</td>
             <td class="num">99.8%</td>
         </tr>
         <tr>
             <td><strong>Last 90 days</strong></td>
-            <td class="num">8,719</td>
-            <td class="num">1.97</td>
+            <td class="num">9,009</td>
+            <td class="num">1.99</td>
             <td class="num">2.00</td>
             <td class="num">3.00</td>
-            <td class="num">10.8%</td>
-            <td class="num">35.3%</td>
-            <td class="num">67.3%</td>
-            <td class="num">92.1%</td>
+            <td class="num">10.3%</td>
+            <td class="num">33.7%</td>
+            <td class="num">66.9%</td>
+            <td class="num">92.6%</td>
             <td class="num">99.4%</td>
             <td class="num">99.8%</td>
             <td class="num">99.9%</td>
         </tr>
         <tr>
             <td><strong>Last 365 days</strong></td>
-            <td class="num">44,926</td>
+            <td class="num">45,137</td>
             <td class="num">3.18</td>
             <td class="num">2.00</td>
             <td class="num">7.00</td>
             <td class="num">9.2%</td>
-            <td class="num">28.0%</td>
+            <td class="num">27.6%</td>
             <td class="num">50.6%</td>
-            <td class="num">67.8%</td>
-            <td class="num">86.8%</td>
+            <td class="num">67.9%</td>
+            <td class="num">86.9%</td>
             <td class="num">91.5%</td>
             <td class="num">95.7%</td>
         </tr></tbody>
@@ -291,12 +297,12 @@
     <div class="hero-grid">
         <div class="hero-card">
             <div class="hero-label">Per Shipping Day</div>
-            <div class="hero-value">150</div>
+            <div class="hero-value">153</div>
             <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Total Fulfilled</div>
-            <div class="hero-value">6,152</div>
+            <div class="hero-value">6,279</div>
             <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
         </div>
         <div class="hero-card">
@@ -306,29 +312,29 @@
         </div>
         <div class="hero-card">
             <div class="hero-label">Busiest Day</div>
-            <div class="hero-value">252</div>
+            <div class="hero-value">387</div>
             <div class="hero-sub">2026-09-08</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Median Shipping Day</div>
             <div class="hero-value">152</div>
-            <div class="hero-sub">quietest 79 on 2026-08-14</div>
+            <div class="hero-sub">quietest 30 on 2026-09-14</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Per Calendar Day</div>
-            <div class="hero-value">103</div>
+            <div class="hero-value">105</div>
             <div class="hero-sub">same orders spread over all 60 days &mdash; not a throughput rate</div>
         </div></div>
     <div class="definitions" style="margin-top:14px;margin-bottom:18px">
       The warehouse ships on business days, so this window contains 18 weekend days and 1 weekday(s) with no shipments (holiday or shutdown).
-      <strong>Per Shipping Day</strong> (150) divides by the
+      <strong>Per Shipping Day</strong> (153) divides by the
       41 days that actually shipped and is the real throughput rate.
-      <strong>Per Calendar Day</strong> (103) divides the same orders
+      <strong>Per Calendar Day</strong> (105) divides the same orders
       by all 60 days and so understates output by 32%
-      &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-09-08</strong>.<br>
-      Counts <strong>6,152 orders &mdash; DTC, Target and Walmart</strong>
-      &mdash; which is 97.9% of the 6,281 orders that shipped in
-      this window. The other 129: <strong>128 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match) and 1 re-shipment of orders whose first shipment predates this window. The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
+      &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-09-14</strong>.<br>
+      Counts <strong>6,279 orders &mdash; DTC, Target and Walmart</strong>
+      &mdash; which is 97.9% of the 6,411 orders that shipped in
+      this window. The other 132: <strong>131 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match) and 1 re-shipment of orders whose first shipment predates this window. The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
       An order is counted once, on its <em>first</em> shipment date.
     </div>
     <div class="chart-grid">
@@ -351,38 +357,38 @@
                 <tbody>
             <tr>
                 <td><strong>Monday</strong></td>
-                <td class="num">173</td>
-                <td class="num">1,382</td>
+                <td class="num">155</td>
+                <td class="num">1,243</td>
                 <td class="num">8</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:95.0%"></div></div></td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:76.3%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Tuesday</strong></td>
-                <td class="num">182</td>
-                <td class="num">1,636</td>
-                <td class="num">9</td>
+                <td class="num">204</td>
+                <td class="num">1,629</td>
+                <td class="num">8</td>
                 <td><div class="wd-track"><div class="wd-bar" style="width:100.0%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Wednesday</strong></td>
-                <td class="num">150</td>
-                <td class="num">1,201</td>
+                <td class="num">162</td>
+                <td class="num">1,295</td>
                 <td class="num">8</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:82.6%"></div></div></td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:79.5%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Thursday</strong></td>
-                <td class="num">131</td>
-                <td class="num">1,049</td>
+                <td class="num">135</td>
+                <td class="num">1,082</td>
                 <td class="num">8</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:72.1%"></div></div></td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:66.4%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Friday</strong></td>
-                <td class="num">110</td>
-                <td class="num">884</td>
-                <td class="num">8</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:60.8%"></div></div></td>
+                <td class="num">114</td>
+                <td class="num">1,030</td>
+                <td class="num">9</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:56.2%"></div></div></td>
             </tr></tbody>
             </table></div>
       </div>
@@ -391,6 +397,57 @@
       <span><i class="sw sw-ship"></i>Shipping day</span>
       <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
       <span><i class="sw sw-avg"></i>Average per shipping day</span>
+    </div>
+  </div>
+
+  
+  <!-- Daily table: the numbers behind the ship-date chart -->
+  <div class="section">
+    <div class="section-title">Daily Detail &mdash; Last 60 Days</div>
+    <div class="section-sub">
+      The figures behind the chart above, one row per calendar day
+      (60 days, 41 of them shipping days).
+      <strong>Order counts are DTC + Target + Walmart</strong> (the team&rsquo;s
+      workload); <strong>the SLA columns are DTC only</strong> (the service
+      promise). They are different populations on purpose &mdash; a figure in one
+      group does not reconcile against a figure in the other.
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <label style="color:#888;font-size:0.85em">
+        <input type="checkbox" id="dtOnlyShip" checked> Shipping days only
+      </label>
+      <label style="color:#888;font-size:0.85em">Rows
+        <select id="dtPageSize">
+          <option>15</option><option>25</option><option>50</option><option>All</option>
+        </select>
+      </label>
+      <span id="dtCount" style="color:#888;font-size:0.85em"></span>
+    </div>
+    <div class="table-scroll">
+      <table id="dtTable">
+        <thead><tr>
+          <th data-k="date">Date</th>
+          <th>Day</th>
+          <th class="num" data-k="dtc">DTC</th>
+          <th class="num" data-k="target">Target</th>
+          <th class="num" data-k="walmart">Walmart</th>
+          <th class="num" data-k="total">Total Shipped</th>
+          <th class="num" data-k="avg">Avg Days (DTC)</th>
+          <th class="num" data-k="p1">&le; 1 Day</th>
+          <th class="num" data-k="p2">&le; 2 Days</th>
+          <th class="num" data-k="late">&gt; 3 Days</th>
+        </tr></thead>
+        <tbody id="dtBody"></tbody>
+      </table>
+    </div>
+    <div id="dtPager" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"></div>
+    <div class="definitions" style="margin-top:14px">
+      Click a column header to sort. <strong>Days with no shipments show a dash, not
+      a zero</strong> &mdash; the warehouse ships business days only, and a closed
+      Saturday rendered as &ldquo;0 orders, 0% on time&rdquo; reads as a failure
+      instead of a weekend. A row marked <em>in progress</em> is the current ship
+      day: it is still being worked, its averages are a partial read, and it is
+      shown so the day is not mistaken for missing.
     </div>
   </div>
 
@@ -413,27 +470,27 @@
             <tbody>
         <tr>
             <td>DHL SmartMail</td>
-            <td class="num">4,755</td>
-            <td class="num">1.86</td>
-            <td class="num">13.0%</td>
-            <td class="num">38.2%</td>
-            <td class="num">71.0%</td>
+            <td class="num">4,821</td>
+            <td class="num">1.87</td>
+            <td class="num">12.6%</td>
+            <td class="num">36.9%</td>
+            <td class="num">71.6%</td>
         </tr>
         <tr>
             <td>USPS (via Stamps.com)</td>
-            <td class="num">3,947</td>
-            <td class="num">2.10</td>
-            <td class="num">8.3%</td>
-            <td class="num">32.0%</td>
-            <td class="num">62.8%</td>
+            <td class="num">4,169</td>
+            <td class="num">2.13</td>
+            <td class="num">7.7%</td>
+            <td class="num">30.1%</td>
+            <td class="num">61.5%</td>
         </tr>
         <tr>
             <td>FedEx</td>
-            <td class="num">17</td>
-            <td class="num">2.41</td>
+            <td class="num">19</td>
+            <td class="num">2.37</td>
             <td class="num">0.0%</td>
-            <td class="num">5.9%</td>
-            <td class="num">58.8%</td>
+            <td class="num">5.3%</td>
+            <td class="num">63.2%</td>
         </tr></tbody>
         </table></div>
   </div>
@@ -456,54 +513,184 @@
             <tbody>
         <tr>
             <td>USPS Ground Advantage</td>
-            <td class="num">3,542</td>
-            <td class="num">2.08</td>
-            <td class="num">32.6%</td>
-            <td class="num">63.4%</td>
+            <td class="num">3,764</td>
+            <td class="num">2.12</td>
+            <td class="num">30.4%</td>
+            <td class="num">61.8%</td>
         </tr>
         <tr>
             <td>DHL SmartMail Expedited</td>
-            <td class="num">3,411</td>
-            <td class="num">1.87</td>
-            <td class="num">38.2%</td>
-            <td class="num">70.7%</td>
+            <td class="num">3,452</td>
+            <td class="num">1.88</td>
+            <td class="num">36.8%</td>
+            <td class="num">71.2%</td>
         </tr>
         <tr>
             <td>DHL SmartMail Ground</td>
-            <td class="num">1,035</td>
+            <td class="num">1,057</td>
             <td class="num">1.74</td>
-            <td class="num">41.1%</td>
-            <td class="num">75.7%</td>
+            <td class="num">40.1%</td>
+            <td class="num">77.0%</td>
         </tr>
         <tr>
             <td>USPS First Class</td>
-            <td class="num">341</td>
+            <td class="num">338</td>
             <td class="num">2.34</td>
-            <td class="num">23.8%</td>
-            <td class="num">54.3%</td>
+            <td class="num">24.0%</td>
+            <td class="num">54.7%</td>
         </tr>
         <tr>
             <td>DHL SM Parcel Exp Max</td>
-            <td class="num">309</td>
+            <td class="num">312</td>
             <td class="num">2.21</td>
-            <td class="num">29.1%</td>
-            <td class="num">58.6%</td>
+            <td class="num">27.9%</td>
+            <td class="num">58.3%</td>
         </tr>
         <tr>
             <td>USPS Priority Mail</td>
-            <td class="num">64</td>
-            <td class="num">1.84</td>
-            <td class="num">45.3%</td>
-            <td class="num">73.4%</td>
+            <td class="num">67</td>
+            <td class="num">1.90</td>
+            <td class="num">46.3%</td>
+            <td class="num">76.1%</td>
         </tr>
         <tr>
             <td>FedEx Home Delivery</td>
-            <td class="num">17</td>
-            <td class="num">2.41</td>
-            <td class="num">5.9%</td>
-            <td class="num">58.8%</td>
+            <td class="num">19</td>
+            <td class="num">2.37</td>
+            <td class="num">5.3%</td>
+            <td class="num">63.2%</td>
         </tr></tbody>
         </table></div>
+  </div>
+
+  
+  <!-- Backlog: open orders awaiting a first shipment -->
+  <div class="section">
+    <div class="section-title">Backlog &mdash; Open Orders Awaiting Shipment</div>
+    <div class="section-sub">
+      Orders with no shipment record yet, as of the newest shipment data
+      (<strong>2026-09-14</strong>). Orders are ingested through
+      <strong>2026-09-13</strong>.
+    </div>
+    <div class="banner banner-bad">15 open order(s) have now waited more than 3 shipping days.</div>
+    <div class="hero-grid">
+      <div class="hero-card">
+        <div class="hero-label">Open Orders</div>
+        <div class="hero-value">558</div>
+        <div class="hero-sub">$30,256 of goods</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Not Yet Due</div>
+        <div class="hero-value">236</div>
+        <div class="hero-sub">no shipping day has passed yet</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Past 3-Day SLA</div>
+        <div class="hero-value" style="color:#ff7b72">15</div>
+        <div class="hero-sub">waiting more than 3 shipping days</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Oldest Open Order</div>
+        <div class="hero-value">19</div>
+        <div class="hero-sub">shipping days waiting (30 calendar)</div>
+      </div>
+    </div>
+    <div class="definitions">
+      <strong>Age is counted in shipping days, not calendar days</strong>, and the
+      shipping calendar is read from the shipments themselves rather than assumed
+      to be Mon&ndash;Fri &mdash; so a weekend and a holiday the warehouse actually
+      took are both handled without anyone maintaining a list. The newest ship day
+      is <em>excluded</em> from the count because it is still being worked: an order
+      placed Friday reads &ldquo;not yet due&rdquo; on Monday morning, which is what
+      the warehouse would say, rather than &ldquo;1 day late&rdquo;.<br>
+      Counts orders that still owe the customer goods
+      (<code>PAID, PARTIALLY_PAID, PARTIALLY_REFUNDED, AUTHORIZED, PENDING</code>). Refunded, voided and expired
+      orders are excluded &mdash; they are finished, not waiting.
+    </div>
+    <div class="bl-grid">
+      <div class="chart-wrap" style="height:auto;min-height:260px;min-width:0">
+        <div class="wd-title">Queue by Age</div>
+        <div class="wd-sub">How long each open order has been waiting.</div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Waiting</th><th class="num">Orders</th>
+              <th class="num">Share</th><th class="num">Value</th></tr></thead>
+            <tbody>
+            <tr>
+                <td>Not yet due</td>
+                <td class="num"><strong>236</strong></td>
+                <td class="num">42.3%</td>
+                <td class="num">$11,434.68</td>
+            </tr>
+            <tr>
+                <td>1 shipping day</td>
+                <td class="num"><strong>226</strong></td>
+                <td class="num">40.5%</td>
+                <td class="num">$12,998.78</td>
+            </tr>
+            <tr>
+                <td>2 shipping days</td>
+                <td class="num"><strong>78</strong></td>
+                <td class="num">14.0%</td>
+                <td class="num">$4,927.68</td>
+            </tr>
+            <tr>
+                <td>3 shipping days</td>
+                <td class="num"><strong>3</strong></td>
+                <td class="num">0.5%</td>
+                <td class="num">$265.49</td>
+            </tr>
+            <tr style="color:#ff7b72">
+                <td>4-5 shipping days <span style="font-size:0.8em;opacity:.8">past SLA</span></td>
+                <td class="num"><strong>1</strong></td>
+                <td class="num">0.2%</td>
+                <td class="num">$11.36</td>
+            </tr>
+            <tr style="color:#ff7b72">
+                <td>6-10 shipping days <span style="font-size:0.8em;opacity:.8">past SLA</span></td>
+                <td class="num"><strong>3</strong></td>
+                <td class="num">0.5%</td>
+                <td class="num">$52.92</td>
+            </tr>
+            <tr style="color:#ff7b72">
+                <td>11+ shipping days <span style="font-size:0.8em;opacity:.8">past SLA</span></td>
+                <td class="num"><strong>11</strong></td>
+                <td class="num">2.0%</td>
+                <td class="num">$565.50</td>
+            </tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:auto;min-height:260px;min-width:0">
+        <div class="wd-title">Excluded: Stale Unshipped (1,049)</div>
+        <div class="wd-sub">Older than 30 days &mdash; not a work queue.</div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Cause</th><th class="num">Orders</th><th class="num">Share</th></tr></thead>
+            <tbody>
+            <tr><td>Walmart WFS — fulfilled by Walmart, never picked here</td><td class="num">203</td>
+            <td class="num">19.4%</td></tr>
+            <tr><td>Ordered 2025-12 — the known December order-number match failure</td><td class="num">495</td>
+            <td class="num">47.2%</td></tr>
+            <tr><td>Unattributed — no shipment record found</td><td class="num">351</td>
+            <td class="num">33.5%</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="definitions" style="margin-top:14px">
+      <strong>Why the stale group is shown but not counted as backlog.</strong>
+      1,049 orders ($36,565) have no shipment record and are
+      more than 30 days old. They are <em>not</em> orders the warehouse
+      is about to pick, and folding them into the headline would publish about a
+      thousand phantom open orders. The two largest causes are identified above and
+      counted, not estimated: Walmart WFS orders ship from Walmart&rsquo;s own
+      warehouse and can never acquire one of our shipment records, and the 2025-12
+      cluster is the known December order-number match failure. The remainder is
+      labelled unattributed rather than quietly absorbed into one of the named
+      causes. They are shown because a number withheld without the reader knowing
+      it was withheld is worse than a number with a caveat.
+    </div>
   </div>
 
   <!-- Slow orders -->
@@ -524,6 +711,38 @@
             </thead>
             <tbody>
             <tr>
+                <td><code>TC224749</code></td>
+                <td>2026-08-31</td>
+                <td>2026-09-11</td>
+                <td class="num"><strong>11</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Priority Mail</td>
+            </tr>
+            <tr>
+                <td><code>TC225635</code></td>
+                <td>2026-09-06</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>8</strong></td>
+                <td>DHL SmartMail</td>
+                <td>DHL SmartMail Expedited</td>
+            </tr>
+            <tr>
+                <td><code>TC225678</code></td>
+                <td>2026-09-06</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>8</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC225284</code></td>
+                <td>2026-09-04</td>
+                <td>2026-09-10</td>
+                <td class="num"><strong>6</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS First Class</td>
+            </tr>
+            <tr>
                 <td><code>TC225080</code></td>
                 <td>2026-09-02</td>
                 <td>2026-09-08</td>
@@ -532,114 +751,82 @@
                 <td>USPS Ground Advantage</td>
             </tr>
             <tr>
-                <td><code>TC224300</code></td>
-                <td>2026-08-26</td>
-                <td>2026-09-01</td>
-                <td class="num"><strong>6</strong></td>
+                <td><code>TC226225</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
             </tr>
             <tr>
-                <td><code>TC224330</code></td>
-                <td>2026-08-26</td>
-                <td>2026-09-01</td>
-                <td class="num"><strong>6</strong></td>
+                <td><code>TC226227</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
             </tr>
             <tr>
-                <td><code>TC224337</code></td>
-                <td>2026-08-27</td>
-                <td>2026-09-01</td>
+                <td><code>TC226229</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC226230</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC226232</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
                 <td class="num"><strong>5</strong></td>
                 <td>DHL SmartMail</td>
                 <td>DHL SmartMail Expedited</td>
             </tr>
             <tr>
-                <td><code>TC224391</code></td>
-                <td>2026-08-27</td>
-                <td>2026-09-01</td>
+                <td><code>TC226233</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
                 <td class="num"><strong>5</strong></td>
                 <td>DHL SmartMail</td>
                 <td>DHL SmartMail Expedited</td>
             </tr>
             <tr>
-                <td><code>TC225222</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
+                <td><code>TC226234</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
             </tr>
             <tr>
-                <td><code>TC225243</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
-                <td>DHL SmartMail</td>
-                <td>DHL SmartMail Expedited</td>
-            </tr>
-            <tr>
-                <td><code>TC225269</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
-                <td>DHL SmartMail</td>
-                <td>DHL SmartMail Expedited</td>
-            </tr>
-            <tr>
-                <td><code>TC225270</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
-                <td>DHL SmartMail</td>
-                <td>DHL SmartMail Expedited</td>
-            </tr>
-            <tr>
-                <td><code>TC225271</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
-                <td>DHL SmartMail</td>
-                <td>DHL SmartMail Ground</td>
-            </tr>
-            <tr>
-                <td><code>TC225272</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
-                <td>USPS (via Stamps.com)</td>
-                <td>USPS First Class</td>
-            </tr>
-            <tr>
-                <td><code>TC225273</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
+                <td><code>TC226237</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
             </tr>
             <tr>
-                <td><code>TC225274</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
+                <td><code>TC226238</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
             </tr>
             <tr>
-                <td><code>TC225275</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
-                <td>DHL SmartMail</td>
-                <td>DHL SM Parcel Exp Max</td>
-            </tr>
-            <tr>
-                <td><code>TC225276</code></td>
-                <td>2026-09-04</td>
-                <td>2026-09-08</td>
-                <td class="num"><strong>4</strong></td>
+                <td><code>TC226239</code></td>
+                <td>2026-09-09</td>
+                <td>2026-09-14</td>
+                <td class="num"><strong>5</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
             </tr></tbody>
@@ -655,7 +842,7 @@
 
 <script>
 const TREND_HIGHLIGHT_IDX = -1;
-const trendBarColors = [1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.15, 1.87, 1.94, 1.7, 2.16, 1.63].map((_, i) =>
+const trendBarColors = [1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.15, 1.87, 1.94, 1.7, 2.16, 2.11].map((_, i) =>
   i === TREND_HIGHLIGHT_IDX ? '#D4A843' : 'rgba(212,168,67,0.35)'
 );
 
@@ -667,11 +854,11 @@ new Chart(trendCtx, {
     datasets: [
       {
         label: 'Avg Days to Ship',
-        data: [1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.15, 1.87, 1.94, 1.7, 2.16, 1.63],
+        data: [1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.15, 1.87, 1.94, 1.7, 2.16, 2.11],
         borderColor: '#D4A843',
         backgroundColor: 'rgba(212,168,67,0.15)',
         pointBackgroundColor: trendBarColors,
-        pointRadius: [1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.15, 1.87, 1.94, 1.7, 2.16, 1.63].map((_, i) => i === TREND_HIGHLIGHT_IDX ? 6 : 3),
+        pointRadius: [1.14, 1.97, 2.52, 1.42, 1.37, 1.08, 1.76, 1.92, 1.6, 2.13, 2.98, 2.93, 2.57, 6.33, 6.15, 2.51, 4.17, 2.56, 1.15, 1.87, 1.94, 1.7, 2.16, 2.11].map((_, i) => i === TREND_HIGHLIGHT_IDX ? 6 : 3),
         pointBorderWidth: 0,
         yAxisID: 'yDays',
         tension: 0.3,
@@ -679,7 +866,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 1 Day %',
-        data: [69.4, 43.9, 30.1, 60.3, 58.4, 74.4, 48.0, 39.6, 53.7, 42.7, 8.0, 11.9, 28.7, 1.7, 15.6, 26.4, 5.5, 29.2, 68.8, 52.4, 31.7, 44.5, 30.9, 61.6],
+        data: [69.4, 43.9, 30.1, 60.3, 58.4, 74.4, 48.0, 39.6, 53.7, 42.7, 8.0, 11.9, 28.7, 1.7, 15.6, 26.4, 5.5, 29.2, 68.8, 52.4, 31.7, 44.5, 30.9, 30.5],
         borderColor: '#7ee787',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -687,7 +874,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 2 Days %',
-        data: [92.1, 73.7, 57.4, 80.2, 86.7, 94.0, 69.7, 74.8, 82.6, 56.2, 31.2, 36.5, 56.6, 17.6, 29.2, 51.1, 24.0, 47.9, 91.4, 66.7, 67.4, 74.1, 64.7, 66.4],
+        data: [92.1, 73.7, 57.4, 80.2, 86.7, 94.0, 69.7, 74.8, 82.6, 56.2, 31.2, 36.5, 56.6, 17.6, 29.2, 51.1, 24.0, 47.9, 91.4, 66.7, 67.4, 74.1, 64.6, 57.7],
         borderColor: '#58a6ff',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -696,7 +883,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 3 Days %',
-        data: [99.3, 82.8, 71.3, 97.4, 97.4, 99.9, 95.3, 92.5, 97.9, 83.7, 71.8, 73.9, 72.8, 26.4, 37.8, 73.5, 38.7, 69.8, 98.2, 79.9, 94.1, 96.0, 88.8, 83.3],
+        data: [99.3, 82.8, 71.3, 97.4, 97.4, 99.9, 95.3, 92.5, 97.9, 83.7, 71.8, 73.9, 72.8, 26.4, 37.8, 73.5, 38.7, 69.8, 98.2, 79.9, 94.1, 96.0, 88.8, 90.1],
         borderColor: '#a371f7',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -705,7 +892,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Monthly Orders',
-        data: [3655, 5247, 3788, 3407, 3309, 3841, 4829, 3248, 2572, 2799, 3087, 3369, 3790, 6370, 3013, 4020, 4612, 4103, 4006, 3160, 2830, 2920, 3105, 669],
+        data: [3655, 5247, 3788, 3407, 3309, 3841, 4829, 3248, 2572, 2799, 3087, 3369, 3790, 6370, 3013, 4020, 4612, 4103, 4006, 3160, 2830, 2920, 3106, 1366],
         borderColor: 'rgba(200,200,200,0.55)',
         backgroundColor: 'rgba(200,200,200,0.08)',
         yAxisID: 'yOrders',
@@ -757,7 +944,7 @@ new Chart(distCtx, {
     labels: ["Same Day", "1 Day", "2 Days", "3 Days", "4\u20135 Days", "6\u20137 Days", "8\u201310 Days", "11+ Days"],
     datasets: [{
       label: 'Orders',
-      data: [945, 2136, 2785, 2160, 639, 39, 8, 7],
+      data: [929, 2108, 2993, 2315, 608, 38, 10, 8],
       backgroundColor: ['#7ee787','#58a6ff','#a371f7','#D4A843','#f0883e','#ff7b72','#cf222e','#8b0000'],
       borderRadius: 4,
     }]
@@ -771,7 +958,7 @@ new Chart(distCtx, {
       tooltip: {
         callbacks: {
           label: ctx => {
-            const pct = [10.8, 24.5, 31.9, 24.8, 7.3, 0.4, 0.1, 0.1][ctx.dataIndex];
+            const pct = [10.3, 23.4, 33.2, 25.7, 6.7, 0.4, 0.1, 0.1][ctx.dataIndex];
             return ctx.parsed.y.toLocaleString() + ' orders (' + pct.toFixed(1) + '%)';
           }
         }
@@ -787,10 +974,10 @@ new Chart(distCtx, {
   }
 });
 
-const F_LABELS = ["2026-07-11", "2026-07-12", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08"];
-const F_COUNTS = [0, 0, 169, 142, 115, 184, 150, 0, 0, 170, 191, 150, 124, 84, 0, 0, 155, 177, 127, 86, 81, 0, 0, 169, 182, 118, 124, 80, 0, 0, 116, 164, 165, 142, 79, 0, 0, 210, 169, 204, 152, 148, 0, 0, 194, 178, 186, 116, 102, 0, 0, 199, 181, 136, 121, 160, 0, 0, 0, 252];
-const F_KINDS  = ["weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "closed", "shipping"];
-const F_AVG    = 150.0;
+const F_LABELS = ["2026-07-17", "2026-07-18", "2026-07-19", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14"];
+const F_COUNTS = [150, 0, 0, 170, 191, 150, 124, 84, 0, 0, 155, 177, 127, 86, 81, 0, 0, 169, 182, 118, 124, 80, 0, 0, 116, 164, 165, 142, 79, 0, 0, 210, 169, 204, 152, 148, 0, 0, 194, 178, 186, 116, 102, 0, 0, 199, 181, 136, 121, 160, 0, 0, 0, 387, 209, 217, 146, 0, 0, 30];
+const F_KINDS  = ["shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "closed", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping"];
+const F_AVG    = 153.1;
 const F_KIND_TEXT = {
   shipping: 'shipped',
   weekend:  'weekend \u2014 warehouse closed',
@@ -897,6 +1084,90 @@ new Chart(fulfilledCtx, {
     }
   }]
 });
+
+
+const DT_ROWS = [{"date": "2026-07-17", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 148, "target": 2, "walmart": 0, "total": 150, "sla_n": 148, "avg": 0.88, "p1": 89.9, "p2": 99.3, "late": 0}, {"date": "2026-07-18", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-07-19", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-07-20", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 161, "target": 9, "walmart": 0, "total": 170, "sla_n": 161, "avg": 2.94, "p1": 0.0, "p2": 23.6, "late": 28}, {"date": "2026-07-21", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 187, "target": 4, "walmart": 0, "total": 191, "sla_n": 187, "avg": 2.48, "p1": 15.5, "p2": 56.1, "late": 35}, {"date": "2026-07-22", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 141, "target": 9, "walmart": 0, "total": 150, "sla_n": 141, "avg": 1.51, "p1": 47.5, "p2": 99.3, "late": 0}, {"date": "2026-07-23", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 121, "target": 3, "walmart": 0, "total": 124, "sla_n": 121, "avg": 0.68, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-07-24", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 78, "target": 6, "walmart": 0, "total": 84, "sla_n": 78, "avg": 0.51, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-07-25", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-07-26", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-07-27", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 137, "target": 18, "walmart": 0, "total": 155, "sla_n": 137, "avg": 2.09, "p1": 15.3, "p2": 77.4, "late": 3}, {"date": "2026-07-28", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 173, "target": 4, "walmart": 0, "total": 177, "sla_n": 173, "avg": 1.19, "p1": 69.4, "p2": 98.8, "late": 1}, {"date": "2026-07-29", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 123, "target": 4, "walmart": 0, "total": 127, "sla_n": 123, "avg": 0.72, "p1": 97.6, "p2": 100.0, "late": 0}, {"date": "2026-07-30", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 78, "target": 8, "walmart": 0, "total": 86, "sla_n": 78, "avg": 0.45, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-07-31", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 76, "target": 5, "walmart": 0, "total": 81, "sla_n": 76, "avg": 0.7, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-08-01", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-02", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-03", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 155, "target": 14, "walmart": 0, "total": 169, "sla_n": 155, "avg": 2.59, "p1": 0.6, "p2": 46.5, "late": 10}, {"date": "2026-08-04", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 178, "target": 4, "walmart": 0, "total": 182, "sla_n": 178, "avg": 1.76, "p1": 39.3, "p2": 84.3, "late": 0}, {"date": "2026-08-05", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 112, "target": 6, "walmart": 0, "total": 118, "sla_n": 112, "avg": 1.19, "p1": 81.2, "p2": 100.0, "late": 0}, {"date": "2026-08-06", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 121, "target": 3, "walmart": 0, "total": 124, "sla_n": 121, "avg": 0.68, "p1": 98.3, "p2": 99.2, "late": 0}, {"date": "2026-08-07", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 78, "target": 2, "walmart": 0, "total": 80, "sla_n": 78, "avg": 0.41, "p1": 98.7, "p2": 100.0, "late": 0}, {"date": "2026-08-08", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-09", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-10", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 95, "target": 21, "walmart": 0, "total": 116, "sla_n": 95, "avg": 2.67, "p1": 0.0, "p2": 40.0, "late": 1}, {"date": "2026-08-11", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 161, "target": 3, "walmart": 0, "total": 164, "sla_n": 161, "avg": 2.81, "p1": 0.0, "p2": 33.5, "late": 23}, {"date": "2026-08-12", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 161, "target": 4, "walmart": 0, "total": 165, "sla_n": 161, "avg": 2.3, "p1": 21.7, "p2": 48.4, "late": 0}, {"date": "2026-08-13", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 133, "target": 9, "walmart": 0, "total": 142, "sla_n": 133, "avg": 2.12, "p1": 24.8, "p2": 65.4, "late": 3}, {"date": "2026-08-14", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 78, "target": 1, "walmart": 0, "total": 79, "sla_n": 78, "avg": 1.46, "p1": 66.7, "p2": 94.9, "late": 4}, {"date": "2026-08-15", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-16", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-17", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 201, "target": 9, "walmart": 0, "total": 210, "sla_n": 201, "avg": 2.87, "p1": 0.5, "p2": 26.4, "late": 19}, {"date": "2026-08-18", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 165, "target": 4, "walmart": 0, "total": 169, "sla_n": 165, "avg": 2.84, "p1": 0.0, "p2": 38.8, "late": 21}, {"date": "2026-08-19", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 199, "target": 5, "walmart": 0, "total": 204, "sla_n": 199, "avg": 2.59, "p1": 4.0, "p2": 57.3, "late": 13}, {"date": "2026-08-20", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 144, "target": 8, "walmart": 0, "total": 152, "sla_n": 144, "avg": 1.94, "p1": 17.4, "p2": 88.9, "late": 0}, {"date": "2026-08-21", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 7, "walmart": 0, "total": 148, "sla_n": 141, "avg": 2.01, "p1": 16.3, "p2": 92.2, "late": 7}, {"date": "2026-08-22", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-23", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-24", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 177, "target": 17, "walmart": 0, "total": 194, "sla_n": 177, "avg": 4.02, "p1": 0.0, "p2": 0.0, "late": 160}, {"date": "2026-08-25", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 177, "target": 1, "walmart": 0, "total": 178, "sla_n": 177, "avg": 3.23, "p1": 0.6, "p2": 26.6, "late": 63}, {"date": "2026-08-26", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 183, "target": 3, "walmart": 0, "total": 186, "sla_n": 183, "avg": 2.08, "p1": 42.1, "p2": 79.8, "late": 23}, {"date": "2026-08-27", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 111, "target": 5, "walmart": 0, "total": 116, "sla_n": 111, "avg": 0.69, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-08-28", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 100, "target": 2, "walmart": 0, "total": 102, "sla_n": 100, "avg": 0.41, "p1": 98.0, "p2": 99.0, "late": 0}, {"date": "2026-08-29", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-30", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-31", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 185, "target": 14, "walmart": 0, "total": 199, "sla_n": 185, "avg": 2.3, "p1": 25.4, "p2": 70.8, "late": 5}, {"date": "2026-09-01", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 175, "target": 6, "walmart": 0, "total": 181, "sla_n": 175, "avg": 1.15, "p1": 76.6, "p2": 94.3, "late": 6}, {"date": "2026-09-02", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 131, "target": 5, "walmart": 0, "total": 136, "sla_n": 131, "avg": 0.89, "p1": 98.5, "p2": 98.5, "late": 1}, {"date": "2026-09-03", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 114, "target": 7, "walmart": 0, "total": 121, "sla_n": 114, "avg": 1.03, "p1": 76.3, "p2": 100.0, "late": 0}, {"date": "2026-09-04", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 157, "target": 3, "walmart": 0, "total": 160, "sla_n": 157, "avg": 0.51, "p1": 97.5, "p2": 100.0, "late": 0}, {"date": "2026-09-05", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-06", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-07", "dow": "Mon", "kind": "closed", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-08", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 357, "target": 30, "walmart": 0, "total": 387, "sla_n": 357, "avg": 3.1, "p1": 0.0, "p2": 21.8, "late": 112}, {"date": "2026-09-09", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 193, "target": 16, "walmart": 0, "total": 209, "sla_n": 193, "avg": 2.42, "p1": 0.0, "p2": 58.0, "late": 0}, {"date": "2026-09-10", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 214, "target": 3, "walmart": 0, "total": 217, "sla_n": 214, "avg": 2.6, "p1": 0.9, "p2": 42.5, "late": 7}, {"date": "2026-09-11", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 5, "walmart": 0, "total": 146, "sla_n": 141, "avg": 2.6, "p1": 0.7, "p2": 44.0, "late": 1}, {"date": "2026-09-12", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-13", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-14", "dow": "Mon", "kind": "shipping", "partial": true, "dtc": 19, "target": 11, "walmart": 0, "total": 30, "sla_n": 19, "avg": 4.84, "p1": 5.3, "p2": 10.5, "late": 16}];
+let dtSortKey = 'date', dtSortDir = -1, dtPage = 1;
+
+function dtPageSize() {
+  const v = document.getElementById('dtPageSize').value;
+  return v === 'All' ? Infinity : parseInt(v, 10);
+}
+// Filter AND sort the FULL matching set here; render() only slices it. Slicing
+// before sorting would make "sort by avg days" show the top N of an arbitrary N.
+function dtCompute() {
+  const onlyShip = document.getElementById('dtOnlyShip').checked;
+  const rows = DT_ROWS.filter(r => !onlyShip || r.kind === 'shipping');
+  const k = dtSortKey;
+  rows.sort((a, b) => {
+    const av = a[k], bv = b[k];
+    // Nulls sort to the END in BOTH directions. A null here means "the warehouse
+    // was closed", which is not a low value - a sentinel of -Infinity would put
+    // every closed day at the top when sorting ascending. Ties break on date so
+    // the order is deterministic across renders (a comparator that returns NaN
+    // is non-transitive and silently randomises the whole group).
+    if (av == null && bv == null) return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    let c = 0;
+    if (typeof av === 'string' || typeof bv === 'string') c = av < bv ? -1 : av > bv ? 1 : 0;
+    else c = av - bv;
+    if (c !== 0) return c * dtSortDir;
+    return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+  });
+  return rows;
+}
+function dtRender() {
+  const rows = dtCompute();
+  const size = dtPageSize();
+  const pages = Math.max(1, Math.ceil(rows.length / (size === Infinity ? rows.length || 1 : size)));
+  if (dtPage > pages) dtPage = pages;
+  const start = size === Infinity ? 0 : (dtPage - 1) * size;
+  const slice = size === Infinity ? rows : rows.slice(start, start + size);
+  const num = v => v == null ? '<span style="color:#555">&mdash;</span>' : v;
+  const pct = v => v == null ? '<span style="color:#555">&mdash;</span>' : v.toFixed(1) + '%';
+  document.getElementById('dtBody').innerHTML = slice.map(r => {
+    const tag = r.partial
+      ? ' <span style="font-size:0.75em;color:#e3b341">in progress</span>'
+      : (r.kind === 'weekend' ? ' <span style="font-size:0.75em;color:#666">weekend</span>'
+      : (r.kind === 'closed' ? ' <span style="font-size:0.75em;color:#666">closed</span>' : ''));
+    const lateCell = r.late == null ? num(null)
+      : (r.late > 0 ? '<span style="color:#ff7b72">' + r.late + '</span>' : '0');
+    return '<tr' + (r.kind !== 'shipping' ? ' style="opacity:.55"' : '') + '>'
+      + '<td>' + r.date + tag + '</td><td>' + r.dow + '</td>'
+      + '<td class="num">' + (r.total ? r.dtc : num(null)) + '</td>'
+      + '<td class="num">' + (r.total ? r.target : num(null)) + '</td>'
+      + '<td class="num">' + (r.total ? r.walmart : num(null)) + '</td>'
+      + '<td class="num"><strong>' + (r.total ? r.total : num(null)) + '</strong></td>'
+      + '<td class="num">' + (r.avg == null ? num(null) : r.avg.toFixed(2)) + '</td>'
+      + '<td class="num">' + pct(r.p1) + '</td><td class="num">' + pct(r.p2) + '</td>'
+      + '<td class="num">' + lateCell + '</td></tr>';
+  }).join('');
+  // Counts recompute against the LIVE filter set, never a fixed number.
+  document.getElementById('dtCount').textContent =
+    rows.length + ' day(s)' + (size === Infinity ? '' : ' · page ' + dtPage + ' of ' + pages);
+  const pg = document.getElementById('dtPager');
+  pg.innerHTML = (pages <= 1 || size === Infinity) ? '' :
+    Array.from({length: pages}, (_, i) => i + 1).map(i =>
+      '<button data-p="' + i + '" style="background:' + (i === dtPage ? '#D4A843' : 'rgba(255,255,255,0.06)')
+      + ';color:' + (i === dtPage ? '#1a1a2e' : '#aaa')
+      + ';border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:4px 9px;cursor:pointer">'
+      + i + '</button>').join('');
+  pg.querySelectorAll('button').forEach(b =>
+    b.onclick = () => { dtPage = parseInt(b.dataset.p, 10); dtRender(); });
+}
+document.querySelectorAll('#dtTable th[data-k]').forEach(th => {
+  th.style.cursor = 'pointer';
+  th.onclick = () => {
+    const k = th.dataset.k;
+    if (dtSortKey === k) dtSortDir = -dtSortDir; else { dtSortKey = k; dtSortDir = -1; }
+    dtPage = 1;  // any sort or filter change resets to page 1
+    dtRender();
+  };
+});
+document.getElementById('dtOnlyShip').onchange = () => { dtPage = 1; dtRender(); };
+document.getElementById('dtPageSize').onchange = () => { dtPage = 1; dtRender(); };
+dtRender();
 
 </script>
 
