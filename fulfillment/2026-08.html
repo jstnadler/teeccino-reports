@@ -43,6 +43,12 @@
   .hero-value { font-size:1.9em; font-weight:700; color:#fff; }
   .hero-sub { font-size:0.78em; color:#777; margin-top:4px; }
   .chart-grid { display:grid; grid-template-columns:2fr 1fr; gap:18px; }
+  /* minmax(0,1fr), not 1fr: an `fr` track has an implicit min-content floor, so
+     a long unbreakable label silently widens the track past its container and
+     the DOCUMENT scrolls sideways. The floor is what has to go, not the text. */
+  .bl-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:18px; }
+  .bl-grid td:first-child { white-space:normal; }
+  @media (max-width: 1100px) { .bl-grid { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 900px) { .chart-grid { grid-template-columns: 1fr; } }
   .chart-wrap { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
                  border-radius:10px; padding:18px; height:380px; }
@@ -87,7 +93,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — August 2026</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-09 14:32. · 117,628 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-14 13:01. · 118,326 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -191,7 +197,7 @@
         </div>
         <div class="hero-card">
             <div class="hero-label">Orders</div>
-            <div class="hero-value">3,105</div>
+            <div class="hero-value">3,106</div>
             <div class="hero-sub">matched DTC orders in this window</div>
         </div></div>
   </div>
@@ -221,17 +227,17 @@
             <tbody>
         <tr>
             <td><strong>August 2026</strong></td>
-            <td class="num">3,105</td>
+            <td class="num">3,106</td>
             <td class="num">2.16</td>
             <td class="num">2.00</td>
             <td class="num">4.00</td>
             <td class="num">6.0%</td>
             <td class="num">30.9%</td>
-            <td class="num">64.7%</td>
+            <td class="num">64.6%</td>
             <td class="num">88.8%</td>
             <td class="num">98.4%</td>
-            <td class="num">99.6%</td>
-            <td class="num">99.8%</td>
+            <td class="num">99.5%</td>
+            <td class="num">99.7%</td>
         </tr>
         <tr>
             <td><strong>July 2026</strong></td>
@@ -263,7 +269,7 @@
         </tr>
         <tr>
             <td><strong>Trailing 12 months</strong></td>
-            <td class="num">45,298</td>
+            <td class="num">45,299</td>
             <td class="num">3.22</td>
             <td class="num">3.00</td>
             <td class="num">7.00</td>
@@ -273,7 +279,7 @@
             <td class="num">67.0%</td>
             <td class="num">86.8%</td>
             <td class="num">91.5%</td>
-            <td class="num">95.8%</td>
+            <td class="num">95.7%</td>
         </tr></tbody>
         </table></div>
   </div>
@@ -408,6 +414,57 @@
     </div>
   </div>
 
+  
+  <!-- Daily table: the numbers behind the ship-date chart -->
+  <div class="section">
+    <div class="section-title">Daily Detail &mdash; August 2026</div>
+    <div class="section-sub">
+      The figures behind the chart above, one row per calendar day
+      (31 days, 21 of them shipping days).
+      <strong>Order counts are DTC + Target + Walmart</strong> (the team&rsquo;s
+      workload); <strong>the SLA columns are DTC only</strong> (the service
+      promise). They are different populations on purpose &mdash; a figure in one
+      group does not reconcile against a figure in the other.
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <label style="color:#888;font-size:0.85em">
+        <input type="checkbox" id="dtOnlyShip" checked> Shipping days only
+      </label>
+      <label style="color:#888;font-size:0.85em">Rows
+        <select id="dtPageSize">
+          <option>15</option><option>25</option><option>50</option><option>All</option>
+        </select>
+      </label>
+      <span id="dtCount" style="color:#888;font-size:0.85em"></span>
+    </div>
+    <div class="table-scroll">
+      <table id="dtTable">
+        <thead><tr>
+          <th data-k="date">Date</th>
+          <th>Day</th>
+          <th class="num" data-k="dtc">DTC</th>
+          <th class="num" data-k="target">Target</th>
+          <th class="num" data-k="walmart">Walmart</th>
+          <th class="num" data-k="total">Total Shipped</th>
+          <th class="num" data-k="avg">Avg Days (DTC)</th>
+          <th class="num" data-k="p1">&le; 1 Day</th>
+          <th class="num" data-k="p2">&le; 2 Days</th>
+          <th class="num" data-k="late">&gt; 3 Days</th>
+        </tr></thead>
+        <tbody id="dtBody"></tbody>
+      </table>
+    </div>
+    <div id="dtPager" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"></div>
+    <div class="definitions" style="margin-top:14px">
+      Click a column header to sort. <strong>Days with no shipments show a dash, not
+      a zero</strong> &mdash; the warehouse ships business days only, and a closed
+      Saturday rendered as &ldquo;0 orders, 0% on time&rdquo; reads as a failure
+      instead of a weekend. A row marked <em>in progress</em> is the current ship
+      day: it is still being worked, its averages are a partial read, and it is
+      shown so the day is not mistaken for missing.
+    </div>
+  </div>
+
   <!-- Carrier breakdown -->
   <div class="section">
     <div class="section-title">By Carrier — August 2026</div>
@@ -435,11 +492,11 @@
         </tr>
         <tr>
             <td>USPS (via Stamps.com)</td>
-            <td class="num">1,339</td>
-            <td class="num">2.28</td>
+            <td class="num">1,340</td>
+            <td class="num">2.29</td>
             <td class="num">5.2%</td>
             <td class="num">28.8%</td>
-            <td class="num">60.5%</td>
+            <td class="num">60.4%</td>
         </tr>
         <tr>
             <td>FedEx</td>
@@ -505,10 +562,10 @@
         </tr>
         <tr>
             <td>USPS Priority Mail</td>
-            <td class="num">24</td>
-            <td class="num">2.00</td>
-            <td class="num">54.2%</td>
-            <td class="num">70.8%</td>
+            <td class="num">25</td>
+            <td class="num">2.36</td>
+            <td class="num">52.0%</td>
+            <td class="num">68.0%</td>
         </tr>
         <tr>
             <td>FedEx Home Delivery</td>
@@ -519,6 +576,8 @@
         </tr></tbody>
         </table></div>
   </div>
+
+  
 
   <!-- Slow orders -->
   <div class="section">
@@ -568,6 +627,14 @@
                 <td class="num"><strong>14</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
+            </tr>
+            <tr>
+                <td><code>TC224749</code></td>
+                <td>2026-08-31</td>
+                <td>2026-09-11</td>
+                <td class="num"><strong>11</strong></td>
+                <td>USPS (via Stamps.com)</td>
+                <td>USPS Priority Mail</td>
             </tr>
             <tr>
                 <td><code>TC223708</code></td>
@@ -648,14 +715,6 @@
                 <td class="num"><strong>7</strong></td>
                 <td>USPS (via Stamps.com)</td>
                 <td>USPS Ground Advantage</td>
-            </tr>
-            <tr>
-                <td><code>TC224218</code></td>
-                <td>2026-08-25</td>
-                <td>2026-09-01</td>
-                <td class="num"><strong>7</strong></td>
-                <td>USPS (via Stamps.com)</td>
-                <td>USPS Ground Advantage</td>
             </tr></tbody>
         </table>
   </div>
@@ -669,7 +728,7 @@
 
 <script>
 const TREND_HIGHLIGHT_IDX = -1;
-const trendBarColors = [2.28, 2.0, 1.24, 1.01, 1.01, 0.42, 2.06, 2.69, 2.76, 2.61, 1.8, 1.95, 1.89, 3.23, 2.66, 2.66, 2.5, 2.0, 2.09, 3.92, 3.84, 3.06, 2.23, 1.99, 1.18, 1.14, 0.64, 1.32, 2.05, 1.42, 1.0].map((_, i) =>
+const trendBarColors = [2.28, 2.0, 1.24, 1.01, 1.01, 0.42, 2.06, 2.69, 2.76, 2.61, 1.8, 1.95, 1.89, 3.23, 2.66, 2.66, 2.5, 2.0, 2.09, 3.92, 3.84, 3.06, 2.23, 1.99, 1.18, 1.14, 0.64, 1.32, 2.05, 1.42, 1.11].map((_, i) =>
   i === TREND_HIGHLIGHT_IDX ? '#D4A843' : 'rgba(212,168,67,0.35)'
 );
 
@@ -681,11 +740,11 @@ new Chart(trendCtx, {
     datasets: [
       {
         label: 'Avg Days to Ship',
-        data: [2.28, 2.0, 1.24, 1.01, 1.01, 0.42, 2.06, 2.69, 2.76, 2.61, 1.8, 1.95, 1.89, 3.23, 2.66, 2.66, 2.5, 2.0, 2.09, 3.92, 3.84, 3.06, 2.23, 1.99, 1.18, 1.14, 0.64, 1.32, 2.05, 1.42, 1.0],
+        data: [2.28, 2.0, 1.24, 1.01, 1.01, 0.42, 2.06, 2.69, 2.76, 2.61, 1.8, 1.95, 1.89, 3.23, 2.66, 2.66, 2.5, 2.0, 2.09, 3.92, 3.84, 3.06, 2.23, 1.99, 1.18, 1.14, 0.64, 1.32, 2.05, 1.42, 1.11],
         borderColor: '#D4A843',
         backgroundColor: 'rgba(212,168,67,0.15)',
         pointBackgroundColor: trendBarColors,
-        pointRadius: [2.28, 2.0, 1.24, 1.01, 1.01, 0.42, 2.06, 2.69, 2.76, 2.61, 1.8, 1.95, 1.89, 3.23, 2.66, 2.66, 2.5, 2.0, 2.09, 3.92, 3.84, 3.06, 2.23, 1.99, 1.18, 1.14, 0.64, 1.32, 2.05, 1.42, 1.0].map((_, i) => i === TREND_HIGHLIGHT_IDX ? 6 : 3),
+        pointRadius: [2.28, 2.0, 1.24, 1.01, 1.01, 0.42, 2.06, 2.69, 2.76, 2.61, 1.8, 1.95, 1.89, 3.23, 2.66, 2.66, 2.5, 2.0, 2.09, 3.92, 3.84, 3.06, 2.23, 1.99, 1.18, 1.14, 0.64, 1.32, 2.05, 1.42, 1.11].map((_, i) => i === TREND_HIGHLIGHT_IDX ? 6 : 3),
         pointBorderWidth: 0,
         yAxisID: 'yDays',
         tension: 0.3,
@@ -693,7 +752,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 1 Day %',
-        data: [0.0, 0.0, 76.3, 98.9, 98.7, 100.0, 37.3, 0.0, 0.0, 0.0, 37.6, 53.2, 74.3, 0.0, 0.0, 0.0, 0.8, 6.9, 17.7, 11.5, 0.0, 0.0, 0.0, 1.4, 96.2, 96.2, 97.2, 55.9, 0.0, 59.5, 100.0],
+        data: [0.0, 0.0, 76.3, 98.9, 98.7, 100.0, 37.3, 0.0, 0.0, 0.0, 37.6, 53.2, 74.3, 0.0, 0.0, 0.0, 0.8, 6.9, 17.7, 11.5, 0.0, 0.0, 0.0, 1.4, 96.2, 96.2, 97.2, 55.9, 0.0, 59.5, 98.9],
         borderColor: '#7ee787',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -701,7 +760,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 2 Days %',
-        data: [71.7, 100.0, 98.9, 100.0, 100.0, 100.0, 37.3, 31.1, 37.5, 48.3, 95.7, 88.7, 74.3, 0.0, 38.8, 45.4, 82.3, 95.7, 93.6, 11.5, 0.0, 0.0, 76.7, 100.0, 96.2, 97.5, 97.2, 55.9, 95.5, 98.7, 100.0],
+        data: [71.7, 100.0, 98.9, 100.0, 100.0, 100.0, 37.3, 31.1, 37.5, 48.3, 95.7, 88.7, 74.3, 0.0, 38.8, 45.4, 82.3, 95.7, 93.6, 11.5, 0.0, 0.0, 76.7, 100.0, 96.2, 97.5, 97.2, 55.9, 95.5, 98.7, 98.9],
         borderColor: '#58a6ff',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -710,7 +769,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Within 3 Days %',
-        data: [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 81.7, 100.0, 95.1, 96.6, 95.7, 88.7, 74.3, 85.4, 98.5, 96.5, 94.6, 99.1, 93.6, 11.5, 24.3, 94.4, 100.0, 100.0, 97.5, 97.5, 97.2, 100.0, 100.0, 100.0, 100.0],
+        data: [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 81.7, 100.0, 95.1, 96.6, 95.7, 88.7, 74.3, 85.4, 98.5, 96.5, 94.6, 99.1, 93.6, 11.5, 24.3, 94.4, 100.0, 100.0, 97.5, 97.5, 97.2, 100.0, 100.0, 100.0, 98.9],
         borderColor: '#a371f7',
         yAxisID: 'yPct',
         tension: 0.3,
@@ -719,7 +778,7 @@ new Chart(trendCtx, {
       },
       {
         label: 'Daily Orders',
-        data: [99, 80, 93, 92, 78, 72, 126, 122, 144, 89, 93, 62, 70, 151, 134, 141, 130, 116, 141, 200, 70, 71, 60, 70, 80, 80, 72, 111, 88, 79, 91],
+        data: [99, 80, 93, 92, 78, 72, 126, 122, 144, 89, 93, 62, 70, 151, 134, 141, 130, 116, 141, 200, 70, 71, 60, 70, 80, 80, 72, 111, 88, 79, 92],
         borderColor: 'rgba(200,200,200,0.55)',
         backgroundColor: 'rgba(200,200,200,0.08)',
         yAxisID: 'yOrders',
@@ -771,7 +830,7 @@ new Chart(distCtx, {
     labels: ["Same Day", "1 Day", "2 Days", "3 Days", "4\u20135 Days", "6\u20137 Days", "8\u201310 Days", "11+ Days"],
     datasets: [{
       label: 'Orders',
-      data: [187, 773, 1048, 749, 299, 36, 6, 7],
+      data: [187, 773, 1048, 749, 299, 36, 6, 8],
       backgroundColor: ['#7ee787','#58a6ff','#a371f7','#D4A843','#f0883e','#ff7b72','#cf222e','#8b0000'],
       borderRadius: 4,
     }]
@@ -785,7 +844,7 @@ new Chart(distCtx, {
       tooltip: {
         callbacks: {
           label: ctx => {
-            const pct = [6.0, 24.9, 33.8, 24.1, 9.6, 1.2, 0.2, 0.2][ctx.dataIndex];
+            const pct = [6.0, 24.9, 33.7, 24.1, 9.6, 1.2, 0.2, 0.3][ctx.dataIndex];
             return ctx.parsed.y.toLocaleString() + ' orders (' + pct.toFixed(1) + '%)';
           }
         }
@@ -911,6 +970,90 @@ new Chart(fulfilledCtx, {
     }
   }]
 });
+
+
+const DT_ROWS = [{"date": "2026-08-01", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-02", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-03", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 155, "target": 14, "walmart": 0, "total": 169, "sla_n": 155, "avg": 2.59, "p1": 0.6, "p2": 46.5, "late": 10}, {"date": "2026-08-04", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 178, "target": 4, "walmart": 0, "total": 182, "sla_n": 178, "avg": 1.76, "p1": 39.3, "p2": 84.3, "late": 0}, {"date": "2026-08-05", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 112, "target": 6, "walmart": 0, "total": 118, "sla_n": 112, "avg": 1.19, "p1": 81.2, "p2": 100.0, "late": 0}, {"date": "2026-08-06", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 121, "target": 3, "walmart": 0, "total": 124, "sla_n": 121, "avg": 0.68, "p1": 98.3, "p2": 99.2, "late": 0}, {"date": "2026-08-07", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 78, "target": 2, "walmart": 0, "total": 80, "sla_n": 78, "avg": 0.41, "p1": 98.7, "p2": 100.0, "late": 0}, {"date": "2026-08-08", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-09", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-10", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 95, "target": 21, "walmart": 0, "total": 116, "sla_n": 95, "avg": 2.67, "p1": 0.0, "p2": 40.0, "late": 1}, {"date": "2026-08-11", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 161, "target": 3, "walmart": 0, "total": 164, "sla_n": 161, "avg": 2.81, "p1": 0.0, "p2": 33.5, "late": 23}, {"date": "2026-08-12", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 161, "target": 4, "walmart": 0, "total": 165, "sla_n": 161, "avg": 2.3, "p1": 21.7, "p2": 48.4, "late": 0}, {"date": "2026-08-13", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 133, "target": 9, "walmart": 0, "total": 142, "sla_n": 133, "avg": 2.12, "p1": 24.8, "p2": 65.4, "late": 3}, {"date": "2026-08-14", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 78, "target": 1, "walmart": 0, "total": 79, "sla_n": 78, "avg": 1.46, "p1": 66.7, "p2": 94.9, "late": 4}, {"date": "2026-08-15", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-16", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-17", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 201, "target": 9, "walmart": 0, "total": 210, "sla_n": 201, "avg": 2.87, "p1": 0.5, "p2": 26.4, "late": 19}, {"date": "2026-08-18", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 165, "target": 4, "walmart": 0, "total": 169, "sla_n": 165, "avg": 2.84, "p1": 0.0, "p2": 38.8, "late": 21}, {"date": "2026-08-19", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 199, "target": 5, "walmart": 0, "total": 204, "sla_n": 199, "avg": 2.59, "p1": 4.0, "p2": 57.3, "late": 13}, {"date": "2026-08-20", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 144, "target": 8, "walmart": 0, "total": 152, "sla_n": 144, "avg": 1.94, "p1": 17.4, "p2": 88.9, "late": 0}, {"date": "2026-08-21", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 7, "walmart": 0, "total": 148, "sla_n": 141, "avg": 2.01, "p1": 16.3, "p2": 92.2, "late": 7}, {"date": "2026-08-22", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-23", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-24", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 177, "target": 17, "walmart": 0, "total": 194, "sla_n": 177, "avg": 4.02, "p1": 0.0, "p2": 0.0, "late": 160}, {"date": "2026-08-25", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 177, "target": 1, "walmart": 0, "total": 178, "sla_n": 177, "avg": 3.23, "p1": 0.6, "p2": 26.6, "late": 63}, {"date": "2026-08-26", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 183, "target": 3, "walmart": 0, "total": 186, "sla_n": 183, "avg": 2.08, "p1": 42.1, "p2": 79.8, "late": 23}, {"date": "2026-08-27", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 111, "target": 5, "walmart": 0, "total": 116, "sla_n": 111, "avg": 0.69, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-08-28", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 100, "target": 2, "walmart": 0, "total": 102, "sla_n": 100, "avg": 0.41, "p1": 98.0, "p2": 99.0, "late": 0}, {"date": "2026-08-29", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-30", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-31", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 185, "target": 14, "walmart": 0, "total": 199, "sla_n": 185, "avg": 2.3, "p1": 25.4, "p2": 70.8, "late": 5}];
+let dtSortKey = 'date', dtSortDir = -1, dtPage = 1;
+
+function dtPageSize() {
+  const v = document.getElementById('dtPageSize').value;
+  return v === 'All' ? Infinity : parseInt(v, 10);
+}
+// Filter AND sort the FULL matching set here; render() only slices it. Slicing
+// before sorting would make "sort by avg days" show the top N of an arbitrary N.
+function dtCompute() {
+  const onlyShip = document.getElementById('dtOnlyShip').checked;
+  const rows = DT_ROWS.filter(r => !onlyShip || r.kind === 'shipping');
+  const k = dtSortKey;
+  rows.sort((a, b) => {
+    const av = a[k], bv = b[k];
+    // Nulls sort to the END in BOTH directions. A null here means "the warehouse
+    // was closed", which is not a low value - a sentinel of -Infinity would put
+    // every closed day at the top when sorting ascending. Ties break on date so
+    // the order is deterministic across renders (a comparator that returns NaN
+    // is non-transitive and silently randomises the whole group).
+    if (av == null && bv == null) return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    let c = 0;
+    if (typeof av === 'string' || typeof bv === 'string') c = av < bv ? -1 : av > bv ? 1 : 0;
+    else c = av - bv;
+    if (c !== 0) return c * dtSortDir;
+    return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+  });
+  return rows;
+}
+function dtRender() {
+  const rows = dtCompute();
+  const size = dtPageSize();
+  const pages = Math.max(1, Math.ceil(rows.length / (size === Infinity ? rows.length || 1 : size)));
+  if (dtPage > pages) dtPage = pages;
+  const start = size === Infinity ? 0 : (dtPage - 1) * size;
+  const slice = size === Infinity ? rows : rows.slice(start, start + size);
+  const num = v => v == null ? '<span style="color:#555">&mdash;</span>' : v;
+  const pct = v => v == null ? '<span style="color:#555">&mdash;</span>' : v.toFixed(1) + '%';
+  document.getElementById('dtBody').innerHTML = slice.map(r => {
+    const tag = r.partial
+      ? ' <span style="font-size:0.75em;color:#e3b341">in progress</span>'
+      : (r.kind === 'weekend' ? ' <span style="font-size:0.75em;color:#666">weekend</span>'
+      : (r.kind === 'closed' ? ' <span style="font-size:0.75em;color:#666">closed</span>' : ''));
+    const lateCell = r.late == null ? num(null)
+      : (r.late > 0 ? '<span style="color:#ff7b72">' + r.late + '</span>' : '0');
+    return '<tr' + (r.kind !== 'shipping' ? ' style="opacity:.55"' : '') + '>'
+      + '<td>' + r.date + tag + '</td><td>' + r.dow + '</td>'
+      + '<td class="num">' + (r.total ? r.dtc : num(null)) + '</td>'
+      + '<td class="num">' + (r.total ? r.target : num(null)) + '</td>'
+      + '<td class="num">' + (r.total ? r.walmart : num(null)) + '</td>'
+      + '<td class="num"><strong>' + (r.total ? r.total : num(null)) + '</strong></td>'
+      + '<td class="num">' + (r.avg == null ? num(null) : r.avg.toFixed(2)) + '</td>'
+      + '<td class="num">' + pct(r.p1) + '</td><td class="num">' + pct(r.p2) + '</td>'
+      + '<td class="num">' + lateCell + '</td></tr>';
+  }).join('');
+  // Counts recompute against the LIVE filter set, never a fixed number.
+  document.getElementById('dtCount').textContent =
+    rows.length + ' day(s)' + (size === Infinity ? '' : ' · page ' + dtPage + ' of ' + pages);
+  const pg = document.getElementById('dtPager');
+  pg.innerHTML = (pages <= 1 || size === Infinity) ? '' :
+    Array.from({length: pages}, (_, i) => i + 1).map(i =>
+      '<button data-p="' + i + '" style="background:' + (i === dtPage ? '#D4A843' : 'rgba(255,255,255,0.06)')
+      + ';color:' + (i === dtPage ? '#1a1a2e' : '#aaa')
+      + ';border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:4px 9px;cursor:pointer">'
+      + i + '</button>').join('');
+  pg.querySelectorAll('button').forEach(b =>
+    b.onclick = () => { dtPage = parseInt(b.dataset.p, 10); dtRender(); });
+}
+document.querySelectorAll('#dtTable th[data-k]').forEach(th => {
+  th.style.cursor = 'pointer';
+  th.onclick = () => {
+    const k = th.dataset.k;
+    if (dtSortKey === k) dtSortDir = -dtSortDir; else { dtSortKey = k; dtSortDir = -1; }
+    dtPage = 1;  // any sort or filter change resets to page 1
+    dtRender();
+  };
+});
+document.getElementById('dtOnlyShip').onchange = () => { dtPage = 1; dtRender(); };
+document.getElementById('dtPageSize').onchange = () => { dtPage = 1; dtRender(); };
+dtRender();
 
 </script>
 
