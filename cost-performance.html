@@ -228,14 +228,14 @@
   <!-- 4. FINISHED GOODS -->
   <div class="card" id="c-fg">
     <h2>🏭 Finished Goods — total cost to make</h2>
-    <p class="hint"><b>Blend + packing = total cost to make.</b> Use the switch to state it <b>per case</b> (how production is scheduled) or <b>per unit</b> (one individual retail item) — the two differ by exactly the <b>units / case</b> column. For the selected period; click any SKU for the full breakdown. <span class="illus" id="fg-note"></span></p>
+    <p class="hint"><b>Blend + packing = cost to make; + materials = landed cost.</b> Use the switch to state it <b>per case</b> (how production is scheduled) or <b>per unit</b> (one individual retail item) — the two differ by exactly the <b>units / case</b> column. For the selected period; click any SKU for the full breakdown. <span class="illus" id="fg-note"></span></p>
     <div class="ctrls"><input id="fg-q" placeholder="Search SKU or product…" autocomplete="off">
       <label class="allchk" title="Off by default: the list shows only SKUs that actually ran in the selected date range. Tick to include every SKU in the catalogue, including ones with no runs this period."><input type="checkbox" id="fg-all"> include SKUs not produced in this period</label>
       <span class="mtag">state per:</span><div class="seg basis-seg" id="fg-basis" data-sec="fg"><button data-b="case" class="on">Per case</button><button data-b="unit">Per unit</button></div>
       <span class="mtag" id="fg-n"></span></div>
     <div class="scroll"><table id="t-fg"><thead><tr>
       <th data-k="sku">SKU</th><th data-k="title">Product</th><th data-k="cs" title="Individual retail units in one shipping case. A case is made of this many units.">units / case</th><th data-k="blend">blend $</th>
-      <th data-k="pack">packing $</th><th data-k="make" id="fg-makeh">make $/case</th>
+      <th data-k="pack">packing $</th><th data-k="make" id="fg-makeh">make $/case</th><th data-k="mat" id="fg-math" title="Ingredients + packaging + outsourced fees. Priced from Acctivate's carried component cost, not from an invoice.">materials $/case</th><th data-k="landed" id="fg-landedh" title="make + materials. Excludes facility and machine overhead, so this is a landed PRODUCTION cost, not full COGS.">landed $/case</th>
     </tr></thead><tbody></tbody></table></div>
     <div id="fg-detail" class="detail" hidden></div>
     <p class="foot" id="fg-foot"></p>
@@ -579,7 +579,7 @@ function showEffWeek(key){
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">Week of ${w.mon} (W${w.wk}) — ${w.eff==null?'–':(w.eff*100).toFixed(0)+'%'} efficiency, ${m2(w.overUsd)} overrun</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('eff-detail').hidden=true">close ✕</button></div>`
     +`<p class="hint" style="margin:8px 0 4px"><b>By machine</b> this week:</p>`
-    +`<table style="font-size:12.5px"><thead><tr><th>Machine</th><th>${BWs(Beff)}</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${macRows||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>`
+    +`<table style="font-size:12.5px"><thead><tr><th>Machine</th><th>${BWs(Beff)}</th><th>actual hrs</th><th>expected hrs</th><th>efficiency</th><th>overrun $</th></tr></thead><tbody>${macRows||'<tr><td colspan="8" class="empty">—</td></tr>'}</tbody></table>`
     +`<p class="hint" style="margin:14px 0 4px"><b>Biggest overruns</b> (SKU × machine, ranked by labor $ over plan). <b>vs history</b> = this SKU's all-time efficiency on that machine; a <b style="color:var(--warning)">⚠</b> means the planned rate itself looks wrong (chronic across ≥3 runs) — fix the plan, don't blame the line:</p>`
     +`<div class="scroll" style="max-height:300px"><table style="font-size:12.5px"><thead><tr><th>SKU</th><th>Product</th><th>machine</th><th>${BWs(Beff)}</th><th>actual hrs</th><th>expected hrs</th><th>this run</th><th>vs history</th><th>overrun $</th></tr></thead><tbody>${top||'<tr><td colspan="9" class="empty">—</td></tr>'}</tbody></table></div>`;
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -593,7 +593,7 @@ function renderBlend(){
   $('#t-blend tbody').innerHTML=rows.length?rows.map(b=>`<tr class="clk" data-blend="${b.blend}"><td>${b.blend}</td>`
     +`<td class="desc" title="${(b.desc||'').replace(/"/g,'&quot;')}">${b.desc||''}</td><td>${b.blender||'–'}</td>`
     +`<td>${num(b.total_lbs)}</td><td>${num(b.blend_hours)}</td><td class="big">${m4(b.cost_per_lb)}</td></tr>`).join('')
-    :`<tr><td colspan="6" class="empty">No blend runs in this range.</td></tr>`;
+    :`<tr><td colspan="8" class="empty">No blend runs in this range.</td></tr>`;
   $('#blend-foot').innerHTML=`${BLENDS.length} blends ran in range · loaded blend-labor ${m2(LOADED)}/hr. <span class="illus">Labor only — excludes ingredients, machine overhead &amp; packaging.</span>`;
 }
 function showBlend(id){
@@ -871,14 +871,20 @@ function renderFG(){
     : `${rows.length} SKU${rows.length===1?'':'s'} produced this period`;
   const B=secBasis('fg'), factor=r=>factorB(r,B);   // shared basis conversion (see UNITS OF MEASURE)
   setTxt('fg-makeh','make $/'+BW1s(B));
+  setTxt('fg-math','materials $/'+BW1s(B));
+  setTxt('fg-landedh','landed $/'+BW1s(B));
   $('#t-fg tbody').innerHTML=rows.length?rows.map(r=>{const k=factor(r);
     const unknown = B==='unit' && r.pack_type==='case' && !r.pack_count;   // multipack w/ unknown unit count
     const bl=unknown?null:r.make_blend*k, pk=unknown?null:r.make_labor*k, mk=unknown?null:r.make*k;
+    const hasM=r.landed!=null, mt=(unknown||!hasM)?null:r.mat_total*k, ld=(unknown||!hasM)?null:r.landed*k;
+    const floor=r.mat_basis==='floor_unpriced_components';
     return `<tr class="clk" data-fg="${r.fg||''}" data-sku="${r.sku||''}"><td>${r.sku}${r.is_bundle?' <span class="mtag">bundle</span>':''}${r.discontinued?' <span class="mtag" style="opacity:.6">discontinued</span>':''}</td>`
-    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(bl)}</td><td>${m4(pk)}</td><td class="big" title="${B==='case'?('cost of one case — '+(unitsPerCase(r)||'?')+' units'):'cost of one individual retail unit'}">${m4(mk)}</td></tr>`;}).join('')
-    :`<tr><td colspan="6" class="empty">${q?'No SKUs match.':'No SKUs were produced in this date range.'}${showAllF?'':' Widen the dates, or tick “include SKUs not produced in this period”.'}</td></tr>`;
+    +`<td class="desc" title="${(r.title||'').replace(/"/g,'&quot;')}">${pname(r)}${packBadge(r)}</td><td>${singlesPerCase(r)||'–'}</td><td>${m4(bl)}</td><td>${m4(pk)}</td><td class="big" title="${B==='case'?('cost of one case — '+(unitsPerCase(r)||'?')+' units'):'cost of one individual retail unit'}">${m4(mk)}</td>`
+    +`<td${floor?' title="Floor: at least one component has no recorded cost, so it counts as $0 here and the real figure is higher."':''}>${m4(mt)}${floor?' <span class="mtag">floor</span>':''}</td>`
+    +`<td class="big" title="${B==='case'?'landed cost of one case':'landed cost of one individual retail unit'} — make + materials, before facility and machine overhead">${m4(ld)}</td></tr>`;}).join('')
+    :`<tr><td colspan="8" class="empty">${q?'No SKUs match.':'No SKUs were produced in this date range.'}${showAllF?'':' Widen the dates, or tick “include SKUs not produced in this period”.'}</td></tr>`;
   const disc=FG.filter(x=>x.discontinued).length;
-  $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · raw ingredients &amp; packaging excluded by design`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
+  $('#fg-foot').innerHTML=`<b>${num(FG.length)}</b> SKUs · <b>landed</b> = make + ingredients + packaging + outsourced fees. Make cost is <b>measured</b> from the production run sheets; materials are <b>priced</b> from the Acctivate assembly export (its carried component cost, not an invoice price). Facility and machine overhead are <b>not</b> included, so landed is a production cost, not full COGS`+(disc?`, <span class="illus">${num(disc)} discontinued</span>`:'')+`.`;
 }
 // every line is scaled by k into the basis on display, so the lines add up to the total shown
 function fgLine(p,ind,k){
@@ -920,15 +926,23 @@ function showFG(fg,sku){
   box.hidden=false; box.dataset.fg=fg; box.dataset.sku=sku;   // remember which SKU is open (survive a basis toggle)
   box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><h3 style="margin:0;font-size:15px">${r.sku} — ${pname(r)}${r.is_bundle?' <span class="mtag">bundle</span>':''}</h3>`
     +`<button class="linkbtn" onclick="document.getElementById('fg-detail').hidden=true">close ✕</button></div>`
-    +`<p class="hint" style="margin:6px 0">Every line below is the cost of making <b>one ${w}</b>`
+    +`<p class="hint" style="margin:6px 0">The lines below are the cost of making <b>one ${w}</b>; ingredients and packaging are added as totals underneath`
     +(B==='case'?` — a case of <b>${upc||'?'}</b> unit${upc===1?'':'s'}`:'')+`.`
     +(want==='unit'&&noUnits?` <span class="illus">Per-unit isn't derivable for this SKU (multipack with an unknown unit count) — showing per case.</span>`:'')+`</p>`
     +`<table style="margin-top:8px;font-size:12.5px"><thead><tr><th>Step</th><th>What</th><th>Calc</th><th>$/${w}</th></tr></thead><tbody>${lines}</tbody>`
     +`<tfoot><tr><td colspan="3" style="text-align:right">blend subtotal</td><td>${m4(r.make_blend*k)}</td></tr>`
     +`<tr><td colspan="3" style="text-align:right">packing subtotal</td><td>${m4(r.make_labor*k)}</td></tr>`
     +`<tr><td colspan="3" style="text-align:right"><b>= cost to make one ${w}</b></td><td class="big">${m4(r.make*k)}</td></tr>`
-    +`<tr><td colspan="3" style="text-align:right">cross-check — <b>per unit</b> <span class="mtag">1 unit</span></td><td>${m4(perSingle(r))}</td></tr>`
-    +`<tr><td colspan="3" style="text-align:right">cross-check — <b>per case</b> <span class="mtag">${upc?upc+' unit'+(upc===1?'':'s'):'? units'}</span></td><td>${m4(caseCost(r))}</td></tr></tfoot></table>`
+    // Materials are shown as an AGGREGATE only. The component-by-component detail is our
+    // recipe and our supplier cost structure, and this page is world-readable.
+    +(r.landed==null?'':
+       `<tr><td colspan="3" style="text-align:right">ingredients <span class="mtag">Acctivate</span></td><td>${m4(r.mat_raw*k)}</td></tr>`
+      +`<tr><td colspan="3" style="text-align:right">packaging <span class="mtag">Acctivate</span></td><td>${m4(r.mat_pkg*k)}</td></tr>`
+      +(r.mat_fee?`<tr><td colspan="3" style="text-align:right">outsourced fees <span class="mtag">Acctivate</span></td><td>${m4(r.mat_fee*k)}</td></tr>`:'')
+      +`<tr><td colspan="3" style="text-align:right"><b>= landed cost of one ${w}</b>${r.mat_basis==='floor_unpriced_components'?' <span class="mtag">floor</span>':''}</td><td class="big">${m4(r.landed*k)}</td></tr>`)
+    +`<tr><td colspan="3" style="text-align:right">cross-check — <b>cost to make</b>, per unit <span class="mtag">1 unit</span></td><td>${m4(perSingle(r))}</td></tr>`
+    +`<tr><td colspan="3" style="text-align:right">cross-check — <b>cost to make</b>, per case <span class="mtag">${upc?upc+' unit'+(upc===1?'':'s'):'? units'}</span></td><td>${m4(caseCost(r))}</td></tr></tfoot></table>`
+    +(r.landed==null?'':`<p class="hint" style="margin:8px 0 0">Blend and packing are <b>measured</b> from the production run sheets. Ingredients and packaging are <b>priced</b> from Acctivate's carried component cost — a total only, never a component-by-component list. Facility and machine overhead are not included.</p>`)
     +fgBom(r,k,w);
   box.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
