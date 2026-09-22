@@ -78,6 +78,9 @@
   .noisy.on { display:block; }
   span.partial { font-size:.68rem; color:#f87171; border:1px dashed #f87171; border-radius:4px; padding:0 4px; margin-left:4px; }
   td.partialcell { color:#f87171; font-style:italic; }
+  tr.curwk td { color:var(--text-dim); font-style:italic; }
+  span.sofar { font-size:.68rem; color:var(--blue); border:1px dashed var(--blue); border-radius:4px; padding:0 4px; margin-left:4px; font-style:normal; }
+  .curnote { font-size:.78rem; color:var(--text-dim); margin:-4px 0 12px; }
 </style></head><body>
 
 <h1>New-Customer Cost &amp; Spend Plan</h1>
@@ -153,6 +156,7 @@
 
 <h2>Cost per New Customer (nCPA), by week</h2>
 <div class="chart-wrap"><canvas id="ncpaChart"></canvas></div>
+<p class="curnote">The last point on each chart is <b>this week so far</b> (1 day, through 2026-09-21) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
 
 <h2>Projected Payback by nCPA</h2>
 <div class="explain">
@@ -238,9 +242,11 @@
 
 <h2>Spend &amp; New Customers</h2>
 <div class="chart-wrap"><canvas id="spendChart"></canvas></div>
+<p class="curnote">The last point on each chart is <b>this week so far</b> (1 day, through 2026-09-21) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
 
 <h2>Blended Profit / Order</h2>
 <div class="chart-wrap"><canvas id="ppoChart"></canvas></div>
+<p class="curnote">The last point on each chart is <b>this week so far</b> (1 day, through 2026-09-21) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
 
 <h2>Weekly Detail</h2>
 <div class="tscroll"><table>
@@ -251,6 +257,7 @@
   <th class="r" data-tip="Lean contribution margin per order: gross minus discounts, shipping, product cost (COGS) and ad spend, divided by orders.">Profit/Order</th>
   <th class="r" data-tip="Months until that week's new customers repay their acquisition cost, from the lifetime-value profit curve.">Proj. Payback</th></tr></thead>
   <tbody>
+<tr class='curwk'><td>2026-09-21 <span class='sofar'>so far &middot; 1d</span></td><td class='r'>$977</td><td class='r'>37</td><td class='r'>$26.42</td><td class='r'>$12.71</td><td class='r'>7.5 mo</td></tr>
 <tr><td>2026-09-14</td><td class='r'>$5,432</td><td class='r'>204</td><td class='r pos'>$26.63</td><td class='r'>$14.03</td><td class='r'>7.6 mo</td></tr>
 <tr><td>2026-09-07</td><td class='r'>$11,383</td><td class='r'>330</td><td class='r pos'>$34.49</td><td class='r'>$20.04</td><td class='r'>14.6 mo</td></tr>
 <tr><td>2026-08-31</td><td class='r'>$5,250</td><td class='r'>272</td><td class='r pos'>$19.30</td><td class='r'>$25.41</td><td class='r'>2.4 mo</td></tr>
@@ -286,10 +293,15 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-09-22 13:38:32 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-09-22 14:06:48 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
-const L = ["05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15", "06-22", "06-29", "07-06", "07-13", "07-20", "07-27", "08-03", "08-10", "08-17", "08-24", "08-31", "09-07", "09-14"];
+const L = ["05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15", "06-22", "06-29", "07-06", "07-13", "07-20", "07-27", "08-03", "08-10", "08-17", "08-24", "08-31", "09-07", "09-14", "09-21 (1d so far)"];
+const CUR = true;
+const LAST = L.length - 1;
+const curSeg = { borderDash: c => (CUR && c.p1DataIndex === LAST) ? [5,4] : undefined };
+const curPt = base => L.map((_,i) => (CUR && i === LAST) ? base + 2 : base);
+const curFill = col => L.map((_,i) => (CUR && i === LAST) ? 'transparent' : col);
 const mkLine = (id, datasets, yfmt, ymax) => new Chart(document.getElementById(id).getContext('2d'), {
   type:'line',
   data:{ labels:L, datasets },
@@ -301,7 +313,7 @@ const mkLine = (id, datasets, yfmt, ymax) => new Chart(document.getElementById(i
 const dollar = v => '$'+v;
 // nCPA chart — cost to acquire a new customer each week vs the value lines.
 mkLine('ncpaChart', [
-  {label:'Cost per new customer (nCPA)', data:[29.3, 31.1, 23.7, 25.4, 26.8, 36.0, 32.9, 49.4, 41.4, 29.5, 21.5, 17.9, 26.0, 29.2, 26.0, 20.2, 28.9, 19.3, 34.5, 26.6], borderColor:'#D4A843', backgroundColor:'transparent', tension:.3, spanGaps:true, borderWidth:2.5, pointRadius:2},
+  {label:'Cost per new customer (nCPA)', data:[29.3, 31.1, 23.7, 25.4, 26.8, 36.0, 32.9, 49.4, 41.4, 29.5, 21.5, 17.9, 26.0, 29.2, 26.0, 20.2, 28.9, 19.3, 34.5, 26.6, 26.4], borderColor:'#D4A843', backgroundColor:'transparent', tension:.3, spanGaps:true, borderWidth:2.5, pointRadius:curPt(2), pointBackgroundColor:curFill('#D4A843'), segment:curSeg},
   {label:'Worth $42 (break-even)', data:L.map(()=>42), borderColor:'#4ade80', borderDash:[6,4], borderWidth:1.5, pointRadius:0},
   {label:'First-order break-even $14', data:L.map(()=>14), borderColor:'rgba(74,222,128,.4)', borderDash:[2,4], borderWidth:1, pointRadius:0},
 ], dollar, 60);
@@ -322,8 +334,8 @@ const pbChart = new Chart(document.getElementById('paybackChart').getContext('2d
 // spend & customers (dual axis)
 new Chart(document.getElementById('spendChart').getContext('2d'), {
   data:{ labels:L, datasets:[
-    {type:'bar', label:'Ad Spend', data:[4371, 5103, 5537, 4565, 3967, 4211, 4964, 7305, 5925, 4129, 3979, 2346, 3722, 4270, 4257, 4059, 5178, 5250, 11383, 5432], backgroundColor:'rgba(212,168,67,.5)', yAxisID:'y'},
-    {type:'line', label:'New Customers', data:[149, 164, 234, 180, 148, 117, 151, 148, 143, 140, 185, 131, 143, 146, 164, 201, 179, 272, 330, 204], borderColor:'#60a5fa', backgroundColor:'transparent', tension:.3, borderWidth:2, pointRadius:2, yAxisID:'y1'},
+    {type:'bar', label:'Ad Spend', data:[4371, 5103, 5537, 4565, 3967, 4211, 4964, 7305, 5925, 4129, 3979, 2346, 3722, 4270, 4257, 4059, 5178, 5250, 11383, 5432, 977], backgroundColor:L.map((_,i)=>(CUR&&i===LAST)?'rgba(212,168,67,.18)':'rgba(212,168,67,.5)'), borderColor:L.map((_,i)=>(CUR&&i===LAST)?'rgba(212,168,67,.8)':'transparent'), borderWidth:L.map((_,i)=>(CUR&&i===LAST)?1.5:0), borderDash:[4,3], yAxisID:'y'},
+    {type:'line', label:'New Customers', data:[149, 164, 234, 180, 148, 117, 151, 148, 143, 140, 185, 131, 143, 146, 164, 201, 179, 272, 330, 204, 37], borderColor:'#60a5fa', backgroundColor:'transparent', tension:.3, borderWidth:2, pointRadius:curPt(2), pointBackgroundColor:curFill('#60a5fa'), segment:curSeg, yAxisID:'y1'},
   ]},
   options:{ responsive:true, interaction:{mode:'index',intersect:false},
     plugins:{legend:{labels:{color:'#e2e8f0',font:{size:11}}}},
@@ -333,7 +345,7 @@ new Chart(document.getElementById('spendChart').getContext('2d'), {
 });
 // profit/order
 mkLine('ppoChart', [
-  {label:'Profit / Order', data:[19.0, 17.27, 25.94, 20.43, 17.17, 18.75, 25.62, 10.63, 23.02, 24.85, 25.59, 16.24, 20.91, 26.16, 25.1, 22.67, 14.17, 25.41, 20.04, 14.03], borderColor:'#4ade80', backgroundColor:'rgba(74,222,128,.08)', fill:true, tension:.3, spanGaps:true, borderWidth:2, pointRadius:2},
+  {label:'Profit / Order', data:[19.0, 17.27, 25.94, 20.43, 17.17, 18.75, 25.62, 10.63, 23.02, 24.85, 25.59, 16.24, 20.91, 26.16, 25.1, 22.67, 14.17, 25.41, 20.04, 14.03, 12.71], borderColor:'#4ade80', backgroundColor:'rgba(74,222,128,.08)', fill:true, tension:.3, spanGaps:true, borderWidth:2, pointRadius:curPt(2), pointBackgroundColor:curFill('#4ade80'), segment:curSeg},
 ], dollar);
 
 // ---- interactive nCPA recompute on the spend plan ----
