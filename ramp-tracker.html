@@ -64,22 +64,42 @@
   .ncpa-live { font-size:.78rem; color:var(--text-dim); margin-left:10px; cursor:pointer; text-decoration:underline dotted rgba(255,255,255,.35); text-underline-offset:3px; }
   .ncpa-hint { font-size:.76rem; color:var(--text-dim); margin-top:8px; }
   tr.edited td { background:rgba(212,168,67,.06); }
+  .winbar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:4px 0 10px; }
+  .winbar .wl { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.5px; margin-right:4px; }
+  .winbar button { font-size:.8rem; color:var(--text); background:rgba(255,255,255,.06); border:1px solid var(--border);
+    border-radius:6px; padding:5px 12px; cursor:pointer; }
+  .winbar button:hover { background:rgba(255,255,255,.12); }
+  .winbar button[aria-pressed="true"] { background:var(--accent); color:#16213e; border-color:var(--accent); font-weight:700; }
+  .winbar .wr { font-size:.76rem; color:var(--text-dim); margin-left:6px; }
+  .covwarn { display:none; padding:10px 14px; margin:0 0 12px; border-radius:8px; font-size:.84rem;
+    background:rgba(248,113,113,.10); border:1px dashed #f87171; color:#fecaca; }
+  .covwarn.on { display:block; }
+  .noisy { display:none; font-size:.76rem; color:var(--yellow); margin:-4px 0 10px; }
+  .noisy.on { display:block; }
+  span.partial { font-size:.68rem; color:#f87171; border:1px dashed #f87171; border-radius:4px; padding:0 4px; margin-left:4px; }
+  td.partialcell { color:#f87171; font-style:italic; }
 </style></head><body>
 
 <h1>New-Customer Cost &amp; Spend Plan</h1>
 <p class="subtitle">What a new customer costs to acquire (nCPA), what they're worth, how fast they pay back — and the 6-month spend plan that follows. Weekly, DTC, Meta + Google.</p>
 
-<div class="gatebox">
-  <div class="tag" style="background:var(--green);color:#16213e;">HEALTHY</div>
-  <div><div class="num" style="font-size:1.9rem;font-weight:800;color:var(--green);">$26.57</div>
-  <div class="msg">A new customer costs $27 to acquire — well under the $42 they're worth. Healthy; room to spend more.</div></div>
+<div class="winbar" role="group" aria-label="nCPA window">
+  <span class="wl">Cost window</span><button type="button" data-win="1d" aria-pressed="false">Latest day</button><button type="button" data-win="3d" aria-pressed="false">3 days</button><button type="button" data-win="7d" aria-pressed="false">1 week</button><button type="button" data-win="14d" aria-pressed="false">2 weeks</button><button type="button" data-win="8w" aria-pressed="true">8 weeks</button>
+  <span class="wr" id="winRange"></span>
+</div>
+<div class="covwarn" id="covWarn" role="status"></div>
+<div class="noisy" id="noisyNote"></div>
+<div class="gatebox" id="gateBox">
+  <div class="tag" id="gateTag" style="background:var(--green);color:#16213e;">HEALTHY</div>
+  <div><div class="num" id="gateNum" style="font-size:1.9rem;font-weight:800;color:var(--green);">$26.57</div>
+  <div class="msg" id="gateMsg">A new customer costs $27 to acquire — well under the $42 they're worth. Healthy; room to spend more.</div></div>
 </div>
 
 <div class="grid">
-  <div class="stat"><div class="label">Cost per new customer (nCPA)</div><div class="num">$26.57</div><div class="sub">trailing 8 wk &middot; ad spend &divide; new customers</div></div>
+  <div class="stat"><div class="label">Cost per new customer (nCPA)</div><div class="num" id="statNcpa">$26.57</div><div class="sub" id="statNcpaSub">trailing 8 wk &middot; ad spend &divide; new customers</div></div>
   <div class="stat"><div class="label">A new customer is worth</div><div class="num">$42</div><div class="sub">2-yr contribution margin, blended (break-even)</div></div>
   <div class="stat"><div class="label">A subscriber is worth</div><div class="num" style="color:var(--green)">$107</div><div class="sub">2-yr contribution margin if first order is a subscription (~2.5&times; blend)</div></div>
-  <div class="stat"><div class="label">Pays back in</div><div class="num">7.6 mo</div><div class="sub">at $27 per new customer</div></div>
+  <div class="stat"><div class="label">Pays back in</div><div class="num" id="statPb">7.6 mo</div><div class="sub" id="statPbSub">at $27 per new customer</div></div>
   <div class="stat"><div class="label">Ad spend % of revenue</div><div class="num">15.0%</div><div class="sub">trailing 12 mo &middot; ad spend &divide; DTC net revenue</div></div>
   <div class="stat"><div class="label">Profit / order</div><div class="num">$21.50</div><div class="sub">after ad, product &amp; ship cost</div></div>
 </div>
@@ -266,7 +286,7 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-09-22 10:48:09 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-09-22 13:38:32 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15", "06-22", "06-29", "07-06", "07-13", "07-20", "07-27", "08-03", "08-10", "08-17", "08-24", "08-31", "09-07", "09-14"];
@@ -286,7 +306,7 @@ mkLine('ncpaChart', [
   {label:'First-order break-even $14', data:L.map(()=>14), borderColor:'rgba(74,222,128,.4)', borderDash:[2,4], borderWidth:1, pointRadius:0},
 ], dollar, 60);
 // payback-vs-nCPA curve (x = nCPA dollars, not weeks)
-new Chart(document.getElementById('paybackChart').getContext('2d'), {
+const pbChart = new Chart(document.getElementById('paybackChart').getContext('2d'), {
   type:'line',
   data:{ labels:[15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70], datasets:[
     {label:'Months to payback', data:[0.9, 1.0, 1.2, 1.7, 2.2, 2.7, 3.4, 4.1, 4.9, 5.6, 6.4, 7.2, 7.9, 8.7, 9.4, 10.2, 11.0, 11.7, 12.8, 14.0, 15.2, 16.5, 17.7, 18.9, 20.2, 21.4, 22.7, 23.9, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,.10)', fill:true, tension:.2, spanGaps:false, borderWidth:2.5, pointRadius:0},
@@ -369,5 +389,49 @@ if (PLAN) {
     liveEl.addEventListener('click', ()=>{ const lv=parseFloat(liveEl.dataset.live); if(lv>0){ inp.value=lv.toFixed(2); render(lv);} }); }
   render(PLAN.def);
 }
+
+// ---- nCPA window selector (values PRE-COMPUTED server-side; this only switches) ----
+const WIN = [{"key": "1d", "label": "Latest day", "start": "2026-09-21", "end": "2026-09-21", "days": 1, "spend": 977.4, "new": 37, "ncpa": 26.42, "payback": 7.478089910972471, "status": "green", "msg": "A new customer costs $26 to acquire \u2014 well under the $42 they're worth. Healthy; room to spend more.", "ad_missing": {}, "partial": false, "small_sample": true}, {"key": "3d", "label": "3 days", "start": "2026-09-19", "end": "2026-09-21", "days": 3, "spend": 2711.71, "new": 98, "ncpa": 27.67, "payback": 8.429235570723652, "status": "green", "msg": "A new customer costs $28 to acquire \u2014 well under the $42 they're worth. Healthy; room to spend more.", "ad_missing": {}, "partial": false, "small_sample": true}, {"key": "7d", "label": "1 week", "start": "2026-09-15", "end": "2026-09-21", "days": 7, "spend": 5696.38, "new": 206, "ncpa": 27.65, "payback": 8.415405704599175, "status": "green", "msg": "A new customer costs $28 to acquire \u2014 well under the $42 they're worth. Healthy; room to spend more.", "ad_missing": {}, "partial": false, "small_sample": false}, {"key": "14d", "label": "2 weeks", "start": "2026-09-08", "end": "2026-09-21", "days": 14, "spend": 16433.15, "new": 512, "ncpa": 32.1, "payback": 11.784658813908484, "status": "green", "msg": "A new customer costs $32 to acquire \u2014 well under the $42 they're worth. Healthy; room to spend more.", "ad_missing": {}, "partial": false, "small_sample": false}, {"key": "8w", "label": "8 weeks", "start": "2026-07-27", "end": "2026-09-20", "days": 56, "spend": 43550.29, "new": 1639, "ncpa": 26.57, "payback": 7.595728123000186, "status": "green", "msg": "A new customer costs $27 to acquire \u2014 well under the $42 they're worth. Healthy; room to spend more.", "ad_missing": {}, "partial": false, "small_sample": false}];
+const PBX = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70];
+const GCOL = {green:'var(--green)', yellow:'var(--yellow)', red:'#f87171', baseline:'var(--text-dim)'};
+const GLAB = {green:'HEALTHY', yellow:'WATCH', red:'ALERT', baseline:'&mdash;'};
+const fmtD = s => new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const pbTxt = v => v==null ? 'never' : (v<1 ? '&lt;1 mo' : '~'+v.toFixed(1)+' mo');
+function showWin(k) {
+  const w = WIN.find(x=>x.key===k); if (!w) return;
+  document.querySelectorAll('.winbar button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.win===k)));
+  const rng = w.start===w.end ? fmtD(w.start) : fmtD(w.start)+' &ndash; '+fmtD(w.end);
+  document.getElementById('winRange').innerHTML = rng + ' &middot; $' + Math.round(w.spend).toLocaleString()
+    + ' spend &divide; ' + w.new.toLocaleString() + ' new customers';
+  const num = w.ncpa==null ? '&mdash;' : '$'+w.ncpa.toFixed(2);
+  const col = GCOL[w.status];
+  const tag = document.getElementById('gateTag');
+  tag.innerHTML = GLAB[w.status] + (w.partial ? '*' : ''); tag.style.background = col;
+  const gn = document.getElementById('gateNum'); gn.innerHTML = num; gn.style.color = col;
+  document.getElementById('gateMsg').textContent = w.msg;
+  document.getElementById('statNcpa').innerHTML = num + (w.partial ? '<span style="font-size:.9rem;color:#f87171"> *</span>' : '');
+  document.getElementById('statNcpaSub').innerHTML = (w.key==='1d' ? fmtD(w.end) : 'trailing '+w.label)
+    + ' &middot; ad spend &divide; new customers';
+  document.getElementById('statPb').innerHTML = w.ncpa==null ? '&mdash;' : pbTxt(w.payback);
+  document.getElementById('statPbSub').innerHTML = w.ncpa==null ? '' : 'at $'+Math.round(w.ncpa)+' per new customer';
+  const cw = document.getElementById('covWarn');
+  if (w.partial) {
+    cw.innerHTML = '<b>&#9888; Incomplete ad spend in this window.</b> '
+      + Object.entries(w.ad_missing).map(([s,n])=>s+': '+n+' of '+w.days+' day'+(w.days>1?'s':'')+' missing').join(' &middot; ')
+      + '. Missing spend counts as $0 here, so this cost reads <b>lower than it really is</b>.';
+    cw.classList.add('on');
+  } else { cw.classList.remove('on'); cw.innerHTML=''; }
+  const nz = document.getElementById('noisyNote');
+  if (w.small_sample) {
+    nz.innerHTML = 'Small sample: only ' + w.new + ' new customers in this window. Short windows swing with promos and day-of-week &mdash; use them to spot a turn, not to set budget.';
+    nz.classList.add('on');
+  } else { nz.classList.remove('on'); nz.innerHTML=''; }
+  const here = PBX.map(()=>null);
+  if (w.ncpa!=null && w.payback!=null) { const i = Math.round(w.ncpa) - PBX[0]; if (i>=0 && i<here.length) here[i] = Math.round(w.payback*10)/10; }
+  pbChart.data.datasets[1].data = here; pbChart.update('none');
+  const u = new URL(location.href); u.searchParams.set('win', k); history.replaceState(null,'',u);
+}
+document.querySelectorAll('.winbar button').forEach(b=>b.addEventListener('click',()=>showWin(b.dataset.win)));
+showWin(new URLSearchParams(location.search).get('win') || "8w");
 </script>
 </body></html>
