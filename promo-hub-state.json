@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-25T13:18:40.324298-07:00",
-  "generatedAtUTC": "2026-09-25T20:18:40.324298+00:00",
+  "generatedAt": "2026-09-25T15:07:01.875934-07:00",
+  "generatedAtUTC": "2026-09-25T22:07:01.875934+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 791344,
+      "ageSeconds": 797845,
       "ageHuman": "9d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -26,7 +26,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 791344,
+      "ageSeconds": 797845,
       "ageHuman": "9d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:39-07:00",
-      "ageSeconds": 791341,
+      "ageSeconds": 797842,
       "ageHuman": "9d ago",
       "stale": true,
       "thresholdSeconds": 86400,
@@ -51,8 +51,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-25T08:55:03-07:00",
-      "ageSeconds": 15817,
-      "ageHuman": "4h ago",
+      "ageSeconds": 22318,
+      "ageHuman": "6h ago",
       "stale": false,
       "thresholdSeconds": 172800
     }
@@ -1016,7 +1016,7 @@
         },
         "gift": {
           "claim": {
-            "v": null
+            "v": "FREE Frother on orders over $75"
           },
           "threshold": {
             "v": 75
@@ -1024,7 +1024,18 @@
           "sku": {
             "v": "90037"
           },
-          "stock": null,
+          "stock": {
+            "qty": {
+              "v": 1488
+            },
+            "asOf": {
+              "v": "2026-09-25"
+            },
+            "required": {
+              "v": null
+            },
+            "note": "Shopify reading, not a counted shelf. This SKU has read 0, then a 3-unit QA token, then a typed 1000 allocation cap that turned every automated gate green -- a comfortable number is the one nobody questions."
+          },
           "basis": "claim = declaredSlate.addOnDeclared.canonicalClaim (the one approved wording); sku = the promo record's structured giftSku field; stock = declaredSlate.giftStockObserved, a DATED observation, not a feed."
         }
       },
@@ -1116,8 +1127,8 @@
           "launchState": "pending",
           "teardownState": "armed",
           "launchTarget": "Bar names National Coffee Day and carries the 28% / 34% claim. Window 2026-09-28 00:00 PT .. 2026-10-04 23:59 PT (7 days). SMS early access 2026-09-27. Scope is a MINOR, product-type: Shopify product_type='Herbal Coffee', ACTIVE with onlineStoreUrl set -- 35 products / 92 variants. NOT sitewide. Rates d=22 / fsd=15, advertised 28% OFF / 34% OFF First Shipment (verified at variant level across all 92, floored, nothing overstated). THE DATE TEXT IS HAND-TYPED: campaign_sale_end_text is NOT derived from campaign_sale_window_end and the two drift silently. Whatever end date is typed must be true on the LAST day the bar serves -- it is 2026-10-04, not 09-30. Free shipping is NOT part of this promo; the bar must keep saying $59.",
-          "teardownTarget": "Clear the Coffee Day announcement-bar block in sections/header-group.json and disarm the campaign_sale_window_* set (window_enabled false; label / start / end written together, never singly). TARGET STATE: no Coffee Day string served anywhere in the bar, and no leftover ARMED window carrying dead dates -- on 2026-09-03 those four values were found still holding the dead '72hr Instants Sale' window because the BEHAVIOUR self-expired with the dates while the SETTINGS did not. Verify on fresh served HTML, not on the setting alone (RULING 2). Ends 2026-10-04 23:59 PT; teardown 2026-10-01 00:01 PT, and it SHARES A PASS with the Oct 1 FOTM roll -- Coffee Day comes DOWN first, FOTM rolls to Mocha second. See teardownOrderingHazard2026_09_08 on this record. [RE-AIMED 2026-09-14 by promosmith: this target read 2026-09-30 and was FOUR DAYS EARLY. declaredSlate declares the window as 2026-09-28..2026-10-04 (Justin, 2026-09-08, verbatim: 'we make national coffee day sale go from the 28th to the octob 4th'), and RULING 5 makes the slate sole truth. The record was seeded against a 3-day window and the extension never propagated here. Every date literal below now reads 2026-10-04.]\n---- THEMESMITH 2026-09-16, THE ACTUAL ARMED STATE AND ITS RESTORE LITERALS ----\n*** THE '2026-10-01 00:01 PT' DATE IN THE BODY ABOVE IS STALE AND FOUR DAYS EARLY. *** The 2026-09-14 re-aim replaced every '2026-09-30' literal but not the '2026-10-01' teardown timestamp derived from it, while appending a note claiming every date literal below now reads 2026-10-04. The armed Windows task is correctly Shopkeeper-NCDTeardown-20261005 at 10-05 00:01 PT. A human following the body above would tear the visible surfaces down on day 4 of 7 of a live sale. TEARDOWN IS 2026-10-05 00:01 PT. Raised with promosmith.\nRESTORE LITERALS, EXACT -- write all six together, never singly: campaign_sale_window_enabled = False (boolean), campaign_sale_window_label = '' (empty string), campaign_sale_window_start = '' (empty string), campaign_sale_window_end = '' (empty string), campaign_sale_window_end_text = '' (empty string), campaign_sale_window_unexempt_handles = '' (empty string). LEAVE campaign_sale_window_exempt_tag AT 'FOTM' -- clearing it strips the carve-out from the whole tagged family, which is the 2026-08-19 defect. campaign_sale_end_date IS NOT A TEARDOWN: 2026-10-31 is the correct October FOTM value and the next roll belongs to the Nov 1 FOTM cycle, not to this promo. Reverting it to 2026-09-30 would blank every FOTM pill in October.\nTHE BAR AND COUNTDOWN NOW SELF-EXPIRE and this is new as of 2026-09-16. The announcement block sections/header-group.json -> blocks.ncd_2026_coffee_day carries start_date 2026-09-28 / end_date 2026-10-04 and stops rendering on its own on 10-05; the countdown carries time_start 2026-09-28 and derives its far edge from its own target 2026-10-04/23:59:59-07:00, so it stands down the day after it expires. Removing the block is therefore HOUSEKEEPING, not a dated obligation -- but teardownKind stays 'required' because campaign_sale_window_* above does NOT self-clear, only its behaviour does, and that is exactly the 2026-09-03 stale-window defect.\n---- ARMED 2026-09-16 (ThemeSmith) ----\nTEARDOWN ARMED BY THEMESMITH 2026-09-16 (RULING 4 -- declared with the launch, with an exact restore literal per key). Runner: _scripts/teardown_ncd_20261005.py on the LIVE theme 160800145656. EXACT RESTORE LITERALS, never 'revert to default': campaign_sale_window_enabled=False; _label=''; _start=''; _end=''; _end_text=''; _unexempt_handles='' (campaign-sale-badge.liquid names that literal in its own comment). campaign_sale_window_exempt_tag STAYS 'FOTM' -- it is read through default:'FOTM', so blanking it is a no-op that still verifies as written (2026-08-19). campaign_sale_window_sitewide and campaign_sale_sitewide are NOT written: they live on their schema default and writing them would convert a self-healing default into a teardown obligation. GATES: A clock bounded BOTH ends 10-05 00:10 .. 10-12 12:00 (the late bound is load-bearing -- Mushroom Month arms this same window block 10-15 and Halloween 10-25); A2 declaredMinors agreement read out of the promo's OWN window field; I IDENTITY, hard-abort unless the live label still reads 'National Coffee Day', so a late run can never clear a successor promo's sale; B order dependency on a live metafield read -- refuses while any non-FOTM variant is still discounted, because clearing the window label does not darken a pill, it FALLS BACK to 'Flavor of the Month' (the 2026-09-11 defect, 122 products); C idempotent; D FROZEN before and after. Rehearsed read-only 2026-09-16: all gates evaluated, both writes staged, nothing written. Served-HTML probe after the write carries a POSITIVE control that is exactly the trap -- Mocha's PDP must still render a 'Flavor of the Month' pill -- plus a non-FOTM negative control and the evergreen $59 bar line.\n*** THE TRAP, NAMED SO NOBODY REVERTS IT. *** campaign_sale_end_date was rolled 2026-09-30 -> 2026-10-31 by ThemeSmith on 2026-09-16. It is NOT a National Coffee Day setting: it is the PRIMARY (Flavor of the Month) campaign's render gate, and campaign-sale-badge.liquid stops rendering ENTIRELY once today > that date rather than rendering an expired one. A teardown that 'reverts what ThemeSmith wrote on 09-16' would put 2026-09-30 back and October's Mocha FOTM would bill 20% off for 27 days with NO pill, NO card ribbon and NO Shop All ribbon anywhere explaining the lower price -- and it would re-break Shopkeeper's GATE T. Classified FIXED, not ARMED. It is in the runner's FROZEN list, asserted before AND after every write, with a floor of 2026-10-31, and it is never written by the teardown. SEPARATE STANDING OBLIGATION, NOT THIS PROMO'S: on 2026-11-01 that date must move past 2026-10-31 or November's FOTM goes pill-less. That monthly roll still has no owner and no job.\nANNOUNCEMENT BAR + COUNTDOWN (surfaces 3 and 4) are torn down by the same runner, HALF 2, in sections/header-group.json. Bar: block 'ncd_2026_coffee_day' is REMOVED, and only if it still carries the literal 'NATIONAL COFFEE DAY' -- if a later promo re-used the block, the runner stands down rather than clearing someone else's copy. Countdown: enable_time->False, time_start->'', url->'' (pre-NCD values, read out of git at f1c300e~1). The countdown 'date' is deliberately LEFT at its value: it is inert once enable_time is false, and rewriting it would author a value nobody declared. Both surfaces self-expire by date on 2026-10-05 -- the BEHAVIOUR reverts, the SETTINGS do not, which is why this row is teardownKind=required and not auto.",
-          "launchEvidence": "ARMED ON LIVE THEME 160800145656 BY THEMESMITH 2026-09-16, inert by date until 2026-09-28 (RULING 1 -- Shopkeeper wrote none of it). Settings written and read back green: campaign_sale_window_enabled True / _label 'National Coffee Day' / _start '2026-09-28' / _end '2026-10-04' / _end_text 'Ends October 4 at midnight' / _unexempt_handles 'hazelnut-herbal-coffee'; campaign_sale_window_exempt_tag left at 'FOTM' and campaign_sale_window_sitewide left False (a MINOR is never sitewide). campaign_sale_end_date rolled 2026-09-30 -> 2026-10-31, which is the fix for themeDependencyOpen2026_09_16 consequence (2). LIVE SERVED-HTML CONTROLS, fresh, 2026-09-16: POSITIVE -- /products/hazelnut-herbal-coffee renders data-campaign-sale-badge with label 'Flavor of the Month' and 'Save 26%', so the badge machinery is alive and the primary campaign is untouched after the write. NEGATIVE -- no 'NATIONAL COFFEE DAY' string and no countdown anywhere on the homepage or a PDP, which is correct for 2026-09-16, and /products/french-roast-herbal-coffee renders NO pill at all (d=0 today). THE WINDOW BRANCH ITSELF WAS PROVEN ON A PREVIEW BUILT FROM THIS EXACT COMMIT by pulling campaign_sale_window_start back: label, urgency text and countdown all rendered, then went inert again when the real date was restored. It CANNOT be proven on live before 2026-09-28 without putting a false promo on the store, so the 09-28 served-HTML re-verification is still owed and is NOT discharged by this row.",
+          "teardownTarget": "Clear the Coffee Day announcement-bar block in sections/header-group.json and disarm the campaign_sale_window_* set (window_enabled false; label / start / end written together, never singly). TARGET STATE: no Coffee Day string served anywhere in the bar, and no leftover ARMED window carrying dead dates -- on 2026-09-03 those four values were found still holding the dead '72hr Instants Sale' window because the BEHAVIOUR self-expired with the dates while the SETTINGS did not. Verify on fresh served HTML, not on the setting alone (RULING 2). Ends 2026-10-04 23:59 PT; teardown 2026-10-01 00:01 PT, and it SHARES A PASS with the Oct 1 FOTM roll -- Coffee Day comes DOWN first, FOTM rolls to Mocha second. See teardownOrderingHazard2026_09_08 on this record. [RE-AIMED 2026-09-14 by promosmith: this target read 2026-09-30 and was FOUR DAYS EARLY. declaredSlate declares the window as 2026-09-28..2026-10-04 (Justin, 2026-09-08, verbatim: 'we make national coffee day sale go from the 28th to the octob 4th'), and RULING 5 makes the slate sole truth. The record was seeded against a 3-day window and the extension never propagated here. Every date literal below now reads 2026-10-04.]\n---- THEMESMITH 2026-09-16, THE ACTUAL ARMED STATE AND ITS RESTORE LITERALS ----\n*** THE '2026-10-01 00:01 PT' DATE IN THE BODY ABOVE IS STALE AND FOUR DAYS EARLY. *** The 2026-09-14 re-aim replaced every '2026-09-30' literal but not the '2026-10-01' teardown timestamp derived from it, while appending a note claiming every date literal below now reads 2026-10-04. The armed Windows task is correctly Shopkeeper-NCDTeardown-20261005 at 10-05 00:01 PT. A human following the body above would tear the visible surfaces down on day 4 of 7 of a live sale. TEARDOWN IS 2026-10-05 00:01 PT. Raised with promosmith.\nRESTORE LITERALS, EXACT -- write all six together, never singly: campaign_sale_window_enabled = False (boolean), campaign_sale_window_label = '' (empty string), campaign_sale_window_start = '' (empty string), campaign_sale_window_end = '' (empty string), campaign_sale_window_end_text = '' (empty string), campaign_sale_window_unexempt_handles = '' (empty string). LEAVE campaign_sale_window_exempt_tag AT 'FOTM' -- clearing it strips the carve-out from the whole tagged family, which is the 2026-08-19 defect. campaign_sale_end_date IS NOT A TEARDOWN: 2026-10-31 is the correct October FOTM value and the next roll belongs to the Nov 1 FOTM cycle, not to this promo. Reverting it to 2026-09-30 would blank every FOTM pill in October.\nTHE BAR AND COUNTDOWN NOW SELF-EXPIRE and this is new as of 2026-09-16. The announcement block sections/header-group.json -> blocks.ncd_2026_coffee_day carries start_date 2026-09-28 / end_date 2026-10-04 and stops rendering on its own on 10-05; the countdown carries time_start 2026-09-28 and derives its far edge from its own target 2026-10-04/23:59:59-07:00, so it stands down the day after it expires. Removing the block is therefore HOUSEKEEPING, not a dated obligation -- but teardownKind stays 'required' because campaign_sale_window_* above does NOT self-clear, only its behaviour does, and that is exactly the 2026-09-03 stale-window defect.\n---- ARMED 2026-09-16 (ThemeSmith) ----\nTEARDOWN ARMED BY THEMESMITH 2026-09-16 (RULING 4 -- declared with the launch, with an exact restore literal per key). Runner: _scripts/teardown_ncd_20261005.py on the LIVE theme 160800145656. EXACT RESTORE LITERALS, never 'revert to default': campaign_sale_window_enabled=False; _label=''; _start=''; _end=''; _end_text=''; _unexempt_handles='' (campaign-sale-badge.liquid names that literal in its own comment). campaign_sale_window_exempt_tag STAYS 'FOTM' -- it is read through default:'FOTM', so blanking it is a no-op that still verifies as written (2026-08-19). campaign_sale_window_sitewide and campaign_sale_sitewide are NOT written: they live on their schema default and writing them would convert a self-healing default into a teardown obligation. GATES: A clock bounded BOTH ends 10-05 00:10 .. 10-12 12:00 (the late bound is load-bearing -- Mushroom Month arms this same window block 10-15 and Halloween 10-25); A2 declaredMinors agreement read out of the promo's OWN window field; I IDENTITY, hard-abort unless the live label still reads 'National Coffee Day', so a late run can never clear a successor promo's sale; B order dependency on a live metafield read -- refuses while any non-FOTM variant is still discounted, because clearing the window label does not darken a pill, it FALLS BACK to 'Flavor of the Month' (the 2026-09-11 defect, 122 products); C idempotent; D FROZEN before and after. Rehearsed read-only 2026-09-16: all gates evaluated, both writes staged, nothing written. Served-HTML probe after the write carries a POSITIVE control that is exactly the trap -- Mocha's PDP must still render a 'Flavor of the Month' pill -- plus a non-FOTM negative control and the evergreen $59 bar line.\n*** THE TRAP, NAMED SO NOBODY REVERTS IT. *** campaign_sale_end_date was rolled 2026-09-30 -> 2026-10-31 by ThemeSmith on 2026-09-16. It is NOT a National Coffee Day setting: it is the PRIMARY (Flavor of the Month) campaign's render gate, and campaign-sale-badge.liquid stops rendering ENTIRELY once today > that date rather than rendering an expired one. A teardown that 'reverts what ThemeSmith wrote on 09-16' would put 2026-09-30 back and October's Mocha FOTM would bill 20% off for 27 days with NO pill, NO card ribbon and NO Shop All ribbon anywhere explaining the lower price -- and it would re-break Shopkeeper's GATE T. Classified FIXED, not ARMED. It is in the runner's FROZEN list, asserted before AND after every write, with a floor of 2026-10-31, and it is never written by the teardown. SEPARATE STANDING OBLIGATION, NOT THIS PROMO'S: on 2026-11-01 that date must move past 2026-10-31 or November's FOTM goes pill-less. That monthly roll still has no owner and no job.\nANNOUNCEMENT BAR + COUNTDOWN (surfaces 3 and 4) are torn down by the same runner, HALF 2, in sections/header-group.json. Bar: block 'ncd_2026_coffee_day' is REMOVED, and only if it still carries the literal 'NATIONAL COFFEE DAY' -- if a later promo re-used the block, the runner stands down rather than clearing someone else's copy. Countdown: enable_time->False, time_start->'', url->'' (pre-NCD values, read out of git at f1c300e~1). The countdown 'date' is deliberately LEFT at its value: it is inert once enable_time is false, and rewriting it would author a value nobody declared. Both surfaces self-expire by date on 2026-10-05 -- the BEHAVIOUR reverts, the SETTINGS do not, which is why this row is teardownKind=required and not auto.\n---- 2026-09-25 ----\nBlock ncd_2026_frother is removed in the same teardown pass (bar_teardown BAR_BLOCKS, identity needle 'FREE FROTHER'); it also self-hides after 10-04 by date.",
+          "launchEvidence": "ARMED ON LIVE THEME 160800145656 BY THEMESMITH 2026-09-16, inert by date until 2026-09-28 (RULING 1 -- Shopkeeper wrote none of it). Settings written and read back green: campaign_sale_window_enabled True / _label 'National Coffee Day' / _start '2026-09-28' / _end '2026-10-04' / _end_text 'Ends October 4 at midnight' / _unexempt_handles 'hazelnut-herbal-coffee'; campaign_sale_window_exempt_tag left at 'FOTM' and campaign_sale_window_sitewide left False (a MINOR is never sitewide). campaign_sale_end_date rolled 2026-09-30 -> 2026-10-31, which is the fix for themeDependencyOpen2026_09_16 consequence (2). LIVE SERVED-HTML CONTROLS, fresh, 2026-09-16: POSITIVE -- /products/hazelnut-herbal-coffee renders data-campaign-sale-badge with label 'Flavor of the Month' and 'Save 26%', so the badge machinery is alive and the primary campaign is untouched after the write. NEGATIVE -- no 'NATIONAL COFFEE DAY' string and no countdown anywhere on the homepage or a PDP, which is correct for 2026-09-16, and /products/french-roast-herbal-coffee renders NO pill at all (d=0 today). THE WINDOW BRANCH ITSELF WAS PROVEN ON A PREVIEW BUILT FROM THIS EXACT COMMIT by pulling campaign_sale_window_start back: label, urgency text and countdown all rendered, then went inert again when the real date was restored. It CANNOT be proven on live before 2026-09-28 without putting a false promo on the store, so the 09-28 served-HTML re-verification is still owed and is NOT discharged by this row.\n---- THEMESMITH 2026-09-25, FROTHER OFFER LINE ----\nApproved copy written to LIVE sections/header-group.json as block ncd_2026_frother (richtext, page_targets all, start_date 2026-09-28, end_date 2026-10-04), ordered after ncd_2026_coffee_day: '<h5>FREE SHIPPING OVER $59 - FREE GIFT AT $25 - FREE FROTHER ON ORDERS OVER $75</h5>'. Self-timed by the block date gate, no job. PROVEN on QA 187228455160 with start pulled to 2026-09-25: rendered (screenshot screenshots/ncd-frother-qa-bar-1440.png), then restored to 09-28. LIVE fresh HTML 13:50 PT: frother line x0 (correct before 09-28), evergreen 'FREE SHIPPING ORDERS OVER $59' x1 (positive control). Evergreen block ba4f8856 left untouched, so both lines rotate during the window. 09-28 served-HTML re-verification still owed.",
           "teardownEvidence": null,
           "launchVerifiedBy": "themesmith",
           "teardownVerifiedBy": null
@@ -1386,10 +1397,10 @@
           "group": "hardcoded",
           "teardownKind": "required",
           "launchState": "pending",
-          "teardownState": "pending",
+          "teardownState": "armed",
           "launchTarget": "ARM 2026-09-28 00:00 PT (tier is not date-aware). tc_reward_3_threshold = READ declaredMinors[national-coffee-day-2026-09].addOnDeclared.thresholdLiteral AT ARM TIME (75); tc_reward_3_product = <handle Shopkeeper reports> (LOAD-BEARING); tc_reward_3_variant blank; tc_reward_3_label = 'Free Frother'; tc_reward_3_copy = \"You're [amount] away from a FREE FROTHER!\". Tiers 1 ($25 packet) and 2 ($59 display) UNTOUCHED. Verify on fresh HTML + a /cart.js test cart at >=$75 post-discount (positive) and <$75 (negative).",
-          "teardownTarget": "2026-10-05 00:01 PT: tc_reward_3_threshold -> 0 (disarms the tier; tc-cart.js drops threshold<=0). NOT 2026-10-01. Verify a $75+ cart no longer adds the frother. Halloween re-arms at $65 on 2026-10-25 from its own record.",
-          "launchEvidence": null,
+          "teardownTarget": "2026-10-05 00:01 PT: tc_reward_3_threshold -> 0 (disarms the tier; tc-cart.js drops threshold<=0). NOT 2026-10-01. Verify a $75+ cart no longer adds the frother. Halloween re-arms at $65 on 2026-10-25 from its own record.\n---- THEMESMITH 2026-09-25, FOLDED INTO THE NCD TEARDOWN ----\nEXACT RESTORE LITERAL: tc_reward_3_threshold=0. Runs as HALF 0 of teardown_ncd_20261005.py, BEFORE gates I/D/B, so a gate-B refusal cannot keep the frother granting. Identity-gated (stands down if tier 3 is armed for any handle other than free-frother). tc_reward_3_product STAYS 'free-frother' -- classified FIXED: it is what lets tc-cart.js sweep already-earned frothers out of live carts, and Halloween re-arms the same handle at $65 on 10-25. Label/copy are inert at threshold 0 and are not written. If the all-unlocked line is armed, it restores to the exact literal 'FREE SHIPPING & FREE GIFT UNLOCKED'. QA-PROVEN on 187228455160 2026-09-25: disarm wrote 75->0, served tier 3 = (0, 46377468756216), $89.95 cart -> no frother, a pre-existing frother line was swept, re-run = no-op. Rehearsed read-only on LIVE: HALF 0 evaluated. Backup: teardown_ncd_20261005.py.bak-pre-frother-20260925.",
+          "launchEvidence": "STAGED + QA-PROVEN BY THEMESMITH 2026-09-25, NOT YET ARMED ON LIVE (live tc_reward_3_threshold=0, product='' read back 13:28 PT). Runner _scripts/arm_ncd_frother_tier_20260928.py: reads declaredMinors[national-coffee-day-2026-09].addOnDeclared.thresholdLiteral at run time (75); gift PINNED by GID 9043762839800 / variant 46377468756216 (not resolved by SKU -- fr33froth shares SKU 90037 and the title); gates: clock both ends 09-28 00:00..10-04 23:00 PT, preflight (UNLISTED, $0.00, DENY, qty>0, image, storefront .js 200 with pos control packet 200 / neg control fr33froth 404), predecessor (tier 3 idle or ours), idempotent, tiers 1/2 snapshot unchanged. LIVE PREFLIGHT 2026-09-25 13:22 PT: PASS (qty 1488). Clock gate proven: .bat fired 13:28 PT -> HARD ABORT gate A, nothing written. QA on fresh duplicate of live, theme 187228455160 'ZZZ NCD frother QA 0925 - DO NOT PUBLISH': served /cart tcCartConfig.rewards = [(2500,packet 46897840161016),(5900,null),(7500,46377468756216),(0,null)]; headless cart: $17.99 -> no frother; $71.96 -> no frother, bar 'You're $3.04 away from a FREE FROTHER!'; $89.95 -> Free Frother line $0.00 added (tier 1 packet also present); drop below -> frother swept. Screenshots clawd-themesmith/screenshots/ncd-frother-qa-cart-{over,under}75-1440.png. JOBS STAGED, NOT REGISTERED (awaiting Justin approval): ThemeSmith-NCDFrotherArm-20260928 00:00 PT, -Backup 00:30, -Verify 00:45 (served HTML + real /cart.js test on LIVE >= and < $75); Interactive/Limited, action = .bat, empty args. register_ncd_frother_arm_20260928.ps1. OPEN, customer-facing copy needing Justin: (1) all-unlocked line tc_rewards_copy_complete still reads 'FREE SHIPPING & FREE GIFT UNLOCKED' when all three tiers are hit -- proposed 'FREE SHIPPING, FREE GIFT & FREE FROTHER UNLOCKED' (UNLOCK_COPY_APPROVED=False until signed off); (2) bar offer line not yet written.\n---- 2026-09-25 13:51 PT, APPROVED + SCHEDULED (switchboard approval, simbastampede) ----\nAll-unlocked copy APPROVED: UNLOCK_COPY_APPROVED=True; arm writes tc_rewards_copy_complete='FREE SHIPPING, FREE GIFT & FREE FROTHER UNLOCKED'; teardown HALF 0 restores EXACT literal 'FREE SHIPPING & FREE GIFT UNLOCKED' (QA-proven both directions on 187228455160; cart header read 'FREE SHIPPING, FREE GIFT & FREE FROTHER UNLOCKED' at $89.95). REGISTERED: ThemeSmith-NCDFrotherArm-20260928 09-28 00:00 PT, -Backup 00:30, -Verify 00:45; Interactive only, action .bat, args ''. FIRE-PROVEN 13:51 PT via schtasks /run: launched, HARD ABORT gate A, Last Result 1, nothing written, Next Run still 09-28 00:00. LIVE STILL INERT: tc_reward_3_threshold=0, product='', unlock line unchanged; tc_reward_1_*/tc_reward_2_* thresholds absent (schema defaults 25/59), untouched. launchState stays pending until the 00:45 verify (served /cart tier 3 = (7500, 46377468756216) + live cart >= / < $75).",
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
@@ -1691,7 +1702,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -1947,7 +1958,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2211,7 +2222,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2486,7 +2497,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -3031,7 +3042,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-14T13:40:59.875843-07:00",
-          "ranAtAge": "10d ago",
+          "ranAtAge": "11d ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -3303,7 +3314,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -3570,7 +3581,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4433,7 +4444,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -5087,7 +5098,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -6577,7 +6588,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -7127,7 +7138,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-31T14:17:02.371150-07:00",
-          "ranAtAge": "24d ago",
+          "ranAtAge": "25d ago",
           "checks": [
             {
               "check": "window: launch phase matches the clock",
@@ -7160,7 +7171,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T13:48:29.321923-07:00",
-          "ranAtAge": "27d ago",
+          "ranAtAge": "28d ago",
           "checks": [
             {
               "check": "window: midflight phase matches the clock",
@@ -7189,7 +7200,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-09-14T13:28:16.550365-07:00",
-          "ranAtAge": "10d ago",
+          "ranAtAge": "11d ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -7542,7 +7553,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -8418,7 +8429,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -9099,7 +9110,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-09-25T08:55:03-07:00",
-          "ageHuman": "4h ago",
+          "ageHuman": "6h ago",
           "stale": false,
           "owner": "dataops"
         }
