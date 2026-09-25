@@ -86,6 +86,13 @@
   .promo .ptag { font-size:.6rem; letter-spacing:.5px; padding:0 4px; border-radius:3px; border:1px solid var(--border); }
   .promo.major .ptag { color:#16213e; background:var(--accent); border-color:var(--accent); font-weight:700; }
   .promo.none { font-style:italic; opacity:.7; }
+  .bud-sum { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 12px; }
+  .bud-sum .stat { flex:1 1 180px; }
+  .bud-sum .num { font-size:1.35rem; }
+  .bud-note { font-size:.76rem; color:var(--text-dim); margin:6px 0 14px; line-height:1.45; }
+  table.budtbl tr.inferred td { font-style:italic; color:var(--text-dim); }
+  .swatch { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:6px; vertical-align:0; }
+  .bud-empty { font-size:.85rem; color:var(--text-dim); padding:10px 0; }
 </style></head><body>
 
 <h1>New-Customer Cost &amp; Spend Plan</h1>
@@ -119,6 +126,28 @@
   under that line, and the chart below tracks it week to week.
 </div>
 
+
+<h2 id="budgets">Daily Budget Changes</h2>
+<div class="bud-sum">
+  <div class="stat"><div class="label">Budget changes in window</div><div class="num" id="budCount">&mdash;</div><div class="sub" id="budCountSub"></div></div>
+  <div class="stat"><div class="label"><span class="swatch" style="background:#4f8fe0"></span>Meta daily budget</div><div class="num" id="budMetaNet">&mdash;</div><div class="sub" id="budMetaSub"></div></div>
+  <div class="stat"><div class="label"><span class="swatch" style="background:#a8832f"></span>Google daily budget</div><div class="num" id="budGoogleNet">&mdash;</div><div class="sub" id="budGoogleSub"></div></div>
+</div>
+<div class="chart-wrap"><canvas id="budChart" aria-label="Daily ad spend by platform over the last 60 days, with a triangle on each day a daily budget was raised or cut"></canvas></div>
+<div class="bud-note">Lines = daily ad spend, last 60 days (today's spend isn't in until tomorrow morning). <b>&#9650;</b> = a daily budget was raised that day, <b>&#9660;</b> = cut (hover for the campaigns). The shaded area is the cost window picked at the top of the page; the tiles and table follow it.</div>
+<div class="tscroll"><table class="budtbl">
+  <thead><tr><th>When (Pacific)</th><th>Platform</th><th>Campaign</th>
+  <th class="r">Before</th><th class="r">After</th><th class="r" data-tip="Change in the campaign's daily budget, dollars per day and percent of the old budget.">Change / day</th></tr></thead>
+  <tbody id="budBody"></tbody>
+</table></div>
+<div class="bud-note">
+  Budgets are each campaign's <b>daily budget setting</b>, not what it spent &mdash; campaigns routinely under- or over-deliver
+  their budget on a given day. Meta's history here goes back to Aug 22, 2025. <b>Google keeps only 30 days of change
+  history</b>, so Google changes before Aug 27, 2026 aren't available; from now on they're saved every night.
+  "Live" budget counts campaigns that are switched on <em>and</em> spent in the last 7 days (as of 2026-09-25),
+  because both platforms leave ended sale campaigns switched on with their budget attached. Rows in <i>italics</i> are changes
+  the platform never logged: the budget moved between two logged edits, so the amounts are known but not the exact time.
+</div>
 <details class="metric-index">
   <summary>📖 Metric Index — every metric on this page, defined</summary>
   <div class="mi-grid">
@@ -330,7 +359,7 @@
   repeat tail &mdash; which is what the payback figure measures.
 </div>
 
-<p class="updated-stamp">Generated 2026-09-25 09:00:33 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-09-25 15:27:33 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["05-04", "05-11", "05-18", "05-25", "06-01", "06-08", "06-15", "06-22", "06-29", "07-06", "07-13", "07-20", "07-27", "08-03", "08-10", "08-17", "08-24", "08-31", "09-07", "09-14", "09-21 (4d so far)"];
@@ -446,6 +475,87 @@ const GCOL = {green:'var(--green)', yellow:'var(--yellow)', red:'#f87171', basel
 const GLAB = {green:'HEALTHY', yellow:'WATCH', red:'ALERT', baseline:'&mdash;'};
 const fmtD = s => new Date(s+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
 const pbTxt = v => v==null ? 'never' : (v<1 ? '&lt;1 mo' : '~'+v.toFixed(1)+' mo');
+// ---- daily-budget changes (follows the cost window) ----
+const BUD = {"days": ["2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25"], "spend": {"Meta": [347.66, 393.29, 521.99, 620.13, 357.06, 470.37, 414.58, 398.21, 385.42, 344.76, 508.82, 460.68, 552.13, 400.39, 386.23, 399.89, 373.58, 402.3, 426.35, 500.9, 453.56, 420.58, 435.61, 438.65, 364.84, 322.8, 379.04, 362.25, 347.68, 395.59, 529.07, 565.35, 531.03, 675.18, 368.99, 345.22, 363.67, 350.35, 432.69, 407.94, 514.94, 881.88, 1619.96, 1299.94, 1222.29, 1097.77, 721.01, 986.2, 407.07, 416.73, 468.66, 466.95, 497.17, 483.78, 562.65, 692.61, 522.71, 667.15, 587.94, null], "Google Ads": [133.29, 109.84, 182.06, 135.65, 127.23, 117.46, 117.57, 118.68, 134.04, 159.27, 217.38, 240.91, 217.33, 198.67, 166.98, 184.72, 152.38, 192.69, 257.78, 214.55, 31.73, 187.48, 227.24, 237.99, 174.8, 188.01, 196.81, 173.96, 174.54, 180.79, 237.25, 284.93, 387.47, 332.49, 320.4, 332.06, 252.76, 304.5, 417.12, 413.48, 425.71, 477.09, 508.32, 503.12, 538.86, 684.45, 459.61, 382.05, 306.12, 272.04, 333.56, 280.27, 249.29, 313.95, 372.97, 286.26, 269.27, 258.63, 292.92, null]}, "changes": [{"platform": "Google Ads", "name": "eH | US | Search Ads - Non Branded Keywords", "at": "2026-09-25T05:44:58", "date": "2026-09-25", "after": null, "old": 25.0, "new": 35.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Dandelion collection", "at": "2026-09-25T05:44:32", "date": "2026-09-25", "after": null, "old": 10.0, "new": 20.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "Sales | PFM | CPA", "at": "2026-09-25T05:44:18", "date": "2026-09-25", "after": null, "old": 40.0, "new": 60.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-22T23:11:18", "date": "2026-09-22", "after": null, "old": 400.0, "new": 500.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-22T23:06:13", "date": "2026-09-22", "after": null, "old": 500.0, "new": 400.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-20T23:52:28", "date": "2026-09-20", "after": null, "old": 400.0, "new": 500.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | Search Ads - Non Branded Keywords", "at": "2026-09-16T05:23:30", "date": "2026-09-16", "after": null, "old": 20.0, "new": 25.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | P Max | TOF | Coffee", "at": "2026-09-16T05:23:21", "date": "2026-09-16", "after": null, "old": 15.0, "new": 20.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | TOF | Shopping Ads", "at": "2026-09-16T05:23:07", "date": "2026-09-16", "after": null, "old": 25.0, "new": 30.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-16T04:41:26", "date": "2026-09-16", "after": null, "old": 300.0, "new": 400.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "Sales | PFM | CPA", "at": "2026-09-13T23:22:04", "date": "2026-09-13", "after": null, "old": 60.0, "new": 40.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | TOF | Shopping Ads", "at": "2026-09-13T23:12:54", "date": "2026-09-13", "after": null, "old": 20.0, "new": 25.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | Search Ads - Non Branded Keywords", "at": "2026-09-13T23:12:13", "date": "2026-09-13", "after": null, "old": 40.0, "new": 20.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | TOF | Shopping Ads", "at": "2026-09-13T23:11:52", "date": "2026-09-13", "after": null, "old": 40.0, "new": 20.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Ice A&P", "at": "2026-09-13T23:11:32", "date": "2026-09-13", "after": null, "old": 20.0, "new": 15.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-09-13T22:58:14", "date": "2026-09-13", "after": null, "old": 150.0, "new": 100.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-13T22:58:09", "date": "2026-09-13", "after": null, "old": 700.0, "new": 300.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | US | Search Ads - Branded Keywords", "at": "2026-09-10T16:31:16", "date": "2026-09-10", "after": null, "old": 10.0, "new": 20.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Labor's day (4th-10th, 11th)", "at": "2026-09-10T02:37:21", "date": "2026-09-10", "after": null, "old": 200.0, "new": 300.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-09T22:57:16", "date": "2026-09-09", "after": null, "old": 1000.0, "new": 700.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Labor's day (4th-10th, 11th)", "at": "2026-09-09T22:56:48", "date": "2026-09-09", "after": null, "old": 300.0, "new": 200.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-09-08T22:38:39", "date": "2026-09-08", "after": null, "old": 250.0, "new": 150.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-08T09:23:17", "date": "2026-09-08", "after": null, "old": 800.0, "new": 1000.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Labor's day (4th-10th, 11th)", "at": "2026-09-08T00:27:21", "date": "2026-09-08", "after": null, "old": 200.0, "new": 300.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-08T00:26:03", "date": "2026-09-08", "after": null, "old": 700.0, "new": 800.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-08T00:24:55", "date": "2026-09-08", "after": null, "old": 550.0, "new": 700.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Labor Day Sale (September 4-10)", "at": "2026-09-08T00:24:49", "date": "2026-09-08", "after": null, "old": 200.0, "new": 250.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-09-08T00:24:46", "date": "2026-09-08", "after": null, "old": 150.0, "new": 250.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-08T00:13:10", "date": "2026-09-08", "after": null, "old": 400.0, "new": 550.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Labor's day (4th-10th, 11th)", "at": "2026-09-07T00:26:37", "date": "2026-09-07", "after": null, "old": 100.0, "new": 200.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Labor Day Sale (September 4-10)", "at": "2026-09-07T00:24:07", "date": "2026-09-07", "after": null, "old": 300.0, "new": 200.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-09-07T00:23:58", "date": "2026-09-07", "after": null, "old": 250.0, "new": 400.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-09-07T00:23:44", "date": "2026-09-07", "after": null, "old": 400.0, "new": 150.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-09-07T00:23:25", "date": "2026-09-07", "after": null, "old": 200.0, "new": 400.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-09-07T00:23:18", "date": "2026-09-07", "after": null, "old": 100.0, "new": 200.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Labor Day Sale (September 4-10)", "at": "2026-09-07T00:23:13", "date": "2026-09-07", "after": null, "old": 200.0, "new": 300.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "Sales | PFM | CPA", "at": "2026-09-07T00:03:02", "date": "2026-09-07", "after": null, "old": 30.0, "new": 60.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Labor Day Sale (September 4-10)", "at": "2026-09-06T21:29:16", "date": "2026-09-06", "after": null, "old": 100.0, "new": 200.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | 72 Hrs sale(August 28th-30th) #2", "at": "2026-09-03T22:37:38", "date": "2026-09-03", "after": null, "old": null, "new": 100.0, "op": "CREATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | Labor's day (4th-10th, 11th)", "at": "2026-09-03T22:37:38", "date": "2026-09-03", "after": null, "old": null, "new": 100.0, "op": "CREATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-08-30T23:06:55", "date": "2026-08-30", "after": null, "old": 250.0, "new": 100.0, "op": "UPDATE", "period": "daily"}, {"platform": "Google Ads", "name": "eH | PMax | 72 Hrs sale(August 28th-30th)", "at": "2026-08-28T06:03:39", "date": "2026-08-28", "after": null, "old": 30.0, "new": 100.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-08-27T01:28:44", "date": "2026-08-27", "after": null, "old": 180.0, "new": 250.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-08-27T01:28:38", "date": "2026-08-27", "after": null, "old": 300.0, "new": 250.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-08-27T01:28:20", "date": "2026-08-27", "after": null, "old": 150.0, "new": 180.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-08-27T01:21:16", "date": "2026-08-27", "after": null, "old": 80.0, "new": 150.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-08-23T23:23:40", "date": "2026-08-23", "after": null, "old": 50.0, "new": 80.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-08-15T01:06:37", "date": "2026-08-15", "after": null, "old": 100.0, "new": 50.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-07-28T12:04:40", "date": "2026-07-28", "after": null, "old": 50.0, "new": 100.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-07-28T09:30:15", "date": "2026-07-28", "after": null, "old": 150.0, "new": 300.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Subscription Savings Week ( July 25 - 31 )", "at": "2026-07-28T09:30:09", "date": "2026-07-28", "after": null, "old": 50.0, "new": 100.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-07-28T09:30:05", "date": "2026-07-28", "after": null, "old": 50.0, "new": 150.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Overall Test Campaign", "at": "2026-07-28T02:46:45", "date": "2026-07-28", "after": null, "old": 30.0, "new": 50.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | Subscription Savings Week ( July 25 - 31 )", "at": "2026-07-28T02:46:37", "date": "2026-07-28", "after": null, "old": 30.0, "new": 50.0, "op": "UPDATE", "period": "daily"}, {"platform": "Meta", "name": "eH | CBO | TOF Campaign", "at": "2026-07-28T02:46:21", "date": "2026-07-28", "after": null, "old": 30.0, "new": 50.0, "op": "UPDATE", "period": "daily"}], "live": {"Meta": {"total": 600.0, "n": 2, "idle": 0, "idle_budget": 0}, "Google Ads": {"total": 325.0, "n": 14, "idle": 0, "idle_budget": 0}}, "snapshot_date": "2026-09-25", "google_from": "2026-08-27", "meta_from": "2025-08-22"};
+const BCOL = {'Meta':'#4f8fe0','Google Ads':'#a8832f'};
+let budChart = null, budWin = null;
+const usd = v => '$' + (Math.abs(v) >= 100 ? Math.round(v).toLocaleString() : (+v).toFixed(v % 1 ? 2 : 0));
+const sgn = v => (v > 0 ? '+' : v < 0 ? '&minus;' : '') + usd(Math.abs(v));
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const delta = c => (c.old == null ? c.new : c.new - c.old);
+function budInit() {
+  if (!BUD || !document.getElementById('budChart')) return;
+  const D = BUD.days, byDay = {};
+  BUD.changes.forEach(c => { if (c.period !== 'daily' || !c.at) return; (byDay[c.platform + '|' + c.date] ||= []).push(c); });
+  const mk = plat => D.map((d, i) => {
+    if (!byDay[plat + '|' + d]) return null;
+    for (let j = i; j >= 0; j--) if (BUD.spend[plat][j] != null) return BUD.spend[plat][j];
+    return 0;
+  });
+  const rot = plat => D.map(d => { const cs = byDay[plat + '|' + d]; return cs && cs.reduce((a, c) => a + delta(c), 0) < 0 ? 180 : 0; });
+  const shade = { id:'budShade', beforeDatasetsDraw(ch) {
+    if (!budWin) return; const x = ch.scales.x, a = ch.chartArea;
+    const i0 = D.findIndex(d => d >= budWin.start); if (i0 < 0) return;
+    const px0 = i0 === 0 ? a.left : (x.getPixelForValue(i0 - 1) + x.getPixelForValue(i0)) / 2;
+    ch.ctx.save(); ch.ctx.fillStyle = 'rgba(255,255,255,.07)'; ch.ctx.fillRect(px0, a.top, a.right - px0, a.bottom - a.top); ch.ctx.restore();
+  } };
+  const labels = D.map(d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}));
+  const line = plat => ({ type:'line', label:(plat === 'Google Ads' ? 'Google' : plat) + ' spend', data:BUD.spend[plat], borderColor:BCOL[plat], backgroundColor:BCOL[plat],
+    borderWidth:2, pointRadius:0, pointHitRadius:6, tension:.25, spanGaps:false, order:2, isSpend:true, pointStyle:'line' });
+  const mark = plat => ({ type:'line', label:(plat === 'Google Ads' ? 'Google' : plat) + ' budget change', data:mk(plat), showLine:false, pointStyle:'triangle',
+    pointRotation:rot(plat), pointRadius:8, pointHoverRadius:10, pointBackgroundColor:BCOL[plat], pointBorderColor:'#1a1a2e',
+    pointBorderWidth:2, borderColor:BCOL[plat], backgroundColor:BCOL[plat], order:1 });
+  budChart = new Chart(document.getElementById('budChart').getContext('2d'), {
+    data:{ labels, datasets:[line('Meta'), line('Google Ads'), mark('Meta'), mark('Google Ads')] },
+    plugins:[shade],
+    options:{ responsive:true, interaction:{mode:'index', intersect:false},
+      plugins:{ legend:{labels:{color:'#e2e8f0', font:{size:11}, usePointStyle:true, sort:(a, b) => a.datasetIndex - b.datasetIndex}},
+        tooltip:{ filter: it => it.dataset.isSpend,
+          callbacks:{ label: it => it.dataset.label + ': ' + (it.raw == null ? 'no data' : '$' + Math.round(it.raw).toLocaleString()),
+            afterBody: its => { if (!its.length) return []; const d = D[its[0].dataIndex], out = [];
+              ['Meta', 'Google Ads'].forEach(pl => (byDay[pl + '|' + d] || []).forEach(c =>
+                out.push((delta(c) >= 0 ? '▲ ' : '▼ ') + (pl === 'Google Ads' ? 'Google' : pl) + ' · ' + c.name + ': ' +
+                  (c.old == null ? 'new, ' : '$' + c.old + ' → ') + '$' + c.new + '/day')));
+              return out.length ? ['', 'Budget changes:'].concat(out) : [];
+            } } } },
+      scales:{ x:{ticks:{color:'#888', font:{size:10}, maxRotation:0, autoSkipPadding:14}, grid:{color:'rgba(255,255,255,.05)'}},
+        y:{beginAtZero:true, ticks:{color:'#888', callback:v => '$' + v.toLocaleString()}, grid:{color:'rgba(255,255,255,.06)'}} } }
+  });
+}
+function renderBudget(w) {
+  if (!BUD || !document.getElementById('budBody')) return;
+  budWin = w;
+  const cs = BUD.changes.filter(c => c.date >= w.start);
+  const daily = cs.filter(c => c.period === 'daily');
+  document.getElementById('budCount').innerHTML = cs.length.toLocaleString();
+  const up = daily.filter(c => delta(c) > 0).length, dn = daily.filter(c => delta(c) < 0).length;
+  document.getElementById('budCountSub').innerHTML = fmtD(w.start) + ' &ndash; today &middot; ' + up + ' raised, ' + dn + ' cut';
+  [['Meta', 'budMetaNet', 'budMetaSub'], ['Google Ads', 'budGoogleNet', 'budGoogleSub']].forEach(([pl, n, sub]) => {
+    const net = daily.filter(c => c.platform === pl).reduce((a, c) => a + delta(c), 0);
+    const lv = (BUD.live || {})[pl];
+    document.getElementById(n).innerHTML = lv ? usd(lv.total) + '<span style="font-size:.8rem;color:var(--text-dim)">/day live</span>' : '&mdash;';
+    let t = (Math.abs(net) < 0.005 ? 'no net change' : sgn(net) + '/day net') + ' in window';
+    if (lv) t += ' &middot; ' + lv.n + ' live campaign' + (lv.n === 1 ? '' : 's');
+    if (pl === 'Google Ads' && BUD.google_from && w.start < BUD.google_from) t += ' &middot; <span style="color:#f87171">history only from ' + fmtD(BUD.google_from) + '</span>';
+    document.getElementById(sub).innerHTML = t;
+  });
+  const body = document.getElementById('budBody');
+  if (!cs.length) { body.innerHTML = '<tr><td colspan="6" class="bud-empty">No budget changes on either platform in this window.</td></tr>'; }
+  else body.innerHTML = cs.map(c => {
+    const dv = delta(c), pct = c.old ? ' (' + (dv > 0 ? '+' : '') + Math.round(100 * dv / c.old) + '%)' : '';
+    const when = c.at ? new Date(c.at).toLocaleString('en-US', {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'})
+                      : 'Between ' + fmtD(c.after) + ' and ' + fmtD(c.date) + ' (not logged)';
+    const per = c.period === 'daily' ? '' : ' <span style="color:var(--text-dim)">(lifetime)</span>';
+    return '<tr' + (c.op === 'INFERRED' ? ' class="inferred"' : '') + '><td>' + when + '</td>'
+      + '<td><span class="swatch" style="background:' + BCOL[c.platform] + '"></span>' + (c.platform === 'Google Ads' ? 'Google' : 'Meta') + '</td>'
+      + '<td>' + esc(c.name) + per + '</td>'
+      + '<td class="r">' + (c.old == null ? '<span style="color:var(--text-dim)">new</span>' : usd(c.old)) + '</td>'
+      + '<td class="r">' + usd(c.new) + '</td>'
+      + '<td class="r">' + (dv > 0 ? '&#9650; ' : dv < 0 ? '&#9660; ' : '') + sgn(dv) + pct + '</td></tr>';
+  }).join('');
+  if (budChart) budChart.update('none');
+}
+budInit();
 function showWin(k) {
   const w = WIN.find(x=>x.key===k); if (!w) return;
   document.querySelectorAll('.winbar button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.win===k)));
@@ -478,6 +588,7 @@ function showWin(k) {
   const here = PBX.map(()=>null);
   if (w.ncpa!=null && w.payback!=null) { const i = Math.round(w.ncpa) - PBX[0]; if (i>=0 && i<here.length) here[i] = Math.round(w.payback*10)/10; }
   pbChart.data.datasets[1].data = here; pbChart.update('none');
+  renderBudget(w);
   const u = new URL(location.href); u.searchParams.set('win', k); history.replaceState(null,'',u);
 }
 document.querySelectorAll('.winbar button').forEach(b=>b.addEventListener('click',()=>showWin(b.dataset.win)));
