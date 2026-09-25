@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-25T07:45:01.553509-07:00",
-  "generatedAtUTC": "2026-09-25T14:45:01.553509+00:00",
+  "generatedAt": "2026-09-25T13:18:40.324298-07:00",
+  "generatedAtUTC": "2026-09-25T20:18:40.324298+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,8 +14,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 771325,
-      "ageHuman": "8d ago",
+      "ageSeconds": 791344,
+      "ageHuman": "9d ago",
       "stale": false,
       "thresholdSeconds": 2592000
     },
@@ -26,8 +26,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 771325,
-      "ageHuman": "8d ago",
+      "ageSeconds": 791344,
+      "ageHuman": "9d ago",
       "stale": false,
       "thresholdSeconds": 2592000
     },
@@ -38,8 +38,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:39-07:00",
-      "ageSeconds": 771322,
-      "ageHuman": "8d ago",
+      "ageSeconds": 791341,
+      "ageHuman": "9d ago",
       "stale": true,
       "thresholdSeconds": 86400,
       "joinPromoId": null
@@ -50,9 +50,9 @@
       "owner": "dataops",
       "present": true,
       "error": null,
-      "generatedAt": "2026-09-24T09:21:59-07:00",
-      "ageSeconds": 80582,
-      "ageHuman": "22h ago",
+      "generatedAt": "2026-09-25T08:55:03-07:00",
+      "ageSeconds": 15817,
+      "ageHuman": "4h ago",
       "stale": false,
       "thresholdSeconds": 172800
     }
@@ -69,7 +69,7 @@
     {
       "severity": "warning",
       "code": "source-stale",
-      "title": "promo-hub-monitor.json is stale (8d ago)",
+      "title": "promo-hub-monitor.json is stale (9d ago)",
       "detail": "Owner: shopkeeper. Threshold 24h."
     }
   ],
@@ -996,10 +996,10 @@
       },
       "levers": {
         "addOn": {
-          "v": "None."
+          "v": "FREE Frother on orders over $75 (slide-cart gift tier 3). Gift SKU 90037 (Frother Friend - Electric Milk Frother - Accessory). The $25 free packet tier 1 is unaffected; both gifts run concurrently."
         },
         "gwp": {
-          "v": null,
+          "v": "FREE Frother on orders over $75 (slide-cart gift tier 3). Gift SKU 90037 (Frother Friend - Electric Milk Frother - Accessory). The $25 free packet tier 1 is unaffected; both gifts run concurrently.",
           "note": "gift-SKU stock state is not in any feed -- not rendered as OK"
         },
         "gwpStock": {
@@ -1019,10 +1019,10 @@
             "v": null
           },
           "threshold": {
-            "v": null
+            "v": 75
           },
           "sku": {
-            "v": null
+            "v": "90037"
           },
           "stock": null,
           "basis": "claim = declaredSlate.addOnDeclared.canonicalClaim (the one approved wording); sku = the promo record's structured giftSku field; stock = declaredSlate.giftStockObserved, a DATED observation, not a feed."
@@ -1361,22 +1361,54 @@
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Gift product (hidden $0 SKU) -- FROTHER",
+          "owner": "shopkeeper",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "mechanic",
+          "teardownKind": "required",
+          "launchState": "done",
+          "teardownState": "pending",
+          "launchTarget": "Resolve EXACTLY ONE $0.00 twin on SKU 90037 by Product GID (candidates 9043762839800 free-frother / 8201957474552 fr33froth / 9304872354040 mystery-gift-3 -- all DRAFT today). Target state per Justin's 2026-08-28 standing ruling: status UNLISTED (never ACTIVE), published to Online Store, price $0.00, inventoryPolicy DENY, >=1 image, SKU 90037. Report the chosen GID + handle -- ThemeSmith arms the tier off the HANDLE. The same twin serves halloween-sale-2026-10. Ready by 2026-09-27.",
+          "teardownTarget": "LEAVE PUBLISHED (UNLISTED) -- the same twin is the Halloween Sale gift (2026-10-25..31). Teardown of the GIFT is the tier disarm on the ThemeSmith row, not unpublishing this product. Confirm DENY still set.",
+          "launchEvidence": "Written by shopkeeper; VERIFIED AT SOURCE by promosmith. Admin: Product 9043762839800 title 'Free Frother', status UNLISTED, onlineStoreUrl set, variant 46377468756216 $0.00 SKU 90037 DENY qty 1488. Storefront fresh: /products/free-frother.js HTTP 200 2202B, available=true; positive control free-monthly-herbal-coffee-packet.js 200; negative control fr33froth.js 404 (still DRAFT). check_gift_ready still FAILS 'PUBLISHED' only because it grades the two deliberately-DRAFT twins -- checker flaw, AgentSmith fixing. NOTE: fr33froth is ALSO titled 'Free Frother' -- resolve by handle/GID only check_gift_ready.py --promo national-coffee-day-2026-09 re-run by shopkeeper 2026-09-25T20:12:21Z after AgentSmith giftProductId pin fix: GIFT: PASS 8/8, rc=0 (graded only 9043762839800).",
+          "teardownEvidence": null,
+          "launchVerifiedBy": "promosmith",
+          "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Gift tier (slide cart settings.tc_reward_3_*) -- FROTHER",
+          "owner": "themesmith",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "hardcoded",
+          "teardownKind": "required",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "ARM 2026-09-28 00:00 PT (tier is not date-aware). tc_reward_3_threshold = READ declaredMinors[national-coffee-day-2026-09].addOnDeclared.thresholdLiteral AT ARM TIME (75); tc_reward_3_product = <handle Shopkeeper reports> (LOAD-BEARING); tc_reward_3_variant blank; tc_reward_3_label = 'Free Frother'; tc_reward_3_copy = \"You're [amount] away from a FREE FROTHER!\". Tiers 1 ($25 packet) and 2 ($59 display) UNTOUCHED. Verify on fresh HTML + a /cart.js test cart at >=$75 post-discount (positive) and <$75 (negative).",
+          "teardownTarget": "2026-10-05 00:01 PT: tc_reward_3_threshold -> 0 (disarms the tier; tc-cart.js drops threshold<=0). NOT 2026-10-01. Verify a $75+ cart no longer adds the frother. Halloween re-arms at $65 on 2026-10-25 from its own record.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
         }
       ],
       "surfacesSummary": {
-        "total": 19,
-        "launchDone": 0,
+        "total": 21,
+        "launchDone": 1,
         "teardownDone": 0,
         "unowned": 0,
         "multiOwner": 0,
-        "teardownPending": 19
+        "teardownPending": 21
       },
       "gates": {
         "preflight": {
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-15T12:48:10.209947-07:00",
-          "ranAtAge": "9d ago",
+          "ranAtAge": "10d ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -1448,7 +1480,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-09-16T10:26:42.530808-07:00",
-          "ranAtAge": "8d ago",
+          "ranAtAge": "9d ago",
           "checks": [
             {
               "check": "window: launch phase matches the clock",
@@ -1535,9 +1567,44 @@
           "at": "2026-09-16T13:45:00-07:00",
           "by": "shopkeeper",
           "what": "Teardown chain complete across both lanes (13 tasks, enumerated not reported). Filed two forward risks this promo exposed: the same month-boundary/FOTM collision recurs at BFCM (2026-12-01, day 13 of 14, sitewide) and New Year's (2027-01-01, day 3 of 7, sitewide), and the FOTM badge date is an unowned manual monthly step that goes dark on 2026-11-01."
+        },
+        {
+          "at": "2026-09-25T09:20:00-07:00",
+          "by": "promosmith",
+          "event": "Added $75 free-frother GWP (tier 3) on Justin's instruction; two gift surface rows added; stock read 1488 available on SKU 90037, all $0 twins DRAFT."
+        },
+        {
+          "at": "2026-09-25T13:10:00-07:00",
+          "by": "promosmith",
+          "event": "Declared scheduledTaskGlobs ['Shopkeeper-NCD*','ThemeSmith-NCD*'] -- 9 tasks enumerated live. Record previously declared none, so preflight graded the whole machine."
+        },
+        {
+          "at": "2026-09-25T14:00:00-07:00",
+          "by": "promosmith",
+          "event": "Frother $0 twin verified live: Product 9043762839800 handle free-frother UNLISTED. Preflight still red on checker flaw (AgentSmith) + 4 dead August jobs needing Justin elevated."
+        },
+        {
+          "at": "2026-09-25T14:30:00-07:00",
+          "by": "promosmith",
+          "event": "Frother stock attested by Justin: 'Yes, we have enough frothers.'"
+        },
+        {
+          "at": "2026-09-25T14:45:00-07:00",
+          "by": "promosmith",
+          "event": "Preflight waiver (4 spent Aug jobs only) per Justin; ThemeSmith dispatched for tier 3 frother arm/disarm + announcement line."
         }
       ],
       "narrative": [
+        {
+          "key": "addOnPriorTo2026_09_25",
+          "date": "2026-09-25",
+          "text": "None."
+        },
+        {
+          "key": "addOnBasisPriorTo2026_09_25",
+          "date": "2026-09-25",
+          "text": "No gift-with-purchase and no free-shipping change, deliberate. A 72-hour minor at 28% does not need a tier on top, and both near-term GWP SKUs are already committed -- the Gold Scoop to the live Labor Day Sale, and 90037 (Frother Friend Electric Milk Frother - Accessory) to Mushroom Month. The promo record was created WITHOUT --gift, so there are deliberately no GWP surface rows: an absent row here means 'none declared', not 'forgotten'. The two evergreens run underneath as always -- FOTM 20/10 (Hazelnut, carved out) and the $25 free packet. Free shipping stays $59 (RULING 7). FIELD RESTRUCTURED 2026-09-08: addOn now carries the CLAIM ('None.') and this sibling field carries the reasoning. The prose previously sat in addOn itself and contained the word 'gift', which check_gift_ready.py keyword-matched into 'the slate declares a gift' and BLOCKED the preflight gate on a promo that has none. Claim in the field, provenance in the *Basis sibling."
+        },
         {
           "key": "notePriorTo2026_09_15",
           "date": "2026-09-15",
@@ -1606,7 +1673,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -1615,7 +1682,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -1623,8 +1690,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -1862,7 +1929,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -1871,7 +1938,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -1879,8 +1946,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2126,7 +2193,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2135,7 +2202,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -2143,8 +2210,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2401,7 +2468,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2410,7 +2477,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -2418,8 +2485,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -3218,7 +3285,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3227,7 +3294,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -3235,8 +3302,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -3485,7 +3552,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3494,7 +3561,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -3502,8 +3569,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4013,7 +4080,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-15T12:53:35.592747-07:00",
-          "ranAtAge": "9d ago",
+          "ranAtAge": "10d ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -4348,7 +4415,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4357,7 +4424,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -4365,8 +4432,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4849,7 +4916,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-15T12:53:37.480169-07:00",
-          "ranAtAge": "9d ago",
+          "ranAtAge": "10d ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -5002,7 +5069,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5011,7 +5078,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -5019,8 +5086,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -5594,7 +5661,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-03T09:53:05.143734-07:00",
-          "ranAtAge": "21d ago",
+          "ranAtAge": "22d ago",
           "checks": [
             {
               "check": "window: preflight phase is appropriate",
@@ -5667,7 +5734,7 @@
           "result": "UNPROVEN",
           "exitCode": 1,
           "ranAt": "2026-09-11T11:20:02.881734-07:00",
-          "ranAtAge": "13d ago",
+          "ranAtAge": "14d ago",
           "checks": [
             {
               "check": "window: launch phase matches the clock",
@@ -5702,7 +5769,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-11T11:34:26.851180-07:00",
-          "ranAtAge": "13d ago",
+          "ranAtAge": "14d ago",
           "checks": [
             {
               "check": "window: midflight phase matches the clock",
@@ -5731,7 +5798,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-14T12:53:09.539441-07:00",
-          "ranAtAge": "10d ago",
+          "ranAtAge": "11d ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -6459,7 +6526,7 @@
             "thisPerDaySales": 9528.8
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
@@ -6492,7 +6559,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -6501,7 +6568,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -6509,8 +6576,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -6993,7 +7060,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T12:13:54.833096-07:00",
-          "ranAtAge": "27d ago",
+          "ranAtAge": "28d ago",
           "checks": [
             {
               "check": "window: preflight phase is appropriate",
@@ -7424,7 +7491,7 @@
             "thisPerDaySales": 4597.23
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
@@ -7457,7 +7524,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -7466,7 +7533,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -7474,8 +7541,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -8049,7 +8116,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-28T12:18:02.214071-07:00",
-          "ranAtAge": "27d ago",
+          "ranAtAge": "28d ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -8300,7 +8367,7 @@
             "thisPerDaySales": 7384.11
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
@@ -8333,7 +8400,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -8342,7 +8409,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -8350,8 +8417,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -8850,7 +8917,7 @@
           "result": "PASS",
           "exitCode": 0,
           "ranAt": "2026-08-28T12:17:55.344244-07:00",
-          "ranAtAge": "27d ago",
+          "ranAtAge": "28d ago",
           "checks": [
             {
               "check": "window: teardown phase matches the clock",
@@ -8981,7 +9048,7 @@
             "thisPerDaySales": 8406.58
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
@@ -9014,7 +9081,7 @@
           "source": "promo-hub-calendar.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:36-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -9023,7 +9090,7 @@
           "source": "promo-hub-monitor.json",
           "present": true,
           "generatedAt": "2026-09-16T09:29:39-07:00",
-          "ageHuman": "8d ago",
+          "ageHuman": "9d ago",
           "stale": true,
           "owner": "shopkeeper"
         },
@@ -9031,8 +9098,8 @@
           "block": "post-promo read",
           "source": "promo-hub-analytics.json",
           "present": true,
-          "generatedAt": "2026-09-24T09:21:59-07:00",
-          "ageHuman": "22h ago",
+          "generatedAt": "2026-09-25T08:55:03-07:00",
+          "ageHuman": "4h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -9082,7 +9149,7 @@
             "thisPerDaySales": 4580.85
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
@@ -9190,7 +9257,7 @@
             "reason": "no earlier major-tier promo with a resolvable window"
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
@@ -9298,7 +9365,7 @@
             "reason": "no earlier minor-tier promo with a resolvable window"
           }
         },
-        "pipelineThroughDate": "2026-09-23"
+        "pipelineThroughDate": "2026-09-24"
       },
       "analyticsJoined": true,
       "postRead": {
