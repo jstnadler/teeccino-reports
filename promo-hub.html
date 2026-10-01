@@ -156,8 +156,11 @@ body {
 .tleg .fn  { font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
              font-size:0.74em; color:#a7f3d0; margin-left:5px; }
 .tleg .adv { display:block; font-weight:800; color:#F5D784; font-size:0.98em; margin-top:2px; }
-.tscope { font-size:0.76em; color:#94a3b8; line-height:1.45;
-          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.tscope { font-size:0.76em; color:#94a3b8; line-height:1.45; }
+.tscope .sline { display:block; }
+.tscope .pline { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.sw-yes { color:#86efac; font-weight:800; }
+.sw-no  { color:#fbbf24; font-weight:800; }
 .tscope b { color:#cbd5e1; font-weight:800; letter-spacing:0.04em; }
 .tlever { font-size:0.76em; color:#cbd5e1; line-height:1.45;
           display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -737,6 +740,22 @@ function val(w, fmt) {
   return esc(fmt ? fmt(w.v) : w.v);
 }
 function hasV(w){ return w && w.v !== null && w.v !== undefined; }
+
+// Justin 2026-10-01: scope reads as two plain lines -- SITEWIDE: YES/NO, then PRODUCTS: ALL/<the products>.
+// A value the composer could not establish renders 'not stated', never a guessed YES.
+function scopeSplitHTML(c) {
+  const sc = (c && c.scope) || {};
+  const sw = sc.sitewide ? sc.sitewide.v : null;
+  const pr = sc.products ? sc.products.v : null;
+  if (sw !== true && sw !== false && !pr && !hasV(sc.value))
+    return '<span class="nodata">scope not stated</span>';
+  const swTxt = sw === true ? '<span class="sw-yes">YES</span>'
+              : sw === false ? '<span class="sw-no">NO</span>'
+              : '<span class="nodata">not stated</span>';
+  const prTxt = pr ? esc(pr) : '<span class="nodata">not stated</span>';
+  return `<span class="sline"><b>SITEWIDE:</b> ${swTxt}</span>` +
+         `<span class="pline"><b>PRODUCTS:</b> ${prTxt}</span>`;
+}
 const stateKey = s => s === 'ENDED - TEARDOWN OPEN' ? 'ENDEDOPEN' : String(s||'').replace(/[^A-Z]/g,'');
 // 'n/a' is not a valid CSS class token; map it rather than emit a broken selector.
 const stCls = v => String(v||'unknown').replace(/[^a-z0-9]+/gi,'') || 'unknown';
@@ -959,7 +978,8 @@ function dossierRows(c) {
 
   if (c.scope) {
     rows.push(`<div class="row"><div class="rlabel">Scope</div>
-      <div class="cell"><div class="v">${val(c.scope.value)}${
+      <div class="cell tscope" style="font-size:1em">${scopeSplitHTML(c)}</div>
+      <div class="cell"><div class="hint">full scope as declared</div><div class="v">${val(c.scope.value)}${
         c.scope.derived ? '<span class="derived">DERIVED FROM THE STANDING RULE</span>' : ''}</div>
       ${hasV(c.scope.basis) ? `<details><summary>basis</summary><div class="detail-body">${esc(c.scope.basis.v)}</div></details>` : ''}
       </div></div>`);
@@ -1310,9 +1330,7 @@ function tileHTML(c) {
   const leverLine = leverBits.length
     ? `<div class="tlever">${leverBits.join(' · ')}</div>` : '';
 
-  const scope = (c.scope && hasV(c.scope.value))
-    ? `<b>SCOPE</b> ${esc(c.scope.value.v)}${c.scope.derived ? ' <span class="derived">DERIVED</span>' : ''}`
-    : '<span class="nodata">scope not stated</span>';
+  const scope = scopeSplitHTML(c);
 
   return `<div class="tile state-${sk} bg-${c.bgState || 'ready'}${c.isNextUp ? ' is-next' : ''}" role="button" tabindex="0"
        aria-expanded="false" aria-controls="d-${uid}" data-target="d-${uid}"
@@ -1631,8 +1649,7 @@ function openCalMonth(year, m, cards, trigger) {
         (s.contL || s.contR ? ' · spans a month boundary' : '') + '</div>' +
         '<div class="fpr">' + rateLanesHTML(s.c.rates) + '</div>' +
         giftHTML(s.c) +
-        '<div class="fps">' + (hasV((s.c.scope || {}).value) ? esc(s.c.scope.value.v)
-          : '<span class="nodata">scope not stated</span>') + '</div></div>';
+        '<div class="fps tscope">' + scopeSplitHTML(s.c) + '</div></div>';
     }).join('') + '</div>';
   } else {
     // spec 8.4 -- a full screen of empty calendar is the most convincing way
