@@ -342,6 +342,22 @@ summary::marker { color:#64748b; }
 .calhd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px}
 .calhd h2{font-size:15px;letter-spacing:.10em;text-transform:uppercase;color:#94a3b8;margin:0;font-weight:600}
 .calhd .calsub{font-size:12px;color:#64748b}
+.calyears,.fyears{display:flex;gap:6px;flex-wrap:wrap}
+.calyears button,.fyears button{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.16);
+  color:#cbd5e1;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer}
+.calyears button.on,.fyears button.on{background:rgba(96,165,250,.22);border-color:rgba(96,165,250,.6);color:#e0ecff}
+.calyears .lbl{font-size:11px;color:#64748b;letter-spacing:.08em;text-transform:uppercase;align-self:center;margin-right:2px}
+#calfull .fyears{margin:2px 0 10px}
+#calfull .fcompare{margin:0 0 16px;border:1px solid rgba(148,163,184,.2);border-radius:9px;padding:10px 13px;
+  font-size:12.5px;color:#cbd5e1;line-height:1.6}
+#calfull .fcompare b.y{color:#F5D784;margin-right:6px}
+#calfull .fcompare .row{display:block}
+#calfull .fcompare .row.cur{color:#e0ecff}
+#calfull .fcompare .pn{color:#e2e8f0;font-weight:700}
+#calfull .fcompare .pd{color:#94a3b8}
+#calfull .fp .fpo{font-size:12px;color:#e2e8f0;margin-top:7px}
+#calfull .fp .fpres{font-size:11.5px;color:#94a3b8;margin-top:4px}
+#archive tr.flash td{background:rgba(96,165,250,.18)}
 .calgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:1400px){.calgrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:1000px){.calgrid{grid-template-columns:repeat(2,1fr)}}
@@ -623,6 +639,7 @@ summary::marker { color:#64748b; }
     <div style="margin:0 0 18px"><a href="promo-compare.html" style="display:inline-block;padding:9px 15px;border-radius:9px;background:rgba(96,165,250,.14);border:1px solid rgba(96,165,250,.42);color:#bfdbfe;text-decoration:none;font-size:13.5px;font-weight:700">Compare two promotions &rarr;</a> <span style="color:#a9b8cc;font-size:12px;margin-left:8px">daily orders, gross sales and ad spend, side by side</span></div>
 <div class="calhd">
       <h2>Month calendar</h2>
+      <div class="calyears" id="calyears"></div>
       <div class="calsub" id="calsub"></div>
     </div>
     <div id="calendar" class="calgrid"></div>
@@ -1610,8 +1627,8 @@ function wireBarTooltip(cards) {
   const host = document.getElementById('calendar');
   const tip = document.getElementById('caltip');
   if (!host || !tip) return;
-  const byUid = {};
-  cards.forEach(c => { byUid[domId(c)] = c; });
+  // read through to CAL_BYUID at event time: renderCalendar rebuilds it per year
+  const byUid = new Proxy({}, { get: (_, k) => CAL_BYUID[k] });
   const move = ev => {
     const r = tip.getBoundingClientRect();
     let x = ev.clientX + 14, y = ev.clientY + 16;
@@ -1633,6 +1650,7 @@ function wireBarTooltip(cards) {
       '<span class="tmeta">' + esc(c.tier || '') + ' \u00b7 ' + esc(c.lifecycle) + '</span>' +
       '<span class="tmeta">' + esc(windowLine(t.startsAtDate, t.endsAtDate,
           hasV((c.window || {}).days) ? c.window.days.v : null) || '') + '</span>' +
+      (c._arch && c._arch.offer ? '<span class="tsub">' + esc(c._arch.offer) + '</span>' : '') +
       (adv(r.otp) ? '<span class="trate">' + adv(r.otp) + '</span>' : '') +
       (adv(r.sub) ? '<span class="tsub">' + adv(r.sub) + '</span>' : '');
     tip.classList.add('on'); tip.setAttribute('aria-hidden', 'false');
@@ -1645,6 +1663,72 @@ function wireBarTooltip(cards) {
   });
   host.addEventListener('click', hide);
   window.addEventListener('scroll', hide, { passive: true });
+}
+
+// ---- ALL-YEARS CALENDAR (Justin 2026-10-01) ------------------------------
+// CAL_CARDS = this year's cards + one card per archive row that has no card of its own.
+// Prior-year cards are marked _arch: they carry the offer as recorded and the results,
+// not rate legs, and a click goes to their archive row (there is no tile for them).
+let CAL_CARDS = [], CAL_YEAR = null, CAL_OPEN_M = null, CAL_BYUID = {};
+function archiveCards(archive, cards) {
+  const have = new Set(cards.map(c => c.promoId || c.feedId).filter(Boolean));
+  return ((archive || {}).rows || []).filter(r => !have.has(r.id)).map(r => ({
+    promoId: null, feedId: r.id, name: r.name, month: r.start.slice(0, 7),
+    // tier for the calendar only: sitewide, or a subs-only savings week, reads as the
+    // month's major (standing rule); everything else is a minor
+    tier: (r.tier || ((r.sitewide === true || /savings week/i.test(r.name)) ? 'MAJOR' : 'MINOR')).toUpperCase(),
+    lifecycle: 'HISTORICAL',
+    timeline: { startsAtDate: r.start, endsAtDate: r.end },
+    window: { days: { v: r.days } },
+    scope: { value: { v: r.scopeText || null }, sitewide: { v: r.sitewide }, products: { v: r.products } },
+    _arch: r
+  }));
+}
+function calYearsOf(cards) {
+  const ys = new Set();
+  cards.forEach(c => { const s = calSpan(c); if (s) {
+    ys.add(new Date(s.a).getUTCFullYear()); ys.add(new Date(s.b).getUTCFullYear()); } });
+  return [...ys].sort((a, b) => a - b);
+}
+function renderCalYears() {
+  const el = document.getElementById('calyears');
+  if (!el) return;
+  el.innerHTML = '<span class="lbl">Year</span>' + calYearsOf(CAL_CARDS).map(y =>
+    '<button type="button" data-cy="' + y + '" class="' + (y === CAL_YEAR ? 'on' : '') + '">' + y + '</button>').join('');
+  el.onclick = ev => {
+    const b = ev.target.closest('button[data-cy]'); if (!b) return;
+    CAL_YEAR = Number(b.dataset.cy);
+    renderCalYears();
+    renderCalendar(CAL_CARDS, CAL_YEAR);
+  };
+}
+function goArchiveRow(id) {
+  if (typeof AYEAR !== 'undefined') { AYEAR = 'all'; ASW = 'all'; renderArchive(ARCH); }
+  const row = document.querySelector('#abody tr[data-id="' + String(id).replace(/"/g, '') + '"]');
+  if (!row) return;
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  row.classList.add('flash');
+  setTimeout(() => row.classList.remove('flash'), 2400);
+}
+// one line per year for the same month -- the "when did we run it before" answer
+function monthAcrossYearsHTML(m) {
+  const years = calYearsOf(CAL_CARDS);
+  const rows = years.map(y => {
+    const first = Date.UTC(y, m, 1), end = Date.UTC(y, m + 1, 0);
+    const ps = CAL_CARDS.map(c => ({ c: c, s: calSpan(c) }))
+      .filter(x => x.s && x.s.b >= first && x.s.a <= end)
+      .sort((p, q) => p.s.a - q.s.a);
+    const txt = ps.length ? ps.map(x => {
+      const t = x.c.timeline;
+      const sw = (x.c.scope && x.c.scope.sitewide) ? x.c.scope.sitewide.v : null;
+      return '<span class="pn">' + esc(x.c.name) + '</span> <span class="pd">' +
+        esc(aDate(t.startsAtDate, t.endsAtDate)) +
+        (sw === true ? ' \u00b7 sitewide' : sw === false ? ' \u00b7 not sitewide' : '') + '</span>';
+    }).join(' &nbsp;|&nbsp; ') : '<span class="nodata">' +
+      (y > new Date().getUTCFullYear() ? 'nothing declared yet' : 'no promo recorded') + '</span>';
+    return '<span class="row' + (y === CAL_YEAR ? ' cur' : '') + '"><b class="y">' + y + '</b>' + txt + '</span>';
+  });
+  return '<div class="fcompare">' + rows.join('') + '</div>';
 }
 
 function calYear(cards) {
@@ -1674,7 +1758,7 @@ function calSpan(c) {
    because the compact grid deliberately withholds detail rather than
    shrinking it into illegibility. Same cards[], same promoId (spec 8.6).
 */
-let CAL_LAST_TRIGGER = null;
+let CAL_LAST_TRIGGER = null, CAL_YEAR_OPEN = null;
 
 function calRateLegs(c) {
   const r = c.rates || {};
@@ -1692,6 +1776,8 @@ function calRateLegs(c) {
 }
 
 function openCalMonth(year, m, cards, trigger) {
+  CAL_OPEN_M = m;
+  CAL_YEAR_OPEN = year;
   const first = Date.UTC(year, m, 1);
   const dim = new Date(Date.UTC(year, m + 1, 0)).getUTCDate();
   const lead = new Date(first).getUTCDay();
@@ -1755,15 +1841,24 @@ function openCalMonth(year, m, cards, trigger) {
         '<div class="fpw">' + esc(windowLine(t.startsAtDate, t.endsAtDate, dd) ||
           ((t.startsAtDate || '?') + ' - ' + (t.endsAtDate || '?'))) +
         (s.contL || s.contR ? ' · spans a month boundary' : '') + '</div>' +
-        '<div class="fpr">' + rateLanesHTML(s.c.rates) + '</div>' +
-        giftHTML(s.c) +
+        (s.c._arch
+          ? ('<div class="fpo">' + (s.c._arch.offer ? esc(s.c._arch.offer)
+               : '<span class="nodata">offer not recorded</span>') + '</div>' +
+             '<div class="fpres">' + (s.c._arch.results
+               ? s.c._arch.results.orders.toLocaleString('en-US') + ' orders \u00b7 ' +
+                 aMoney(s.c._arch.results.gross) + ' gross sales \u00b7 ' +
+                 aMoney(s.c._arch.results.spend) + ' ad spend'
+               : '<span class="nodata">no sales data</span>') + '</div>')
+          : ('<div class="fpr">' + rateLanesHTML(s.c.rates) + '</div>' + giftHTML(s.c))) +
         '<div class="fps tscope">' + scopeSplitHTML(s.c) + '</div></div>';
     }).join('') + '</div>';
   } else {
     // spec 8.4 -- a full screen of empty calendar is the most convincing way
     // to render absence as success. Say it out loud.
-    list = '<div class="fempty"><b>no promo declared</b> for this month. ' +
-      'Under the standing rule every month gets exactly one major promo, 7 days, sitewide.</div>';
+    list = (year < new Date().getUTCFullYear())
+      ? '<div class="fempty"><b>no promo recorded</b> for ' + CAL_MON[m] + ' ' + year + '.</div>'
+      : '<div class="fempty"><b>no promo declared</b> for this month. ' +
+        'Under the standing rule every month gets exactly one major promo, 7 days, sitewide.</div>';
   }
 
   // spec 8.9.2 -- the month's evergreens, which run underneath every month and
@@ -1782,6 +1877,10 @@ function openCalMonth(year, m, cards, trigger) {
 
   document.getElementById('calfullbody').innerHTML =
     '<div class="fhd"><h3>' + CAL_MON[m] + '</h3><span class="fyear">' + year + '</span></div>' +
+    '<div class="fyears">' + calYearsOf(CAL_CARDS).map(y =>
+      '<button type="button" data-fy="' + y + '" class="' + (y === year ? 'on' : '') + '">' +
+      CAL_MON[m].slice(0, 3) + ' ' + y + '</button>').join('') + '</div>' +
+    monthAcrossYearsHTML(m) +
     '<div class="fmeta"><span>' + segs.length + ' promo' + (segs.length === 1 ? '' : 's') +
     ' this month</span><span>click a bar to open its dossier</span></div>' +
     // SPEC 8.11 (Justin, 2026-09-08: "put the list promos above the calendar").
@@ -1822,22 +1921,27 @@ function wireCalFull(cards, year) {
     if (ev.target.closest('.bar')) return;
     const mon = ev.target.closest('.mon');
     if (!mon) return;
-    openCalMonth(year, Number(mon.getAttribute('data-m')), cards, mon);
+    openCalMonth(CAL_YEAR, Number(mon.getAttribute('data-m')), CAL_CARDS, mon);
   });
   host.addEventListener('keydown', ev => {
     if (ev.key !== 'Enter' && ev.key !== ' ') return;
     const mon = ev.target.closest && ev.target.closest('.mon');
     if (!mon) return;
     ev.preventDefault();
-    openCalMonth(year, Number(mon.getAttribute('data-m')), cards, mon);
+    openCalMonth(CAL_YEAR, Number(mon.getAttribute('data-m')), CAL_CARDS, mon);
   });
 
   ov.addEventListener('click', ev => {
     if (ev.target.getAttribute && ev.target.getAttribute('data-calclose')) { closeCalMonth(); return; }
+    const fy = ev.target.closest('button[data-fy]');
+    if (fy) { const keep = CAL_LAST_TRIGGER;
+      openCalMonth(Number(fy.dataset.fy), CAL_OPEN_M, CAL_CARDS, keep); return; }
     const bar = ev.target.closest('.fbar');
     if (!bar) return;
     const uid = bar.getAttribute('data-promo');
+    const ac = CAL_BYUID[uid];
     closeCalMonth();
+    if (ac && ac._arch) { goArchiveRow(ac._arch.id); return; }
     const tile = document.querySelector('.tile[data-target="d-' + uid + '"]');
     const panel = document.getElementById('d-' + uid);
     if (panel && panel.classList.contains('hidden') && tile) tile.click();
@@ -1847,10 +1951,12 @@ function wireCalFull(cards, year) {
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeCalMonth(); });
 }
 
-function renderCalendar(cards) {
+function renderCalendar(cards, yearArg) {
   const host = document.getElementById('calendar');
   if (!host) return;
-  const year = calYear(cards);
+  const year = (yearArg != null) ? yearArg : calYear(cards);
+  CAL_BYUID = {};
+  cards.forEach(c => { CAL_BYUID[domId(c)] = c; });
   const todayMs = todayUTCms();
 
   const placed = [], unplaced = [];
@@ -1907,7 +2013,8 @@ function renderCalendar(cards) {
                                     && s.from >= first && !s.contL);
 
     let flags = '';
-    if (!hasMajor) flags += '<span class="monflag nomajor">no major</span>';
+    if (!hasMajor && year >= new Date().getUTCFullYear())
+      flags += '<span class="monflag nomajor">no major</span>';
     const g = gapForMonth[m];
     if (g) flags += '<span class="monflag gap-' + g.sev + '" title="' +
       esc(g.prev) + ' \u2192 ' + esc(g.cur) + '">' + g.days + 'd clear</span>';
@@ -1968,8 +2075,10 @@ function renderCalendar(cards) {
   }
   host.innerHTML = html;
 
+  const inYear = placed.filter(p => new Date(p.a).getUTCFullYear() === year ||
+                                     new Date(p.b).getUTCFullYear() === year).length;
   document.getElementById('calsub').textContent =
-    year + ' \u00b7 ' + placed.length + ' placed \u00b7 bar height = tier, colour = lifecycle \u00b7 click a bar to open its dossier';
+    year + ' \u00b7 ' + inYear + ' placed \u00b7 bar height = tier, colour = lifecycle \u00b7 click a bar to open its dossier';
 
   document.getElementById('callegend').innerHTML =
     '<span><span class="sw" style="background:rgba(74,222,128,.55)"></span>live</span>' +
@@ -1992,11 +2101,15 @@ function renderCalendar(cards) {
     np.innerHTML = '';
   }
 
-  // spec 8.6: a bar is a link to its own tile
+  // spec 8.6: a bar is a link to its own tile (wired ONCE -- this function re-runs per year)
+  if (host.dataset.barwired) return;
+  host.dataset.barwired = '1';
   host.addEventListener('click', ev => {
     const bar = ev.target.closest('.bar');
     if (!bar) return;
     const uid = bar.getAttribute('data-promo');
+    const ac = CAL_BYUID[uid];
+    if (ac && ac._arch) { goArchiveRow(ac._arch.id); return; }
     const tile = document.querySelector('.tile[data-target="d-' + uid + '"]')
               || document.querySelector('#t-' + uid);
     const panel = document.getElementById('d-' + uid);
@@ -2052,10 +2165,13 @@ fetch(STATE_URL + '?t=' + Date.now())
     wireGrid(document.getElementById('cards'));
     wireGrid(document.getElementById('pastcards'));
     EVERGREENS_BY_MONTH = s.evergreensByMonth || {};
-    renderCalendar(cards);
     renderArchive(s.archive);
-    wireCalFull(cards, calYear(cards));
-    wireBarTooltip(cards);
+    CAL_CARDS = cards.concat(archiveCards(s.archive, cards));
+    CAL_YEAR = calYear(cards);
+    renderCalYears();
+    renderCalendar(CAL_CARDS, CAL_YEAR);
+    wireCalFull(CAL_CARDS, CAL_YEAR);
+    wireBarTooltip(CAL_CARDS);
     // column count changes at the breakpoints -- an open panel must follow it
     window.addEventListener('resize', () => {
       document.querySelectorAll('.detail.open').forEach(p => {
