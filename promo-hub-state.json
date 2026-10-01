@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-01T14:17:37.781280-07:00",
-  "generatedAtUTC": "2026-10-01T21:17:37.781280+00:00",
+  "generatedAt": "2026-10-01T14:33:43.462496-07:00",
+  "generatedAtUTC": "2026-10-01T21:33:43.462496+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 1313281,
+      "ageSeconds": 1314247,
       "ageHuman": "15d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -26,7 +26,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 1313281,
+      "ageSeconds": 1314247,
       "ageHuman": "15d ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-27T17:32:00-07:00",
-      "ageSeconds": 333937,
+      "ageSeconds": 334903,
       "ageHuman": "3d ago",
       "stale": true,
       "thresholdSeconds": 86400,
@@ -51,7 +51,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-10-01T08:45:55-07:00",
-      "ageSeconds": 19902,
+      "ageSeconds": 20868,
       "ageHuman": "5h ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -1374,7 +1374,7 @@
           "teardownKind": "required",
           "launchState": "pending",
           "teardownState": "pending",
-          "launchTarget": "TWO automatic nodes: 'Mushroom Day Sale OTP' -> custom.discount, and 'Mushroom Day Sale SUB' -> custom.first_subscription_discount. fsd is the INCREMENT on Stay.ai's always-on 15%, never a marketing percentage. Window 2026-10-15 .. 2026-10-17 (3 days). Scope: MINOR, product families -- Adapt & Protect, Reishi Eleuthero, Lion's Mane Rhodiola, Chaga Ashwagandha, Turkey Tail Astragalus. NOT sitewide. Rates d=22 / fsd=16, advertised 28% OFF / 34% OFF First Shipment -- NOT YET VERIFIED. Scope must be RESOLVED TO VARIANTS AT SOURCE and the count stated before dispatch -- the declaration names five families, not a variant list. advertisedVerified is False: derive the claim from live price/compareAtPrice across the resolved scope and FLOOR it before briefing any creative. NOTE 45070 (Adapt & Protect - Herbal Tea - 10 ct) is UNANCHORED and will display the raw metafield -- it is inside this scope. COLLECTION-SCOPE TRAP: if the nodes read a smart collection keyed on custom.discount == N, sweeping variants to a new N drops them OUT of the collection the node reads.",
+          "launchTarget": "TWO automatic nodes, LIST-SCOPED (PromoSmith 2026-10-01): explicit productVariantsToAdd list of the 24 in-scope variants enumerated at source, NOT collection-scoped -- same pattern as the live National Coffee Day 23/16 nodes, under the 100-variant cap; no 'Discount = 22' / 'First Subscription Discount = 16' collections are created. Nodes: 'Mushroom Day Sale OTP' -> custom.discount, and 'Mushroom Day Sale SUB' -> custom.first_subscription_discount. fsd is the INCREMENT on Stay.ai's always-on 15%, never a marketing percentage. Window 2026-10-15 .. 2026-10-17 (3 days). Scope: MINOR, product families -- Adapt & Protect, Reishi Eleuthero, Lion's Mane Rhodiola, Chaga Ashwagandha, Turkey Tail Astragalus. NOT sitewide. Rates d=22 / fsd=16, advertised 28% OFF / 34% OFF First Shipment -- NOT YET VERIFIED. Scope must be RESOLVED TO VARIANTS AT SOURCE and the count stated before dispatch -- the declaration names five families, not a variant list. advertisedVerified is False: derive the claim from live price/compareAtPrice across the resolved scope and FLOOR it before briefing any creative. NOTE 45070 (Adapt & Protect - Herbal Tea - 10 ct) is UNANCHORED and will display the raw metafield -- it is inside this scope. COLLECTION-SCOPE TRAP: if the nodes read a smart collection keyed on custom.discount == N, sweeping variants to a new N drops them OUT of the collection the node reads.",
           "teardownTarget": "TEARDOWN IS TWO OBJECTS -- DO BOTH, or the price reverts and the label does not. (1) Deactivate/expire both nodes, 'Mushroom Day Sale OTP' and 'Mushroom Day Sale SUB'. (2) Revert custom.discount AND custom.first_subscription_discount across all in-scope mushroom variants (22 measured 2026-09-08; RE-RESOLVE AT DISPATCH). *** BASELINE-AWARE: the target is NOT zero everywhere. *** October's FOTM is MOCHA at custom.discount=20 / custom.first_subscription_discount=10 and it runs UNDERNEATH this promo. FOTM-tagged variants must land back on 20/10, NOT 0. Every OTHER in-scope mushroom variant goes to 0/0. Read which promo is live before writing any zero. Zeroing blind would wipe the evergreen that is supposed to survive this promo. Ends 2026-10-17 23:59 PT; teardown fires 2026-10-18 00:01 PT. Bound lateness at BOTH ends (RULING 6): a job that fires EARLY kills a live sale, a job that fires LATE writes over whatever armed next. Halloween arms 2026-10-25, so a teardown more than 7 days late becomes a write against a different promo.",
           "launchEvidence": null,
           "teardownEvidence": null,
@@ -1437,7 +1437,7 @@
               "check": "record: rates stated (RULING 5)",
               "owner": "promosmith",
               "status": "PASS",
-              "detail": "discount=22 fsd=15"
+              "detail": "discount=22 fsd=15 [STALE as of 2026-10-01 -- record now 22/16; re-run preflight]"
             },
             {
               "check": "scheduled jobs: safe action shape",
@@ -1502,6 +1502,11 @@
           "at": "2026-10-01T21:05:11+00:00",
           "by": "promosmith",
           "entry": "fsd 15 -> 16 (PromoSmith decision, within lane). Live re-measure 2026-10-01 after the price increase + 45070L anchor fix: at 22/15, 3 of 24 variants (85070L, 45071, 45070L; markup 1.091) print SUB 33% under the 34% claim -- overstating. At 22/16 all 24 print OTP >=28% / SUB >=34%, min printed gap +6. Claim unchanged: 28% OFF / 34% OFF First Shipment. fsd is the INCREMENT on Stay.ai 15%."
+        },
+        {
+          "at": "2026-10-01T21:23:54+00:00",
+          "by": "promosmith",
+          "entry": "Mechanic decided: list-scoped nodes on the 24 measured variants (no new rate collections). Preflight gate detail marked stale (gate last ran 2026-09-15 at 22/15; record is 22/16). Slate driver handles majors only -- Mushroom Day launches via manage_discounts list scope, not promo_slate_2026.py."
         }
       ],
       "narrative": [
@@ -1979,7 +1984,7 @@
         "otp": {
           "functionalKey": "custom.discount",
           "functional": {
-            "v": 22
+            "v": 23
           },
           "advertised": {
             "v": "28% OFF"
@@ -1991,7 +1996,7 @@
         "sub": {
           "functionalKey": "custom.first_subscription_discount",
           "functional": {
-            "v": 15
+            "v": 16
           },
           "advertised": {
             "v": "34% OFF First Shipment"
@@ -2005,14 +2010,14 @@
           "v": 6.0
         },
         "economicDelta": {
-          "v": 0.0575,
+          "v": 0.056,
           "note": "(1 - d/100) - 0.85*(1 - fsd/100); >0 means subs are genuinely deeper"
         },
         "verified": {
-          "v": false
+          "v": true
         },
         "basis": {
-          "v": null
+          "v": "VERIFIED LIVE 2026-10-01 after the price increase on 61 tea-bag variants (10ct/25ct/50ct tagless): at d=23/fsd=16 every one prints OTP >=28% / SUB >=34%, min printed gap +5. At the old 22/15, 24 of 61 overstated (OTP 27% on 8 incl 40111, 40116, 40066, 40081; SUB 33% on others). Re-measure when the scope is resolved to variants and again on launch day."
         },
         "flags": []
       },
@@ -2119,7 +2124,13 @@
       "decisions": [],
       "openQuestions": [],
       "log": [],
-      "narrative": [],
+      "narrative": [
+        {
+          "key": "rateChange2026_10_01",
+          "date": "2026-10-01",
+          "text": "RE-RATED 22/15 -> 23/16 BY JUSTIN 2026-10-01, #promosmith, selecting the option labelled verbatim 'Move to 23%/16%, keep 28% OFF / 34% OFF first shipment'. Price increase thinned the tea anchors. d=23 is one above the 22 minor standard (Feb-2026 5lb and Aug-2026 Instants precedent); authorised by that selection."
+        }
+      ],
       "note": {
         "v": "Flanks the December major and clears New Year's by 8 days."
       },
@@ -2135,7 +2146,32 @@
         "state": "no-data",
         "text": "no data"
       },
-      "disagreements": [],
+      "disagreements": [
+        {
+          "field": "custom.discount (functional OTP)",
+          "declared": {
+            "value": 23,
+            "file": "projects/promo-calendar-management.json"
+          },
+          "mirror": {
+            "value": 22,
+            "file": "promo-hub-calendar.json"
+          },
+          "note": "declaredSlate is sole truth (RULING 5). The build does not pick; the owner of the mirror must correct it."
+        },
+        {
+          "field": "custom.first_subscription_discount (functional SUB)",
+          "declared": {
+            "value": 16,
+            "file": "projects/promo-calendar-management.json"
+          },
+          "mirror": {
+            "value": 15,
+            "file": "promo-hub-calendar.json"
+          },
+          "note": "declaredSlate is sole truth (RULING 5). The build does not pick; the owner of the mirror must correct it."
+        }
+      ],
       "defects": [],
       "provenance": [
         {
@@ -3036,15 +3072,31 @@
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Rate collections 'Discount = 19' and 'First Subscription Discount = 11'",
+          "owner": "shopkeeper",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "manual",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "PRE-LAUNCH, DUE 2026-10-20 (5 days before Halloween opens 2026-10-25; one creation serves Halloween, BFCM, Ship Before the Holidays and New Year's -- all d=19/fsd=11). Create two smart collections, titles EXACTLY 'Discount = 19' and 'First Subscription Discount = 11', rule VARIANT_METAFIELD_DEFINITION EQUALS '19' / '11' on custom.discount / custom.first_subscription_discount, published to Online Store + Shop (pattern of _sws_promo_2026_08.py). Look up by TITLE, never handle (Discount = 18 carries handle discount-15). They sit EMPTY until the launch metafield sweep. TARGET STATE: both exist, published, 0 members, before 2026-10-20. promo_slate_2026.py preflight [BLOCK]s without them.",
+          "teardownTarget": "After 2026-12-02: collections STAY (empty, reused by the next 19/11 major). TARGET STATE: 0 members once custom.discount/fsd revert -- membership empties with the metafield teardown on 'Discount nodes + metafields'; nothing to delete.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
         }
       ],
       "surfacesSummary": {
-        "total": 23,
+        "total": 24,
         "launchDone": 0,
         "teardownDone": 0,
         "unowned": 0,
         "multiOwner": 0,
-        "teardownPending": 23
+        "teardownPending": 24
       },
       "gates": {
         "preflight": {
@@ -3199,6 +3251,11 @@
           "at": "2026-10-01T21:16:27+00:00",
           "by": "promosmith",
           "entry": "RE-RATED 18/10 -> 19/11 (Justin 2026-10-01, option 'Move to 19%/11%, keep 25% OFF / 30% OFF first shipment'). Price increase thinned anchors; 18/10 printed 24%/29% on 58 variants. Claim 25%/30% verified live at 19/11. Post-discount cart thresholds recomputed at 0.81 (OTP) / 0.7565 (first sub). Every surface literal updated."
+        },
+        {
+          "at": "2026-10-01T21:23:54+00:00",
+          "by": "promosmith",
+          "entry": "Added surface 'Rate collections 'Discount = 19' and 'First Subscription Discount = 11'' (owner shopkeeper, due 2026-10-20) on Shopkeeper's consult 2026-10-01: neither collection exists, nothing auto-creates them, driver preflight blocks without them. Shopkeeper confirmed nothing staged at 18/10."
         }
       ],
       "narrative": [
@@ -4184,15 +4241,31 @@
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
+        },
+        {
+          "surface": "Rate collections 'Discount = 19' and 'First Subscription Discount = 11'",
+          "owner": "shopkeeper",
+          "ownerState": "ok",
+          "ownerCount": 1,
+          "group": "data-driven",
+          "teardownKind": "manual",
+          "launchState": "pending",
+          "teardownState": "pending",
+          "launchTarget": "PRE-LAUNCH, DUE 2026-10-20 (5 days before Halloween opens 2026-10-25; one creation serves Halloween, BFCM, Ship Before the Holidays and New Year's -- all d=19/fsd=11). Create two smart collections, titles EXACTLY 'Discount = 19' and 'First Subscription Discount = 11', rule VARIANT_METAFIELD_DEFINITION EQUALS '19' / '11' on custom.discount / custom.first_subscription_discount, published to Online Store + Shop (pattern of _sws_promo_2026_08.py). Look up by TITLE, never handle (Discount = 18 carries handle discount-15). They sit EMPTY until the launch metafield sweep. TARGET STATE: both exist, published, 0 members, before 2026-10-20. promo_slate_2026.py preflight [BLOCK]s without them.",
+          "teardownTarget": "After 2026-10-31: collections STAY (empty, reused by the next 19/11 major). TARGET STATE: 0 members once custom.discount/fsd revert -- membership empties with the metafield teardown on 'Discount nodes + metafields'; nothing to delete.",
+          "launchEvidence": null,
+          "teardownEvidence": null,
+          "launchVerifiedBy": null,
+          "teardownVerifiedBy": null
         }
       ],
       "surfacesSummary": {
-        "total": 21,
+        "total": 22,
         "launchDone": 0,
         "teardownDone": 0,
         "unowned": 0,
         "multiOwner": 0,
-        "teardownPending": 21
+        "teardownPending": 22
       },
       "gates": {
         "preflight": {
@@ -4318,6 +4391,11 @@
           "at": "2026-10-01T21:16:27+00:00",
           "by": "promosmith",
           "entry": "RE-RATED 18/10 -> 19/11 (Justin 2026-10-01, option 'Move to 19%/11%, keep 25% OFF / 30% OFF first shipment'). Price increase thinned anchors; 18/10 printed 24%/29% on 58 variants. Claim 25%/30% verified live at 19/11. Post-discount cart thresholds recomputed at 0.81 (OTP) / 0.7565 (first sub). Every surface literal updated."
+        },
+        {
+          "at": "2026-10-01T21:23:54+00:00",
+          "by": "promosmith",
+          "entry": "Added surface 'Rate collections 'Discount = 19' and 'First Subscription Discount = 11'' (owner shopkeeper, due 2026-10-20) on Shopkeeper's consult 2026-10-01: neither collection exists, nothing auto-creates them, driver preflight blocks without them. Shopkeeper confirmed nothing staged at 18/10."
         }
       ],
       "narrative": [
