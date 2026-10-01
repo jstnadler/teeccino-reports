@@ -306,6 +306,30 @@ summary::marker { color:#64748b; }
 .fresh-tag { color:#4ade80; }
 .auth-tag  { color:#F5D784; font-weight:700; }
 
+/* Promo archive (Justin 2026-10-01): every ended promo back to 2024 */
+#archive { margin:34px 0 10px; }
+#archive h2 { font-size:1.15em; margin:0 0 4px; color:#e2e8f0; }
+#archive .asub { color:#a9b8cc; font-size:12.5px; margin-bottom:12px; }
+#archive .afilters { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; align-items:center; }
+#archive .afilters button { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.16);
+  color:#cbd5e1; border-radius:8px; padding:6px 12px; font-size:12.5px; font-weight:700; cursor:pointer; }
+#archive .afilters button.on { background:rgba(96,165,250,.22); border-color:rgba(96,165,250,.6); color:#e0ecff; }
+#archive .afilters .sep { width:14px; }
+#archive .asum { color:#cbd5e1; font-size:12.5px; margin:6px 0 10px; }
+#archive .awrap { overflow-x:auto; border:1px solid rgba(255,255,255,0.10); border-radius:10px; }
+#archive table { border-collapse:collapse; width:100%; font-size:12.5px; color:#cbd5e1; }
+#archive th { text-align:left; background:#1b2638; color:#94a3b8; font-size:11px;
+  letter-spacing:.05em; text-transform:uppercase; padding:8px 10px; white-space:nowrap; }
+#archive td { padding:8px 10px; border-top:1px solid rgba(255,255,255,0.07); vertical-align:top; }
+#archive td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+#archive td.dt { white-space:nowrap; }
+#archive tr.yr td { background:rgba(255,255,255,0.04); color:#F5D784; font-weight:800; font-size:13px; }
+#archive .aname { font-weight:700; color:#e2e8f0; }
+#archive .atier { font-size:10px; font-weight:800; letter-spacing:.06em; color:#93c5fd; margin-left:6px; }
+#archive .acode { font-family:ui-monospace,Consolas,monospace; font-size:11.5px; color:#a7f3d0; }
+#archive .asrc { display:block; color:#7c8aa0; font-size:11px; margin-top:2px; }
+#archive .agaps { margin-top:10px; color:#a9b8cc; font-size:12px; line-height:1.5; }
+#archive .aerr { color:#fca5a5; font-weight:700; margin:8px 0; }
 .pasttoggle { text-align:center; margin:26px 0 14px; }
 .pasttoggle button { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
   color:#cbd5e1; padding:9px 20px; border-radius:999px; cursor:pointer; font-size:0.88em; }
@@ -613,6 +637,22 @@ summary::marker { color:#64748b; }
   </div>
   <div id="pastcards" class="cardgrid hidden"></div>
 
+  <section id="archive" aria-labelledby="archive-h">
+    <h2 id="archive-h">Promo archive</h2>
+    <div class="asub">Every promotion that has ended, back to January 2024, newest first. Offer and products are as the
+      promo calendar wrote them; orders, gross sales and ad spend are teeccino.com totals for the promo's days.
+      Hover a row for the calendar's original text. <a href="promo-compare.html" style="color:#93c5fd">Compare any two &rarr;</a></div>
+    <div class="afilters" id="afilters"></div>
+    <div class="asum" id="asum"></div>
+    <div id="aerr"></div>
+    <div class="awrap"><table><thead><tr>
+      <th>Dates</th><th>Days</th><th>Promo</th><th>Offer</th><th>Sitewide</th><th>Products</th><th>Code</th>
+      <th style="text-align:right">Orders</th><th style="text-align:right">Gross sales</th>
+      <th style="text-align:right">Ad spend</th><th style="text-align:right">Gross / day</th>
+    </tr></thead><tbody id="abody"></tbody></table></div>
+    <div class="agaps" id="agaps"></div>
+  </section>
+
   <div class="foot">
     Cards join on the stated key <code>promoId</code> &mdash; never on name, month or date.<br>
     <code>declaredSlate</code> / <code>declaredMinors</code> is sole truth for rate, date, name and scope (RULING 5).
@@ -740,6 +780,74 @@ function val(w, fmt) {
   return esc(fmt ? fmt(w.v) : w.v);
 }
 function hasV(w){ return w && w.v !== null && w.v !== undefined; }
+
+// ---- Promo archive (Justin 2026-10-01) ------------------------------------------
+// Unknown renders as unknown: a promo with no sales data shows "no data", never $0.
+const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function aDate(a, b) {
+  const [ay, am, ad] = a.split('-').map(Number), [by, bm, bd] = b.split('-').map(Number);
+  if (a === b) return `${MON3[am-1]} ${ad}, ${ay}`;
+  if (ay !== by) return `${MON3[am-1]} ${ad}, ${ay} \u2013 ${MON3[bm-1]} ${bd}, ${by}`;
+  return `${MON3[am-1]} ${ad} \u2013 ${am === bm ? '' : MON3[bm-1] + ' '}${bd}, ${ay}`;
+}
+const aMoney = n => '$' + Math.round(n).toLocaleString('en-US');
+let ARCH = null, AYEAR = 'all', ASW = 'all';
+function renderArchive(a) {
+  ARCH = a || {rows: [], gaps: [], error: 'archive missing from the page state'};
+  const years = [...new Set(ARCH.rows.map(r => r.start.slice(0,4)))].sort().reverse();
+  const yb = ['all', ...years].map(y =>
+    `<button data-y="${y}" class="${y===AYEAR?'on':''}">${y==='all'?'All years':y}</button>`).join('');
+  const sb = [['all','Any scope'],['yes','Sitewide only'],['no','Not sitewide']]
+    .map(([k,l]) => `<button data-s="${k}" class="${k===ASW?'on':''}">${l}</button>`).join('');
+  const f = document.getElementById('afilters');
+  f.innerHTML = yb + '<span class="sep"></span>' + sb;
+  f.onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.y) AYEAR = b.dataset.y;
+    if (b.dataset.s) ASW = b.dataset.s;
+    renderArchive(ARCH);
+  };
+  document.getElementById('aerr').innerHTML = ARCH.error ? `<div class="aerr">${esc(ARCH.error)}</div>` : '';
+  const rows = ARCH.rows.filter(r => (AYEAR === 'all' || r.start.slice(0,4) === AYEAR) &&
+    (ASW === 'all' || (ASW === 'yes' ? r.sitewide === true : r.sitewide === false)));
+  let html = '', lastY = null;
+  const tot = {o:0, g:0, s:0, n:0};
+  const nd = '<span class="nodata">no data</span>', nr = '<span class="nodata">not recorded</span>';
+  for (const r of rows) {
+    const y = r.start.slice(0,4);
+    if (y !== lastY && AYEAR === 'all') html += `<tr class="yr"><td colspan="11">${y}</td></tr>`;
+    lastY = y;
+    const res = r.results;
+    if (res) { tot.o += res.orders; tot.g += res.gross; tot.s += res.spend; tot.n++; }
+    const sw = r.sitewide === true ? '<span class="sw-yes">YES</span>'
+             : r.sitewide === false ? '<span class="sw-no">NO</span>' : nr;
+    html += `<tr class="arow" data-id="${esc(r.id || '')}" title="${esc(r.sourceText || '')}">
+      <td class="dt">${esc(aDate(r.start, r.end))}</td>
+      <td class="num">${r.days ?? ''}</td>
+      <td><span class="aname">${esc(r.name)}</span>${r.tier ? `<span class="atier">${esc(r.tier)}</span>` : ''}
+        <span class="asrc">${esc(r.source || '')}</span></td>
+      <td>${r.offer ? esc(r.offer) : nr}</td>
+      <td>${sw}</td>
+      <td>${r.products ? esc(r.products) : nr}</td>
+      <td>${r.code ? `<span class="acode">${esc(r.code)}</span>` : ''}</td>
+      <td class="num">${res ? res.orders.toLocaleString('en-US') : nd}</td>
+      <td class="num">${res ? aMoney(res.gross) : nd}</td>
+      <td class="num">${res ? aMoney(res.spend) : nd}</td>
+      <td class="num">${res && res.coveredDays ? aMoney(res.gross / res.coveredDays) : nd}</td>
+    </tr>`;
+  }
+  document.getElementById('abody').innerHTML = html ||
+    '<tr><td colspan="11" class="nodata">No promos match these filters.</td></tr>';
+  document.getElementById('asum').textContent = rows.length
+    ? `${rows.length} promo${rows.length===1?'':'s'} \u00b7 ${tot.o.toLocaleString('en-US')} orders \u00b7 ` +
+      `${aMoney(tot.g)} gross sales \u00b7 ${aMoney(tot.s)} ad spend` +
+      (tot.n < rows.length ? ` (${rows.length - tot.n} with no sales data)` : '') +
+      (ARCH.salesThrough ? ` \u00b7 sales data through ${ARCH.salesThrough}` : '')
+    : '';
+  document.getElementById('agaps').innerHTML = (ARCH.gaps || []).length
+    ? '<b>Not in this list:</b> ' + ARCH.gaps.map(g => `<b>${esc(g.label)}</b> \u2014 ${esc(g.why)}`)
+        .join(' &nbsp;\u00b7&nbsp; ') : '';
+}
 
 // Justin 2026-10-01: scope reads as two plain lines -- SITEWIDE: YES/NO, then PRODUCTS: ALL/<the products>.
 // A value the composer could not establish renders 'not stated', never a guessed YES.
@@ -1945,6 +2053,7 @@ fetch(STATE_URL + '?t=' + Date.now())
     wireGrid(document.getElementById('pastcards'));
     EVERGREENS_BY_MONTH = s.evergreensByMonth || {};
     renderCalendar(cards);
+    renderArchive(s.archive);
     wireCalFull(cards, calYear(cards));
     wireBarTooltip(cards);
     // column count changes at the breakpoints -- an open panel must follow it
