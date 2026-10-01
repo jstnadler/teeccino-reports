@@ -93,6 +93,23 @@
   table.budtbl tr.inferred td { font-style:italic; color:var(--text-dim); }
   .swatch { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:6px; vertical-align:0; }
   .bud-empty { font-size:.85rem; color:var(--text-dim); padding:10px 0; }
+  details.sec { margin:0 0 4px; }
+  details.sec > summary { list-style:none; cursor:pointer; }
+  details.sec > summary::-webkit-details-marker { display:none; }
+  details.sec > summary h2 { display:flex; align-items:center; gap:9px; }
+  details.sec > summary h2::before { content:'▸'; font-size:.8rem; color:var(--text-dim); display:inline-block; transition:transform .15s; }
+  details.sec[open] > summary h2::before { transform:rotate(90deg); }
+  details.sec > summary:hover h2 { color:var(--accent); }
+  .qtake { background:rgba(212,168,67,.07); border-left:3px solid var(--accent); border-radius:8px; padding:12px 16px; margin:0 0 14px; font-size:.9rem; }
+  .qt-head { font-size:.7rem; text-transform:uppercase; letter-spacing:.6px; color:var(--accent); font-weight:700; margin-bottom:4px; }
+  .qtake b { color:#fff; }
+  .qt-past > summary { cursor:pointer; font-size:.76rem; color:var(--text-dim); margin-top:8px; }
+  .qt-past ul { list-style:none; margin:8px 0 0; padding:0; max-height:320px; overflow-y:auto; }
+  .qt-past li { font-size:.82rem; color:#cbd5e1; padding:7px 0; border-top:1px solid var(--border); }
+  .qt-date { display:block; font-size:.68rem; color:var(--accent); font-weight:700; margin-bottom:2px; }
+  details.fold { margin:10px 0; }
+  details.fold > summary { cursor:pointer; font-size:.8rem; color:var(--blue); }
+  details.fold > summary:hover { text-decoration:underline; }
 </style></head><body>
 
 <h1>New-Customer Cost &amp; Spend Plan</h1>
@@ -119,35 +136,14 @@
   <div class="stat"><div class="label">Profit / order</div><div class="num">$20.48</div><div class="sub">after ad, product &amp; ship cost</div></div>
 </div>
 
+<details class="fold"><summary>How to read this</summary>
 <div class="explain">
   <b>How to read this.</b> <b>nCPA</b> is what we pay in ads to win one new customer (total ad spend &divide; new
   customers). As long as that's comfortably below the <b>$50</b> a new customer is worth over their
   lifetime, acquisition is profitable and there's room to spend more. The light above is green while the cost stays
   under that line, and the chart below tracks it week to week.
-</div>
+</div></details>
 
-
-<h2 id="budgets">Daily Budget Changes</h2>
-<div class="bud-sum">
-  <div class="stat"><div class="label">Budget changes in window</div><div class="num" id="budCount">&mdash;</div><div class="sub" id="budCountSub"></div></div>
-  <div class="stat"><div class="label"><span class="swatch" style="background:#4f8fe0"></span>Meta daily budget</div><div class="num" id="budMetaNet">&mdash;</div><div class="sub" id="budMetaSub"></div></div>
-  <div class="stat"><div class="label"><span class="swatch" style="background:#a8832f"></span>Google daily budget</div><div class="num" id="budGoogleNet">&mdash;</div><div class="sub" id="budGoogleSub"></div></div>
-</div>
-<div class="chart-wrap"><canvas id="budChart" aria-label="Daily ad spend by platform over the last 60 days, with a triangle on each day a daily budget was raised or cut"></canvas></div>
-<div class="bud-note">Lines = daily ad spend, last 60 days (today's spend isn't in until tomorrow morning). <b>&#9650;</b> = a daily budget was raised that day, <b>&#9660;</b> = cut (hover for the campaigns). The shaded area is the cost window picked at the top of the page; the tiles and table follow it.</div>
-<div class="tscroll"><table class="budtbl">
-  <thead><tr><th>When (Pacific)</th><th>Platform</th><th>Campaign</th>
-  <th class="r">Before</th><th class="r">After</th><th class="r" data-tip="Change in the campaign's daily budget, dollars per day and percent of the old budget.">Change / day</th></tr></thead>
-  <tbody id="budBody"></tbody>
-</table></div>
-<div class="bud-note">
-  Budgets are each campaign's <b>daily budget setting</b>, not what it spent &mdash; campaigns routinely under- or over-deliver
-  their budget on a given day. Meta's history here goes back to Aug 22, 2025. <b>Google keeps only 30 days of change
-  history</b>, so Google changes before Aug 27, 2026 aren't available; from now on they're saved every night.
-  "Live" budget counts campaigns that are switched on <em>and</em> spent in the last 7 days (as of 2026-10-01),
-  because both platforms leave ended sale campaigns switched on with their budget attached. Rows in <i>italics</i> are changes
-  the platform never logged: the budget moved between two logged edits, so the amounts are known but not the exact time.
-</div>
 <details class="metric-index">
   <summary>📖 Metric Index — every metric on this page, defined</summary>
   <div class="mi-grid">
@@ -188,11 +184,15 @@
   </div>
 </details>
 
-<h2>Cost per New Customer (nCPA), by week</h2>
+<details class="sec" open><summary><h2>Cost per New Customer (nCPA), by week</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">Week of Sep 21: a new customer cost <b>$19.43</b>, down 27% from the week before ($26.62). The last 4 weeks averaged <b>$25.06</b> vs $25.74 the 4 before &mdash; holding steady. At $25.32 over 8 weeks it sits <b>$24.68 under</b> the $50 a customer is worth.</div></div>
 <div class="chart-wrap"><canvas id="ncpaChart"></canvas></div>
 <p class="curnote">The last point on each chart is <b>this week so far</b> (3 days, through 2026-09-30) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
+</details>
 
-<h2>Projected Payback by nCPA</h2>
+<details class="sec" open><summary><h2>Projected Payback by nCPA</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">At today's $25.32 cost, a new customer pays back in <b>3.0 mo</b>. That's $7.32 more than the $18 a first order earns, so the rest is recovered from repeat orders. Headroom: cost could rise to about <b>$30</b> before payback passes 6 months and about <b>$39</b> before it passes 12.</div></div>
+<details class="fold"><summary>What this shows</summary>
 <div class="explain">
   <b>What this shows.</b> Read it as: <em>"if a customer cost me $X to acquire, how long until they've earned that $X
   back in profit?"</em> The X-axis is your acquisition cost (nCPA); the Y-axis is months until that customer's
@@ -223,9 +223,27 @@
   line</b> is cash-positive on order one (recouped before they ever reorder); above it, you're floating the cost until
   they come back &mdash; the further above, the more reorders you're banking on.
 </div>
+</details>
 <div class="chart-wrap"><canvas id="paybackChart"></canvas></div>
+</details>
 
-<h2>Forward Spend Plan &mdash; next 6 months (nCPA-gated)</h2>
+<details class="sec" open><summary><h2>Spend &amp; New Customers</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">Last 4 weeks: <b>$28,494</b> ad spend and <b>1,137</b> new customers &mdash; spend up 60%, new customers up 65% vs the 4 weeks before. Customers kept pace with the extra spend, so no sign of diminishing returns yet. This week so far (3 days): $4,104 spend, 207 new customers.</div></div>
+<div class="chart-wrap"><canvas id="spendChart"></canvas></div>
+<p class="curnote">The last point on each chart is <b>this week so far</b> (3 days, through 2026-09-30) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
+</details>
+
+<details class="sec" open><summary><h2>Blended Profit / Order</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">Week of Sep 21: <b>$12.19</b> profit per order after ad, product and shipping cost. Last 4 weeks averaged <b>$18.79</b> vs $22.45 the 4 before (down 16%). Low point in the window: $10.63 (week of Jun 22). This week so far: $27.23 (an early read, 3 days in).</div></div>
+<div class="chart-wrap"><canvas id="ppoChart"></canvas></div>
+<p class="curnote">The last point on each chart is <b>this week so far</b> (3 days, through 2026-09-30) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
+</details>
+
+
+<details class="sec" open><summary><h2>Forward Spend Plan &mdash; next 6 months (nCPA-gated)</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">Oct 2026: budget <b>$30,000</b>, recommended ceiling <b>$44,108</b> (20% of $220,540 forecast revenue). Cost per customer is healthy, so the plan says lean toward the ceiling. The live 8-week cost ($25.32) is 6% better than the $26.93 the plan assumes. Next: Nov $35,000&ndash;$64,071.</div></div>
+<div class="explain" style="border-left-color:var(--accent);background:rgba(212,168,67,.05)"><b style="color:var(--accent)">Right now:</b> New-customer cost is HEALTHY &mdash; scale toward the <b>recommended 20% of revenue</b>.</div>
+<details class="fold"><summary>How this is built</summary>
 <div class="explain">
   <b>How this is built.</b> The spend <b>floor is the budgeted figure</b> for each month (from the 2026 marketing
   forecast). The <b>upside ceiling is the recommended level &mdash; 20% of expected revenue</b>
@@ -234,8 +252,8 @@
   the band only goes <em>up</em> from budget. Everything to the right (customers, payback, revenue) is computed at the
   budgeted floor; the upside shows what scaling to 20% of revenue would add. Avg nCPA across
   this plan (<b>$27</b>) sits well under the $50 a customer is worth, so there's
-  room to scale. <b>Right now: New-customer cost is HEALTHY &mdash; scale toward the <b>recommended 20% of revenue</b>.</b>
-</div>
+  room to scale.
+</div></details>
 <div class="explain" style="border-left-color:var(--green);background:rgba(74,222,128,.07);"><b style="color:var(--green)">The upside, in plain dollars.</b> Scaling from budget to the recommended <b>20% of revenue</b> (about <b>$75,088</b> more over the next 6 months) is projected to bring in <b>$114,847</b> more in DTC net revenue from roughly <b>2,788</b> additional new customers &mdash; while keeping ad spend at ~19% of revenue. That's the green-light scenario; it holds as long as a new customer keeps costing less than the $50 they're worth.</div>
 <div class="ncpa-ctl">
   <label for="ncpaInput"><b>Cost per new customer (nCPA):</b> $</label><input id="ncpaInput" type="number" min="1" max="120" step="0.5" value="26.93">
@@ -262,6 +280,7 @@
 <tr style='font-weight:700;border-top:2px solid var(--border)'><td>6-month total</td><td class='r'>$183,918<span style='color:var(--text-dim)'>&ndash;$259,007</span></td><td class='r'>6,828<span style='color:var(--text-dim)'>&ndash;9,616</span></td><td class='r'>$26.93</td><td></td><td class='r'>$1,235,979<span style='color:var(--text-dim);font-size:.72rem'><br>$1,235,979&ndash;$1,350,825</span></td><td class='r'>14%<span style='color:var(--text-dim)'>&ndash;20%</span></td><td class='r'>6.7&times;</td></tr>
   </tbody>
 </table></div>
+<details class="fold"><summary>Plan caveats</summary>
 <div class="caveat" style="margin-top:10px;">
   <b>Plan caveats.</b> The spend floor is the <b>budgeted</b> monthly figure from the 2026 forecast; the +25%
   upside is a deliberate lean-in, gated by the live new-customer-cost light, not a fitted response curve (a monthly
@@ -272,16 +291,19 @@
   base (prior-year same-month repeat revenue &times; 4% YoY). So flexing spend up lifts the
   new-revenue half; the returning base is locked in from prior cohorts. MER = proj net &divide; spend. Execution
   (Meta/Google split, campaign structure) sits with the agency.
-</div>
+</div></details>
+</details>
 
 
-<h2>Plan vs Actual &mdash; how past projections held up</h2>
+<details class="sec" open><summary><h2>Plan vs Actual &mdash; how past projections held up</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">Sep: spent <b>$31,908</b> vs $20,000 planned (up 60%) and won <b>1,320</b> new customers vs 837 planned. Cost per customer came in at $24.17 vs $23.89 (1% over plan) &mdash; the extra spend bought customers at about the planned rate. Net revenue $209,750, 21% above plan.</div></div>
+<details class="fold"><summary>How it's scored</summary>
 <div class="explain">
   Each month is scored against the <b>last plan made before that month began</b> &mdash; the projection we actually
   had going in, not a later one that had already seen the month. Across the 3 completed months, the cost of a new customer ran <b>10% above plan</b> and net revenue came in <b>13% above plan</b>.
   <b>At the spend we made</b> shows how many new customers the plan's own cost-per-customer said that spend should buy,
   so a shortfall there is an efficiency miss rather than a spending decision.
-</div>
+</div></details>
 <div class="tscroll"><table>
   <thead><tr><th>Month</th>
   <th class="r" data-tip="Planned = the budgeted floor for the month. Actual = Meta + Google spend.">Ad spend<br><span style="font-weight:400;text-transform:none">plan &rarr; actual</span></th>
@@ -295,6 +317,7 @@
 <tr><td>Jul 2026<div class='promo major'><span class='ptag'>MAJOR</span> Summer Hydration Sale &middot; Jul 10&ndash;17</div><div class='promo major'><span class='ptag'>MAJOR</span> Subscription Savings Week &middot; Jul 25&ndash;31</div><div class='promo minor'><span class='ptag'>minor</span> 4th of July Sale &middot; Jul 3&ndash;5</div><br><span style='color:var(--text-dim);font-size:.72rem'>projected 2026-06-29</span></td><td class='r'>$15,000<br><span style='color:var(--text-dim)'>actual</span> <b>$17,481</b></td><td class='r'>663<br><span style='color:var(--text-dim)'>actual</span> <b>663</b><br><span style="color:var(--green);font-size:.74rem">+0% vs plan</span></td><td class='r'>772<br><span style='color:var(--text-dim);font-size:.74rem'>at the spend we made</span></td><td class='r'>$22.64<br><span style='color:var(--text-dim)'>actual</span> <b>$26.37</b><br><span style="color:#f87171;font-size:.74rem">+16% vs plan</span></td><td class='r'>$142,329<br><span style='color:var(--text-dim)'>actual</span> <b>$159,852</b><br><span style="color:var(--green);font-size:.74rem">+12% vs plan</span></td></tr>
   </tbody>
 </table></div>
+<details class="fold"><summary>Scope &amp; promo notes</summary>
 <div class="caveat">
   <b>Scope.</b> The spend plan was first recorded 2026-06-24, so Jul 2026 is the earliest month
   with a before-the-month projection &mdash; there is no earlier plan to score. For the month in progress, the plan's
@@ -304,17 +327,36 @@
   60% more new customers, but each cost only about 7% less &mdash; so a promo month should beat plan on
   <em>volume</em>, not on cost per customer, and the plan does not lower its cost assumption for promo months.
   Schedule from the promo calendar as of 2026-09-16.
+</div></details>
+</details>
+
+
+<details class="sec" open><summary><h2 id="budgets">Daily Budget Changes</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">Last 7 days: <b>10</b> daily-budget changes (10 raised, 0 cut), net <b>+$680/day</b>. Live budgets now: Meta $1,200/day across 3 campaigns; Google Ads $525/day across 15 campaigns.</div></div>
+<div class="bud-sum">
+  <div class="stat"><div class="label">Budget changes in window</div><div class="num" id="budCount">&mdash;</div><div class="sub" id="budCountSub"></div></div>
+  <div class="stat"><div class="label"><span class="swatch" style="background:#4f8fe0"></span>Meta daily budget</div><div class="num" id="budMetaNet">&mdash;</div><div class="sub" id="budMetaSub"></div></div>
+  <div class="stat"><div class="label"><span class="swatch" style="background:#a8832f"></span>Google daily budget</div><div class="num" id="budGoogleNet">&mdash;</div><div class="sub" id="budGoogleSub"></div></div>
 </div>
+<div class="chart-wrap"><canvas id="budChart" aria-label="Daily ad spend by platform over the last 60 days, with a triangle on each day a daily budget was raised or cut"></canvas></div>
+<div class="bud-note">Lines = daily ad spend, last 60 days (today's spend isn't in until tomorrow morning). <b>&#9650;</b> = a daily budget was raised that day, <b>&#9660;</b> = cut (hover for the campaigns). The shaded area is the cost window picked at the top of the page; the tiles and table follow it.</div>
+<div class="tscroll"><table class="budtbl">
+  <thead><tr><th>When (Pacific)</th><th>Platform</th><th>Campaign</th>
+  <th class="r">Before</th><th class="r">After</th><th class="r" data-tip="Change in the campaign's daily budget, dollars per day and percent of the old budget.">Change / day</th></tr></thead>
+  <tbody id="budBody"></tbody>
+</table></div>
+<div class="bud-note">
+  Budgets are each campaign's <b>daily budget setting</b>, not what it spent &mdash; campaigns routinely under- or over-deliver
+  their budget on a given day. Meta's history here goes back to Aug 22, 2025. <b>Google keeps only 30 days of change
+  history</b>, so Google changes before Aug 27, 2026 aren't available; from now on they're saved every night.
+  "Live" budget counts campaigns that are switched on <em>and</em> spent in the last 7 days (as of 2026-10-01),
+  because both platforms leave ended sale campaigns switched on with their budget attached. Rows in <i>italics</i> are changes
+  the platform never logged: the budget moved between two logged edits, so the amounts are known but not the exact time.
+</div>
+</details>
 
-<h2>Spend &amp; New Customers</h2>
-<div class="chart-wrap"><canvas id="spendChart"></canvas></div>
-<p class="curnote">The last point on each chart is <b>this week so far</b> (3 days, through 2026-09-30) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
-
-<h2>Blended Profit / Order</h2>
-<div class="chart-wrap"><canvas id="ppoChart"></canvas></div>
-<p class="curnote">The last point on each chart is <b>this week so far</b> (3 days, through 2026-09-30) &mdash; drawn dashed/lighter. Its spend and customer totals are partial, not a full week; its cost per customer and profit per order are rates, so they compare directly, but a 1&ndash;3 day read is noisy.</p>
-
-<h2>Weekly Detail</h2>
+<details class="sec" open><summary><h2>Weekly Detail</h2></summary>
+<div class="qtake"><div class="qt-head">Quick take &middot; Oct 1, 2026</div><div class="qt-body">20 complete weeks shown. Cheapest week for new customers: Jul 20 at <b>$17.91</b>; most expensive: Jun 22 at <b>$49.35</b>. No week went over the $50 break-even.</div></div>
 <div class="tscroll"><table>
   <thead><tr><th data-tip="Week starting that Monday.">Week (Mon)</th>
   <th class="r" data-tip="Meta + Google ad spend that week (DTC).">Ad Spend</th>
@@ -346,7 +388,7 @@
 <tr><td>2026-05-11</td><td class='r'>$5,103</td><td class='r'>164</td><td class='r pos'>$31.12</td><td class='r'>$17.27</td><td class='r'>6.8 mo</td></tr>
   </tbody>
 </table></div>
-
+<details class="fold"><summary>Honesty notes</summary>
 <div class="caveat">
   <b>Honesty notes.</b> (1) Weekly nCPA is <em>noisy</em> (promo timing, seasonality, day-mix) &mdash; read the
   trend, not single-week jumps. (2) Break-even $50 is the full <em>blended</em> lifetime <b>contribution margin</b> per new
@@ -358,8 +400,10 @@
   so nCPA below ~$18 is cash-positive on the very first order; above that you recoup it over the
   repeat tail &mdash; which is what the payback figure measures.
 </div>
+</details>
+</details>
 
-<p class="updated-stamp">Generated 2026-10-01 12:39:30 &middot; DataOps &middot; source: teeccino_analytics.db</p>
+<p class="updated-stamp">Generated 2026-10-01 13:00:56 &middot; DataOps &middot; source: teeccino_analytics.db</p>
 
 <script>
 const L = ["05-11", "05-18", "05-25", "06-01", "06-08", "06-15", "06-22", "06-29", "07-06", "07-13", "07-20", "07-27", "08-03", "08-10", "08-17", "08-24", "08-31", "09-07", "09-14", "09-21", "09-28 (3d so far)"];
