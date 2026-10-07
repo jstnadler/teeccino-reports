@@ -77,6 +77,12 @@
   .sw-closed { background:rgba(139,147,167,0.30); border:1px solid rgba(139,147,167,0.60); }
   .sw-avg { height:0; border-top:2px dashed #c9d1d9; border-radius:0; }
   .sw-placed { background:#6C8CF0; }
+  .lg-btn { background:none; border:1px solid rgba(255,255,255,0.12); border-radius:6px;
+            color:inherit; font:inherit; padding:3px 8px; cursor:pointer;
+            display:inline-flex; align-items:center; gap:6px; }
+  .lg-btn:hover { border-color:rgba(255,255,255,0.35); }
+  .lg-btn[aria-pressed="false"] { opacity:0.4; text-decoration:line-through; }
+  .lg-hint { color:#777; font-size:0.85em; font-style:italic; }
 </style>
 </head>
 <body>
@@ -94,7 +100,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — January 2025</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-07 10:39. · 121,074 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-07 10:43. · 121,074 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -223,11 +229,12 @@
     </div>
     <!-- Full-width at Justin's request 2026-10-07: 120 grouped bars in a 2fr
          column were too small to read. Weekday table moved below it. -->
-    <div class="chart-legend" style="margin-bottom:8px">
-      <span><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</span>
+    <div class="chart-legend" id="fLegend" style="margin-bottom:8px">
+      <button type="button" class="lg-btn" data-ds="0" aria-pressed="true"><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</button>
       <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
-      <span><i class="sw sw-placed"></i>Orders placed that day</span>
-      <span><i class="sw sw-avg"></i>Average fulfilled per shipping day</span>
+      <button type="button" class="lg-btn" data-ds="1" aria-pressed="true"><i class="sw sw-placed"></i>Orders placed that day</button>
+      <button type="button" class="lg-btn" data-ds="avg" aria-pressed="true"><i class="sw sw-avg"></i>Average fulfilled per shipping day</button>
+      <span class="lg-hint">Click a series to hide or show it</span>
     </div>
     <div class="chart-wrap" style="height:min(68vh,640px);min-height:420px">
       <canvas id="fulfilledChart"></canvas></div>
@@ -901,7 +908,8 @@ const F_KIND_TEXT = {
 // keep a visible muted stub so a closure reads as "we were shut" rather than
 // as missing data.
 const fulfilledCtx = document.getElementById('fulfilledChart').getContext('2d');
-new Chart(fulfilledCtx, {
+let F_SHOW_AVG = true;
+const fulfilledChartObj = new Chart(fulfilledCtx, {
   type: 'bar',
   data: {
     labels: F_LABELS,
@@ -977,6 +985,7 @@ new Chart(fulfilledCtx, {
     // read off an axis.
     id: 'avgLine',
     afterDatasetsDraw(chart) {
+      if (!F_SHOW_AVG) return;
       const a = chart.chartArea, ctx = chart.ctx;
       const y = chart.scales.y.getPixelForValue(F_AVG);
       if (!isFinite(y)) return;
@@ -1010,6 +1019,22 @@ new Chart(fulfilledCtx, {
       ctx.restore();
     }
   }]
+});
+// Click-to-hide legend (Justin 2026-10-07). Real <button>s so it works by
+// keyboard too; the y-axis rescales to whatever is left visible.
+document.querySelectorAll('#fLegend .lg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const k = btn.dataset.ds;
+    let on;
+    if (k === 'avg') { F_SHOW_AVG = !F_SHOW_AVG; on = F_SHOW_AVG; }
+    else {
+      const i = +k;
+      on = !fulfilledChartObj.isDatasetVisible(i);
+      fulfilledChartObj.setDatasetVisibility(i, on);
+    }
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    fulfilledChartObj.update();
+  });
 });
 
 
