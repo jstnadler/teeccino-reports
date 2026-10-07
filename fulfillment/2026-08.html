@@ -75,7 +75,8 @@
   .sw { width:14px; height:10px; border-radius:3px; display:inline-block; flex:none; }
   .sw-ship { background:#D4A843; }
   .sw-closed { background:rgba(139,147,167,0.30); border:1px solid rgba(139,147,167,0.60); }
-  .sw-avg { height:0; border-top:2px dashed #58a6ff; border-radius:0; }
+  .sw-avg { height:0; border-top:2px dashed #c9d1d9; border-radius:0; }
+  .sw-placed { background:#6C8CF0; }
 </style>
 </head>
 <body>
@@ -93,13 +94,14 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — August 2026</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-09-30 08:47. · 120,278 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-07 10:17. · 121,074 matched orders in DB.</p>
 
   
     <div class="month-picker">
         <label for="monthSelect">View:</label>
         <select id="monthSelect" onchange="navigateFulfilment(this.value)">
             <option value="rolling">Current (rolling)</option>
+<option value="2026-10">October 2026</option>
 <option value="2026-09">September 2026</option>
 <option value="2026-08" selected>August 2026</option>
 <option value="2026-07">July 2026</option>
@@ -161,13 +163,142 @@
     Coverage starts 2024-01 when ShipStation ingestion began.
   </div>
 
+
+  <!-- Fulfilled orders per day (ship-date axis) -->
+  <div class="section">
+    <div class="section-title">Fulfilled Orders per Day &mdash; August 2026</div>
+    <div class="section-sub">
+      <strong>This panel is measured on ship date, not order date &mdash; and on a
+      wider set of orders than the panels below it.</strong>
+      Every other panel on this page answers &ldquo;how fast did an order ship?&rdquo;
+      for <strong>DTC orders only</strong>, because that is where the service promise
+      lives. This one answers &ldquo;how much did the pick-and-pack team put out the
+      door each day?&rdquo;, so it counts <strong>DTC plus Target plus Walmart</strong>
+      &mdash; those are picked and packed here alongside everything else, and leaving
+      them out understated the team. Different question, different axis, different
+      population: a figure here does not reconcile against a figure above, by design.
+    </div>
+    <div class="hero-grid">
+        <div class="hero-card">
+            <div class="hero-label">Per Shipping Day</div>
+            <div class="hero-value">152</div>
+            <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Total Fulfilled</div>
+            <div class="hero-value">3,197</div>
+            <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Shipping Days</div>
+            <div class="hero-value">21</div>
+            <div class="hero-sub">of 31 calendar days</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Busiest Day</div>
+            <div class="hero-value">210</div>
+            <div class="hero-sub">2026-08-17</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Median Shipping Day</div>
+            <div class="hero-value">164</div>
+            <div class="hero-sub">quietest 79 on 2026-08-14</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Per Calendar Day</div>
+            <div class="hero-value">103</div>
+            <div class="hero-sub">same orders spread over all 31 days &mdash; not a throughput rate</div>
+        </div></div>
+    <div class="definitions" style="margin-top:14px;margin-bottom:18px">
+      The warehouse ships on business days, so this window contains 10 weekend days.
+      <strong>Per Shipping Day</strong> (152) divides by the
+      21 days that actually shipped and is the real throughput rate.
+      <strong>Per Calendar Day</strong> (103) divides the same orders
+      by all 31 days and so understates output by 32%
+      &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-08-31</strong>.<br>
+      Counts <strong>3,197 orders &mdash; DTC, Target and Walmart</strong>
+      &mdash; which is 97.8% of the 3,269 orders that shipped in
+      this window. The other 72: <strong>72 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match). The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
+      An order is counted once, on its <em>first</em> shipment date.
+    </div>
+    <div class="chart-grid">
+      <div class="chart-wrap"><canvas id="fulfilledChart"></canvas></div>
+      <div class="chart-wrap" style="height:auto;min-height:380px">
+        <div class="wd-title">Workload by Day of Week</div>
+        <div class="wd-sub">Averaged over days that shipped, so a closed weekend
+          does not drag a weekday down.</div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day of Week</th>
+                        <th class="num">Per Shipping Day</th>
+                        <th class="num">Total Orders</th>
+                        <th class="num">Days Shipped</th>
+                        <th style="width:30%">Relative Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td><strong>Monday</strong></td>
+                <td class="num">178</td>
+                <td class="num">888</td>
+                <td class="num">5</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:100.0%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Tuesday</strong></td>
+                <td class="num">173</td>
+                <td class="num">693</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:97.6%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Wednesday</strong></td>
+                <td class="num">168</td>
+                <td class="num">673</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:94.7%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Thursday</strong></td>
+                <td class="num">134</td>
+                <td class="num">534</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:75.2%"></div></div></td>
+            </tr>
+            <tr>
+                <td><strong>Friday</strong></td>
+                <td class="num">102</td>
+                <td class="num">409</td>
+                <td class="num">4</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:57.6%"></div></div></td>
+            </tr></tbody>
+            </table></div>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <span><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</span>
+      <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
+      <span><i class="sw sw-placed"></i>Orders placed that day</span>
+      <span><i class="sw sw-avg"></i>Average fulfilled per shipping day</span>
+    </div>
+    <div class="definitions" style="margin-top:10px">
+      <strong>Orders Placed</strong> counts the same orders (DTC, Target, Walmart) by the
+      day the customer placed them. The two bars will not match on any single day &mdash;
+      an order placed Sunday ships Monday &mdash; but over a few days they should track
+      each other; a run of placed bars standing taller than fulfilled bars is a growing
+      backlog.
+    </div>
+  </div>
+
   <!-- Hero KPIs -->
   <div class="section">
     <div class="section-title">August 2026 at a Glance</div>
     <div class="section-sub"><strong>DTC orders only, measured on order date.</strong>
       These are service-promise metrics &mdash; how fast an order a customer placed
       went out &mdash; so wholesale POs are correctly excluded. The throughput panel
-      lower down uses a wider set of orders on a different axis; the two are not
+      at the top of the page uses a wider set of orders on a different axis; the two are not
       meant to reconcile.</div>
     <div class="hero-grid">
         <div class="hero-card">
@@ -290,127 +421,6 @@
     <div class="chart-grid">
       <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
       <div class="chart-wrap"><canvas id="distChart"></canvas></div>
-    </div>
-  </div>
-
-
-  <!-- Fulfilled orders per day (ship-date axis) -->
-  <div class="section">
-    <div class="section-title">Fulfilled Orders per Day &mdash; August 2026</div>
-    <div class="section-sub">
-      <strong>This panel is measured on ship date, not order date &mdash; and on a
-      wider set of orders than the panels above it.</strong>
-      Every other panel on this page answers &ldquo;how fast did an order ship?&rdquo;
-      for <strong>DTC orders only</strong>, because that is where the service promise
-      lives. This one answers &ldquo;how much did the pick-and-pack team put out the
-      door each day?&rdquo;, so it counts <strong>DTC plus Target plus Walmart</strong>
-      &mdash; those are picked and packed here alongside everything else, and leaving
-      them out understated the team. Different question, different axis, different
-      population: a figure here does not reconcile against a figure above, by design.
-    </div>
-    <div class="hero-grid">
-        <div class="hero-card">
-            <div class="hero-label">Per Shipping Day</div>
-            <div class="hero-value">152</div>
-            <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-label">Total Fulfilled</div>
-            <div class="hero-value">3,197</div>
-            <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-label">Shipping Days</div>
-            <div class="hero-value">21</div>
-            <div class="hero-sub">of 31 calendar days</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-label">Busiest Day</div>
-            <div class="hero-value">210</div>
-            <div class="hero-sub">2026-08-17</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-label">Median Shipping Day</div>
-            <div class="hero-value">164</div>
-            <div class="hero-sub">quietest 79 on 2026-08-14</div>
-        </div>
-        <div class="hero-card">
-            <div class="hero-label">Per Calendar Day</div>
-            <div class="hero-value">103</div>
-            <div class="hero-sub">same orders spread over all 31 days &mdash; not a throughput rate</div>
-        </div></div>
-    <div class="definitions" style="margin-top:14px;margin-bottom:18px">
-      The warehouse ships on business days, so this window contains 10 weekend days.
-      <strong>Per Shipping Day</strong> (152) divides by the
-      21 days that actually shipped and is the real throughput rate.
-      <strong>Per Calendar Day</strong> (103) divides the same orders
-      by all 31 days and so understates output by 32%
-      &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-08-31</strong>.<br>
-      Counts <strong>3,197 orders &mdash; DTC, Target and Walmart</strong>
-      &mdash; which is 97.8% of the 3,269 orders that shipped in
-      this window. The other 72: <strong>72 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match). The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
-      An order is counted once, on its <em>first</em> shipment date.
-    </div>
-    <div class="chart-grid">
-      <div class="chart-wrap"><canvas id="fulfilledChart"></canvas></div>
-      <div class="chart-wrap" style="height:auto;min-height:380px">
-        <div class="wd-title">Workload by Day of Week</div>
-        <div class="wd-sub">Averaged over days that shipped, so a closed weekend
-          does not drag a weekday down.</div>
-        <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Day of Week</th>
-                        <th class="num">Per Shipping Day</th>
-                        <th class="num">Total Orders</th>
-                        <th class="num">Days Shipped</th>
-                        <th style="width:30%">Relative Volume</th>
-                    </tr>
-                </thead>
-                <tbody>
-            <tr>
-                <td><strong>Monday</strong></td>
-                <td class="num">178</td>
-                <td class="num">888</td>
-                <td class="num">5</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:100.0%"></div></div></td>
-            </tr>
-            <tr>
-                <td><strong>Tuesday</strong></td>
-                <td class="num">173</td>
-                <td class="num">693</td>
-                <td class="num">4</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:97.6%"></div></div></td>
-            </tr>
-            <tr>
-                <td><strong>Wednesday</strong></td>
-                <td class="num">168</td>
-                <td class="num">673</td>
-                <td class="num">4</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:94.7%"></div></div></td>
-            </tr>
-            <tr>
-                <td><strong>Thursday</strong></td>
-                <td class="num">134</td>
-                <td class="num">534</td>
-                <td class="num">4</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:75.2%"></div></div></td>
-            </tr>
-            <tr>
-                <td><strong>Friday</strong></td>
-                <td class="num">102</td>
-                <td class="num">409</td>
-                <td class="num">4</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:57.6%"></div></div></td>
-            </tr></tbody>
-            </table></div>
-      </div>
-    </div>
-    <div class="chart-legend">
-      <span><i class="sw sw-ship"></i>Shipping day</span>
-      <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
-      <span><i class="sw sw-avg"></i>Average per shipping day</span>
     </div>
   </div>
 
@@ -879,6 +889,7 @@ new Chart(distCtx, {
 const F_LABELS = ["2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31"];
 const F_COUNTS = [0, 0, 169, 182, 118, 124, 80, 0, 0, 116, 164, 165, 142, 79, 0, 0, 210, 169, 204, 152, 148, 0, 0, 194, 178, 186, 116, 102, 0, 0, 199];
 const F_KINDS  = ["weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping"];
+const F_PLACED = [109, 85, 103, 102, 82, 77, 135, 129, 151, 100, 101, 72, 77, 153, 139, 145, 134, 123, 152, 209, 79, 80, 69, 73, 83, 88, 78, 117, 91, 87, 99];
 const F_AVG    = 152.2;
 const F_KIND_TEXT = {
   shipping: 'shipped',
@@ -904,6 +915,15 @@ new Chart(fulfilledCtx, {
       // A closed day is genuinely 0 and must not be floored to a fake value;
       // the 3px stub is drawn only so the reader can see the day exists.
       minBarLength: 3,
+    }, {
+      // Inflow. Drawn on closed days too, on purpose: weekend and holiday
+      // orders do not vanish, they queue up and become Monday's workload.
+      // null past the order feed's cutoff -> no bar, never a fake zero.
+      label: 'Orders Placed',
+      data: F_PLACED,
+      backgroundColor: '#6C8CF0',
+      borderRadius: 4,
+      borderSkipped: false,
     }]
   },
   options: {
@@ -912,19 +932,23 @@ new Chart(fulfilledCtx, {
     interaction: { mode: 'index', intersect: false },
     plugins: {
       title: { display: true,
-                text: 'Orders Fulfilled per Day',
+                text: 'Orders Fulfilled vs Orders Placed per Day',
                 color: '#D4A843', font: { size: 14 } },
       legend: { display: false },
       tooltip: {
         callbacks: {
           title: items => items[0].label,
           label: ctx => {
+            if (ctx.datasetIndex === 1) {
+              const p = ctx.parsed.y;
+              return 'Placed: ' + (p == null ? 'not in yet' : p.toLocaleString() + ' orders');
+            }
             const k = F_KINDS[ctx.dataIndex];
-            if (k !== 'shipping') return F_KIND_TEXT[k];
+            if (k !== 'shipping') return 'Fulfilled: 0 — ' + F_KIND_TEXT[k];
             const v = ctx.parsed.y;
             const rel = v - F_AVG;
             const sign = rel >= 0 ? '+' : '\u2212';
-            return v.toLocaleString() + ' orders  (' + sign
+            return 'Fulfilled: ' + v.toLocaleString() + ' orders  (' + sign
                    + Math.abs(rel).toFixed(0) + ' vs avg)';
           }
         }
@@ -941,7 +965,7 @@ new Chart(fulfilledCtx, {
       },
       y: {
         beginAtZero: true,
-        title: { display: true, text: 'Orders Fulfilled', color: '#D4A843' },
+        title: { display: true, text: 'Orders', color: '#888' },
         ticks: { color: '#888' },
         grid: { color: 'rgba(255,255,255,0.05)' },
       }
@@ -956,7 +980,7 @@ new Chart(fulfilledCtx, {
       const y = chart.scales.y.getPixelForValue(F_AVG);
       if (!isFinite(y)) return;
       ctx.save();
-      ctx.strokeStyle = '#58a6ff';
+      ctx.strokeStyle = '#c9d1d9';
       ctx.setLineDash([6, 4]);
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -967,18 +991,18 @@ new Chart(fulfilledCtx, {
       // Label sits at the LEFT edge on an opaque chip. At the right edge it
       // landed on top of the tallest bar and became unreadable; a reference
       // label that collides with the data is worse than no label.
-      const txt = 'avg ' + F_AVG.toFixed(0) + '/shipping day';
+      const txt = 'avg ' + F_AVG.toFixed(0) + ' fulfilled/shipping day';
       ctx.font = '600 10px -apple-system, Segoe UI, sans-serif';
       const tw = ctx.measureText(txt).width;
       const bx = a.left + 4, by = y - 15, bw = tw + 10, bh = 14;
       ctx.fillStyle = 'rgba(22,33,62,0.92)';
-      ctx.strokeStyle = 'rgba(88,166,255,0.45)';
+      ctx.strokeStyle = 'rgba(201,209,217,0.45)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.roundRect(bx, by, bw, bh, 3);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = '#58a6ff';
+      ctx.fillStyle = '#c9d1d9';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(txt, bx + 5, by + bh / 2 + 0.5);
