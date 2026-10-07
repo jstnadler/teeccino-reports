@@ -94,7 +94,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — May 2025</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-07 10:17. · 121,074 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-07 10:39. · 121,074 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -221,13 +221,28 @@
       this window. The other 89: <strong>1 Faire</strong> (drop-shipped, not picked here), <strong>87 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match) and 1 re-shipment of orders whose first shipment predates this window. The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
       An order is counted once, on its <em>first</em> shipment date.
     </div>
-    <div class="chart-grid">
-      <div class="chart-wrap"><canvas id="fulfilledChart"></canvas></div>
-      <div class="chart-wrap" style="height:auto;min-height:380px">
-        <div class="wd-title">Workload by Day of Week</div>
-        <div class="wd-sub">Averaged over days that shipped, so a closed weekend
-          does not drag a weekday down.</div>
-        <div class="table-scroll">
+    <!-- Full-width at Justin's request 2026-10-07: 120 grouped bars in a 2fr
+         column were too small to read. Weekday table moved below it. -->
+    <div class="chart-legend" style="margin-bottom:8px">
+      <span><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</span>
+      <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
+      <span><i class="sw sw-placed"></i>Orders placed that day</span>
+      <span><i class="sw sw-avg"></i>Average fulfilled per shipping day</span>
+    </div>
+    <div class="chart-wrap" style="height:min(68vh,640px);min-height:420px">
+      <canvas id="fulfilledChart"></canvas></div>
+    <div class="definitions" style="margin-top:10px">
+      <strong>Orders Placed</strong> counts the same orders (DTC, Target, Walmart) by the
+      day the customer placed them. The two bars will not match on any single day &mdash;
+      an order placed Sunday ships Monday &mdash; but over a few days they should track
+      each other; a run of placed bars standing taller than fulfilled bars is a growing
+      backlog.
+    </div>
+    <div class="chart-wrap" style="height:auto;margin-top:18px">
+      <div class="wd-title">Workload by Day of Week</div>
+      <div class="wd-sub">Averaged over days that shipped, so a closed weekend
+        does not drag a weekday down.</div>
+      <div class="table-scroll">
             <table>
                 <thead>
                     <tr>
@@ -275,20 +290,6 @@
                 <td><div class="wd-track"><div class="wd-bar" style="width:63.8%"></div></div></td>
             </tr></tbody>
             </table></div>
-      </div>
-    </div>
-    <div class="chart-legend">
-      <span><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</span>
-      <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
-      <span><i class="sw sw-placed"></i>Orders placed that day</span>
-      <span><i class="sw sw-avg"></i>Average fulfilled per shipping day</span>
-    </div>
-    <div class="definitions" style="margin-top:10px">
-      <strong>Orders Placed</strong> counts the same orders (DTC, Target, Walmart) by the
-      day the customer placed them. The two bars will not match on any single day &mdash;
-      an order placed Sunday ships Monday &mdash; but over a few days they should track
-      each other; a run of placed bars standing taller than fulfilled bars is a growing
-      backlog.
     </div>
   </div>
 
@@ -972,8 +973,8 @@ new Chart(fulfilledCtx, {
     scales: {
       x: {
         ticks: {
-          color: '#888', font: { size: 9 }, maxRotation: 90, minRotation: 90,
-          autoSkip: true, maxTicksLimit: 22,
+          color: '#aaa', font: { size: 11 }, maxRotation: 90, minRotation: 90,
+          autoSkip: true, maxTicksLimit: 60,
           callback: function (v, i) { return F_LABELS[i] ? F_LABELS[i].slice(5) : ''; }
         },
         grid: { display: false },
