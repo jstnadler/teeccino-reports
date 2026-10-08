@@ -560,6 +560,8 @@ summary::marker { color:#64748b; }
 .everline .evb{color:#a9b8cc}
 .everline .evb b{color:#e2e8f0;font-weight:700}
 .everline .evx{color:#8fa0b6}
+.everline .evclaim{color:#F5D784;font-weight:700}
+.everline .evset{color:#8fa0b6;font-size:.85em;margin-left:4px}
 .everline .evconf{color:#fcd34d;font-weight:700;flex-basis:100%}
 .everline.big{font-size:13px;gap:6px 22px;margin:0 0 14px;padding:10px 12px;
   border:1px solid rgba(96,165,250,.28);border-radius:9px;
@@ -1595,6 +1597,17 @@ function evergreenLineHTML(e, big) {
     return '';
   };
 
+  /* SPEC 8.13 "FOTM discount" (Justin 2026-10-08): show what the customer SEES,
+     with the functional setting beside it. A bare "20/10" is not a discount. */
+  const fotmClaim = (ev) => {
+    const set = hasV(ev.rate) ? ' <span class="evset">set ' +
+      esc(String(ev.rate.v).replace('/', ' / ')) + '</span>' : '';
+    const c = hasV(ev.advertised) ? ev.advertised.v : null;
+    if (!c || !c.otp) return '<span class="nodata">claim not recorded</span>' + set;
+    return '<span class="evclaim">' + esc(c.otp) + ' one-time' +
+      (c.sub ? ' · ' + esc(String(c.sub).replace(/First Shipment/i, 'first subscription shipment')) : '') +
+      '</span>' + set;
+  };
   const block = (label, w, rows, extra) => {
     if (!hasV(w)) return '<div class="evblk"><span class="evlab">' + label +
       '</span> <span class="nodata">not recorded</span></div>';
@@ -1615,8 +1628,7 @@ function evergreenLineHTML(e, big) {
       esc(e.imageryError) + '</span>';
   }
   return '<div class="everline' + (big ? ' big' : '') + '">' +
-    block('Flavor of the Month', e.fotm, e.fotmProducts,
-          hasV(e.rate) ? esc(e.rate.v) : null) +
+    block('Flavor of the Month', e.fotm, e.fotmProducts, fotmClaim(e)) +
     block('Free packet ($25)', e.freePacket, e.packetProducts, null) +
     conf + '</div>';
 }
