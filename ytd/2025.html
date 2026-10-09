@@ -85,6 +85,232 @@ body {
 }
 .chart-box h3 { color: #D4A843; font-size: 1em; margin-bottom: 12px; }
 
+/* ── Discount Breakdown section — scoped mirror of discounts.html ────── */
+/* All rules scoped under .dd-scope so they don't clobber YTD's existing  */
+/* .kpi-card / .kpi-grid / .chart-row used by the top of the page.        */
+
+.dd-scope .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin: 36px 0 16px 0; padding-bottom: 8px;
+    border-bottom: 2px solid rgba(212,168,67,0.2);
+}
+.dd-scope .section-header h2 {
+    font-size: 1.15em; font-weight: 700; color: #D4A843;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    border: none; padding: 0;
+}
+
+.dd-scope .hero-card {
+    background: linear-gradient(135deg, rgba(212,168,67,0.12), rgba(212,168,67,0.04));
+    border: 1px solid rgba(212,168,67,0.35);
+    border-radius: 18px; padding: 28px 32px;
+    margin-bottom: 24px;
+}
+.dd-scope .hero-label { color: #94a3b8; font-size: 0.9em; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 12px; }
+.dd-scope .hero-value { font-size: 3.2em; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 10px;
+    background: linear-gradient(135deg, #D4A843, #F5D784);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.dd-scope .hero-sub { font-size: 1.05em; margin-top: 6px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dd-scope .hero-detail { color: #64748b; font-size: 0.86em; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); }
+.dd-scope .hero-mode-tag { display: none; }  /* Free items mode toggle disabled on YTD (defaults to COGS only) */
+.dd-scope .hero-mode-block[data-mode="cogs"] { display: block !important; }
+.dd-scope .hero-mode-block[data-mode="excluded"],
+.dd-scope .hero-mode-block[data-mode="msrp"] { display: none !important; }
+
+.dd-scope .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-bottom: 8px;
+}
+.dd-scope .kpi-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 20px 22px;
+    transition: all 0.25s ease;
+}
+.dd-scope .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.dd-scope .card-label { color: #94a3b8; font-size: 0.82em; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.3px; }
+.dd-scope .card-value { font-size: 1.85em; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: #fff; }
+.dd-scope .card-yoy { margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+.dd-scope .yoy-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 0.78em; font-weight: 600;
+}
+.dd-scope .yoy-badge.good { color: #4ade80; background: rgba(74,222,128,0.1); }
+.dd-scope .yoy-badge.bad { color: #f87171; background: rgba(248,113,113,0.1); }
+.dd-scope .yoy-badge.neutral { color: #94a3b8; background: rgba(148,163,184,0.08); }
+.dd-scope .card-detail { color: #94a3b8; font-size: 0.82em; margin-top: 8px; }
+.dd-scope .card-definition { color: #64748b; font-size: 0.75em; margin-top: 10px; line-height: 1.5; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+
+.dd-scope .promo-hero-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; margin-top: 4px; }
+.dd-scope .promo-block { background: rgba(15,23,42,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px 20px; }
+.dd-scope .promo-block-primary { border-color: rgba(212,168,67,0.3); background: rgba(212,168,67,0.05); }
+.dd-scope .promo-block-secondary { border-color: rgba(167,139,250,0.28); background: rgba(167,139,250,0.05); }
+.dd-scope .promo-block-label { color: #cbd5e1; font-size: 0.85em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dd-scope .promo-block-tag { font-size: 0.78em; font-weight: 600; text-transform: none; letter-spacing: 0; padding: 2px 8px; border-radius: 6px; background: rgba(212,168,67,0.16); color: #fde68a; }
+.dd-scope .promo-block-tag.structural { background: rgba(167,139,250,0.16); color: #c4b5fd; }
+.dd-scope .promo-hero .hero-value { font-size: 2.5em; margin-bottom: 8px; }
+.dd-scope .promo-comp-list { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 7px; }
+.dd-scope .promo-comp-row { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: 10px; }
+.dd-scope .promo-comp-dot { width: 9px; height: 9px; border-radius: 50%; }
+.dd-scope .promo-comp-label { color: #cbd5e1; font-size: 0.84em; }
+.dd-scope .promo-comp-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.dd-scope .promo-comp-pct { color: #94a3b8; font-size: 0.8em; font-variant-numeric: tabular-nums; text-align: right; min-width: 34px; }
+.dd-scope .promo-block-note { color: #94a3b8; font-size: 0.8em; line-height: 1.55; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); }
+
+.dd-scope .recon-note {
+    background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.28);
+    border-radius: 14px; padding: 20px 24px; margin-bottom: 24px;
+}
+.dd-scope .recon-title {
+    color: #93c5fd; font-size: 0.95em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px;
+}
+.dd-scope .recon-intro { color: #cbd5e1; font-size: 0.9em; line-height: 1.6; margin-bottom: 16px; }
+.dd-scope .recon-intro code, .dd-scope .recon-foot-note code, .dd-scope .recon-hint code {
+    background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 4px;
+    color: #93c5fd; font-family: 'SF Mono', 'Consolas', monospace; font-size: 0.92em;
+}
+.dd-scope .recon-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+.dd-scope .recon-table td {
+    padding: 9px 4px; font-size: 0.9em; color: #cbd5e1;
+    border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top;
+}
+.dd-scope .recon-table .recon-num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.dd-scope .recon-table .recon-sub { color: #f87171; }
+.dd-scope .recon-table .recon-add { color: #4ade80; }
+.dd-scope .recon-table .recon-head td { color: #fff; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.dd-scope .recon-table .recon-foot td { color: #93c5fd; font-weight: 700; border-top: 2px solid rgba(59,130,246,0.4); border-bottom: none; padding-top: 12px; }
+.dd-scope .recon-hint { color: #64748b; font-size: 0.85em; font-weight: 400; display: block; margin-top: 2px; }
+.dd-scope .recon-foot-note { color: #94a3b8; font-size: 0.84em; line-height: 1.55; margin: 0; }
+
+.dd-scope .ship-split-panel {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 22px 24px; margin-bottom: 24px;
+}
+.dd-scope .ship-split-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.dd-scope .ship-split-total { font-size: 1.7em; font-weight: 800; color: #10B981; letter-spacing: -0.5px; }
+.dd-scope .ship-split-total-label { color: #94a3b8; font-size: 0.88em; }
+.dd-scope .ship-split-body { display: flex; flex-direction: column; gap: 12px; }
+.dd-scope .ship-split-row { display: grid; grid-template-columns: 14px minmax(180px, 1.4fr) 2fr auto auto; align-items: center; gap: 12px; }
+.dd-scope .ship-split-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dd-scope .ship-split-label { color: #e2e8f0; font-size: 0.9em; font-weight: 600; }
+.dd-scope .ship-split-hint { color: #64748b; font-size: 0.82em; font-weight: 400; display: block; }
+.dd-scope .ship-split-bar-track { background: rgba(255,255,255,0.06); border-radius: 6px; height: 10px; overflow: hidden; }
+.dd-scope .ship-split-bar { display: block; height: 100%; border-radius: 6px; min-width: 2px; transition: width 0.3s; }
+.dd-scope .ship-split-val { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; min-width: 70px; }
+.dd-scope .ship-split-pct { color: #94a3b8; font-size: 0.85em; font-variant-numeric: tabular-nums; text-align: right; min-width: 38px; }
+.dd-scope .ship-split-note { color: #64748b; font-size: 0.82em; line-height: 1.55; margin: 16px 0 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); }
+
+@media (max-width: 900px) {
+    .dd-scope .kpi-grid { grid-template-columns: 1fr; }
+    .dd-scope .promo-hero-grid { grid-template-columns: 1fr; }
+    .dd-scope .hero-value { font-size: 2.4em; }
+}
+
+/* ── Profit Waterfall ─────────────────────────────────────────────────── */
+.wf-section h2 { color: #D4A843; }
+.wf-context {
+    color: #94a3b8; font-size: 0.88em; line-height: 1.5;
+    margin-bottom: 18px;
+}
+.wf-tile-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 22px;
+}
+.wf-tile {
+    background: linear-gradient(135deg, rgba(212,168,67,0.10), rgba(212,168,67,0.03));
+    border: 1px solid rgba(212,168,67,0.3);
+    border-radius: 14px; padding: 20px 24px;
+}
+.wf-tile-cm {
+    background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(16,185,129,0.04));
+    border-color: rgba(16,185,129,0.45);
+}
+.wf-tile-label {
+    color: #94a3b8; font-size: 0.85em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px;
+}
+.wf-tile-value {
+    font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px;
+    color: #fff; line-height: 1; margin-bottom: 6px;
+}
+.wf-tile-cm .wf-tile-value {
+    background: linear-gradient(135deg, #10B981, #6ee7b7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.wf-tile-gp .wf-tile-value {
+    background: linear-gradient(135deg, #D4A843, #F5D784);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.wf-tile-detail { color: #94a3b8; font-size: 0.85em; margin-top: 4px; }
+.wf-tile-yoy { color: #cbd5e1; font-size: 0.85em; margin-top: 6px; }
+.wf-tile-yoy.good { color: #4ade80; }
+.wf-tile-yoy.bad { color: #f87171; }
+
+.wf-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+.wf-table-wrap, .wf-chart-wrap {
+    background: #1e293b; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 18px 22px;
+}
+.wf-chart-wrap h3 { color: #D4A843; font-size: 1em; margin-bottom: 12px; }
+.wf-table { width: 100%; border-collapse: collapse; font-size: 0.92em; }
+.wf-table th {
+    color: #94a3b8; font-size: 0.78em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    padding: 8px 6px; text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.wf-table th.wf-label-h { text-align: left; }
+.wf-row td {
+    padding: 9px 6px; font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.wf-label { color: #cbd5e1; text-align: left; }
+.wf-val  { color: #fff; font-weight: 600; text-align: right; }
+.wf-ly   { color: #64748b; text-align: right; font-size: 0.92em; }
+.wf-yoy  { text-align: right; font-weight: 600; font-size: 0.9em; }
+.wf-yoy.good { color: #4ade80; }
+.wf-yoy.bad  { color: #f87171; }
+.wf-sign {
+    display: inline-block; min-width: 16px; color: #f87171;
+    font-weight: 700; margin-right: 6px;
+}
+.wf-sign-plus { color: #4ade80; }
+.wf-sign-eq   { color: #D4A843; }
+
+.wf-row.wf-start td { border-top: 1px solid rgba(212,168,67,0.18); }
+.wf-row.wf-subtotal td {
+    background: rgba(212,168,67,0.08);
+    border-top: 1px solid rgba(212,168,67,0.25);
+    border-bottom: 1px solid rgba(212,168,67,0.25);
+}
+.wf-row.wf-subtotal .wf-label { font-weight: 700; color: #fde68a; }
+.wf-row.wf-subtotal .wf-val   { color: #fde68a; font-weight: 800; }
+.wf-row.wf-gp .wf-label,
+.wf-row.wf-gp .wf-val { color: #D4A843 !important; }
+.wf-row.wf-final td {
+    background: rgba(16,185,129,0.10);
+    border-top: 2px solid rgba(16,185,129,0.4);
+    padding: 14px 6px;
+}
+.wf-row.wf-final .wf-label {
+    font-weight: 800; color: #6ee7b7;
+    text-transform: uppercase; letter-spacing: 0.3px;
+}
+.wf-row.wf-final .wf-val { color: #6ee7b7; font-size: 1.15em; font-weight: 800; }
+
+@media (max-width: 900px) {
+    .wf-tile-row { grid-template-columns: 1fr; }
+    .wf-grid { grid-template-columns: 1fr; }
+    .wf-tile-value { font-size: 1.9em; }
+}
+
 table {
     width: 100%; border-collapse: collapse; font-size: 14px;
 }
@@ -128,7 +354,7 @@ td { color: #ccc; }
 <div class="header">
     <h1>📅 2025 — Full Year KPI Report</h1>
     <div class="sub">Full Year (365 days) &bull; DTC Only &bull; YoY vs 2024</div>
-    <div class="updated">Updated May 08, 2026 at 01:42 PM</div>
+    <div class="updated">Updated October 09, 2026 at 01:27 PM</div>
 </div>
 
 
@@ -227,7 +453,7 @@ td { color: #ccc; }
 
     <div class="kpi-card">
         <div class="label">Shopify Costs</div>
-        <div class="value">$60,128</div>
+        <div class="value">$60,155</div>
         <div class="yoy good">↓ 2.7% YoY</div>
         <div class="detail">LY: $61,801</div>
     </div>
@@ -257,6 +483,335 @@ td { color: #ccc; }
         <canvas id="cumChart" height="220"></canvas>
     </div>
 </div>
+
+
+<div class="dd-scope">
+    <div class="section-header"><h2>💸 Discount Breakdown &mdash; YTD 2025</h2></div>
+
+    
+    <div class="hero-card promo-hero">
+        <div class="hero-label">
+            Discount Breakdown — YTD 2025
+            <span class="hero-mode-tag">
+                <span data-mode="excluded" style="display:none;">Free items excluded</span>
+                <span data-mode="msrp" style="display:none;">Free items at MSRP</span>
+                <span data-mode="cogs">Free items at COGS</span>
+            </span>
+        </div>
+        <div class="promo-hero-grid">
+            <div class="promo-block promo-block-primary">
+                <div class="promo-block-label">Promotional Cost <span class="promo-block-tag">marketing-driven</span></div>
+                <div class="hero-mode-block" data-mode="excluded" style="display:none;">
+            <div class="hero-value">$306,944</div>
+            <div class="hero-sub">
+                <span style="font-size:1.2em;color:#D4A843;font-weight:700;">12.1%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:6px;">+2.6 pp</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$232,926</span>
+                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 31.8% vs LY</span>
+            </div>
+        </div><div class="hero-mode-block" data-mode="msrp" style="display:none;">
+            <div class="hero-value">$527,463</div>
+            <div class="hero-sub">
+                <span style="font-size:1.2em;color:#D4A843;font-weight:700;">20.8%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:6px;">+5.5 pp</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$373,413</span>
+                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 41.3% vs LY</span>
+            </div>
+        </div><div class="hero-mode-block" data-mode="cogs" style="display:block;">
+            <div class="hero-value">$358,497</div>
+            <div class="hero-sub">
+                <span style="font-size:1.2em;color:#D4A843;font-weight:700;">14.1%</span>
+                <span style="color:#94a3b8;">of gross</span>
+                <span class="yoy-badge bad" style="margin-left:6px;">+3.3 pp</span>
+            </div>
+            <div class="hero-sub">
+                <span style="color:#94a3b8;">vs LY:</span>
+                <span>$265,098</span>
+                <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 35.2% vs LY</span>
+            </div>
+        </div>
+                <div class="promo-comp-list"><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#EF4444;"></span><span class="promo-comp-label">Automatic discounts</span><span class="promo-comp-val" data-static-val="106009.23">$106,009</span><span class="promo-comp-pct" data-static-share="1">30%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#F97316;"></span><span class="promo-comp-label">Discount codes</span><span class="promo-comp-val" data-static-val="54323.53">$54,324</span><span class="promo-comp-pct" data-static-share="1">15%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#F59E0B;"></span><span class="promo-comp-label">Manual discounts</span><span class="promo-comp-val" data-static-val="21080.320000000003">$21,080</span><span class="promo-comp-pct" data-static-share="1">6%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#EAB308;"></span><span class="promo-comp-label">Price reduction discounts</span><span class="promo-comp-val" data-static-val="72378.55">$72,379</span><span class="promo-comp-pct" data-static-share="1">20%</span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#10B981;"></span><span class="promo-comp-label">Free Shipping promos</span><span class="promo-comp-val" data-static-val="42196.07000000001">$42,196</span><span class="promo-comp-pct" data-static-share="1">12%</span></div><div class="promo-comp-row" id="freeGiftsCompRow"><span class="promo-comp-dot" style="background:#EC4899;"></span><span class="promo-comp-label" id="freeGiftsCompLabel">Free Gifts (at COGS)</span><span class="promo-comp-val"><span data-mode="excluded" style="display:none;">$0</span><span data-mode="msrp" style="display:none;">$220,519</span><span data-mode="cogs">$51,553</span></span><span class="promo-comp-pct" data-free-share="1"><span data-mode="excluded" style="display:none;">0%</span><span data-mode="msrp" style="display:none;">42%</span><span data-mode="cogs">14%</span></span></div><div class="promo-comp-row"><span class="promo-comp-dot" style="background:#06B6D4;"></span><span class="promo-comp-label">First-time subscription (acquisition)</span><span class="promo-comp-val" data-static-val="10955.95">$10,956</span><span class="promo-comp-pct" data-static-share="1">3%</span></div></div>
+            </div>
+            <div class="promo-block promo-block-secondary">
+                <div class="promo-block-label">Recurring Subscription Discount <span class="promo-block-tag structural">structural</span></div>
+                <div class="hero-value" style="background:linear-gradient(135deg,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">$120,013</div>
+                <div class="hero-sub">
+                    <span style="font-size:1.2em;color:#a78bfa;font-weight:700;">4.7%</span>
+                    <span style="color:#94a3b8;">of gross</span>
+                    <span class="yoy-badge bad" style="margin-left:6px;">+1.3 pp</span>
+                </div>
+                <div class="hero-sub">
+                    <span style="color:#94a3b8;">vs LY:</span>
+                    <span>$84,057</span>
+                    <span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 42.8% vs LY</span>
+                </div>
+                <div class="promo-block-note">
+                    Implied discount on <strong>repeat</strong> subscriber orders — structural pricing for
+                    existing subscribers, not a marketing promotion. Kept out of Promotional Cost so the
+                    promo number reflects only the levers you actively pull to drive sales.
+                </div>
+            </div>
+        </div>
+        <div class="hero-detail">
+            Gross: $2,533,618 &nbsp;|&nbsp; Orders: 44,713 &nbsp;|&nbsp;
+            Combined (Promotional + Recurring Sub):
+            <span data-mode="excluded" style="display:none;">$426,957</span>
+            <span data-mode="msrp" style="display:none;">$647,476</span>
+            <span data-mode="cogs">$478,510</span>
+            &nbsp;|&nbsp; Free items: $51,553 COGS / $220,519 MSRP
+        </div>
+    </div>
+
+    <div class="section-header"><h2>By Discount Type</h2></div>
+    <div class="kpi-grid">
+        
+    <div class="kpi-card" style="border-top: 3px solid #EF4444;">
+        <div class="card-label">Automatic Discounts</div>
+        <div class="card-value">$106,009</div>
+        <div class="card-yoy"><span class="yoy-badge neutral">-- vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+4.2 pp</span></div>
+        <div class="card-detail">4.2% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$0</span><span style="color:#64748b;"> (0.0% of gross)</span></div>
+        <div class="card-definition">Shopify automatic discounts — FOTM auto-promos, sitewide sales, app-sourced discount functions (no code needed).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #F97316;">
+        <div class="card-label">Discount Codes</div>
+        <div class="card-value">$54,324</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 55.0% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-2.8 pp</span></div>
+        <div class="card-detail">2.1% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$120,659</span><span style="color:#64748b;"> (4.9% of gross)</span></div>
+        <div class="card-definition">Checkout discount codes — email/SMS promos, influencer codes, win-back codes.</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #F59E0B;">
+        <div class="card-label">Manual Discounts</div>
+        <div class="card-value">$21,080</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 196.5% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+0.5 pp</span></div>
+        <div class="card-detail">0.8% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$7,110</span><span style="color:#64748b;"> (0.3% of gross)</span></div>
+        <div class="card-definition">Staff-applied manual discounts / adjustments (customer service, one-off corrections).</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #EAB308;">
+        <div class="card-label">Price Reduction Discounts</div>
+        <div class="card-value">$72,379</div>
+        <div class="card-yoy"><span class="yoy-badge good"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 9L1 4H9Z" fill="currentColor"/></svg> 26.2% vs LY</span><span class="yoy-badge good" style="margin-left:6px;">-1.2 pp</span></div>
+        <div class="card-detail">2.9% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$98,021</span><span style="color:#64748b;"> (4.0% of gross)</span></div>
+        <div class="card-definition">Items listed BELOW MSRP — temporary product-level price cuts / sales (e.g. Earth Day spring sale). Shopify doesn't tag these as discount allocations because the customer just sees the lower price; computed per line as MSRP − unit_price on non-subscription items.</div>
+        
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #10B981;">
+        <div class="card-label">Free Shipping Promo</div>
+        <div class="card-value">$42,196</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 2003.5% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+1.6 pp</span></div>
+        <div class="card-detail">1.7% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$2,006</span><span style="color:#64748b;"> (0.1% of gross)</span></div>
+        <div class="card-definition">Free-shipping waives — threshold-based free ship, free-ship promo codes, and app-sourced free-ship functions. The shipping lever.</div>
+        
+    </div>
+    <div class="kpi-card free-gifts-card" style="border-top: 3px solid #EC4899;">
+        <div class="card-label"><span data-mode="excluded" style="display:none;">Free Gifts (excluded)</span><span data-mode="msrp" style="display:none;">Free Gifts (at MSRP)</span><span data-mode="cogs">Free Gifts (at COGS)</span></div>
+        <div class="card-value"><span data-mode="excluded" style="display:none;">$0</span><span data-mode="msrp" style="display:none;">$220,519</span><span data-mode="cogs">$51,553</span></div>
+        <div class="card-yoy"><span data-mode="excluded" style="display:none;"><span class="yoy-badge neutral">-- vs LY</span><span class="yoy-badge neutral" style="margin-left:6px;">0.0 pp</span></span><span data-mode="msrp" style="display:none;"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 57.0% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+2.9 pp</span></span><span data-mode="cogs"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 60.2% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+0.7 pp</span></span></div>
+        <div class="card-detail"><span data-mode="excluded" style="display:none;">0.0%</span><span data-mode="msrp" style="display:none;">8.7%</span><span data-mode="cogs">2.0%</span> of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;"><span data-mode="excluded" style="display:none;">$0</span><span data-mode="msrp" style="display:none;">$140,487</span><span data-mode="cogs">$32,172</span></span><span style="color:#64748b;"><span data-mode="excluded" style="display:none;"> (0.0% of gross)</span><span data-mode="msrp" style="display:none;"> (5.8% of gross)</span><span data-mode="cogs"> (1.3% of gross)</span></span></div>
+        <div class="card-definition">Items given away (BOGO, FOTM samples, GWP) valued at our actual cost (COGS), not retail — what free gifts truly cost us.</div>
+    </div>
+    <div class="kpi-card" style="border-top: 3px solid #06B6D4;">
+        <div class="card-label">First-time Subscription</div>
+        <div class="card-value">$10,956</div>
+        <div class="card-yoy"><span class="yoy-badge bad"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 1L9 6H1Z" fill="currentColor"/></svg> 113.6% vs LY</span><span class="yoy-badge bad" style="margin-left:6px;">+0.2 pp</span></div>
+        <div class="card-detail">0.4% of gross</div>
+        <div class="card-detail">LY: <span style="color:#cbd5e1;font-weight:600;">$5,130</span><span style="color:#64748b;"> (0.2% of gross)</span></div>
+        <div class="card-definition">Implied discount on first-time subscriber orders — the welcome / acquisition offer. MSRP − unit_price on first-sub line items.</div>
+        
+    </div>
+    </div>
+
+    
+    <div class="ship-split-panel">
+        <div class="ship-split-head">
+            <span class="ship-split-total">$42,196</span>
+            <span class="ship-split-total-label">free shipping given · YTD 2025</span>
+        </div>
+        <div class="ship-split-body"><div class="ship-split-row"><span class="ship-split-dot" style="background:#8B5CF6;"></span><span class="ship-split-label">Recurring subscription<span class="ship-split-hint">renewal orders</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:4%;background:#8B5CF6;"></span></span><span class="ship-split-val">$1,705</span><span class="ship-split-pct">4%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#06B6D4;"></span><span class="ship-split-label">First-time subscription<span class="ship-split-hint">initial sub order</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:6%;background:#06B6D4;"></span></span><span class="ship-split-val">$2,441</span><span class="ship-split-pct">6%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#10B981;"></span><span class="ship-split-label">One-time / non-subscription<span class="ship-split-hint">non-sub orders</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:82%;background:#10B981;"></span></span><span class="ship-split-val">$34,614</span><span class="ship-split-pct">82%</span></div><div class="ship-split-row"><span class="ship-split-dot" style="background:#64748b;"></span><span class="ship-split-label">Unattributed<span class="ship-split-hint">pre-2025 residual, no per-order allocation rows</span></span><span class="ship-split-bar-track"><span class="ship-split-bar" style="width:8%;background:#64748b;"></span></span><span class="ship-split-val">$3,436</span><span class="ship-split-pct">8%</span></div></div>
+        <p class="ship-split-note">
+            Split is by the <strong>order's subscription flag</strong>, not the discount title — Stay.ai
+            doesn't reliably tag subscription free-ship as its own discount, so title-based tracking would
+            miss it. Exact for months from ~Jun&nbsp;2025 onward (older shipping waivers have no per-order
+            allocation rows and show as <em>Unattributed</em>).
+        </p>
+    </div>
+
+    
+    <div class="recon-note">
+        <div class="recon-title">How this reconciles to the top KPI card</div>
+        <p class="recon-intro">
+            This page frames discount cost as <strong>Promotional Cost + Recurring Subscription</strong>
+            (free gifts valued at COGS). The top-of-page <em>DTC Discounts</em> card uses
+            <code>dtc_discounts</code> = True&nbsp;Gross&nbsp;&minus;&nbsp;Subtotal — a clean order-level
+            residual that is <strong>line-item only</strong> (no shipping, no free items) and can't
+            double-count. Both are correct; they measure different scopes. Here's the bridge for
+            YTD 2025:
+        </p>
+        <table class="recon-table">
+            <tr class="recon-head">
+                <td>Promotional Cost + Recurring Subscription (this page)</td>
+                <td class="recon-num">$478,510</td>
+            </tr>
+            <tr><td>Less: Free Shipping promos <span class="recon-hint">(sit below Subtotal, not in Gross&minus;Subtotal)</span></td>
+                <td class="recon-num recon-sub">&minus;$42,196</td></tr>
+            <tr><td>Less: Free Gifts at COGS <span class="recon-hint">(items given away, not a price discount)</span></td>
+                <td class="recon-num recon-sub">&minus;$51,553</td></tr>
+            <tr><td>Line-item discounts only (promotions + all subscription implied)</td>
+                <td class="recon-num">$384,761</td></tr>
+            <tr><td>Less: category overlap <span class="recon-hint">(same dollars booked twice — e.g. a Stay.ai subscription discount also tagged as a Shopify automatic discount)</span></td><td class="recon-num recon-sub">&minus;$12,545</td></tr>
+            <tr class="recon-foot">
+                <td>Top-of-page — DTC Discounts <span class="recon-hint">(<code>dtc_discounts</code>)</span></td>
+                <td class="recon-num">$372,216</td></tr>
+        </table>
+        <p class="recon-foot-note">
+            Rule of thumb: this page is the <strong>true-cost</strong> view — it counts the free-shipping
+            lever and values free gifts at what they actually cost us. The MTD card is the
+            <strong>clean line-item residual</strong>. The gap between them is shipping, free gifts, and
+            a small Stay.ai double-count.
+        </p>
+    </div>
+
+    <div class="chart-row" style="grid-template-columns:1fr;">
+        <div class="chart-box">
+            <h3>Monthly Discount Composition &mdash; 2025</h3>
+            <canvas id="discMonthlyChart" height="160"></canvas>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="section wf-section">
+    <h2>💰 Profit Waterfall &mdash; YTD 2025</h2>
+    <div class="wf-context">
+        Gross Revenue down to Contribution Margin. Same methodology as the KPI Excel report's
+        Profit Waterfall sheet, with Shipping Revenue and Shopify/CC-Other operating costs added.
+    </div>
+
+    <div class="wf-tile-row">
+        <div class="wf-tile wf-tile-gp">
+            <div class="wf-tile-label">Gross Profit</div>
+            <div class="wf-tile-value">$1,323,602</div>
+            <div class="wf-tile-detail">52.2% of gross</div>
+            <div class="wf-tile-yoy good">↑ 6.6% YoY &bull; LY: $1,241,391</div>
+        </div>
+        <div class="wf-tile wf-tile-cm">
+            <div class="wf-tile-label">Contribution Margin</div>
+            <div class="wf-tile-value">$773,583</div>
+            <div class="wf-tile-detail">30.5% of gross &nbsp;|&nbsp; -0.2 pp vs LY</div>
+            <div class="wf-tile-yoy good">↑ 3.2% YoY &bull; LY: $749,854</div>
+        </div>
+    </div>
+
+    <div class="wf-grid">
+        <div class="wf-table-wrap">
+            <table class="wf-table">
+                <thead>
+                    <tr>
+                        <th class="wf-label-h">Line item</th>
+                        <th>2025 YTD</th>
+                        <th>2024 YTD</th>
+                        <th>YoY %</th>
+                    </tr>
+                </thead>
+                <tbody>
+        <tr class="wf-row wf-start">
+            <td class="wf-label">Gross Revenue (True Gross)</td>
+            <td class="wf-val">$2,533,618</td>
+            <td class="wf-ly">$2,439,858</td>
+            <td class="wf-yoy good">↑ 3.8%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>Discounts</td>
+            <td class="wf-val">$372,216</td>
+            <td class="wf-ly">$318,068</td>
+            <td class="wf-yoy bad">↑ 17.0%</td>
+        </tr>
+        <tr class="wf-row wf-subtotal">
+            <td class="wf-label"><span class="wf-sign wf-sign-eq">=</span>Net Revenue</td>
+            <td class="wf-val">$2,161,402</td>
+            <td class="wf-ly">$2,121,790</td>
+            <td class="wf-yoy good">↑ 1.9%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign wf-sign-plus">+</span>Shipping Revenue (collected)</td>
+            <td class="wf-val">$120,845</td>
+            <td class="wf-ly">$122,361</td>
+            <td class="wf-yoy bad">↓ 1.2%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>Shipping Cost (carrier)</td>
+            <td class="wf-val">$341,539</td>
+            <td class="wf-ly">$363,375</td>
+            <td class="wf-yoy good">↓ 6.0%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>COGS</td>
+            <td class="wf-val">$617,105</td>
+            <td class="wf-ly">$639,385</td>
+            <td class="wf-yoy good">↓ 3.5%</td>
+        </tr>
+        <tr class="wf-row wf-subtotal wf-gp">
+            <td class="wf-label"><span class="wf-sign wf-sign-eq">=</span>GROSS PROFIT</td>
+            <td class="wf-val">$1,323,602</td>
+            <td class="wf-ly">$1,241,391</td>
+            <td class="wf-yoy good">↑ 6.6%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>Meta Ad Spend</td>
+            <td class="wf-val">$243,499</td>
+            <td class="wf-ly">$227,413</td>
+            <td class="wf-yoy bad">↑ 7.1%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>Google Ad Spend</td>
+            <td class="wf-val">$87,016</td>
+            <td class="wf-ly">$102,625</td>
+            <td class="wf-yoy good">↓ 15.2%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>Shopify Costs</td>
+            <td class="wf-val">$60,155</td>
+            <td class="wf-ly">$61,801</td>
+            <td class="wf-yoy good">↓ 2.7%</td>
+        </tr>
+        <tr class="wf-row ">
+            <td class="wf-label"><span class="wf-sign">−</span>CC Other Costs</td>
+            <td class="wf-val">$159,348</td>
+            <td class="wf-ly">$99,699</td>
+            <td class="wf-yoy bad">↑ 59.8%</td>
+        </tr>
+        <tr class="wf-row wf-final">
+            <td class="wf-label"><span class="wf-sign wf-sign-eq">=</span>CONTRIBUTION MARGIN</td>
+            <td class="wf-val">$773,583</td>
+            <td class="wf-ly">$749,854</td>
+            <td class="wf-yoy good">↑ 3.2%</td>
+        </tr></tbody>
+            </table>
+        </div>
+        <div class="wf-chart-wrap">
+            <h3>Cascade</h3>
+            <canvas id="waterfallChart" height="280"></canvas>
+        </div>
+    </div>
+</div>
+
 
 <div class="section">
     <h2>📊 Monthly Breakdown — 2025</h2>
@@ -389,6 +944,8 @@ td { color: #ccc; }
 const barData = {"labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "data": [179844.0, 173917.0, 205868.0, 289571.0, 171048.0, 136400.0, 164910.0, 180865.0, 194486.0, 231530.0, 415125.0, 190053.0], "ly_data": [197592.0, 171755.0, 193856.0, 271618.0, 163027.0, 148367.0, 158773.0, 174732.0, 179561.0, 200191.0, 349174.0, 231211.0]};
 const cumData = {"labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "cum": [179844.0, 353761.0, 559629.0, 849200.0, 1020248.0, 1156648.0, 1321558.0, 1502423.0, 1696909.0, 1928439.0, 2343564.0, 2533617.0], "ly_cum": [197592.0, 369347.0, 563203.0, 834821.0, 997848.0, 1146215.0, 1304988.0, 1479720.0, 1659281.0, 1859472.0, 2208646.0, 2439857.0]};
 const dailyData = {"dates": ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04", "2025-01-05", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-09", "2025-01-10", "2025-01-11", "2025-01-12", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-18", "2025-01-19", "2025-01-20", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-25", "2025-01-26", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-01-31", "2025-02-01", "2025-02-02", "2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-08", "2025-02-09", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-15", "2025-02-16", "2025-02-17", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-22", "2025-02-23", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-01", "2025-03-02", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-08", "2025-03-09", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-15", "2025-03-16", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-22", "2025-03-23", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-29", "2025-03-30", "2025-03-31", "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-05", "2025-04-06", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-12", "2025-04-13", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-18", "2025-04-19", "2025-04-20", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-26", "2025-04-27", "2025-04-28", "2025-04-29", "2025-04-30", "2025-05-01", "2025-05-02", "2025-05-03", "2025-05-04", "2025-05-05", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-10", "2025-05-11", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-17", "2025-05-18", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-24", "2025-05-25", "2025-05-26", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-05-31", "2025-06-01", "2025-06-02", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-07", "2025-06-08", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-14", "2025-06-15", "2025-06-16", "2025-06-17", "2025-06-18", "2025-06-19", "2025-06-20", "2025-06-21", "2025-06-22", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-28", "2025-06-29", "2025-06-30", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-04", "2025-07-05", "2025-07-06", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-12", "2025-07-13", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-19", "2025-07-20", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-26", "2025-07-27", "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31", "2025-08-01", "2025-08-02", "2025-08-03", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-09", "2025-08-10", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-16", "2025-08-17", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-23", "2025-08-24", "2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-08-30", "2025-08-31", "2025-09-01", "2025-09-02", "2025-09-03", "2025-09-04", "2025-09-05", "2025-09-06", "2025-09-07", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-13", "2025-09-14", "2025-09-15", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-20", "2025-09-21", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-27", "2025-09-28", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-04", "2025-10-05", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-11", "2025-10-12", "2025-10-13", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-18", "2025-10-19", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-25", "2025-10-26", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-01", "2025-11-02", "2025-11-03", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-08", "2025-11-09", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-15", "2025-11-16", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-22", "2025-11-23", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-27", "2025-11-28", "2025-11-29", "2025-11-30", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-06", "2025-12-07", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-13", "2025-12-14", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-20", "2025-12-21", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-25", "2025-12-26", "2025-12-27", "2025-12-28", "2025-12-29", "2025-12-30", "2025-12-31"], "gross": [9461.0, 7142.0, 10105.0, 8818.0, 4178.0, 5343.0, 5144.0, 5008.0, 4254.0, 6948.0, 4053.0, 4772.0, 3874.0, 4340.0, 4507.0, 6312.0, 5866.0, 4229.0, 5044.0, 5826.0, 4444.0, 7259.0, 5375.0, 5219.0, 6716.0, 7131.0, 5307.0, 5876.0, 6036.0, 5538.0, 5721.0, 6907.0, 6495.0, 6239.0, 4579.0, 4806.0, 4591.0, 5888.0, 4837.0, 5228.0, 4213.0, 4553.0, 5695.0, 9619.0, 8643.0, 7418.0, 8091.0, 10296.0, 9054.0, 5019.0, 4523.0, 4736.0, 3867.0, 5593.0, 6587.0, 5485.0, 5603.0, 5369.0, 9983.0, 8135.0, 6765.0, 6943.0, 5603.0, 7089.0, 5796.0, 4707.0, 6695.0, 4475.0, 5410.0, 4209.0, 4858.0, 4927.0, 4327.0, 5746.0, 8180.0, 8542.0, 4735.0, 7267.0, 14984.0, 9184.0, 6789.0, 7711.0, 9761.0, 5516.0, 7338.0, 5667.0, 8245.0, 4226.0, 6419.0, 5620.0, 6266.0, 7799.0, 5887.0, 7074.0, 5314.0, 5751.0, 6383.0, 7248.0, 7400.0, 5708.0, 6159.0, 5829.0, 5309.0, 4455.0, 4668.0, 7501.0, 7006.0, 4975.0, 5975.0, 4895.0, 36915.0, 21979.0, 12023.0, 13655.0, 15778.0, 21124.0, 21825.0, 14687.0, 4829.0, 5152.0, 6042.0, 5813.0, 4793.0, 3910.0, 4872.0, 4347.0, 4602.0, 5446.0, 4147.0, 3618.0, 4462.0, 3799.0, 3345.0, 3991.0, 5013.0, 4065.0, 4857.0, 4282.0, 5392.0, 11021.0, 9105.0, 9629.0, 6478.0, 6873.0, 9075.0, 12588.0, 3624.0, 4666.0, 3749.0, 4073.0, 3369.0, 4114.0, 6996.0, 5377.0, 4484.0, 4036.0, 4364.0, 3676.0, 3848.0, 3738.0, 4564.0, 3402.0, 3373.0, 3264.0, 3735.0, 4963.0, 4858.0, 5524.0, 5411.0, 5827.0, 5953.0, 4116.0, 6272.0, 3529.0, 5286.0, 4017.0, 3673.0, 5117.0, 3309.0, 3213.0, 6361.0, 5280.0, 4907.0, 15410.0, 13110.0, 11025.0, 9531.0, 12923.0, 5820.0, 3752.0, 3227.0, 3034.0, 3196.0, 2528.0, 3839.0, 3755.0, 4552.0, 3579.0, 3620.0, 2528.0, 4243.0, 4693.0, 3196.0, 4273.0, 4029.0, 3839.0, 3587.0, 2832.0, 5092.0, 4415.0, 5040.0, 4057.0, 6210.0, 4602.0, 4616.0, 6537.0, 2980.0, 3927.0, 4267.0, 5917.0, 3702.0, 4680.0, 6105.0, 4008.0, 4635.0, 9518.0, 8009.0, 9183.0, 8829.0, 10544.0, 4458.0, 4253.0, 3364.0, 3894.0, 4990.0, 5567.0, 4858.0, 4750.0, 5714.0, 5697.0, 9015.0, 8009.0, 8028.0, 11563.0, 9703.0, 11687.0, 6153.0, 5772.0, 3890.0, 5557.0, 5608.0, 5073.0, 4824.0, 4834.0, 5125.0, 4118.0, 4766.0, 5320.0, 4837.0, 5000.0, 4693.0, 5063.0, 4991.0, 4764.0, 5359.0, 3709.0, 5089.0, 4980.0, 6340.0, 5095.0, 8769.0, 20179.0, 11621.0, 13871.0, 17132.0, 10271.0, 6001.0, 5311.0, 4019.0, 5795.0, 6393.0, 5409.0, 7846.0, 4136.0, 6096.0, 7315.0, 5748.0, 6579.0, 5975.0, 5412.0, 7229.0, 8024.0, 6356.0, 5415.0, 5722.0, 4896.0, 8160.0, 5573.0, 6948.0, 5555.0, 5446.0, 9917.0, 13800.0, 15180.0, 13703.0, 17855.0, 6937.0, 6692.0, 7095.0, 5310.0, 6451.0, 4196.0, 7468.0, 9000.0, 9727.0, 7499.0, 5779.0, 5896.0, 5597.0, 5765.0, 6441.0, 22948.0, 29090.0, 21300.0, 20193.0, 20112.0, 20477.0, 17815.0, 17552.0, 15341.0, 12333.0, 40007.0, 18900.0, 27645.0, 20949.0, 7803.0, 5402.0, 4608.0, 4611.0, 4669.0, 4918.0, 6100.0, 5714.0, 5666.0, 4958.0, 5358.0, 4617.0, 4937.0, 5048.0, 4477.0, 4380.0, 5216.0, 3984.0, 4327.0, 4733.0, 7220.0, 8248.0, 3619.0, 3051.0, 4017.0, 5798.0, 9480.0, 8945.0, 9345.0, 7856.0], "meta_spend": [524.0, 513.0, 589.0, 535.0, 621.0, 561.0, 506.0, 415.0, 374.0, 380.0, 389.0, 427.0, 480.0, 473.0, 500.0, 489.0, 486.0, 473.0, 514.0, 509.0, 557.0, 635.0, 442.0, 427.0, 519.0, 604.0, 570.0, 547.0, 532.0, 554.0, 505.0, 457.0, 528.0, 469.0, 400.0, 377.0, 363.0, 354.0, 338.0, 395.0, 406.0, 472.0, 574.0, 544.0, 558.0, 552.0, 581.0, 619.0, 622.0, 589.0, 578.0, 315.0, 0, 0, 490.0, 483.0, 481.0, 569.0, 626.0, 601.0, 616.0, 553.0, 614.0, 691.0, 715.0, 654.0, 708.0, 761.0, 741.0, 738.0, 971.0, 643.0, 671.0, 752.0, 1067.0, 844.0, 775.0, 877.0, 1405.0, 1163.0, 1056.0, 1098.0, 1158.0, 1168.0, 1067.0, 1037.0, 1036.0, 1079.0, 1119.0, 1252.0, 885.0, 885.0, 802.0, 838.0, 1072.0, 1276.0, 1295.0, 1136.0, 1074.0, 1242.0, 1226.0, 1255.0, 1487.0, 1229.0, 1147.0, 1079.0, 1065.0, 1132.0, 1116.0, 1285.0, 1543.0, 3176.0, 3155.0, 1136.0, 973.0, 887.0, 1078.0, 620.0, 926.0, 870.0, 801.0, 838.0, 745.0, 972.0, 912.0, 809.0, 723.0, 611.0, 566.0, 533.0, 638.0, 612.0, 516.0, 382.0, 308.0, 325.0, 299.0, 348.0, 334.0, 760.0, 612.0, 495.0, 493.0, 557.0, 564.0, 603.0, 444.0, 398.0, 346.0, 358.0, 333.0, 441.0, 415.0, 328.0, 287.0, 264.0, 227.0, 230.0, 362.0, 307.0, 305.0, 301.0, 326.0, 240.0, 163.0, 218.0, 269.0, 281.0, 297.0, 300.0, 318.0, 198.0, 200.0, 155.0, 153.0, 146.0, 99.0, 174.0, 171.0, 214.0, 199.0, 197.0, 197.0, 197.0, 236.0, 405.0, 417.0, 378.0, 257.0, 247.0, 256.0, 246.0, 230.0, 264.0, 270.0, 250.0, 337.0, 336.0, 389.0, 400.0, 428.0, 259.0, 242.0, 236.0, 296.0, 305.0, 303.0, 338.0, 313.0, 298.0, 352.0, 343.0, 352.0, 344.0, 371.0, 346.0, 338.0, 347.0, 358.0, 339.0, 347.0, 374.0, 356.0, 341.0, 486.0, 474.0, 602.0, 562.0, 636.0, 602.0, 443.0, 445.0, 434.0, 389.0, 389.0, 430.0, 402.0, 394.0, 845.0, 865.0, 821.0, 834.0, 925.0, 907.0, 829.0, 790.0, 789.0, 759.0, 746.0, 896.0, 820.0, 792.0, 577.0, 540.0, 539.0, 493.0, 589.0, 566.0, 732.0, 524.0, 400.0, 503.0, 531.0, 604.0, 555.0, 541.0, 531.0, 535.0, 572.0, 506.0, 580.0, 754.0, 803.0, 778.0, 665.0, 445.0, 418.0, 474.0, 462.0, 444.0, 638.0, 594.0, 603.0, 545.0, 671.0, 597.0, 497.0, 600.0, 623.0, 594.0, 575.0, 705.0, 509.0, 649.0, 580.0, 576.0, 683.0, 639.0, 731.0, 743.0, 871.0, 1448.0, 1817.0, 1953.0, 1899.0, 2102.0, 1007.0, 865.0, 733.0, 865.0, 643.0, 630.0, 746.0, 692.0, 910.0, 1065.0, 1047.0, 1046.0, 984.0, 1224.0, 1120.0, 1047.0, 1273.0, 1226.0, 1855.0, 2129.0, 3073.0, 3730.0, 2636.0, 1503.0, 1481.0, 3976.0, 148.0, 242.0, 2006.0, 664.0, 659.0, 722.0, 703.0, 623.0, 836.0, 776.0, 705.0, 536.0, 497.0, 523.0, 474.0, 604.0, 520.0, 455.0, 395.0, 321.0, 301.0, 276.0, 423.0, 370.0, 344.0, 272.0, 258.0, 259.0, 208.0, 962.0, 824.0, 775.0, 731.0], "google_spend": [743.0, 647.0, 450.0, 459.0, 414.0, 210.0, 168.0, 145.0, 145.0, 180.0, 154.0, 161.0, 161.0, 160.0, 130.0, 180.0, 236.0, 278.0, 241.0, 218.0, 332.0, 471.0, 326.0, 343.0, 393.0, 391.0, 373.0, 286.0, 313.0, 262.0, 309.0, 358.0, 402.0, 340.0, 443.0, 351.0, 334.0, 369.0, 341.0, 367.0, 435.0, 408.0, 288.0, 332.0, 372.0, 309.0, 376.0, 309.0, 324.0, 366.0, 284.0, 223.0, 460.0, 280.0, 380.0, 415.0, 348.0, 318.0, 495.0, 450.0, 403.0, 400.0, 591.0, 604.0, 448.0, 404.0, 555.0, 610.0, 563.0, 548.0, 581.0, 452.0, 581.0, 558.0, 643.0, 401.0, 328.0, 402.0, 382.0, 370.0, 360.0, 399.0, 320.0, 308.0, 389.0, 361.0, 339.0, 277.0, 339.0, 231.0, 188.0, 203.0, 262.0, 152.0, 219.0, 231.0, 191.0, 214.0, 211.0, 178.0, 130.0, 197.0, 215.0, 172.0, 212.0, 191.0, 144.0, 141.0, 178.0, 148.0, 234.0, 143.0, 192.0, 132.0, 242.0, 245.0, 217.0, 177.0, 220.0, 196.0, 256.0, 258.0, 208.0, 288.0, 260.0, 224.0, 173.0, 276.0, 170.0, 193.0, 257.0, 342.0, 356.0, 336.0, 313.0, 358.0, 382.0, 352.0, 324.0, 509.0, 257.0, 261.0, 214.0, 266.0, 266.0, 302.0, 195.0, 150.0, 184.0, 138.0, 167.0, 255.0, 179.0, 173.0, 142.0, 164.0, 125.0, 170.0, 143.0, 137.0, 110.0, 120.0, 193.0, 105.0, 361.0, 402.0, 348.0, 428.0, 370.0, 370.0, 372.0, 395.0, 424.0, 266.0, 147.0, 121.0, 219.0, 150.0, 213.0, 171.0, 166.0, 152.0, 161.0, 181.0, 231.0, 425.0, 352.0, 265.0, 187.0, 166.0, 148.0, 108.0, 172.0, 214.0, 141.0, 157.0, 149.0, 168.0, 206.0, 271.0, 197.0, 175.0, 142.0, 140.0, 104.0, 87.0, 121.0, 89.0, 100.0, 100.0, 81.0, 72.0, 81.0, 99.0, 107.0, 131.0, 115.0, 97.0, 110.0, 83.0, 127.0, 82.0, 105.0, 78.0, 134.0, 198.0, 145.0, 142.0, 158.0, 148.0, 125.0, 81.0, 74.0, 66.0, 99.0, 101.0, 80.0, 124.0, 100.0, 165.0, 121.0, 115.0, 123.0, 153.0, 127.0, 167.0, 184.0, 108.0, 165.0, 125.0, 147.0, 127.0, 146.0, 93.0, 142.0, 128.0, 99.0, 123.0, 116.0, 128.0, 111.0, 127.0, 151.0, 101.0, 141.0, 130.0, 143.0, 110.0, 116.0, 141.0, 105.0, 132.0, 93.0, 112.0, 95.0, 122.0, 114.0, 129.0, 138.0, 136.0, 169.0, 111.0, 159.0, 121.0, 150.0, 150.0, 136.0, 158.0, 356.0, 260.0, 242.0, 283.0, 203.0, 214.0, 197.0, 227.0, 223.0, 224.0, 183.0, 216.0, 238.0, 291.0, 312.0, 353.0, 463.0, 473.0, 290.0, 205.0, 272.0, 212.0, 246.0, 198.0, 255.0, 253.0, 246.0, 254.0, 229.0, 219.0, 210.0, 287.0, 276.0, 238.0, 331.0, 291.0, 328.0, 367.0, 417.0, 319.0, 399.0, 283.0, 275.0, 519.0, 138.0, 107.0, 265.0, 115.0, 270.0, 323.0, 204.0, 226.0, 233.0, 231.0, 268.0, 199.0, 190.0, 184.0, 202.0, 178.0, 170.0, 174.0, 162.0, 161.0, 148.0, 122.0, 109.0, 117.0, 115.0, 84.0, 88.0, 146.0, 180.0, 241.0, 262.0, 268.0, 260.0], "total_spend": [1267.0, 1160.0, 1038.0, 994.0, 1035.0, 771.0, 674.0, 560.0, 519.0, 560.0, 543.0, 589.0, 641.0, 633.0, 630.0, 669.0, 721.0, 751.0, 755.0, 726.0, 889.0, 1106.0, 768.0, 770.0, 913.0, 995.0, 942.0, 832.0, 845.0, 815.0, 814.0, 815.0, 931.0, 809.0, 843.0, 728.0, 697.0, 723.0, 679.0, 763.0, 841.0, 879.0, 862.0, 876.0, 931.0, 860.0, 956.0, 928.0, 945.0, 955.0, 862.0, 538.0, 460.0, 280.0, 870.0, 898.0, 828.0, 887.0, 1121.0, 1051.0, 1018.0, 954.0, 1205.0, 1295.0, 1163.0, 1058.0, 1262.0, 1371.0, 1303.0, 1286.0, 1552.0, 1095.0, 1252.0, 1311.0, 1711.0, 1245.0, 1103.0, 1279.0, 1787.0, 1534.0, 1415.0, 1498.0, 1478.0, 1476.0, 1456.0, 1398.0, 1375.0, 1355.0, 1458.0, 1484.0, 1072.0, 1088.0, 1064.0, 990.0, 1291.0, 1507.0, 1486.0, 1350.0, 1285.0, 1421.0, 1357.0, 1451.0, 1702.0, 1401.0, 1359.0, 1270.0, 1209.0, 1273.0, 1293.0, 1433.0, 1777.0, 3319.0, 3347.0, 1269.0, 1215.0, 1133.0, 1295.0, 797.0, 1146.0, 1066.0, 1056.0, 1096.0, 953.0, 1260.0, 1172.0, 1033.0, 896.0, 887.0, 736.0, 726.0, 895.0, 954.0, 872.0, 718.0, 621.0, 683.0, 681.0, 700.0, 658.0, 1269.0, 869.0, 756.0, 707.0, 823.0, 831.0, 905.0, 639.0, 549.0, 530.0, 496.0, 499.0, 696.0, 594.0, 502.0, 429.0, 428.0, 352.0, 400.0, 505.0, 445.0, 415.0, 421.0, 519.0, 345.0, 525.0, 620.0, 617.0, 710.0, 667.0, 670.0, 690.0, 593.0, 624.0, 421.0, 299.0, 267.0, 318.0, 324.0, 384.0, 385.0, 365.0, 349.0, 358.0, 378.0, 467.0, 830.0, 770.0, 643.0, 444.0, 412.0, 404.0, 355.0, 403.0, 478.0, 412.0, 408.0, 486.0, 504.0, 595.0, 672.0, 626.0, 434.0, 384.0, 376.0, 400.0, 392.0, 424.0, 428.0, 413.0, 398.0, 432.0, 415.0, 432.0, 443.0, 478.0, 478.0, 454.0, 444.0, 468.0, 422.0, 474.0, 455.0, 461.0, 419.0, 619.0, 672.0, 747.0, 705.0, 794.0, 750.0, 568.0, 527.0, 508.0, 456.0, 488.0, 531.0, 482.0, 518.0, 944.0, 1030.0, 942.0, 949.0, 1048.0, 1060.0, 956.0, 957.0, 973.0, 867.0, 910.0, 1021.0, 967.0, 919.0, 723.0, 633.0, 681.0, 621.0, 689.0, 688.0, 848.0, 652.0, 512.0, 630.0, 682.0, 705.0, 696.0, 670.0, 675.0, 646.0, 689.0, 647.0, 685.0, 886.0, 896.0, 890.0, 760.0, 567.0, 532.0, 603.0, 600.0, 579.0, 807.0, 705.0, 762.0, 666.0, 821.0, 747.0, 633.0, 758.0, 980.0, 854.0, 817.0, 988.0, 712.0, 863.0, 777.0, 803.0, 906.0, 863.0, 914.0, 959.0, 1109.0, 1739.0, 2129.0, 2306.0, 2363.0, 2575.0, 1297.0, 1070.0, 1005.0, 1077.0, 889.0, 828.0, 1001.0, 945.0, 1156.0, 1318.0, 1277.0, 1265.0, 1195.0, 1511.0, 1396.0, 1285.0, 1604.0, 1517.0, 2183.0, 2495.0, 3490.0, 4049.0, 3035.0, 1786.0, 1756.0, 4495.0, 285.0, 349.0, 2271.0, 779.0, 929.0, 1045.0, 907.0, 849.0, 1068.0, 1007.0, 973.0, 736.0, 686.0, 707.0, 676.0, 782.0, 690.0, 628.0, 557.0, 482.0, 449.0, 398.0, 532.0, 487.0, 459.0, 356.0, 346.0, 405.0, 389.0, 1202.0, 1086.0, 1043.0, 991.0]};
+const discMonthly = {"labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "sub": [9491.33, 10132.97, 11612.71, 12588.87, 9890.32, 9903.23, 9876.12, 9234.25, 10260.49, 12950.9, 13981.51, 11046.51], "pr": [3989.09, 6251.17, 14011.02, 29139.9, 1680.19, 1895.55, 3576.13, 1189.64, 1507.68, 7148.65, 1396.51, 593.02], "auto": [0, 0, 0, 0, 0, 0, 774.97, 8404.56, 8849.13, 16461.66, 58951.18, 12567.73], "code": [6291.88, 5053.64, 4742.4, 5935.02, 3847.86, 3035.17, 10864.51, 2985.24, 3658.68, 2830.0, 2382.54, 2696.59], "man": [441.11, 131.79, 1071.97, 975.42, 328.35, 1623.26, 898.9, 6217.86, 5048.49, 2829.56, 813.38, 700.23], "ship": [236.5, 202.25, 991.79, 1428.59, 577.05, 4723.06, 4234.52, 3931.27, 3974.24, 5565.27, 9916.71, 6414.82]};
+const waterfallData = {"labels": ["Gross", "\u2212 Discounts", "+ Ship Rev", "\u2212 Ship Cost", "\u2212 COGS", "\u2212 Meta", "\u2212 Google", "\u2212 Shopify", "\u2212 CC Other", "= Contribution Margin"], "starts": [0, 2161401.8400000003, 2161401.8400000003, 1940707.0500000003, 1323602.2400000002, 1080102.8600000003, 993086.8777000003, 932931.8677000003, 773583.4977000003, 0], "values": [2533617.7, 372215.86, 120844.58, 341539.37, 617104.81, 243499.38, 87015.9823, 60155.009999999995, 159348.37, 773583.4977000003], "colors": ["#D4A843", "#f87171", "#4ade80", "#f87171", "#f87171", "#f87171", "#f87171", "#f87171", "#f87171", "#10B981"]};
 
 // Daily Gross Sales vs Daily Ad Spend (full YTD, dual-axis line chart)
 new Chart(document.getElementById('salesVsSpendChart'), {
@@ -527,6 +1084,113 @@ new Chart(document.getElementById('cumChart'), {
         scales: {
             x: { ticks: { color: '#666' }, grid: { display: false } },
             y: { ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+    }
+});
+
+// Profit Waterfall — floating-bar cascade
+if (document.getElementById('waterfallChart') && waterfallData.labels) {
+    new Chart(document.getElementById('waterfallChart'), {
+        type: 'bar',
+        data: {
+            labels: waterfallData.labels,
+            datasets: [
+                {
+                    label: 'Base',
+                    data: waterfallData.starts,
+                    backgroundColor: 'rgba(0,0,0,0)',
+                    borderWidth: 0,
+                    stack: 'wf',
+                },
+                {
+                    label: 'Change',
+                    data: waterfallData.values,
+                    backgroundColor: waterfallData.colors,
+                    borderWidth: 0,
+                    stack: 'wf',
+                    borderRadius: 3,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    filter: ctx => ctx.datasetIndex === 1,
+                    callbacks: {
+                        label: ctx => '$' + Math.abs(ctx.parsed.x).toLocaleString(undefined, { maximumFractionDigits: 0 })
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true, beginAtZero: true,
+                    ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                y: {
+                    stacked: true,
+                    ticks: { color: '#bbb', font: { size: 11 } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+// Monthly Discount Composition — stacked bar (6 buckets)
+new Chart(document.getElementById('discMonthlyChart'), {
+    type: 'bar',
+    data: {
+        labels: discMonthly.labels,
+        datasets: [
+            { label: 'Subscription',    data: discMonthly.sub,
+              backgroundColor: 'rgba(237,125,49,0.85)', stack: 'disc', borderWidth: 0 },
+            { label: 'Price Reduction', data: discMonthly.pr,
+              backgroundColor: 'rgba(192,80,77,0.85)',  stack: 'disc', borderWidth: 0 },
+            { label: 'Automatic',       data: discMonthly.auto,
+              backgroundColor: 'rgba(91,155,213,0.85)', stack: 'disc', borderWidth: 0 },
+            { label: 'Code',            data: discMonthly.code,
+              backgroundColor: 'rgba(68,114,196,0.85)', stack: 'disc', borderWidth: 0 },
+            { label: 'Manual',          data: discMonthly.man,
+              backgroundColor: 'rgba(112,48,160,0.85)', stack: 'disc', borderWidth: 0 },
+            { label: 'Shipping',        data: discMonthly.ship,
+              backgroundColor: 'rgba(46,180,170,0.85)', stack: 'disc', borderWidth: 0 }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: {
+                labels: { color: '#bbb', font: { size: 11 }, boxWidth: 12, padding: 8 },
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString(undefined, { maximumFractionDigits: 0 }),
+                    footer: items => {
+                        let total = 0;
+                        items.forEach(i => total += i.parsed.y);
+                        return 'Total: $' + total.toLocaleString(undefined, { maximumFractionDigits: 0 });
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                stacked: true,
+                ticks: { color: '#666' },
+                grid: { display: false }
+            },
+            y: {
+                stacked: true,
+                ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'k' },
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                beginAtZero: true
+            }
         }
     }
 });
