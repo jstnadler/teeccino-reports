@@ -71,6 +71,15 @@
   details.fold summary{cursor:pointer;color:var(--text-muted)}
   .est{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:1px 6px;border-radius:99px;
     border:1px solid var(--border);color:var(--text-muted);vertical-align:2px;margin-left:6px}
+  .qnav{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:4px;margin:0 0 14px;padding:8px 0;
+    background:var(--surface-0);border-bottom:1px solid var(--border)}
+  .qnav a{font-size:12.5px;color:var(--text-secondary);text-decoration:none;padding:4px 10px;border-radius:99px;border:1px solid var(--border);background:var(--surface-1)}
+  .qnav a:hover{color:var(--text-primary);border-color:var(--text-muted)}
+  .qnav a[aria-current=true]{background:var(--series-1);border-color:var(--series-1);color:#fff}
+  h2[id],footer[id]{scroll-margin-top:58px}
+  #summary{scroll-margin-top:200px}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   footer{margin-top:34px;font-size:11.5px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:12px}
   footer li{margin:3px 0}
 </style></head>
@@ -88,15 +97,19 @@
   }).catch(function(){});
 </script>
 <div class="wrap">
-<h1>Customer Demographics</h1>
+<h1 id="summary">Customer Demographics</h1>
 <div class="sub" id="subhead"></div>
 <p class="lede">Who buys Teeccino direct on teeccino.com: where they live, what kind of neighborhood that is,
 how they buy, and what our ad and site data estimate about their age and gender. Wholesale (Target, Walmart, Faire) and Amazon are excluded.
 Every year-over-year comparison uses two complete 12-month windows of equal length.</p>
 
+<nav class="qnav" aria-label="Jump to section">
+  <a href="#summary">Summary</a><a href="#geo">Where they live</a><a href="#region">Neighborhood type</a>
+  <a href="#income">Neighborhood income</a><a href="#profile">Customer profile</a><a href="#age">Age &amp; gender</a><a href="#sources">Sources</a>
+</nav>
 <div class="kpis" id="kpis"></div>
 
-<h2>Where customers live</h2>
+<h2 id="geo">Where customers live</h2>
 <p class="sub" id="geo-cov"></p>
 <div class="card">
   <div class="seg" role="group" aria-label="Map metric">
@@ -119,7 +132,7 @@ Every year-over-year comparison uses two complete 12-month windows of equal leng
     <p class="sub">Only ZIPs with at least 10 customers are listed. Place name is the USPS post-office name.</p></div>
 </div>
 
-<h2>Neighborhood type <span class="est">AREA ESTIMATE</span></h2>
+<h2 id="region">Neighborhood type <span class="est">AREA ESTIMATE</span></h2>
 <p class="sub">Share of our customers vs. share of the US population, by the USDA rural-urban type of the customer's ZIP code.</p>
 <div class="gridct">
   <div class="card"><div class="legend"><span><i style="background:var(--series-1)"></i>Our customers</span><span><i style="background:var(--series-2)"></i>US population</span></div><div id="reg-chart"></div></div>
@@ -127,7 +140,7 @@ Every year-over-year comparison uses two complete 12-month windows of equal leng
   <p class="sub">"Index" = our share ÷ population share × 100. Above 100 means we over-index in that kind of place.</p></div>
 </div>
 
-<h2>Neighborhood income <span class="est">AREA ESTIMATE</span></h2>
+<h2 id="income">Neighborhood income <span class="est">AREA ESTIMATE</span></h2>
 <p class="sub">Customers grouped by the median household income of their ZIP code, vs. how the US population is spread across the same bands.</p>
 <div class="gridct">
   <div class="card"><div class="legend"><span><i style="background:var(--series-1)"></i>Our customers</span><span><i style="background:var(--series-2)"></i>US population</span></div><div id="inc-chart"></div></div>
@@ -137,7 +150,7 @@ Every year-over-year comparison uses two complete 12-month windows of equal leng
 (Census ACS 5-year 2019-2023), not the customer's own income. A customer in a $150k ZIP may earn far more or less.
 Treat it as a description of the places we sell into, not as individual data.</div>
 
-<h2>Customer profile</h2>
+<h2 id="profile">Customer profile</h2>
 <div class="card"><h3>Segments</h3><table id="seg-table"></table>
   <p class="sub">A customer counts as a subscriber if any of their orders in the window was a subscription order. "New" means their first-ever order fell in the window. The pairs overlap: a new customer can also be a subscriber.</p></div>
 <div class="grid2">
@@ -151,7 +164,7 @@ Treat it as a description of the places we sell into, not as individual data.</d
     <p class="sub">Revenue (after discounts, excluding shipping and tax) from each customer's first 365 days. Only months whose full year has passed are shown.</p></div>
 </div>
 
-<h2>Age &amp; gender <span class="est">ESTIMATE</span></h2>
+<h2 id="age">Age &amp; gender <span class="est">ESTIMATE</span></h2>
 <div class="note" id="ag-note"></div>
 <div class="grid2">
   <div class="card"><h3>Share of purchases by age</h3>
@@ -165,10 +178,10 @@ Treat it as a description of the places we sell into, not as individual data.</d
 <div class="card"><h3>Meta ads by age <span class="sub">— Meta's own attribution</span></h3><table id="meta-table"></table>
   <p class="sub">Cost per purchase and revenue per $1 use Meta's reported purchases and purchase value, which run on Meta's attribution model and will not match Shopify orders.</p></div>
 
-<footer>
+<footer id="sources">
   <b>Sources &amp; method</b>
   <ul id="srcs"></ul>
-  Built 2026-10-13 13:50 by DataOps.
+  Built 2026-10-13 13:59 by DataOps.
 </footer>
 </div>
 <div class="tip" id="tip"></div>
@@ -333,7 +346,7 @@ function shareTable(el, rows, label, prior) {
   el.innerHTML = `<thead><tr><th class="l">${label}</th><th>Customers</th><th>Share</th><th>US pop.</th><th>Index</th><th>Rev / cust</th><th>Orders / cust</th><th>Subscribers</th><th>Share YoY</th></tr></thead><tbody>` +
     rows.map((r,i) => { const d = r.share - prior[i].share;
       return `<tr><td class="l">${esc(r.k)}</td><td>${fmtN(r.cust)}</td><td>${pct(r.share)}</td><td>${pct(r.pop)}</td><td>${r.idx==null?'—':Math.round(r.idx)}</td><td>${fmt$(r.rpc)}</td><td>${r.opc==null?'—':r.opc.toFixed(2)}</td><td>${pct(r.sub)}</td>
-      <td><span class="d ${Math.abs(d)<0.0005?'flat':d>0?'up':'down'}">${d>0?'+':''}${(d*100).toFixed(1)} pts</span></td></tr>`; }).join('') + '</tbody>';
+      <td><span class="d ${Math.abs(d)<0.0005?'flat':d>0?'up':'down'}">${Math.abs(d)<0.0005?'0.0':(d>0?'+':'')+(d*100).toFixed(1)} pts</span></td></tr>`; }).join('') + '</tbody>';
 }
 const REG = ['Metro','Small city','Small town','Rural'];
 const regC = shareRows(REG, C.regions, US.regions, C.region_matched), regP = shareRows(REG, R.regions, US.regions, R.region_matched);
@@ -430,6 +443,19 @@ $('meta-table').innerHTML = '<thead><tr><th class="l">Age</th><th>Spend</th><th>
   mRows.map((r,i)=>{ const pp = pKnown ? PM.ages[i].purchases/pKnown : null, d = pp==null?null:r.pshare-pp;
     return `<tr><td class="l">${r.age}</td><td>${fmt$(r.spend)}</td><td>${pct(r.sshare)}</td><td>${fmtN(r.purchases)}</td><td>${pct(r.pshare)}</td>
     <td>${d==null?'—':`<span class="d ${Math.abs(d)<0.0005?'flat':d>0?'up':'down'}">${d>0?'+':''}${(d*100).toFixed(1)} pts</span>`}</td><td>${fmt$(r.cpp,2)}</td><td>${r.rpd==null?'—':'$'+r.rpd.toFixed(2)}</td></tr>`; }).join('') + '</tbody>';
+
+// ---------- quick-link highlight: the last section whose heading has scrolled past the bar
+(function(){
+  const links = [...document.querySelectorAll('.qnav a')];
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1)));
+  function mark(){
+    let cur = 0;
+    targets.forEach((t,i) => { if (t && t.getBoundingClientRect().top <= 70) cur = i; });
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) cur = links.length - 1;
+    links.forEach((a,i) => a.setAttribute('aria-current', i===cur));
+  }
+  addEventListener('scroll', mark, {passive:true}); mark();
+})();
 
 // ---------- sources
 const S = P.sources;
