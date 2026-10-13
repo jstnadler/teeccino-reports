@@ -280,8 +280,9 @@ let DATA = null;
 let TAGS = null;
 const UNTAGGED_LABEL = { norecord:'No tag record', review:'Needs creative review', container:'Unclassified container' };
 // tag tuple: [pillar, sub, concept, vehicle, offer, source, confidence, untagged_reason,
-//             product_family, product]  (product axis added 2026-10-13; name -> label in TAGS.products)
-function productLabel(t){ if(!t || !t[9]) return ''; return (TAGS.products && TAGS.products[t[9]]) || t[9]; }
+//             product_types[], products[]]  (product axis 2026-10-13, multi-valued; name -> label in TAGS.products)
+const asArr = v => Array.isArray(v) ? v : (v ? [v] : []);
+function prodLabel(n){ return (TAGS && TAGS.products && TAGS.products[n]) || n; }
 function tagOf(aid){ if(!TAGS) return null; const i=TAGS.ads[aid]; return i==null?null:TAGS.sets[i]; }
 const isReal = v => !!v && v.charAt(0) !== '(';
 function pillarName(t){ return t[0]==='(offer-led, no message)' ? 'Offer-led (no message)' : t[0]; }
@@ -291,7 +292,8 @@ function tagChips(aid){
   const offer = t[0]==='(offer-led, no message)';
   return `<div class="tags"><span class="tag${offer?' offer':''}">${esc(pillarName(t))}</span>`+
     (isReal(t[1])?`<span class="tag sub">${esc(t[1])}</span>`:'')+
-    (t[9]?`<span class="tag prod" title="${esc(productLabel(t))}">${esc(t[9])}</span>`:(t[8]?`<span class="tag prod">${esc(t[8])}</span>`:''))+`</div>`;
+    (asArr(t[9]).length ? asArr(t[9]).map(n=>`<span class="tag prod" title="${esc(prodLabel(n))}">${esc(n)}</span>`).join('')
+      : asArr(t[8]).map(ty=>`<span class="tag prod">${esc(ty)}</span>`).join(''))+`</div>`;
 }
 function tagBox(aid){
   if(!TAGS) return '';
@@ -311,7 +313,8 @@ function tagBox(aid){
   return `<div class="tagbox"><h4>Tags</h4><table>
     <tr><td>Pillar</td><td>${esc(pillarName(t))}</td></tr>
     ${row('Sub-pillar',t[1])}${row('Concept',t[2])}${row('Vehicle',t[3])}${row('Offer',t[4])}
-    ${t[8]?`<tr><td>Product family</td><td>${esc(t[8])}</td></tr>`:''}${t[9]?`<tr><td>Product</td><td>${esc(productLabel(t))}</td></tr>`:''}
+    ${asArr(t[8]).length?`<tr><td>Product type</td><td>${asArr(t[8]).map(esc).join('<br>')}</td></tr>`:''}${
+      asArr(t[9]).length?`<tr><td>Product${asArr(t[9]).length>1?'s':''}</td><td>${asArr(t[9]).map(n=>esc(prodLabel(n))).join('<br>')}</td></tr>`:''}
     <tr><td>Tagged by</td><td>${esc(src)}${t[6]&&t[6]!=='none'?` &middot; ${esc(t[6])} confidence`:''}</td></tr>
   </table></div>`;
 }
