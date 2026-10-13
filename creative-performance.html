@@ -119,6 +119,20 @@
   .launch { display:inline-block; font-size:0.72rem; color:#cbd5e1; background:#0f172a;
             border:1px solid #334155; border-radius:20px; padding:2px 9px; }
   .card-launch { font-size:0.7rem; color:#64748b; }
+  /* Tags = the message-taxonomy verdict from message-performance.html (creative-tags.json) */
+  .tags { display:flex; flex-wrap:wrap; gap:4px; margin:2px 0 4px; }
+  .tag { font-size:0.66rem; line-height:1.3; padding:2px 7px; border-radius:999px;
+         background:rgba(212,168,67,0.14); color:#f1d48a; border:1px solid rgba(212,168,67,0.35); }
+  .tag.sub { background:rgba(148,163,184,0.12); color:#cbd5e1; border-color:rgba(148,163,184,0.3); }
+  .tag.untagged { background:rgba(251,191,36,0.08); color:#fbbf24; border:1px dashed rgba(251,191,36,0.6); }
+  .tag.offer { background:rgba(148,163,184,0.12); color:#94a3b8; border-color:rgba(148,163,184,0.3); }
+  .tagbox { background:#0f172a; border:1px solid #1e293b; border-radius:10px; padding:10px 12px; margin:12px 0 14px; }
+  .tagbox h4 { margin:0 0 6px; font-size:0.72rem; letter-spacing:.06em; text-transform:uppercase; color:#D4A843; }
+  .tagbox table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+  .tagbox td { padding:3px 0; vertical-align:top; color:#e2e8f0; }
+  .tagbox td:first-child { color:#94a3b8; width:120px; }
+  .tagbox .act { color:#fbbf24; font-size:0.8rem; margin-top:6px; line-height:1.45; }
+  .tagbox a { color:#93c5fd; }
   .charts { margin-top:16px; }
   .charts h3 { font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:#94a3b8; margin:14px 0 6px; }
   .chartbox { background:#0f172a; border:1px solid #334155; border-radius:8px; padding:10px 12px; height:200px; }
@@ -228,6 +242,13 @@
       </select>
     </div>
     <div class="ctl">
+      <label for="tagf">Tag</label>
+      <select id="tagf">
+        <option value="">All tags</option>
+        <option value="__untagged">Untagged only</option>
+      </select>
+    </div>
+    <div class="ctl">
       <label for="minspend">Min spend ($)</label>
       <input type="number" id="minspend" value="50" min="0" step="10" style="min-width:90px">
     </div>
@@ -253,6 +274,42 @@
 
 <script>
 let DATA = null;
+// creative-tags.json -- the tag verdict per ad id, written by build_message_dashboard.py from
+// message_taxonomy.tag_ad(), i.e. the SAME call Message Performance makes. Never re-derived here.
+let TAGS = null;
+const UNTAGGED_LABEL = { norecord:'No tag record', review:'Needs creative review', container:'Unclassified container' };
+// tag tuple: [pillar, sub, concept, vehicle, offer, source, confidence, untagged_reason]
+function tagOf(aid){ if(!TAGS) return null; const i=TAGS.ads[aid]; return i==null?null:TAGS.sets[i]; }
+const isReal = v => !!v && v.charAt(0) !== '(';
+function pillarName(t){ return t[0]==='(offer-led, no message)' ? 'Offer-led (no message)' : t[0]; }
+function tagChips(aid){
+  const t=tagOf(aid); if(!t) return '';
+  if(t[7]) return `<div class="tags"><span class="tag untagged" title="${esc(TAGS.reasons[t[7]]?TAGS.reasons[t[7]].action:'')}">Untagged &middot; ${esc(UNTAGGED_LABEL[t[7]]||t[7])}</span></div>`;
+  const offer = t[0]==='(offer-led, no message)';
+  return `<div class="tags"><span class="tag${offer?' offer':''}">${esc(pillarName(t))}</span>`+
+    (isReal(t[1])?`<span class="tag sub">${esc(t[1])}</span>`:'')+`</div>`;
+}
+function tagBox(aid){
+  if(!TAGS) return '';
+  const t=tagOf(aid);
+  if(!t) return `<div class="tagbox"><h4>Tags</h4><div class="act">No tag record for this ad yet.</div></div>`;
+  const src={'ad-name':'From the ad name (naming standard)','classification-file':'Hand-classified file',
+             'container-inherited':'Inherited from an IG-post container (not individually verified)',
+             'unresolved':'Not tagged'}[t[5]]||t[5];
+  if(t[7]){
+    const r=TAGS.reasons[t[7]]||{};
+    return `<div class="tagbox"><h4>Tags &middot; untagged</h4>
+      <table><tr><td>Why</td><td>${esc(UNTAGGED_LABEL[t[7]]||r.label||t[7])}</td></tr></table>
+      <div class="act">${esc(r.action||'')}</div>
+      <div style="margin-top:6px;font-size:0.76rem;color:#94a3b8">Worklist: <a href="message-performance.html" target="_blank" rel="noopener">Message Performance &rarr; Untagged ads</a></div></div>`;
+  }
+  const row=(k,v)=>isReal(v)?`<tr><td>${k}</td><td>${esc(v)}</td></tr>`:'';
+  return `<div class="tagbox"><h4>Tags</h4><table>
+    <tr><td>Pillar</td><td>${esc(pillarName(t))}</td></tr>
+    ${row('Sub-pillar',t[1])}${row('Concept',t[2])}${row('Vehicle',t[3])}${row('Offer',t[4])}
+    <tr><td>Tagged by</td><td>${esc(src)}${t[6]&&t[6]!=='none'?` &middot; ${esc(t[6])} confidence`:''}</td></tr>
+  </table></div>`;
+}
 const campaignSel = new Set();   // selected campaigns; empty Set = All campaigns
 let campaignOptions = [];        // campaigns with spend in the current date range, sorted
 
@@ -279,6 +336,7 @@ function aggregate(){
   const typeFilter = $('ctype').value;
   const minSpend = parseFloat($('minspend').value) || 0;
   const search = $('search').value.trim().toLowerCase();
+  const tagF = $('tagf').value;
 
   const agg = {}; // ad_id -> totals
   for (const row of DATA.daily){
@@ -296,6 +354,11 @@ function aggregate(){
     if (campaignSel.size && !campaignSel.has(meta.campaign)) continue;
     if (typeFilter && meta.type !== typeFilter) continue;
     if (search && !(meta.name.toLowerCase().includes(search))) continue;
+    if (tagF){
+      const t = tagOf(aid);
+      if (tagF === '__untagged'){ if (t && !t[7]) continue; }
+      else if (!t || t[7] || t[0] !== tagF) continue;
+    }
     const a = agg[aid];
     if (a.spend < minSpend) continue;
     out.push({
@@ -398,6 +461,7 @@ function render(){
       </div>
       <div class="card-body">
         <div class="card-title">${esc(r.name)}</div>
+        ${tagChips(r.aid)}
         <div class="card-camp">${esc(r.campaign)}<br>${esc(r.adset)}</div>
         ${launchDate(r)?`<div class="card-launch">🚀 Launched ${launchStr(r)}</div>`:''}
         <div class="kpis">
@@ -430,6 +494,7 @@ function openModal(aid){
       <div class="mc">${esc(r.campaign)} · ${esc(r.adset)} · ${r.type}</div>
       ${launchDate(r)?`<div style="margin-bottom:12px"><span class="launch">🚀 Launched ${launchStr(r)}</span></div>`:''}
       ${hqButton(r)}
+      ${tagBox(r.aid)}
       ${r.body?`<div class="body">${esc(r.body)}</div>`:''}
       <div class="mgrid">
         <div class="stat"><div class="val ${r.roas>=1?'pos':'neg'}">${fmtX(r.roas)}</div><div class="lbl">ROAS</div></div>
@@ -578,7 +643,7 @@ function setPreset(btn){
 }
 
 function bind(){
-  ['kpi','ctype','minspend','search','start','end'].forEach(id=>{
+  ['kpi','ctype','tagf','minspend','search','start','end'].forEach(id=>{
     $(id).addEventListener('input', ()=>{ if(id==='start'||id==='end') setPreset(null); render(); });
     $(id).addEventListener('change', render);
   });
@@ -649,8 +714,36 @@ fetch('creative-performance-data.json')
           }
         }
         if(n) $('subline').textContent += ` · ${n} full-res masters`;
+        // Tags are optional: a missing sidecar must cost the tags, never the page.
+        return fetch('creative-tags.json').then(r=>r.ok?r.json():null).catch(()=>null);
+      })
+      .then(tg=>{
+        if(tg && tg.ads){
+          TAGS = tg;
+          const seen = new Set();
+          let nt=0, nu=0;
+          for(const aid in DATA.ads){
+            const t=tagOf(aid);
+            if(t && !t[7]){ seen.add(t[0]); nt++; } else nu++;
+          }
+          const order=[...seen].sort((a,b)=>((a.charAt(0)==='(')-(b.charAt(0)==='('))||a.localeCompare(b));
+          $('tagf').insertAdjacentHTML('beforeend', order.map(p=>
+            `<option value="${esc(p)}">${esc(pillarName([p]))}</option>`).join(''));
+          $('subline').textContent += ` · ${nt.toLocaleString()} tagged / ${nu.toLocaleString()} untagged`;
+        } else {
+          $('tagf').disabled = true; $('tagf').title = 'Tags unavailable (creative-tags.json did not load)';
+        }
         bind();
-        render();
+        // Deep link ?ad=<ad_id> opens that ad (Message Performance's untagged worklist links here).
+        // Widen to full history with no spend floor so the ad is guaranteed to be in the set.
+        const want = new URLSearchParams(location.search).get('ad');
+        if(want && DATA.ads[want]){
+          $('start').value = DATA.date_min; $('end').value = DATA.date_max; $('minspend').value = 0;
+          setPreset(document.querySelector('#presets button[data-all]'));
+          render(); openModal(want);
+        } else {
+          render();
+        }
       });
   })
   .catch(e=>{ $('subline').textContent = 'Failed to load data: '+e; });
