@@ -125,6 +125,7 @@
          background:rgba(212,168,67,0.14); color:#f1d48a; border:1px solid rgba(212,168,67,0.35); }
   .tag.sub { background:rgba(148,163,184,0.12); color:#cbd5e1; border-color:rgba(148,163,184,0.3); }
   .tag.untagged { background:rgba(251,191,36,0.08); color:#fbbf24; border:1px dashed rgba(251,191,36,0.6); }
+  .tag.prod { background:rgba(96,165,250,0.12); color:#bfdbfe; border-color:rgba(96,165,250,0.35); }
   .tag.offer { background:rgba(148,163,184,0.12); color:#94a3b8; border-color:rgba(148,163,184,0.3); }
   .tagbox { background:#0f172a; border:1px solid #1e293b; border-radius:10px; padding:10px 12px; margin:12px 0 14px; }
   .tagbox h4 { margin:0 0 6px; font-size:0.72rem; letter-spacing:.06em; text-transform:uppercase; color:#D4A843; }
@@ -278,7 +279,9 @@ let DATA = null;
 // message_taxonomy.tag_ad(), i.e. the SAME call Message Performance makes. Never re-derived here.
 let TAGS = null;
 const UNTAGGED_LABEL = { norecord:'No tag record', review:'Needs creative review', container:'Unclassified container' };
-// tag tuple: [pillar, sub, concept, vehicle, offer, source, confidence, untagged_reason]
+// tag tuple: [pillar, sub, concept, vehicle, offer, source, confidence, untagged_reason,
+//             product_family, product]  (product axis added 2026-10-13; name -> label in TAGS.products)
+function productLabel(t){ if(!t || !t[9]) return ''; return (TAGS.products && TAGS.products[t[9]]) || t[9]; }
 function tagOf(aid){ if(!TAGS) return null; const i=TAGS.ads[aid]; return i==null?null:TAGS.sets[i]; }
 const isReal = v => !!v && v.charAt(0) !== '(';
 function pillarName(t){ return t[0]==='(offer-led, no message)' ? 'Offer-led (no message)' : t[0]; }
@@ -287,7 +290,8 @@ function tagChips(aid){
   if(t[7]) return `<div class="tags"><span class="tag untagged" title="${esc(TAGS.reasons[t[7]]?TAGS.reasons[t[7]].action:'')}">Untagged &middot; ${esc(UNTAGGED_LABEL[t[7]]||t[7])}</span></div>`;
   const offer = t[0]==='(offer-led, no message)';
   return `<div class="tags"><span class="tag${offer?' offer':''}">${esc(pillarName(t))}</span>`+
-    (isReal(t[1])?`<span class="tag sub">${esc(t[1])}</span>`:'')+`</div>`;
+    (isReal(t[1])?`<span class="tag sub">${esc(t[1])}</span>`:'')+
+    (t[9]?`<span class="tag prod" title="${esc(productLabel(t))}">${esc(t[9])}</span>`:(t[8]?`<span class="tag prod">${esc(t[8])}</span>`:''))+`</div>`;
 }
 function tagBox(aid){
   if(!TAGS) return '';
@@ -307,6 +311,7 @@ function tagBox(aid){
   return `<div class="tagbox"><h4>Tags</h4><table>
     <tr><td>Pillar</td><td>${esc(pillarName(t))}</td></tr>
     ${row('Sub-pillar',t[1])}${row('Concept',t[2])}${row('Vehicle',t[3])}${row('Offer',t[4])}
+    ${t[8]?`<tr><td>Product family</td><td>${esc(t[8])}</td></tr>`:''}${t[9]?`<tr><td>Product</td><td>${esc(productLabel(t))}</td></tr>`:''}
     <tr><td>Tagged by</td><td>${esc(src)}${t[6]&&t[6]!=='none'?` &middot; ${esc(t[6])} confidence`:''}</td></tr>
   </table></div>`;
 }
