@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Demographics — Teeccino</title>
+<style>
+  .viz-root{color-scheme:light;
+    --surface-0:#f5f5f3;--surface-1:#fcfcfb;--border:#e2e1dc;--grid:#ecebe7;
+    --text-primary:#0b0b0b;--text-secondary:#52514e;--text-muted:#84837c;
+    --series-1:#2a78d6;--series-2:#eb6834;--neutral:#b9b8b1;
+    --good:#008300;--bad:#e34948;
+    --seq-0:#cde2fb;--seq-1:#9ec5f4;--seq-2:#5598e7;--seq-3:#256abf;--seq-4:#104281;--seq-none:#ecebe7;}
+  @media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])) .viz-root{color-scheme:dark;
+    --surface-0:#121211;--surface-1:#1a1a19;--border:#33322e;--grid:#2a2a27;
+    --text-primary:#ffffff;--text-secondary:#c3c2b7;--text-muted:#8f8e85;
+    --series-1:#3987e5;--series-2:#d95926;--neutral:#5c5b55;--good:#3fa63f;--bad:#e66767;
+    --seq-0:#184f95;--seq-1:#1c5cab;--seq-2:#2a78d6;--seq-3:#5598e7;--seq-4:#9ec5f4;--seq-none:#2a2a27;}}
+  :root[data-theme="dark"] .viz-root{color-scheme:dark;
+    --surface-0:#121211;--surface-1:#1a1a19;--border:#33322e;--grid:#2a2a27;
+    --text-primary:#ffffff;--text-secondary:#c3c2b7;--text-muted:#8f8e85;
+    --series-1:#3987e5;--series-2:#d95926;--neutral:#5c5b55;--good:#3fa63f;--bad:#e66767;
+    --seq-0:#184f95;--seq-1:#1c5cab;--seq-2:#2a78d6;--seq-3:#5598e7;--seq-4:#9ec5f4;--seq-none:#2a2a27;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--surface-0);color:var(--text-primary);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  body.has-hub-nav .wrap{padding-top:8px}
+  .wrap{max-width:min(1280px,96vw);margin:0 auto;padding:24px 20px 60px}
+  h1{font-size:24px;margin:0 0 4px}
+  h2{font-size:15px;margin:34px 0 4px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em}
+  h3{font-size:13px;margin:0 0 8px;color:var(--text-primary)}
+  .sub{color:var(--text-muted);font-size:12px}
+  .lede{color:var(--text-secondary);margin:0 0 16px;font-size:13px;max-width:900px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+  .kpi{background:var(--surface-1);border:1px solid var(--border);border-radius:8px;padding:13px 15px}
+  .kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)}
+  .kpi .val{font-size:23px;font-weight:600;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+  .kpi .cmp{font-size:12px;color:var(--text-muted)}
+  .d{font-weight:600}.d.up{color:var(--good)}.d.down{color:var(--bad)}.d.flat{color:var(--text-muted)}
+  .gridct{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:10px}
+  @media (max-width:1100px){.gridct{grid-template-columns:minmax(0,1fr)}}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(520px,100%),1fr));gap:10px}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:10px;min-width:0}
+  .card:has(> table),.tw{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:right;padding:6px 7px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap}
+  th:first-child,td:first-child,td.l,th.l{text-align:left}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:600}
+  th.s{cursor:pointer;user-select:none}th.s:hover{color:var(--text-primary)}
+  th.s[aria-sort=ascending]::after{content:" ▲"}th.s[aria-sort=descending]::after{content:" ▼"}
+  .note{background:color-mix(in srgb,var(--series-2) 8%,var(--surface-1));
+    border:1px solid color-mix(in srgb,var(--series-2) 32%,var(--border));border-left:3px solid var(--series-2);
+    border-radius:6px;padding:11px 14px;margin:10px 0;font-size:12.5px;color:var(--text-secondary)}
+  .note b{color:var(--text-primary)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--text-secondary);margin:2px 0 8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  svg text{fill:var(--text-secondary);font-size:11px}
+  svg text.v{fill:var(--text-primary);font-variant-numeric:tabular-nums}
+  .tip{position:fixed;pointer-events:none;background:var(--surface-1);border:1px solid var(--border);border-radius:6px;
+    padding:7px 10px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.16);opacity:0;transition:opacity .1s;z-index:50;
+    font-variant-numeric:tabular-nums;max-width:300px}
+  .tip b{color:var(--text-primary)}
+  .tiles{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;max-width:720px}
+  .tile{aspect-ratio:1;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-size:11px;font-weight:600;cursor:default;line-height:1.15}
+  .tile small{font-weight:400;font-size:10px;font-variant-numeric:tabular-nums}
+  .tile.lt{color:#0b0b0b}.tile.dk{color:#ffffff}
+  .seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px}
+  .seg button{background:var(--surface-1);color:var(--text-secondary);border:0;padding:5px 11px;font:inherit;font-size:12px;cursor:pointer}
+  .seg button[aria-pressed=true]{background:var(--series-1);color:#fff}
+  details.fold{margin-top:8px;font-size:12.5px;color:var(--text-secondary)}
+  details.fold summary{cursor:pointer;color:var(--text-muted)}
+  .est{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:1px 6px;border-radius:99px;
+    border:1px solid var(--border);color:var(--text-muted);vertical-align:2px;margin-left:6px}
+  footer{margin-top:34px;font-size:11.5px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:12px}
+  footer li{margin:3px 0}
+</style></head>
+<body class="viz-root">
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(function(r){if(!r.ok)throw r;return r.text();}).then(function(html){
+    var slot=document.getElementById('hub-nav'); slot.innerHTML=html;
+    document.body.classList.add('has-hub-nav');
+    slot.querySelectorAll('script').forEach(function(s){
+      var n=document.createElement('script');
+      if(s.src){n.src=s.src;}else{n.textContent=s.textContent;}
+      document.head.appendChild(n);
+    });
+  }).catch(function(){});
+</script>
+<div class="wrap">
+<h1>Customer Demographics</h1>
+<div class="sub" id="subhead"></div>
+<p class="lede">Who buys Teeccino direct on teeccino.com: where they live, what kind of neighborhood that is,
+how they buy, and what our ad and site data estimate about their age and gender. Wholesale (Target, Walmart, Faire) and Amazon are excluded.
+Every year-over-year comparison uses two complete 12-month windows of equal length.</p>
+
+<div class="kpis" id="kpis"></div>
+
+<h2>Where customers live</h2>
+<p class="sub" id="geo-cov"></p>
+<div class="card">
+  <div class="seg" role="group" aria-label="Map metric">
+    <button data-m="pen" aria-pressed="true">Customers per 100k residents</button>
+    <button data-m="cust" aria-pressed="false">Customers</button>
+    <button data-m="yoy" aria-pressed="false">Customers YoY</button>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div class="legend" id="tile-legend" style="margin-top:10px"></div>
+  <details class="fold"><summary>How to read this</summary>
+  Each square is a state. "Per 100k residents" adjusts for population size, so a small state with a
+  lot of customers for its size reads dark even if its raw count is modest. Colors are grouped into five equal-count bands.
+  Hover a square for its numbers. The full list is in the table below.</details>
+</div>
+<div class="grid2">
+  <div class="card"><h3>All states <span class="sub">— click a column to sort</span></h3>
+    <div class="tw" style="max-height:520px;overflow-y:auto"><table id="st-table"></table></div></div>
+  <div class="card"><h3>Top ZIP codes by customers</h3>
+    <div class="tw" style="max-height:520px;overflow-y:auto"><table id="zip-table"></table></div>
+    <p class="sub">Only ZIPs with at least 10 customers are listed. Place name is the USPS post-office name.</p></div>
+</div>
+
+<h2>Neighborhood type <span class="est">AREA ESTIMATE</span></h2>
+<p class="sub">Share of our customers vs. share of the US population, by the USDA rural-urban type of the customer's ZIP code.</p>
+<div class="gridct">
+  <div class="card"><div class="legend"><span><i style="background:var(--series-1)"></i>Our customers</span><span><i style="background:var(--series-2)"></i>US population</span></div><div id="reg-chart"></div></div>
+  <div class="card"><table id="reg-table"></table>
+  <p class="sub">"Index" = our share ÷ population share × 100. Above 100 means we over-index in that kind of place.</p></div>
+</div>
+
+<h2>Neighborhood income <span class="est">AREA ESTIMATE</span></h2>
+<p class="sub">Customers grouped by the median household income of their ZIP code, vs. how the US population is spread across the same bands.</p>
+<div class="gridct">
+  <div class="card"><div class="legend"><span><i style="background:var(--series-1)"></i>Our customers</span><span><i style="background:var(--series-2)"></i>US population</span></div><div id="inc-chart"></div></div>
+  <div class="card"><table id="inc-table"></table></div>
+</div>
+<div class="note"><b>What this is and isn't.</b> This is the median income of the <i>neighborhood</i> a customer ships to
+(Census ACS 5-year 2019-2023), not the customer's own income. A customer in a $150k ZIP may earn far more or less.
+Treat it as a description of the places we sell into, not as individual data.</div>
+
+<h2>Customer profile</h2>
+<div class="card"><h3>Segments</h3><table id="seg-table"></table>
+  <p class="sub">A customer counts as a subscriber if any of their orders in the window was a subscription order. "New" means their first-ever order fell in the window. The pairs overlap: a new customer can also be a subscriber.</p></div>
+<div class="grid2">
+  <div class="card"><h3>Orders per customer <span class="sub" id="ob-sub"></span></h3><div id="ob-chart"></div></div>
+  <div class="card"><h3>Active customers by year of first purchase</h3><div id="ten-chart"></div>
+    <p class="sub">Our order history starts January 2023, so "2023" includes everyone who first bought in 2023 or earlier.</p></div>
+</div>
+<div class="grid2">
+  <div class="card"><h3>New DTC customers by month</h3><div id="coh-chart"></div><p class="sub" id="coh-sub"></p></div>
+  <div class="card"><h3>First-year revenue per new customer, by start month</h3><div id="ltv-chart"></div>
+    <p class="sub">Revenue (after discounts, excluding shipping and tax) from each customer's first 365 days. Only months whose full year has passed are shown.</p></div>
+</div>
+
+<h2>Age &amp; gender <span class="est">ESTIMATE</span></h2>
+<div class="note" id="ag-note"></div>
+<div class="grid2">
+  <div class="card"><h3>Share of purchases by age</h3>
+    <div class="legend"><span><i style="background:var(--series-1)"></i>Meta ads (attributed purchases)</span><span><i style="background:var(--series-2)"></i>Website (GA4, profiled buyers only)</span></div>
+    <div id="age-chart"></div></div>
+  <div class="card"><h3>Share of purchases by gender</h3>
+    <div class="legend"><span><i style="background:var(--series-1)"></i>Female</span><span><i style="background:var(--series-2)"></i>Male</span><span><i style="background:var(--neutral)"></i>Unknown</span></div>
+    <div id="gen-chart"></div>
+    <p class="sub">GA4 is shown for profiled buyers only. Unprofiled buyers are left out of its bar entirely, not counted as unknown.</p></div>
+</div>
+<div class="card"><h3>Meta ads by age <span class="sub">— Meta's own attribution</span></h3><table id="meta-table"></table>
+  <p class="sub">Cost per purchase and revenue per $1 use Meta's reported purchases and purchase value, which run on Meta's attribution model and will not match Shopify orders.</p></div>
+
+<footer>
+  <b>Sources &amp; method</b>
+  <ul id="srcs"></ul>
+  Built 2026-10-13 13:50 by DataOps.
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<script type="application/json" id="payload">{"window":{"cur":["2025-10-01","2026-09-30"],"prior":["2024-10-01","2025-09-30"]},"last_order_date":"2026-10-12","cur":{"customers":23689,"orders":46982,"revenue":2287046.08,"new":14818,"subs":4659,"orders_per":1.983,"rev_per":96.54,"geo_matched":23295,"no_shipment":394,"intl":0,"no_census":7,"states":{"CA":{"customers":2766,"revenue":281854.73,"subs":581,"new":1639},"NC":{"customers":798,"revenue":73678.16,"subs":159,"new":510},"NY":{"customers":1531,"revenue":145777.99,"subs":242,"new":1004},"ID":{"customers":274,"revenue":30283.92,"subs":67,"new":155},"CO":{"customers":680,"revenue":76149.64,"subs":150,"new":411},"ND":{"customers":42,"revenue":4171.33,"subs":7,"new":27},"WA":{"customers":870,"revenue":92638.51,"subs":197,"new":528},"FL":{"customers":1259,"revenue":118763.69,"subs":245,"new":822},"GA":{"customers":588,"revenue":56194.77,"subs":128,"new":362},"MD":{"customers":443,"revenue":40349.45,"subs":81,"new":283},"TX":{"customers":1196,"revenue":104651.75,"subs":250,"new":789},"IN":{"customers":387,"revenue":36705.9,"subs":97,"new":231},"MI":{"customers":780,"revenue":74298.72,"subs":141,"new":494},"NJ":{"customers":617,"revenue":55048.52,"subs":98,"new":387},"SC":{"customers":313,"revenue":28489.34,"subs":57,"new":210},"WI":{"customers":604,"revenue":63781.35,"subs":120,"new":352},"TN":{"customers":480,"revenue":45107.93,"subs":99,"new":293},"WY":{"customers":76,"revenue":9561.95,"subs":14,"new":48},"PA":{"customers":1035,"revenue":96408.28,"subs":200,"new":665},"VT":{"customers":158,"revenue":17311.7,"subs":39,"new":95},"AZ":{"customers":585,"revenue":70908.72,"subs":130,"new":326},"VA":{"customers":659,"revenue":66392.44,"subs":142,"new":409},"NM":{"customers":197,"revenue":21330.67,"subs":43,"new":122},"CT":{"customers":338,"revenue":32341.84,"subs":62,"new":224},"OR":{"customers":628,"revenue":65457.39,"subs":139,"new":373},"KY":{"customers":190,"revenue":15795.28,"subs":36,"new":121},"IL":{"customers":710,"revenue":64014.34,"subs":125,"new":423},"UT":{"customers":282,"revenue":23391.03,"subs":39,"new":175},"WV":{"customers":96,"revenue":9617.8,"subs":27,"new":51},"MO":{"customers":381,"revenue":35488.54,"subs":70,"new":239},"IA":{"customers":161,"revenue":16403.99,"subs":33,"new":98},"NH":{"customers":204,"revenue":24202.08,"subs":46,"new":119},"MA":{"customers":636,"revenue":65319.04,"subs":133,"new":385},"OH":{"customers":710,"revenue":63079.88,"subs":128,"new":454},"LA":{"customers":164,"revenue":15104.65,"subs":34,"new":114},"AK":{"customers":84,"revenue":8938.51,"subs":15,"new":41},"MS":{"customers":92,"revenue":8867.2,"subs":12,"new":53},"MN":{"customers":518,"revenue":52168.98,"subs":86,"new":307},"KS":{"customers":173,"revenue":15835.09,"subs":34,"new":105},"ME":{"customers":237,"revenue":24148.89,"subs":44,"new":147},"MT":{"customers":173,"revenue":20249.85,"subs":40,"new":104},"AL":{"customers":186,"revenue":19019.07,"subs":41,"new":124},"SD":{"customers":67,"revenue":6767.37,"subs":12,"new":47},"HI":{"customers":76,"revenue":6453.49,"subs":13,"new":49},"NV":{"customers":187,"revenue":16453.3,"subs":55,"new":123},"AR":{"customers":158,"revenue":14438.9,"subs":27,"new":94},"NE":{"customers":117,"revenue":10365.18,"subs":14,"new":76},"OK":{"customers":186,"revenue":16675.83,"subs":32,"new":140},"RI":{"customers":80,"revenue":5355.38,"subs":11,"new":59},"DC":{"customers":53,"revenue":4676.6,"subs":9,"new":37},"DE":{"customers":63,"revenue":5248.5,"subs":11,"new":48}},"regions":{"Metro":{"customers":18975,"revenue":1817766.57,"subs":3672,"orders":37664},"Small city":{"customers":2007,"revenue":211096.94,"subs":409,"orders":4056},"Small town":{"customers":683,"revenue":69019.58,"subs":145,"orders":1360},"Rural":{"customers":1623,"revenue":177854.37,"subs":389,"orders":3479}},"income":{"$100k-150k":{"customers":6591,"revenue":641864.77,"subs":1256,"orders":13197},"$50k-75k":{"customers":6983,"revenue":672974.6,"subs":1460,"orders":14009},"$75k-100k":{"customers":6877,"revenue":672176.0,"subs":1349,"orders":13651},"$150k+":{"customers":1567,"revenue":164069.99,"subs":291,"orders":3151},"Under $50k":{"customers":927,"revenue":91283.2,"subs":195,"orders":1891}},"region_matched":23288,"income_matched":22945,"top_zips":[{"zip":"95472","place":"Sebastopol","state":"CA","region":"Metro","income":109775.0,"customers":20,"revenue":2773.91},{"zip":"97206","place":"Portland","state":"OR","region":"Metro","income":94233.0,"customers":19,"revenue":1400.22},{"zip":"97405","place":"Eugene","state":"OR","region":"Metro","income":93136.0,"customers":19,"revenue":2129.92},{"zip":"93117","place":"Goleta","state":"CA","region":"Metro","income":85711.0,"customers":18,"revenue":3238.39},{"zip":"97702","place":"Bend","state":"OR","region":"Metro","income":89094.0,"customers":18,"revenue":1981.73},{"zip":"11215","place":"Brooklyn","state":"NY","region":"Metro","income":180773.0,"customers":16,"revenue":1799.33},{"zip":"83646","place":"Meridian","state":"ID","region":"Metro","income":101040.0,"customers":16,"revenue":1853.73},{"zip":"14850","place":"Ithaca","state":"NY","region":"Metro","income":69689.0,"customers":15,"revenue":1190.52},{"zip":"28078","place":"Huntersville","state":"NC","region":"Metro","income":120503.0,"customers":15,"revenue":1182.44},{"zip":"98225","place":"Bellingham","state":"WA","region":"Metro","income":62220.0,"customers":15,"revenue":1323.18},{"zip":"19067","place":"Morrisville","state":"PA","region":"Metro","income":131604.0,"customers":14,"revenue":1474.64},{"zip":"43081","place":"Westerville","state":"OH","region":"Metro","income":90336.0,"customers":14,"revenue":1612.21},{"zip":"80134","place":"Parker","state":"CO","region":"Metro","income":142162.0,"customers":14,"revenue":2080.34},{"zip":"93003","place":"Ventura","state":"CA","region":"Metro","income":100300.0,"customers":14,"revenue":1668.48},{"zip":"98115","place":"Seattle","state":"WA","region":"Metro","income":148190.0,"customers":14,"revenue":2017.54},{"zip":"98117","place":"Seattle","state":"WA","region":"Metro","income":182500.0,"customers":14,"revenue":1972.02},{"zip":"02130","place":"Jamaica Plain","state":"MA","region":"Metro","income":130533.0,"customers":13,"revenue":1118.62},{"zip":"80516","place":"Erie","state":"CO","region":"Metro","income":160590.0,"customers":13,"revenue":1448.69},{"zip":"93105","place":"Santa Barbara","state":"CA","region":"Metro","income":129549.0,"customers":13,"revenue":2073.7},{"zip":"94941","place":"Mill Valley","state":"CA","region":"Metro","income":210217.0,"customers":13,"revenue":725.55},{"zip":"98604","place":"Battle Ground","state":"WA","region":"Metro","income":108616.0,"customers":13,"revenue":1342.79},{"zip":"10023","place":"New York","state":"NY","region":"Metro","income":157866.0,"customers":12,"revenue":1355.47},{"zip":"10025","place":"New York","state":"NY","region":"Metro","income":109195.0,"customers":12,"revenue":856.73},{"zip":"30127","place":"Powder Springs","state":"GA","region":"Metro","income":104997.0,"customers":12,"revenue":1081.5},{"zip":"80503","place":"Longmont","state":"CO","region":"Metro","income":118465.0,"customers":12,"revenue":2014.69}],"order_buckets":[{"label":"1","customers":14796},{"label":"2","customers":3913},{"label":"3-4","customers":3000},{"label":"5-8","customers":1517},{"label":"9+","customers":463}],"segments":{"New customers":{"customers":14818,"revenue":967388.13,"rev_per":65.28,"orders_per":1.581},"Returning customers":{"customers":8871,"revenue":1319657.95,"rev_per":148.76,"orders_per":2.656},"Subscribers":{"customers":4659,"revenue":838965.01,"rev_per":180.07,"orders_per":4.013},"One-time buyers":{"customers":19030,"revenue":1448081.07,"rev_per":76.09,"orders_per":1.486}},"tenure":[{"year":"2021","customers":1475},{"year":"2022","customers":1302},{"year":"2023","customers":1533},{"year":"2024","customers":2104},{"year":"2025","customers":7112},{"year":"2026","customers":10163}]},"prior":{"customers":23034,"orders":43772,"revenue":2130038.97,"new":14669,"subs":3584,"orders_per":1.9,"rev_per":92.47,"geo_matched":22767,"no_shipment":264,"intl":3,"no_census":7,"states":{"WA":{"customers":863,"revenue":84909.75,"subs":159,"new":536},"FL":{"customers":1199,"revenue":106209.29,"subs":192,"new":748},"TX":{"customers":1244,"revenue":101894.2,"subs":175,"new":848},"VA":{"customers":673,"revenue":66500.3,"subs":97,"new":405},"MN":{"customers":559,"revenue":49600.95,"subs":76,"new":381},"OR":{"customers":569,"revenue":57957.58,"subs":106,"new":340},"KY":{"customers":167,"revenue":14839.11,"subs":28,"new":97},"SC":{"customers":295,"revenue":26227.64,"subs":41,"new":194},"NY":{"customers":1386,"revenue":124798.85,"subs":185,"new":887},"MI":{"customers":713,"revenue":72986.04,"subs":118,"new":434},"IA":{"customers":155,"revenue":14248.73,"subs":22,"new":103},"CA":{"customers":2978,"revenue":284788.61,"subs":503,"new":1836},"PA":{"customers":943,"revenue":84616.38,"subs":152,"new":621},"OK":{"customers":187,"revenue":14941.87,"subs":22,"new":132},"MO":{"customers":375,"revenue":35449.02,"subs":52,"new":249},"WI":{"customers":559,"revenue":54835.0,"subs":76,"new":352},"NC":{"customers":684,"revenue":59740.48,"subs":96,"new":453},"AR":{"customers":158,"revenue":12806.87,"subs":22,"new":92},"AZ":{"customers":595,"revenue":60323.77,"subs":106,"new":349},"CT":{"customers":332,"revenue":31567.61,"subs":54,"new":215},"OH":{"customers":635,"revenue":55677.43,"subs":104,"new":410},"NV":{"customers":195,"revenue":16770.94,"subs":41,"new":118},"CO":{"customers":684,"revenue":72443.81,"subs":102,"new":425},"MA":{"customers":621,"revenue":58189.33,"subs":94,"new":383},"ME":{"customers":211,"revenue":19634.42,"subs":31,"new":130},"DE":{"customers":66,"revenue":4509.83,"subs":8,"new":45},"NJ":{"customers":570,"revenue":51391.32,"subs":84,"new":374},"TN":{"customers":475,"revenue":46180.19,"subs":76,"new":301},"ID":{"customers":272,"revenue":30566.87,"subs":57,"new":158},"IL":{"customers":736,"revenue":60922.09,"subs":104,"new":461},"NH":{"customers":194,"revenue":19822.83,"subs":39,"new":124},"RI":{"customers":69,"revenue":5626.37,"subs":10,"new":49},"KS":{"customers":139,"revenue":12971.6,"subs":20,"new":88},"MS":{"customers":95,"revenue":8855.77,"subs":17,"new":60},"MD":{"customers":432,"revenue":38747.41,"subs":65,"new":277},"WY":{"customers":70,"revenue":9883.21,"subs":14,"new":46},"NE":{"customers":112,"revenue":9701.87,"subs":17,"new":71},"GA":{"customers":572,"revenue":55307.08,"subs":104,"new":381},"MT":{"customers":187,"revenue":20160.95,"subs":24,"new":125},"SD":{"customers":74,"revenue":7551.38,"subs":9,"new":49},"AL":{"customers":197,"revenue":18273.37,"subs":34,"new":128},"UT":{"customers":298,"revenue":23392.74,"subs":31,"new":191},"LA":{"customers":152,"revenue":11192.87,"subs":18,"new":101},"IN":{"customers":359,"revenue":34253.41,"subs":61,"new":218},"NM":{"customers":182,"revenue":17913.0,"subs":32,"new":108},"HI":{"customers":88,"revenue":9477.7,"subs":13,"new":55},"DC":{"customers":65,"revenue":4979.05,"subs":12,"new":42},"VT":{"customers":125,"revenue":14828.82,"subs":24,"new":76},"AK":{"customers":86,"revenue":9700.67,"subs":9,"new":52},"ND":{"customers":55,"revenue":4357.86,"subs":8,"new":43},"WV":{"customers":103,"revenue":9939.44,"subs":21,"new":66},"PR":{"customers":5,"revenue":143.77,"subs":0,"new":4},"VI":{"customers":2,"revenue":161.84,"subs":0,"new":1}},"regions":{"Metro":{"customers":18604,"revenue":1707727.34,"subs":2884,"orders":35345},"Small city":{"customers":1983,"revenue":190217.88,"subs":310,"orders":3782},"Rural":{"customers":1559,"revenue":167886.05,"subs":268,"orders":3147},"Small town":{"customers":614,"revenue":56940.02,"subs":103,"orders":1206}},"income":{"$75k-100k":{"customers":6750,"revenue":627374.24,"subs":1027,"orders":12713},"$50k-75k":{"customers":6644,"revenue":614255.0,"subs":1080,"orders":12683},"$150k+":{"customers":1535,"revenue":158352.16,"subs":231,"orders":3080},"Under $50k":{"customers":951,"revenue":86388.24,"subs":155,"orders":1914},"$100k-150k":{"customers":6541,"revenue":600883.67,"subs":1012,"orders":12420}},"region_matched":22760,"income_matched":22421,"top_zips":[{"zip":"98115","place":"Seattle","state":"WA","region":"Metro","income":148190.0,"customers":22,"revenue":3158.45},{"zip":"95472","place":"Sebastopol","state":"CA","region":"Metro","income":109775.0,"customers":21,"revenue":1834.26},{"zip":"97405","place":"Eugene","state":"OR","region":"Metro","income":93136.0,"customers":18,"revenue":1413.67},{"zip":"90066","place":"Los Angeles","state":"CA","region":"Metro","income":107786.0,"customers":17,"revenue":1627.57},{"zip":"80503","place":"Longmont","state":"CO","region":"Metro","income":118465.0,"customers":16,"revenue":2317.46},{"zip":"95060","place":"Santa Cruz","state":"CA","region":"Metro","income":106040.0,"customers":16,"revenue":1320.16},{"zip":"95667","place":"Placerville","state":"CA","region":"Small city","income":90499.0,"customers":16,"revenue":1971.82},{"zip":"10023","place":"New York","state":"NY","region":"Metro","income":157866.0,"customers":15,"revenue":1690.1},{"zip":"14850","place":"Ithaca","state":"NY","region":"Metro","income":69689.0,"customers":15,"revenue":995.0},{"zip":"98117","place":"Seattle","state":"WA","region":"Metro","income":182500.0,"customers":15,"revenue":1618.55},{"zip":"10024","place":"New York","state":"NY","region":"Metro","income":182614.0,"customers":14,"revenue":985.11},{"zip":"93003","place":"Ventura","state":"CA","region":"Metro","income":100300.0,"customers":14,"revenue":1344.8},{"zip":"93105","place":"Santa Barbara","state":"CA","region":"Metro","income":129549.0,"customers":14,"revenue":2114.59},{"zip":"97206","place":"Portland","state":"OR","region":"Metro","income":94233.0,"customers":14,"revenue":1427.66},{"zip":"97702","place":"Bend","state":"OR","region":"Metro","income":89094.0,"customers":14,"revenue":1027.94},{"zip":"11201","place":"Brooklyn","state":"NY","region":"Metro","income":169285.0,"customers":13,"revenue":1530.02},{"zip":"55406","place":"Minneapolis","state":"MN","region":"Metro","income":91865.0,"customers":13,"revenue":1129.38},{"zip":"95008","place":"Campbell","state":"CA","region":"Metro","income":142841.0,"customers":13,"revenue":1134.79},{"zip":"97701","place":"Bend","state":"OR","region":"Metro","income":77969.0,"customers":13,"revenue":1962.37},{"zip":"98103","place":"Seattle","state":"WA","region":"Metro","income":127372.0,"customers":13,"revenue":816.67},{"zip":"98225","place":"Bellingham","state":"WA","region":"Metro","income":62220.0,"customers":13,"revenue":1107.81},{"zip":"98382","place":"Sequim","state":"WA","region":"Small city","income":70471.0,"customers":13,"revenue":2513.39},{"zip":"11215","place":"Brooklyn","state":"NY","region":"Metro","income":180773.0,"customers":12,"revenue":928.3},{"zip":"28803","place":"Asheville","state":"NC","region":"Metro","income":70638.0,"customers":12,"revenue":907.64},{"zip":"57702","place":"Rapid City","state":"SD","region":"Metro","income":85700.0,"customers":12,"revenue":1788.4}],"order_buckets":[{"label":"1","customers":14663},{"label":"2","customers":3836},{"label":"3-4","customers":2896},{"label":"5-8","customers":1291},{"label":"9+","customers":348}],"segments":{"New customers":{"customers":14669,"revenue":942924.44,"rev_per":64.28,"orders_per":1.539},"Returning customers":{"customers":8365,"revenue":1187114.53,"rev_per":141.91,"orders_per":2.534},"Subscribers":{"customers":3584,"revenue":675615.43,"rev_per":188.51,"orders_per":4.016},"One-time buyers":{"customers":19450,"revenue":1454423.54,"rev_per":74.78,"orders_per":1.511}},"tenure":[{"year":"2021","customers":1816},{"year":"2022","customers":1785},{"year":"2023","customers":2236},{"year":"2024","customers":7107},{"year":"2025","customers":10090}]},"us":{"states":{"AK":733346.0,"CA":39241220.0,"HI":1445635.0,"AZ":7269790.0,"CO":5811121.0,"FL":21926539.0,"ID":1893033.0,"MN":5714162.0,"MT":1105740.0,"NM":2113394.0,"OK":3995228.0,"OR":4238755.0,"UT":3329628.0,"WA":7740873.0,"NC":10584400.0,"LA":4620578.0,"ME":1377327.0,"MD":6170363.0,"MA":6992213.0,"NH":1387907.0,"TX":29639686.0,"NY":19789763.0,"PR":3253814.0,"VI":0.0,"RI":1095391.0,"VT":645254.0,"CT":3598348.0,"NJ":9267014.0,"PA":12986518.0,"DE":1006247.0,"DC":672079.0,"VA":8657769.0,"WV":1784132.0,"SC":5212774.0,"GA":10822612.0,"AL":5054137.0,"TN":6997733.0,"MS":2951317.0,"KY":4499246.0,"OH":11780046.0,"IN":6811752.0,"MI":10051577.0,"IA":3196394.0,"WI":5892040.0,"SD":897979.0,"ND":778556.0,"IL":12692601.0,"MO":6168379.0,"KS":2937420.0,"NE":1966853.0,"AR":3032841.0,"WY":579596.0,"NV":3141064.0,"AS":0.0,"GU":0.0,"MP":0.0},"regions":{"Rural":18069358.0,"Metro":279470179.0,"Small city":29270544.0,"Small town":8742103.0},"income":{"Under $50k":33791259.0,"$50k-75k":119624117.0,"$75k-100k":90290896.0,"$100k-150k":72208903.0,"$150k+":16329012.0}},"cohorts":[{"month":"2024-01","new_customers":1480,"ltv365":80.56},{"month":"2024-02","new_customers":1439,"ltv365":74.35},{"month":"2024-03","new_customers":1568,"ltv365":74.5},{"month":"2024-04","new_customers":1705,"ltv365":75.45},{"month":"2024-05","new_customers":1322,"ltv365":74.49},{"month":"2024-06","new_customers":1006,"ltv365":80.38},{"month":"2024-07","new_customers":950,"ltv365":81.37},{"month":"2024-08","new_customers":1134,"ltv365":78.27},{"month":"2024-09","new_customers":1108,"ltv365":82.55},{"month":"2024-10","new_customers":1275,"ltv365":81.47},{"month":"2024-11","new_customers":1917,"ltv365":79.07},{"month":"2024-12","new_customers":1388,"ltv365":71.82},{"month":"2025-01","new_customers":1285,"ltv365":84.15},{"month":"2025-02","new_customers":1217,"ltv365":87.22},{"month":"2025-03","new_customers":1566,"ltv365":82.95},{"month":"2025-04","new_customers":1733,"ltv365":81.29},{"month":"2025-05","new_customers":1025,"ltv365":84.76},{"month":"2025-06","new_customers":824,"ltv365":69.87},{"month":"2025-07","new_customers":780,"ltv365":86.76},{"month":"2025-08","new_customers":796,"ltv365":87.16},{"month":"2025-09","new_customers":864,"ltv365":79.8},{"month":"2025-10","new_customers":1171,"ltv365":null},{"month":"2025-11","new_customers":2208,"ltv365":null},{"month":"2025-12","new_customers":1284,"ltv365":null},{"month":"2026-01","new_customers":1659,"ltv365":null},{"month":"2026-02","new_customers":1732,"ltv365":null},{"month":"2026-03","new_customers":1465,"ltv365":null},{"month":"2026-04","new_customers":1141,"ltv365":null},{"month":"2026-05","new_customers":796,"ltv365":null},{"month":"2026-06","new_customers":635,"ltv365":null},{"month":"2026-07","new_customers":663,"ltv365":null},{"month":"2026-08","new_customers":750,"ltv365":null},{"month":"2026-09","new_customers":1322,"ltv365":null},{"month":"2026-10","new_customers":553,"ltv365":null,"partial":true}],"ag_cur":{"meta":{"spend":256064.67,"purchases":8772.0,"value":425767.22,"ages":[{"age":"18-24","spend":4185.15,"purchases":92.0,"value":3534.29},{"age":"25-34","spend":21131.58,"purchases":795.0,"value":39684.76},{"age":"35-44","spend":35013.75,"purchases":1149.0,"value":57221.18},{"age":"45-54","spend":43176.87,"purchases":1482.0,"value":75212.52},{"age":"55-64","spend":64537.07,"purchases":2160.0,"value":103663.11},{"age":"65+","spend":88018.25,"purchases":3079.0,"value":145566.28}],"unknown_age_purchases":15.0,"genders":{"female":{"spend":216601.29,"purchases":7479.0,"value":361284.36},"male":{"spend":36625.92,"purchases":1209.0,"value":60221.96},"unknown":{"spend":2837.46,"purchases":84.0,"value":4260.9}}},"ga4":{"purchases":27041.0,"revenue":1350848.24,"known_age_purchases":5446.0,"known_gender_purchases":5632.0,"ages":[{"age":"18-24","purchases":192.0,"revenue":8526.89},{"age":"25-34","purchases":885.0,"revenue":43326.65},{"age":"35-44","purchases":992.0,"revenue":47716.55},{"age":"45-54","purchases":907.0,"revenue":45836.04},{"age":"55-64","purchases":1191.0,"revenue":62379.02},{"age":"65+","purchases":1279.0,"revenue":63432.71}],"genders":{"unknown":{"purchases":21409.0,"revenue":1070412.47},"female":{"purchases":4270.0,"revenue":211844.76},"male":{"purchases":1362.0,"revenue":68591.01}}},"xtab":{"meta":{"18-24|female":73.0,"18-24|male":19.0,"25-34|female":688.0,"25-34|male":100.0,"35-44|female":931.0,"35-44|male":213.0,"45-54|female":1275.0,"45-54|male":195.0,"55-64|female":1891.0,"55-64|male":252.0,"65+|female":2621.0,"65+|male":430.0},"ga4":{"18-24|female":124,"18-24|male":68,"25-34|female":689,"25-34|male":196,"35-44|female":737,"35-44|male":255,"45-54|female":671,"45-54|male":236,"55-64|female":929,"55-64|male":262,"65+|female":1007,"65+|male":272}}},"ag_prior":{"meta":{"spend":213117.67,"purchases":7904.0,"value":387870.58,"ages":[{"age":"18-24","spend":2563.11,"purchases":145.0,"value":7757.61},{"age":"25-34","spend":15826.9,"purchases":604.0,"value":29446.16},{"age":"35-44","spend":33226.69,"purchases":1251.0,"value":63466.32},{"age":"45-54","spend":44361.33,"purchases":1493.0,"value":72933.24},{"age":"55-64","spend":57023.53,"purchases":2130.0,"value":106191.65},{"age":"65+","spend":60116.11,"purchases":2271.0,"value":107564.03}],"unknown_age_purchases":10.0,"genders":{"female":{"spend":183489.96,"purchases":6788.0,"value":334512.73},"male":{"spend":27049.18,"purchases":1020.0,"value":48159.1},"unknown":{"spend":2578.53,"purchases":96.0,"value":5198.75}}},"ga4":{"purchases":28572.0,"revenue":1433661.07,"known_age_purchases":3963.0,"known_gender_purchases":3975.0,"ages":[{"age":"18-24","purchases":68.0,"revenue":2155.03},{"age":"25-34","purchases":567.0,"revenue":22870.6},{"age":"35-44","purchases":763.0,"revenue":36229.16},{"age":"45-54","purchases":716.0,"revenue":34925.13},{"age":"55-64","purchases":937.0,"revenue":47723.32},{"age":"65+","purchases":912.0,"revenue":45791.14}],"genders":{"female":{"purchases":3242.0,"revenue":154685.92},"male":{"purchases":733.0,"revenue":35485.06},"unknown":{"purchases":24597.0,"revenue":1243490.09}}},"xtab":{"meta":{"18-24|female":101.0,"18-24|male":38.0,"25-34|female":504.0,"25-34|male":89.0,"35-44|female":1050.0,"35-44|male":191.0,"45-54|female":1338.0,"45-54|male":134.0,"55-64|female":1861.0,"55-64|male":253.0,"65+|female":1934.0,"65+|male":315.0},"ga4":{"18-24|female":40,"18-24|male":28,"25-34|female":439,"25-34|male":128,"35-44|female":644,"35-44|male":119,"45-54|female":612,"45-54|male":104,"55-64|female":764,"55-64|male":173,"65+|female":736,"65+|male":176}}},"sources":{"acs":"ACS 5-year 2019-2023","census_loaded":"2026-10-13T20:44:15+00:00","meta_ingested":"2026-10-13T20:42:13+00:00","ga4_ingested":"2026-10-13T20:42:13+00:00"},"order_rows":{"cur":46982,"prior":43772},"zip_min":10}</script>
+<script>
+(function(){
+const P = JSON.parse(document.getElementById('payload').textContent);
+const C = P.cur, R = P.prior, US = P.us;
+const $ = id => document.getElementById(id);
+const fmtN = v => v==null ? '—' : Math.round(v).toLocaleString('en-US');
+const fmt$ = (v,d=0) => v==null ? '—' : '$' + v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = (v,d=1) => v==null||!isFinite(v) ? '—' : (v*100).toFixed(d) + '%';
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const mlab = s => { const [y,m] = s.split('-'); return MON[+m-1] + ' ' + y; };
+const wlab = w => mlab(w[0].slice(0,7)) + ' – ' + mlab(w[1].slice(0,7));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---------- tooltip
+const tip = $('tip');
+document.addEventListener('mousemove', e => {
+  const t = e.target.closest('[data-tip]');
+  if (!t) { tip.style.opacity = 0; return; }
+  tip.innerHTML = t.getAttribute('data-tip');
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px'; tip.style.opacity = 1;
+});
+
+$('subhead').textContent = 'Last 12 complete months: ' + wlab(P.window.cur) + ' · compared with ' + wlab(P.window.prior) +
+  ' · orders through ' + P.last_order_date;
+
+// ---------- KPIs
+function delta(cur, pri, mode) {
+  if (cur==null || pri==null || pri===0) return '<span class="d flat">—</span>';
+  if (mode==='pts') { const d=(cur-pri)*100; const c=Math.abs(d)<0.05?'flat':(d>0?'up':'down');
+    return `<span class="d ${c}">${d>0?'+':''}${d.toFixed(1)} pts</span>`; }
+  const d = cur/pri - 1; const c = Math.abs(d)<0.0005?'flat':(d>0?'up':'down');
+  return `<span class="d ${c}">${d>0?'+':''}${(d*100).toFixed(1)}%</span>`;
+}
+const metroShare = s => s.region_matched ? (s.regions['Metro']||{customers:0}).customers / s.region_matched : null;
+const K = [
+  ['Active customers', fmtN(C.customers), delta(C.customers, R.customers), fmtN(R.customers)],
+  ['New customers', fmtN(C.new), delta(C.new, R.new), fmtN(R.new)],
+  ['Subscriber share', pct(C.subs/C.customers), delta(C.subs/C.customers, R.subs/R.customers,'pts'), pct(R.subs/R.customers)],
+  ['Orders per customer', C.orders_per.toFixed(2), delta(C.orders_per, R.orders_per), R.orders_per.toFixed(2)],
+  ['Revenue per customer', fmt$(C.rev_per,2), delta(C.rev_per, R.rev_per), fmt$(R.rev_per,2)],
+  ['Live in metro areas', pct(metroShare(C)), delta(metroShare(C), metroShare(R),'pts'), pct(metroShare(R))],
+];
+$('kpis').innerHTML = K.map(k => `<div class="kpi"><div class="lab">${k[0]}</div><div class="val">${k[1]}</div>
+  <div class="cmp">${k[2]} vs ${k[3]} prior year</div></div>`).join('');
+
+// ---------- geography
+$('geo-cov').textContent = `${fmtN(C.geo_matched)} of ${fmtN(C.customers)} customers (${pct(C.geo_matched/C.customers)}) matched to a US ship-to ZIP. ` +
+  `The other ${fmtN(C.customers - C.geo_matched)} have no matching shipment record (mostly local pickup, digital-only or unmatched orders) and are left out of the geography sections only.`;
+const usPopTot = Object.values(US.states).reduce((a,b)=>a+b,0);
+const custTot = Object.values(C.states).reduce((a,b)=>a+b.customers,0);
+const NAMES = {AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',DC:'District of Columbia',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming'};
+const GRID = {AK:[0,0],ME:[0,11],VT:[1,10],NH:[1,11],WA:[2,1],ID:[2,2],MT:[2,3],ND:[2,4],MN:[2,5],IL:[2,6],WI:[2,7],MI:[2,8],NY:[2,9],RI:[2,10],MA:[2,11],
+  OR:[3,1],NV:[3,2],WY:[3,3],SD:[3,4],IA:[3,5],IN:[3,6],OH:[3,7],PA:[3,8],NJ:[3,9],CT:[3,10],
+  CA:[4,1],UT:[4,2],CO:[4,3],NE:[4,4],MO:[4,5],KY:[4,6],WV:[4,7],VA:[4,8],MD:[4,9],DE:[4,10],
+  AZ:[5,2],NM:[5,3],KS:[5,4],AR:[5,5],TN:[5,6],NC:[5,7],SC:[5,8],DC:[5,9],
+  OK:[6,4],LA:[6,5],MS:[6,6],AL:[6,7],GA:[6,8],HI:[7,0],TX:[7,4],FL:[7,9]};
+const ST = Object.keys(GRID).map(s => {
+  const c = C.states[s] || {customers:0,revenue:0,subs:0,new:0}, p = R.states[s] || {customers:0};
+  const pop = US.states[s] || 0;
+  const pen = pop ? c.customers / pop * 1e5 : null;
+  const share = custTot ? c.customers/custTot : 0;
+  return {s, name:NAMES[s], cust:c.customers, share, pop, pen,
+    idx: pop ? share/(pop/usPopTot)*100 : null,
+    rpc: c.customers ? c.revenue/c.customers : null,
+    sub: c.customers ? c.subs/c.customers : null,
+    yoy: p.customers >= 20 ? c.customers/p.customers - 1 : null, prior:p.customers};
+});
+let mapMetric = 'pen';
+function quantBins(vals) {
+  const v = vals.filter(x => x!=null).sort((a,b)=>a-b);
+  return [0.2,0.4,0.6,0.8].map(q => v[Math.min(v.length-1, Math.floor(q*v.length))]);
+}
+function drawTiles() {
+  const key = mapMetric, vals = ST.map(r => r[key]);
+  const cuts = quantBins(vals);
+  const binOf = v => v==null ? -1 : cuts.filter(c => v >= c).length;
+  const fmtM = v => key==='pen' ? (v==null?'—':v.toFixed(1)) : key==='cust' ? fmtN(v) : (v==null?'—':(v>0?'+':'')+(v*100).toFixed(0)+'%');
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme!=='light' || document.documentElement.dataset.theme==='dark';
+  const cells = [];
+  for (let r=0;r<8;r++) for (let c=0;c<12;c++) {
+    const s = Object.keys(GRID).find(k => GRID[k][0]===r && GRID[k][1]===c);
+    if (!s) { cells.push('<div></div>'); continue; }
+    const d = ST.find(x => x.s===s), b = binOf(d[key]);
+    const bg = b<0 ? 'var(--seq-none)' : `var(--seq-${b})`;
+    const light = b<0 ? !dark : (dark ? b>=3 : b<=1);
+    cells.push(`<div class="tile ${light?'lt':'dk'}" style="background:${bg}" data-tip="<b>${d.name}</b><br>${fmtN(d.cust)} customers (${pct(d.share)})<br>${d.pen==null?'—':d.pen.toFixed(1)} per 100k residents · index ${d.idx==null?'—':Math.round(d.idx)}<br>YoY: ${d.yoy==null?'too few prior-year customers':(d.yoy>0?'+':'')+(d.yoy*100).toFixed(1)+'%'}">${s}<small>${fmtM(d[key])}</small></div>`);
+  }
+  $('tiles').innerHTML = cells.join('');
+  const lo = [ST.map(r=>r[key]).filter(x=>x!=null).reduce((a,b)=>Math.min(a,b),Infinity)].concat(cuts);
+  $('tile-legend').innerHTML = [0,1,2,3,4].map(i => `<span><i style="background:var(--seq-${i})"></i>${i<4?fmtM(lo[i])+' – '+fmtM(cuts[i]):fmtM(cuts[3])+'+'}</span>`).join('') +
+    (key==='yoy' ? '<span><i style="background:var(--seq-none)"></i>under 20 prior-year customers</span>' : '');
+}
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', x===b));
+  mapMetric = b.dataset.m; drawTiles();
+}));
+drawTiles();
+
+// sortable table: sort the FULL set; nulls last in both directions; ties break on the first column
+function sortable(el, cols, rows, defKey, defDir) {
+  let key = defKey, dir = defDir;
+  function render() {
+    const sorted = rows.slice().sort((a,b) => {
+      const av=a[key], bv=b[key];
+      if (av==null && bv==null) return String(a[cols[0].k]).localeCompare(String(b[cols[0].k]));
+      if (av==null) return 1; if (bv==null) return -1;
+      const c = typeof av==='string' ? av.localeCompare(bv) : (av<bv?-1:av>bv?1:0);
+      return c!==0 ? c*dir : String(a[cols[0].k]).localeCompare(String(b[cols[0].k]));
+    });
+    el.innerHTML = '<thead><tr>' + cols.map(c => `<th class="s${c.l?' l':''}" data-k="${c.k}" aria-sort="${c.k===key?(dir>0?'ascending':'descending'):'none'}">${c.h}</th>`).join('') + '</tr></thead><tbody>' +
+      sorted.map(r => '<tr>' + cols.map(c => `<td${c.l?' class="l"':''}>${c.f(r[c.k], r)}</td>`).join('') + '</tr>').join('') + '</tbody>';
+    el.querySelectorAll('th').forEach(th => th.onclick = () => {
+      const k = th.dataset.k; if (k===key) dir = -dir; else { key = k; dir = typeof rows[0][k]==='string' ? 1 : -1; } render(); });
+  }
+  render();
+}
+const yoyF = v => v==null ? '<span class="sub">—</span>' : `<span class="d ${v>0?'up':v<0?'down':'flat'}">${v>0?'+':''}${(v*100).toFixed(1)}%</span>`;
+sortable($('st-table'), [
+  {k:'name',h:'State',l:1,f:v=>esc(v)}, {k:'cust',h:'Customers',f:fmtN}, {k:'share',h:'Share',f:v=>pct(v)},
+  {k:'pen',h:'Per 100k',f:v=>v==null?'—':v.toFixed(1)}, {k:'idx',h:'Index',f:v=>v==null?'—':Math.round(v)},
+  {k:'rpc',h:'Rev / cust',f:v=>fmt$(v)}, {k:'sub',h:'Subs',f:v=>pct(v)}, {k:'yoy',h:'YoY',f:yoyF}],
+  ST, 'cust', -1);
+sortable($('zip-table'), [
+  {k:'zip',h:'ZIP',l:1,f:v=>v}, {k:'place',h:'Place',l:1,f:(v,r)=>esc(v)+', '+r.state},
+  {k:'region',h:'Type',l:1,f:v=>v||'—'}, {k:'income',h:'Area income',f:v=>fmt$(v)},
+  {k:'customers',h:'Customers',f:fmtN}, {k:'revenue',h:'Revenue',f:v=>fmt$(v)}], C.top_zips, 'customers', -1);
+
+// ---------- paired horizontal bars (our share vs population share)
+function pairBars(el, cats, a, b, fmtv) {
+  const W=520, rowH=46, padL=96, padR=56, H=cats.length*rowH+6;
+  const mx = Math.max(...a, ...b) * 1.05, sx = v => (W-padL-padR) * v / mx;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  cats.forEach((c,i) => {
+    const y = i*rowH + 4;
+    s += `<text x="${padL-8}" y="${y+21}" text-anchor="end">${esc(c)}</text>`;
+    [[a[i],'var(--series-1)','Our customers',0],[b[i],'var(--series-2)','US population',19]].forEach(([v,col,lab,off]) => {
+      const w = Math.max(1, sx(v));
+      s += `<g data-tip="<b>${esc(c)}</b><br>${lab}: ${fmtv(v)}"><rect x="${padL-2}" y="${y+off-2}" width="${W-padL}" height="21" fill="transparent"/>
+        <path d="M${padL},${y+off} h${w-4} a4,4 0 0 1 4,4 v9 a4,4 0 0 1 -4,4 h-${w-4} z" fill="${col}"/>
+        <text class="v" x="${padL+w+6}" y="${y+off+12.5}">${fmtv(v)}</text></g>`;
+    });
+  });
+  el.innerHTML = s + '</svg>';
+}
+function shareRows(order, ours, pop, matched) {
+  const popTot = order.reduce((t,k)=>t+(pop[k]||0),0);
+  return order.map(k => { const o = ours[k] || {customers:0,revenue:0,subs:0,orders:0};
+    const sh = o.customers/matched, ps = (pop[k]||0)/popTot;
+    return {k, cust:o.customers, share:sh, pop:ps, idx: ps ? sh/ps*100 : null,
+      rpc: o.customers ? o.revenue/o.customers : null, sub: o.customers ? o.subs/o.customers : null,
+      opc: o.customers ? o.orders/o.customers : null}; });
+}
+function shareTable(el, rows, label, prior) {
+  el.innerHTML = `<thead><tr><th class="l">${label}</th><th>Customers</th><th>Share</th><th>US pop.</th><th>Index</th><th>Rev / cust</th><th>Orders / cust</th><th>Subscribers</th><th>Share YoY</th></tr></thead><tbody>` +
+    rows.map((r,i) => { const d = r.share - prior[i].share;
+      return `<tr><td class="l">${esc(r.k)}</td><td>${fmtN(r.cust)}</td><td>${pct(r.share)}</td><td>${pct(r.pop)}</td><td>${r.idx==null?'—':Math.round(r.idx)}</td><td>${fmt$(r.rpc)}</td><td>${r.opc==null?'—':r.opc.toFixed(2)}</td><td>${pct(r.sub)}</td>
+      <td><span class="d ${Math.abs(d)<0.0005?'flat':d>0?'up':'down'}">${d>0?'+':''}${(d*100).toFixed(1)} pts</span></td></tr>`; }).join('') + '</tbody>';
+}
+const REG = ['Metro','Small city','Small town','Rural'];
+const regC = shareRows(REG, C.regions, US.regions, C.region_matched), regP = shareRows(REG, R.regions, US.regions, R.region_matched);
+pairBars($('reg-chart'), REG, regC.map(r=>r.share), regC.map(r=>r.pop), v=>pct(v));
+shareTable($('reg-table'), regC, 'Type', regP);
+const INC = ['Under $50k','$50k-75k','$75k-100k','$100k-150k','$150k+'];
+const incC = shareRows(INC, C.income, US.income, C.income_matched), incP = shareRows(INC, R.income, US.income, R.income_matched);
+pairBars($('inc-chart'), INC, incC.map(r=>r.share), incC.map(r=>r.pop), v=>pct(v));
+shareTable($('inc-table'), incC, 'Area income', incP);
+
+// ---------- profile
+const SEG = ['New customers','Returning customers','Subscribers','One-time buyers'];
+$('seg-table').innerHTML = '<thead><tr><th class="l">Segment</th><th>Customers</th><th>Share</th><th>Orders / cust</th><th>Rev / cust</th><th>Revenue share</th><th>Customers YoY</th></tr></thead><tbody>' +
+  SEG.map(k => { const s = C.segments[k], p = R.segments[k];
+    return `<tr><td class="l">${k}</td><td>${fmtN(s.customers)}</td><td>${pct(s.customers/C.customers)}</td><td>${s.orders_per==null?'—':s.orders_per.toFixed(2)}</td><td>${fmt$(s.rev_per,2)}</td><td>${pct(s.revenue/C.revenue)}</td><td>${yoyF(p.customers?s.customers/p.customers-1:null)}</td></tr>`; }).join('') + '</tbody>';
+
+function vbars(el, labels, vals, opt) {
+  opt = opt || {};
+  const W = 560, H = 210, pl = 44, pb = 26, pt = 14, n = labels.length;
+  const mx = Math.max(...vals.filter(v=>v!=null)) * 1.1 || 1;
+  const bw = (W - pl) / n, gap = Math.min(6, bw*0.25);
+  const ticks = 4, step = mx/ticks;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  for (let i=0;i<=ticks;i++) { const v = step*i, y = H-pb - (H-pb-pt)*v/mx;
+    s += `<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${pl-6}" y="${y+4}" text-anchor="end">${opt.axis?opt.axis(v):fmtN(v)}</text>`; }
+  const every = Math.ceil(n / (opt.maxLabels || 14));
+  vals.forEach((v,i) => {
+    const x = pl + i*bw + gap/2, w = bw - gap;
+    if (v != null) { const h = (H-pb-pt)*v/mx, y = H-pb-h, r = Math.min(4, w/2, h);
+      const col = (opt.partial && opt.partial(i)) ? 'var(--neutral)' : 'var(--series-1)';
+      s += `<g data-tip="<b>${esc(opt.tipLab?opt.tipLab(i):labels[i])}</b><br>${opt.fmt?opt.fmt(v):fmtN(v)}${opt.partial&&opt.partial(i)?' (month in progress)':''}"><rect x="${x-gap/2}" y="${pt}" width="${bw}" height="${H-pb-pt}" fill="transparent"/>
+        <path d="M${x},${H-pb} v-${h-r} a${r},${r} 0 0 1 ${r},-${r} h${w-2*r} a${r},${r} 0 0 1 ${r},${r} v${h-r} z" fill="${col}"/></g>`;
+      if (opt.direct) s += `<text class="v" x="${x+w/2}" y="${y-4}" text-anchor="middle">${opt.dfmt?opt.dfmt(v):fmtN(v)}</text>`;
+    }
+    if (i % every === 0) s += `<text x="${x+w/2}" y="${H-8}" text-anchor="middle">${esc(labels[i])}</text>`;
+  });
+  el.innerHTML = s + `<line x1="${pl}" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--text-muted)"/></svg>`;
+}
+$('ob-sub').textContent = '— ' + wlab(P.window.cur);
+vbars($('ob-chart'), C.order_buckets.map(b=>b.label+(b.label==='1'?' order':'')), C.order_buckets.map(b=>b.customers),
+  {direct:true, tipLab:i=>C.order_buckets[i].label+' orders in 12 months', fmt:v=>fmtN(v)+' customers'});
+const coh = P.cohorts;
+const shortM = m => MON[+m.slice(5)-1] + (m.slice(5)==='01' ? ' ' + m.slice(2,4) : '');
+vbars($('coh-chart'), coh.map(c=>shortM(c.month)), coh.map(c=>c.new_customers),
+  {tipLab:i=>mlab(coh[i].month), fmt:v=>fmtN(v)+' new customers', partial:i=>!!coh[i].partial, maxLabels:12});
+$('coh-sub').textContent = 'First-ever DTC order by month since Jan 2024. The gray bar is the month in progress.';
+const lc = coh.filter(c => c.ltv365 != null);
+vbars($('ltv-chart'), lc.map(c=>shortM(c.month)), lc.map(c=>c.ltv365),
+  {tipLab:i=>mlab(lc[i].month)+' starters ('+fmtN(lc[i].new_customers)+')', fmt:v=>fmt$(v,2)+' in first year', axis:v=>fmt$(v), maxLabels:12});
+vbars($('ten-chart'), C.tenure.map(t=>t.year), C.tenure.map(t=>t.customers),
+  {direct:true, tipLab:i=>'First bought in '+C.tenure[i].year, fmt:v=>fmtN(v)+' active customers'});
+
+// ---------- age & gender
+const M = P.ag_cur.meta, G = P.ag_cur.ga4, AGES = ['18-24','25-34','35-44','45-54','55-64','65+'];
+const mKnown = M.ages.reduce((t,a)=>t+a.purchases,0);
+$('ag-note').innerHTML = `<b>Neither source is a census of our customers.</b> <b>Meta</b> covers the ${fmtN(M.purchases)} purchases Meta credits to our ads in the window,
+  measured with Meta's own attribution. Buyers who never saw an ad aren't in it. <b>GA4</b> has Google's age estimate for only
+  ${fmtN(G.known_age_purchases)} of ${fmtN(G.purchases)} website purchases (${pct(G.known_age_purchases/G.purchases,0)}), from shoppers signed in to Google with ad
+  personalization on. Google also withholds small groups. The two sources measure different people in different ways, so read the overlap as the signal.
+  Neither is exact.`;
+const mShare = M.ages.map(a => mKnown ? a.purchases/mKnown : 0);
+const gShare = G.ages.map(a => G.known_age_purchases ? a.purchases/G.known_age_purchases : 0);
+(function ageChart(){
+  const W=560,H=230,pl=40,pb=26,pt=16,n=AGES.length, mx=Math.max(...mShare,...gShare)*1.15;
+  const gw=(W-pl)/n, bw=(gw-18)/2;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  for(let i=0;i<=4;i++){const v=mx/4*i,y=H-pb-(H-pb-pt)*v/mx; s+=`<line x1="${pl}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${pl-6}" y="${y+4}" text-anchor="end">${(v*100).toFixed(0)}%</text>`;}
+  AGES.forEach((a,i)=>{ [[mShare[i],'var(--series-1)','Meta ads',0],[gShare[i],'var(--series-2)','Website (GA4)',1]].forEach(([v,col,lab,j])=>{
+    const x=pl+i*gw+9+j*(bw+2), h=(H-pb-pt)*v/mx, y=H-pb-h, r=Math.min(4,h);
+    s+=`<g data-tip="<b>${a}</b><br>${lab}: ${pct(v)} of purchases"><rect x="${x}" y="${pt}" width="${bw}" height="${H-pb-pt}" fill="transparent"/>
+      <path d="M${x},${H-pb} v-${h-r} a${r},${r} 0 0 1 ${r},-${r} h${bw-2*r} a${r},${r} 0 0 1 ${r},${r} v${h-r} z" fill="${col}"/>
+      <text class="v" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${(v*100).toFixed(0)}%</text></g>`; });
+    s+=`<text x="${pl+i*gw+gw/2}" y="${H-8}" text-anchor="middle">${a}</text>`; });
+  $('age-chart').innerHTML = s+`<line x1="${pl}" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--text-muted)"/></svg>`;
+})();
+(function genChart(){
+  const mg = M.genders, gg = G.genders;
+  const mt = ['female','male','unknown'].reduce((t,k)=>t+((mg[k]||{}).purchases||0),0);
+  const gt = (gg.female||{purchases:0}).purchases + (gg.male||{purchases:0}).purchases;
+  const rows = [['Meta ads', ['female','male','unknown'].map(k=>((mg[k]||{}).purchases||0)/mt)],
+                ['Website (GA4)', [(gg.female||{purchases:0}).purchases/gt, (gg.male||{purchases:0}).purchases/gt, 0]]];
+  const W=520,pl=96,rowH=44,H=rows.length*rowH+4, cols=['var(--series-1)','var(--series-2)','var(--neutral)'], labs=['Female','Male','Unknown'];
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  rows.forEach(([name,vals],i)=>{ const y=i*rowH+6; let x=pl; s+=`<text x="${pl-8}" y="${y+17}" text-anchor="end">${name}</text>`;
+    vals.forEach((v,j)=>{ if(v<=0) return; const w=(W-pl)*v-2;
+      s+=`<g data-tip="<b>${name}</b><br>${labs[j]}: ${pct(v)}"><rect x="${x}" y="${y}" width="${Math.max(1,w)}" height="24" rx="${j===0||x+w>=W-3?4:0}" fill="${cols[j]}"/>
+        ${w>44?`<text x="${x+8}" y="${y+16}" style="fill:${j===2?'var(--text-primary)':'#fff'};font-weight:600">${(v*100).toFixed(0)}%</text>`:''}</g>`; x+=w+2; }); });
+  $('gen-chart').innerHTML = s+'</svg>';
+})();
+const mRows = M.ages.map(a => ({age:a.age, spend:a.spend, sshare:M.spend?a.spend/M.spend:null, purchases:a.purchases,
+  pshare:mKnown?a.purchases/mKnown:null, cpp:a.purchases?a.spend/a.purchases:null, rpd:a.spend?a.value/a.spend:null}));
+const PM = P.ag_prior.meta, pKnown = PM.ages.reduce((t,a)=>t+a.purchases,0);
+$('meta-table').innerHTML = '<thead><tr><th class="l">Age</th><th>Spend</th><th>Spend share</th><th>Purchases</th><th>Purchase share</th><th>Share YoY</th><th>Cost / purchase</th><th>Revenue per $1</th></tr></thead><tbody>' +
+  mRows.map((r,i)=>{ const pp = pKnown ? PM.ages[i].purchases/pKnown : null, d = pp==null?null:r.pshare-pp;
+    return `<tr><td class="l">${r.age}</td><td>${fmt$(r.spend)}</td><td>${pct(r.sshare)}</td><td>${fmtN(r.purchases)}</td><td>${pct(r.pshare)}</td>
+    <td>${d==null?'—':`<span class="d ${Math.abs(d)<0.0005?'flat':d>0?'up':'down'}">${d>0?'+':''}${(d*100).toFixed(1)} pts</span>`}</td><td>${fmt$(r.cpp,2)}</td><td>${r.rpd==null?'—':'$'+r.rpd.toFixed(2)}</td></tr>`; }).join('') + '</tbody>';
+
+// ---------- sources
+const S = P.sources;
+$('srcs').innerHTML = [
+  `Customers, orders, revenue: Shopify DTC orders (wholesale excluded). Revenue is after discounts and excludes shipping and tax. ${fmtN(P.order_rows.cur)} orders in the current window.`,
+  `Location: ship-to ZIP of each customer's most recent shipped order (ShipStation).`,
+  `Area income and population: US Census ${esc(S.acs)} (ZIP-code tabulation areas). ZIPs with unreliable income estimates are left out of the income bands.`,
+  `Neighborhood type: USDA ERS 2020 Rural-Urban Commuting Area codes. Metro = 1-3, Small city = 4-6, Small town = 7-9, Rural = 10.`,
+  `Age & gender: Meta Ads insights by age and gender (refreshed ${esc((S.meta_ingested||'').slice(0,10))}) and GA4 demographics (Google signals, refreshed ${esc((S.ga4_ingested||'').slice(0,10))}).`,
+  `No individual customer data appears on this page. ZIPs with fewer than ${P.zip_min} customers are not listed.`
+].map(x=>'<li>'+x+'</li>').join('');
+})();
+</script>
+</body></html>
