@@ -71,8 +71,12 @@
   th.asc .ind::after { content:'↑'; }
   th.desc .ind::after { content:'↓'; }
   td.num { text-align:right; font-variant-numeric:tabular-nums; }
-  td.name { max-width:42ch; white-space:normal; overflow:hidden;
-            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  /* The 2-line clamp lives on an INNER div. Putting display:-webkit-box on the
+     <td> itself takes it out of table-cell layout, so adjacent name/text cells
+     collapse into ONE anonymous cell and every column after shifts left. */
+  td.name { max-width:42ch; white-space:normal; }
+  td.name > .clamp { overflow:hidden; display:-webkit-box;
+                     -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   td.muted { color:#8b93a7; }
   td.strong { font-weight:600; color:#fff; }
   tbody tr { cursor:pointer; }
@@ -153,7 +157,7 @@
 
 <div class="container">
   <h1>🎯 Ad Performance — Meta</h1>
-  <p class="sub">Which campaigns, ad sets, and ads are working — over any date range you pick. Click any row to drill in. Generated 2026-10-13 08:08.</p>
+  <p class="sub">Which campaigns, ad sets, and ads are working — over any date range you pick. Click any row to drill in. Generated 2026-10-13 09:37.</p>
 
   <div class="glossary">
     <strong>Meta-only:</strong> frequency &amp; reach are Meta concepts (Google search/PMax has neither — Google stays campaign-level on the <a href="ad-spend-yoy.html" style="color:#D4A843">Ad Spend YoY</a> report).
@@ -546,8 +550,8 @@ function renderTable() {
       if (c.kind === 'thumb') { const src = thumbSrc(r.e);
         return src ? `<td><img class="thumb" src="${esc(src)}" loading="lazy" alt=""></td>` : '<td><div class="thumb"></div></td>'; }
       if (c.kind === 'status') return `<td>${statusPill(v)}</td>`;
-      if (c.kind === 'name')   return `<td class="name strong" title="${esc(v)}">${esc(v)||'—'} <span class="drillcue">›</span></td>`;
-      if (c.kind === 'text')   return `<td class="muted name" title="${esc(v)}">${esc(v)||'—'}</td>`;
+      if (c.kind === 'name')   return `<td class="name strong" title="${esc(v)}"><div class="clamp">${esc(v)||'—'} <span class="drillcue">›</span></div></td>`;
+      if (c.kind === 'text')   return `<td class="muted name" title="${esc(v)}"><div class="clamp">${esc(v)||'—'}</div></td>`;
       if (c.kind === 'plc')    return `<td class="num ${v>1?'strong':'muted'}">${v>1?v+'&nbsp;×':'1'}</td>`;
       const cls = ['roas','sp','pu','rv'].includes(c.k) ? 'num strong' : 'num';
       return `<td class="${cls}">${c.fmt(v)}</td>`;
