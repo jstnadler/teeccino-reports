@@ -342,13 +342,46 @@
     }
   }
 
+  // DATA-FILL CHIPS. A heatmap cell / legend swatch carries a saturated, opaque inline
+  // fill that encodes a VALUE, and (for cells) a label color the publisher paired to that
+  // fill (stayai-breakeven: background:#184f95;color:#fff). Re-theming either half breaks
+  // it: a lifted fill no longer matches its legend, a re-inked label vanishes on the
+  // un-lifted fill. Such an element is self-contained → keep its fill AND every inline
+  // text color inside it, in every theme. Neutral fills (panels, cards) are not chips.
+  function dataFill(st) {
+    var v = st.getPropertyValue('background-color') || st.getPropertyValue('background');
+    if (!v || /gradient|url\(|var\(/.test(v)) return null;
+    var m = v.match(COLOR_RE); COLOR_RE.lastIndex = 0;
+    var c = m && m.length === 1 ? parse(m[0]) : null;
+    if (!c || c.a < 0.9 || rgb2hsl(c.r, c.g, c.b)[3] < 0.2) return null;
+    return c;
+  }
+  function isChip(el, st) {
+    if (el.__hubChip !== undefined) return el.__hubChip;
+    var c = dataFill(st), res = false;
+    if (c) {
+      var fg = parse(st.getPropertyValue('color'));
+      if (fg && fg.a > 0.5) res = contrast(fg, c) >= 3;               // fill + paired label
+      else res = !el.textContent.trim() && !el.children.length;          // bare legend swatch
+    }
+    el.__hubChip = res;            // authored values never change under us, so the verdict is stable
+    return res;
+  }
+  function inChip(el) {
+    for (var p = el.parentElement, d = 0; p && d < 3; p = p.parentElement, d++) if (p.__hubChip) return true;
+    return false;
+  }
+
   function processInline(el) {
     if (el.closest && el.closest('[data-hub-theme-keep]')) return;
     var st = el.style; if (!st || !st.length) return;
+    if (isChip(el, st)) return;
+    var chipKid = inChip(el);
     var seen = inlineSeen.get(el) || {};
     for (var i = st.length - 1; i >= 0; i--) {
       var prop = st[i], role = roleOf(prop);
       if (!role) continue;
+      if (chipKid && role === 'text') continue;
       var v = st.getPropertyValue(prop);
       if (seen[prop] === v) continue;                 // our own output
       var nv = mapValue(v, role);
