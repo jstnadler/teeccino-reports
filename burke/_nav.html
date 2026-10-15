@@ -93,6 +93,13 @@
   files are in burke/, fetch nothing, and read no manifest. Known gap: a light-mode reader sees
   ~0.2s of dark on each page load, because the page paints before this nav arrives; closing that
   needs a 1-line pre-paint hook in each generator (DataOps / Orinoco's call).
+  2026-10-15 (later) — STICKY TABLE HEADERS + BAR OFFSET (Justin: "on the table, when you scroll
+  down I want the headers to stay sticky on top"). Both live in burke/_theme.js, so no generated
+  page is touched. The body top padding now reads --portal-nav-pad (real bar height + 16px,
+  measured by ResizeObserver) instead of a constant 72px: at 1440 the bar wraps to ~88-92px and
+  titles were sitting ~18px under it. Table headers are pinned by translateY'ing the header cells
+  rather than CSS sticky, because the tables live in overflow-x:auto wrappers where sticky pins
+  to the wrapper, not the page. See the comment block in _theme.js.
 -->
 <style>
   /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
@@ -192,7 +199,8 @@
   html[data-portal-theme="light"] #portal-nav-bar .theme-switch { border-color: #b9cfbd; }
   html[data-portal-theme="light"] #portal-nav-bar .theme-switch button { color: #55655b; }
   html[data-portal-theme="light"] #portal-nav-bar .theme-switch button[aria-pressed="true"] { background: #1f6e2a; color: #ffffff; }
-  body.has-portal-nav { padding-top: 72px; }
+  /* Real bar height + 16px gap, measured live by _theme.js (bar wraps to 2 rows at desktop widths). 72/96px = pre-measure fallback. */
+  body.has-portal-nav { padding-top: var(--portal-nav-pad, 72px); }
   @media (max-width: 880px) {
     #portal-nav-bar { gap: 8px; padding: 10px 12px; }
     #portal-nav-bar .group { margin-left: 0; gap: 8px; }
@@ -202,7 +210,7 @@
        The gold pill + dot carries the distinction on its own once the labels are hidden. */
     #portal-nav-bar .group.needs-you + .group { border-left: none; padding-left: 0; }
     #portal-nav-bar .group.needs-you { margin-left: 0; }
-    body.has-portal-nav { padding-top: 96px; }
+    body.has-portal-nav { padding-top: var(--portal-nav-pad, 96px); }
   }
 </style>
 <nav id="portal-nav-bar" aria-label="Burke's portal navigation">
