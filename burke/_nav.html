@@ -8,7 +8,8 @@
   OWN burke/amazon.html (built by Orinoco once the amazon-data-portal ingest ships).
   It deliberately does NOT load the shared nav (/_partials/nav.html) or its search
   (nav-boot.js searches Justin's pages.json — that would leak his dashboards here).
-  Pure HTML + CSS, no JS, no external manifest.
+  No external manifest. ONE small portal-scoped script (burke/_theme.js, the Light/Dark switch)
+  is loaded via the <img onerror> one-liner at the bottom — see the 2026-10-15 HISTORY entry.
 
   Accent = forest green (#2E7D32, Orinoco's color) to signal the Amazon portal.
 
@@ -80,6 +81,18 @@
   would render a confidently wrong "4 open". Any future wiring must read a decisions-scoped field
   written by whatever generates amazon-decisions.html (same generator = same cadence), and must
   fall back to the last stamped literal if the field is absent — never to 0.
+  2026-10-15 — LIGHT MODE (Justin: "For burkes portal pages, we need to be able to see it off dark
+  mode"). Added a Dark | Light switch at the right of this bar. Choice persists in
+  localStorage['burke-portal-theme'] (default dark) and is applied as <html data-portal-theme>.
+  This revises the old "no JS" rule ON PURPOSE: this nav is the ONLY hook shared by every portal
+  page, and every page is regenerated daily, so the switch must ride in here or be lost at 07:00.
+  Mechanics: <script> inserted via innerHTML does not run, so a one-statement <img onerror>
+  injects burke/_theme.js (same pattern as the main hub's nav-boot.js, kept trivial on purpose —
+  a multi-line inline handler broke that nav in 2026-06). Light rules live in burke/_theme.css,
+  all gated on the attribute, so dark renders byte-for-byte as before. Isolation unchanged: both
+  files are in burke/, fetch nothing, and read no manifest. Known gap: a light-mode reader sees
+  ~0.2s of dark on each page load, because the page paints before this nav arrives; closing that
+  needs a 1-line pre-paint hook in each generator (DataOps / Orinoco's call).
 -->
 <style>
   /* Scoped via #portal-nav-bar so it never clashes with a host page or the main hub nav. */
@@ -146,6 +159,39 @@
   }
   #portal-nav-bar .home-link:hover { background: rgba(46, 125, 50, 0.14); }
 
+  /* ---- Light/Dark switch + the nav's own light skin (2026-10-15) ---- */
+  #portal-nav-bar .theme-switch {
+    display: inline-flex; border: 1px solid rgba(46, 125, 50, 0.4); border-radius: 999px;
+    padding: 2px; gap: 2px;
+  }
+  #portal-nav-bar .theme-switch button {
+    font: inherit; font-size: 0.78em; color: #94a3b8; background: transparent; border: 0;
+    padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  }
+  #portal-nav-bar .theme-switch button:hover { color: #6FCF7A; }
+  #portal-nav-bar .theme-switch button[aria-pressed="true"] { background: rgba(46, 125, 50, 0.28); color: #E6F4E7; font-weight: 600; }
+  #portal-nav-bar .theme-switch button:focus-visible { outline: 2px solid #6FCF7A; outline-offset: 1px; }
+  html[data-portal-theme="light"] #portal-nav-bar {
+    background: rgba(255, 255, 255, 0.96); border-bottom-color: #cfd8d2;
+    box-shadow: 0 1px 3px rgba(20, 33, 26, 0.06);
+  }
+  html[data-portal-theme="light"] #portal-nav-bar .brand { color: #1f6e2a; }
+  html[data-portal-theme="light"] #portal-nav-bar .brand:hover { color: #2E7D32; }
+  html[data-portal-theme="light"] #portal-nav-bar .portal-tag { color: #55655b; border-color: #b9cfbd; }
+  html[data-portal-theme="light"] #portal-nav-bar .group-label { color: #6b7a70; }
+  html[data-portal-theme="light"] #portal-nav-bar a.nav-link { color: #3f4d44; }
+  html[data-portal-theme="light"] #portal-nav-bar a.nav-link:hover { color: #1f6e2a; background: rgba(46, 125, 50, 0.08); }
+  html[data-portal-theme="light"] #portal-nav-bar a.nav-link.active { color: #1f6e2a; background: rgba(46, 125, 50, 0.12); }
+  html[data-portal-theme="light"] #portal-nav-bar .group.needs-you .group-label { color: #8a6a12; opacity: 1; }
+  html[data-portal-theme="light"] #portal-nav-bar a.nav-link.action { color: #7a5c0c; border-color: #d9bd6a; background: #fdf8ea; }
+  html[data-portal-theme="light"] #portal-nav-bar a.nav-link.action::before { background: #b58a1e; }
+  html[data-portal-theme="light"] #portal-nav-bar a.nav-link.action:hover { color: #5e4608; background: #faf1d6; border-color: #b58a1e; }
+  html[data-portal-theme="light"] #portal-nav-bar .group.needs-you + .group { border-left-color: #cfd8d2; }
+  html[data-portal-theme="light"] #portal-nav-bar .home-link { color: #1f6e2a; border-color: #b9cfbd; }
+  html[data-portal-theme="light"] #portal-nav-bar .home-link:hover { background: rgba(46, 125, 50, 0.08); }
+  html[data-portal-theme="light"] #portal-nav-bar .theme-switch { border-color: #b9cfbd; }
+  html[data-portal-theme="light"] #portal-nav-bar .theme-switch button { color: #55655b; }
+  html[data-portal-theme="light"] #portal-nav-bar .theme-switch button[aria-pressed="true"] { background: #1f6e2a; color: #ffffff; }
   body.has-portal-nav { padding-top: 72px; }
   @media (max-width: 880px) {
     #portal-nav-bar { gap: 8px; padding: 10px 12px; }
@@ -176,5 +222,11 @@
     <a class="nav-link" href="/teeccino-reports/burke/amazon-funnel.html">Conversion &amp; Buy Box</a>
   </div>
   <span class="spacer"></span>
+  <div class="theme-switch" role="group" aria-label="Color theme">
+    <button type="button" data-theme-set="dark" aria-pressed="true">Dark</button>
+    <button type="button" data-theme-set="light" aria-pressed="false">Light</button>
+  </div>
   <a class="home-link" href="/teeccino-reports/burke/index.html">My Dashboards →</a>
 </nav>
+<link rel="stylesheet" href="/teeccino-reports/burke/_theme.css">
+<img src="data:," alt="" style="display:none" onerror="this.remove();var s=document.createElement('script');s.src='/teeccino-reports/burke/_theme.js';document.head.appendChild(s)">
