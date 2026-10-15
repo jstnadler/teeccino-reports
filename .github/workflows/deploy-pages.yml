@@ -55,6 +55,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Site-wide chrome (Dark/Light/Cream theme + shared date picker): add the one
+      # hub-theme.js <script> to every in-scope page of THIS checkout. Runs on every
+      # deploy, so a publisher rebuild can never drop it; repo source is untouched.
+      # Idempotent; see the script header for exclusions (portals, email previews, design/).
+      - name: Inject shared chrome
+        run: python3 .github/scripts/inject_chrome.py --root .
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
