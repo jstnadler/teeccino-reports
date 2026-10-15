@@ -18,10 +18,23 @@
    The page's own preset buttons keep working: programmatic `.value =` writes are
    observed (per-instance value accessor) and the field label follows.
 
-   Not enhanced (deliberate, left native): a single date input, single month/year
-   selects that navigate to another page (MTD / YTD / discounts / fulfillment), and
-   anything inside [data-hdp-skip]. Opt in an unusual pair with
-   data-hdp-start / data-hdp-end attributes on the two controls.
+     · SINGLE MODE (2026-10-15) — ONE <select> whose dated options are all YYYY-MM
+       (month) or all YYYY (year), plus at most 3 non-date options ("Current
+       (rolling)", "Trailing 90 days", "All"), whose id/name/label says month / year /
+       period / date / jump. MTD, YTD, discounts, fulfillment, Klaviyo, flow detail,
+       ad-spend YoY, cost-throughput Year. The modal shows a month or year grid; the
+       non-date options become Quick picks. Apply writes the option value through the
+       native setter and fires input + change — the page's own onchange (navigate to
+       mtd/2026-09.html, re-render, …) runs exactly as if the dropdown were used. An
+       unchanged value fires nothing, like a native select.
+     · JUMP FOLD — a single MONTH select inside an enhanced date pair's control group
+       (ad-performance "Jump to month") is hidden and becomes the pair modal's
+       "Whole month…" preset; Apply writes the month into that select and fires change,
+       so the page's own handler sets the range.
+
+   Not enhanced (deliberate, left native): a single date input, selects that are not
+   periods (grouping, metric, page size …), and anything inside [data-hdp-skip]. Opt
+   in an unusual pair with data-hdp-start / data-hdp-end attributes on the two controls.
    ──────────────────────────────────────────────────────────────────────────── */
 (function () {
   if (window.HubDatePicker) return;
@@ -29,7 +42,7 @@
   var MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var inputDesc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
   var selectDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
-  var pairs = [];
+  var pairs = [], singles = [];
   var YOY = /\bYoY\b|year[\s-]over[\s-]year|vs\.?\s*(LY|last year|prior year|same period)/i.test(document.body ? document.body.textContent.slice(0, 400000) : '');
 
   // ── date helpers (all local, ISO yyyy-mm-dd strings) ──────────────────────
@@ -84,6 +97,7 @@
   }
   function refresh(p) {
     if (!p.field) return;
+    if (p.single) { var v = rawGet(p.sel); p.label.textContent = v ? optText(p.sel, v) : (p.mode === 'year' ? 'Choose a year' : 'Choose a month'); return; }
     p.label.textContent = fmtRange(p, rawGet(p.a), rawGet(p.b));
   }
 
@@ -118,6 +132,76 @@
       if (near(sa, sb) && START_RE.test(key(sa)) && END_RE.test(key(sb))) { found.push([sa, sb, 'month']); j++; }
     }
     found.forEach(function (f) { enhance(f[0], f[1], f[2]); });
+    // single-period selects (MTD month, YTD year, Klaviyo month …). A month select that
+    // sits inside an enhanced date pair's control group is that pair's "jump to month"
+    // shortcut → folded into the pair's modal as a preset instead of a 2nd control.
+    var inPair = new Set(); pairs.forEach(function (p) { inPair.add(p.a); inPair.add(p.b); });
+    document.querySelectorAll('select').forEach(function (s) {
+      if (s.__hdpSingle || inPair.has(s) || s.closest('[data-hdp-skip]') || s.closest('.hdp-modal')) return;
+      var k = periodKind(s); if (!k) return;
+      var host = k.kind === 'month' ? pairs.filter(function (p) { return p.mode === 'date' && !p.jump && p.scope && p.scope.contains(s); })[0] : null;
+      if (host) attachJump(host, s, k); else enhanceSingle(s, k);
+    });
+  }
+
+  // ── single-period selects ─────────────────────────────────────────────────
+  var PERIOD_RE = /month|year|period|jump|date/i;
+  function labelFor(s) { var l = s.id && document.querySelector('label[for="' + s.id + '"]'); return l || null; }
+  function periodKind(s) {
+    var n = s.options.length; if (n < 2) return null;
+    var ym = 0, y = 0, sp = [];
+    for (var i = 0; i < n; i++) {
+      var v = s.options[i].value;
+      if (/^\d{4}-\d{2}$/.test(v)) ym++; else if (/^\d{4}$/.test(v)) y++; else sp.push(s.options[i]);
+    }
+    if ((ym && y) || (ym || y) < 2 || sp.length > 3) return null;
+    var lab = labelFor(s);
+    if (!PERIOD_RE.test(key(s) + ' ' + (lab ? lab.textContent : ''))) return null;
+    return { kind: ym ? 'month' : 'year' };
+  }
+  function datedVals(s, kind) {
+    var re = kind === 'month' ? /^\d{4}-\d{2}$/ : /^\d{4}$/;
+    return Array.prototype.map.call(s.options, function (o) { return o.value; }).filter(function (v) { return re.test(v); }).sort();
+  }
+  function optText(s, v) { for (var i = 0; i < s.options.length; i++) if (s.options[i].value === v) return s.options[i].textContent.trim(); return v; }
+  function specials(s) {
+    return Array.prototype.filter.call(s.options, function (o) { return !/^\d{4}(-\d{2})?$/.test(o.value) && o.value !== ''; })
+      .map(function (o) { return { v: o.value, t: o.textContent.trim() }; });
+  }
+  // hide a control's wrapper when it holds nothing but a label + the control
+  function hideWithWrapper(s) {
+    var w = s.parentElement, rest = w ? Array.prototype.filter.call(w.children, function (c) { return c !== s && c.tagName !== 'LABEL'; }) : [1];
+    if (w && !rest.length && w !== document.body && !w.querySelector('.hdp-field')) { hide(w); return; }
+    hide(s); var l = labelFor(s); if (l) hide(l);
+  }
+  function enhanceSingle(s, k) {
+    s.__hdpSingle = true;
+    var p = { single: true, sel: s, a: s, b: s, mode: k.kind, id: ++uid };
+    singles.push(p);
+    watch(s, p);
+    var field = document.createElement('button');
+    field.type = 'button'; field.className = 'hdp-field'; field.id = 'hdp-field-' + p.id;
+    field.setAttribute('aria-haspopup', 'dialog'); field.setAttribute('data-hub-theme-keep', '');
+    if (s.id) field.setAttribute('data-hdp-for', s.id);
+    field.innerHTML = '<span class="hdp-ico" aria-hidden="true">📅</span><span class="hdp-label"></span><span class="hdp-caret" aria-hidden="true">▼</span>';
+    p.field = field; p.label = field.querySelector('.hdp-label');
+    field.addEventListener('click', function () { open(p); });
+    s.parentElement.insertBefore(field, s);
+    var l = labelFor(s); if (l) l.setAttribute('for', field.id);
+    hide(s); s.tabIndex = -1;
+    refresh(p);
+  }
+  function attachJump(p, s, k) {
+    s.__hdpSingle = true;
+    p.jump = s;
+    if (s.id && p.field) p.field.setAttribute('data-hdp-for', s.id);
+    hideWithWrapper(s); s.tabIndex = -1;
+  }
+  function commitSingle(s, v, force) {
+    if (!force && rawGet(s) === v) return;            // a native select fires nothing when the value is unchanged
+    rawSet(s, v);
+    fire(s, 'input'); fire(s, 'change');
+    try { window.dispatchEvent(new CustomEvent('hub-period-change', { detail: { value: v, el: s } })); } catch (er) {}
   }
   function near(a, b) {
     var pa = a.parentElement, pb = b.parentElement;
@@ -133,6 +217,8 @@
 
   function enhance(a, b, mode) {
     var p = { a: a, b: b, mode: mode, id: ++uid };
+    for (var sc = a.parentElement; sc && !sc.contains(b); sc = sc.parentElement) {}
+    p.scope = sc || null;
     pairs.push(p);
     watch(a, p); watch(b, p);
     var field = document.createElement('button');
@@ -189,7 +275,12 @@
   function commit(p, s, e) {
     rawSet(p.a, s); rawSet(p.b, e);
     fire(p.a, 'input'); fire(p.a, 'change');
+    // A page may react to the start change by writing its OLD end back into the end box
+    // (ad-performance: si.onchange → recast() → end.value = state.end). Re-assert the end
+    // the person picked before announcing it, or only half the range lands.
+    if (rawGet(p.b) !== e) rawSet(p.b, e);
     fire(p.b, 'input'); fire(p.b, 'change');
+    if (rawGet(p.a) !== s) { rawSet(p.a, s); fire(p.a, 'input'); fire(p.a, 'change'); }
     var applyBtn = (p.applyBtn && p.applyBtn.isConnected) ? p.applyBtn : findApply(p);
     if (applyBtn) applyBtn.click();
     refresh(p);
@@ -239,10 +330,18 @@
     M = { p: p, bd: bd, s: s, e: e, picking: false, hover: null, view: null, opener: document.activeElement };
     if (p.mode === 'month') M.view = +String(focusOn).slice(0, 4);
     else { var f = String(focusOn).slice(0, 7); M.view = addMonthsYM(f, -1); if (bd.min && M.view < bd.min.slice(0, 7)) M.view = bd.min.slice(0, 7); }
+    if (p.single) {
+      var vals = datedVals(p.sel, p.mode);
+      M.single = true; M.vals = vals; M.e = null;
+      M.bd = { min: vals[0] || null, max: vals[vals.length - 1] || null, vals: vals };
+      var anc = /^\d{4}/.test(M.s || '') ? M.s : (vals[vals.length - 1] || iso(new Date()));
+      M.view = p.mode === 'month' ? +anc.slice(0, 4) : yearPageStart(+anc.slice(0, 4));
+      M.ps = M.s; M.pv = M.view;
+    }
 
     var back = document.createElement('div');
     back.className = 'hdp-backdrop'; back.setAttribute('data-hub-theme-keep', '');
-    back.innerHTML = '<div class="hdp-modal" role="dialog" aria-modal="true" aria-label="Choose a date range">' +
+    back.innerHTML = '<div class="hdp-modal" role="dialog" aria-modal="true" aria-label="' + (p.single ? (p.mode === 'year' ? 'Choose a year' : 'Choose a month') : 'Choose a date range') + '">' +
       '<div class="hdp-presets"></div><div class="hdp-main"><div class="hdp-head"></div><div class="hdp-cals"></div>' +
       '<div class="hdp-foot"><span class="hdp-note"></span><span><button type="button" class="hdp-btn" data-act="cancel">Cancel</button> ' +
       '<button type="button" class="hdp-btn hdp-primary" data-act="apply">Apply</button></span></div></div></div>';
@@ -279,6 +378,25 @@
     var act = t.getAttribute('data-act');
     if (act === 'cancel') return close();
     if (act === 'apply') return doApply();
+    var P = pk();
+    if (P && (act === 'prev' || act === 'next')) { M.pv += (act === 'prev' ? -1 : 1) * (P.kind === 'year' ? 12 : 1); return render(); }
+    if (t.hasAttribute('data-preset')) {
+      var pr0 = M.presets[+t.getAttribute('data-preset')];
+      if (pr0[4] === 'jump') {
+        M.jumpMode = true; M.jvals = datedVals(M.p.jump, 'month');
+        var cj = rawGet(M.p.jump); M.ps = cj || null;
+        M.pv = +String(cj || M.jvals[M.jvals.length - 1] || iso(new Date())).slice(0, 4);
+        return render();
+      }
+      if (pr0[4] === 'single') {
+        M.ps = pr0[1];
+        if (/^\d{4}/.test(M.ps)) M.pv = P.kind === 'year' ? yearPageStart(+M.ps.slice(0, 4)) : +M.ps.slice(0, 4);
+        return render();
+      }
+      M.jumpMode = false;            // a range preset leaves whole-month mode
+    }
+    var pv = t.getAttribute('data-v');
+    if (P && pv) { M.ps = pv; render(); var ag = M.el.querySelector('[data-v="' + pv + '"]'); if (ag) ag.focus(); return; }
     if (act === 'prev' || act === 'next') {
       var dir = act === 'prev' ? -1 : 1;
       M.view = M.p.mode === 'month' ? M.view + dir : addMonthsYM(M.view, dir);
@@ -299,6 +417,8 @@
     }
   }
   function doApply() {
+    if (M && M.single) { var sv = M.ps, sp = M.p; if (!sv) return; close(); commitSingle(sp.sel, sv); refresh(sp); return; }
+    if (M && M.jumpMode) { var jv = M.ps, jp = M.p; if (!jv) return; close(); commitSingle(jp.jump, jv, true); refresh(jp); return; }
     if (!M || !M.s) return;
     var s = M.s, e = M.e || M.s, p = M.p;
     if (p.mode === 'month') {
@@ -317,6 +437,14 @@
     return [s, e || s];
   }
   function paintSel() {
+    if (pk()) {
+      M.el.querySelectorAll('.hdp-day[data-v]').forEach(function (d) {
+        var on = d.getAttribute('data-v') === M.ps;
+        d.classList.toggle('hdp-start', on); d.classList.toggle('hdp-end', on); d.classList.remove('hdp-in');
+        d.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      return headPick();
+    }
     var r = selRange();
     M.el.querySelectorAll('.hdp-day[data-v]').forEach(function (d) {
       var v = d.getAttribute('data-v');
@@ -350,11 +478,15 @@
   }
   function render() {
     var p = M.p, bd = M.bd;
-    M.presets = presets(p, bd, [rawGet(p.a), rawGet(p.b)]);
-    M.el.querySelector('.hdp-presets').innerHTML = '<div class="hdp-ph">Quick ranges</div>' + M.presets.map(function (x, i) {
-      return '<button type="button" data-preset="' + i + '"' + (x[3] ? '' : ' disabled') + '>' + x[0] + '</button>';
+    if (M.single) M.presets = singlePresets(p);
+    else { M.presets = presets(p, bd, [rawGet(p.a), rawGet(p.b)]); if (p.jump && p.jump.isConnected) M.presets.push(['Whole month…', null, null, true, 'jump']); }
+    M.el.querySelector('.hdp-presets').innerHTML = '<div class="hdp-ph">' + (M.single ? 'Quick picks' : 'Quick ranges') + '</div>' + M.presets.map(function (x, i) {
+      var extra = x[4] === 'single' ? ' data-val="' + x[1] + '"' : x[4] === 'jump' ? ' data-jump=""' : '';
+      return '<button type="button" data-preset="' + i + '"' + extra + (x[3] ? '' : ' disabled') + '>' + x[0] + '</button>';
     }).join('');
     var cals = M.el.querySelector('.hdp-cals');
+    var P = pk();
+    if (P) { cals.innerHTML = pickGrid(P); return paintSel(); }
     if (p.mode === 'month') {
       var y = M.view, h = '<div class="hdp-cal" style="width:270px"><div class="hdp-mt">' + y + '</div><div class="hdp-grid hdp-months">';
       for (var m = 0; m < 12; m++) {
@@ -368,6 +500,70 @@
     }
     paintSel();
   }
+  // ── single-pick (one month / one year) ────────────────────────────────────
+  function pk() {
+    if (!M) return null;
+    if (M.single) return { sel: M.p.sel, kind: M.p.mode, vals: M.vals };
+    if (M.jumpMode) return { sel: M.p.jump, kind: 'month', vals: M.jvals };
+    return null;
+  }
+  function yearPageStart(y) {
+    var v = M.vals; if (!v || !v.length) return y;
+    var first = +v[0], last = +v[v.length - 1];
+    return Math.max(first, Math.min(y, last - 11));
+  }
+  function singlePresets(p) {
+    var s = p.sel, vals = datedVals(s, p.mode), out = [];
+    specials(s).forEach(function (o) { out.push([o.t, o.v, o.v, true, 'single']); });
+    var n = vals.length, last = vals[n - 1], prev = vals[n - 2], unit = p.mode === 'month' ? 'month' : 'year';
+    var nowK = p.mode === 'month' ? iso(new Date()).slice(0, 7) : String(new Date().getFullYear());
+    var isNow = last === nowK;
+    var prevIsCal = prev && (p.mode === 'month' ? addMonthsYM(last, -1) === prev : String(+last - 1) === prev);
+    if (last) out.push([(isNow ? 'This ' : 'Latest ') + unit, last, last, true, 'single']);
+    if (prev) out.push([(isNow && prevIsCal ? 'Last ' : 'Previous ') + unit, prev, prev, true, 'single']);
+    var cur = rawGet(s);
+    if (p.mode === 'month' && /^\d{4}-\d{2}$/.test(cur)) {
+      var ly = addMonthsYM(cur, -12);
+      if (vals.indexOf(ly) >= 0) out.push(['Same month last year', ly, ly, true, 'single']);
+    }
+    return out;
+  }
+  function pickGrid(P) {
+    var h;
+    if (P.kind === 'month') {
+      var y = M.pv;
+      h = '<div class="hdp-cal" style="width:270px"><div class="hdp-mt">' + y + '</div><div class="hdp-grid hdp-months">';
+      for (var m = 0; m < 12; m++) {
+        var v = y + '-' + pad(m + 1), dis = P.vals.indexOf(v) < 0;
+        h += '<button type="button" class="hdp-day" data-v="' + v + '"' + (dis ? ' disabled' : '') + ' aria-label="' + MONTH_FULL[m] + ' ' + y + '">' + MON[m] + '</button>';
+      }
+    } else {
+      var last = +P.vals[P.vals.length - 1], end = Math.min(M.pv + 11, last);
+      h = '<div class="hdp-cal" style="width:270px"><div class="hdp-mt">' + M.pv + (end > M.pv ? ' – ' + end : '') + '</div><div class="hdp-grid hdp-months">';
+      for (var yy = M.pv; yy <= end; yy++) {
+        var yv = String(yy), yd = P.vals.indexOf(yv) < 0;
+        h += '<button type="button" class="hdp-day" data-v="' + yv + '"' + (yd ? ' disabled' : '') + ' aria-label="' + yv + '">' + yv + '</button>';
+      }
+    }
+    return h + '</div></div>';
+  }
+  function headPick() {
+    var P = pk(), first = P.vals[0], last = P.vals[P.vals.length - 1], isY = P.kind === 'year';
+    var txt = M.ps ? (M.single ? optText(P.sel, M.ps) : fmtYM(M.ps) + ' (whole month)') : (isY ? 'Pick a year' : 'Pick a month');
+    var hint = M.single ? (isY ? 'Click a year, then Apply' : 'Click a month, then Apply') : 'Sets the range to that calendar month';
+    var prevOk = !!first && (isY ? M.pv > +first : M.pv > +first.slice(0, 4));
+    var nextOk = !!last && (isY ? M.pv + 11 < +last : M.pv < +last.slice(0, 4));
+    M.el.querySelector('.hdp-head').innerHTML = '<button type="button" class="hdp-navbtn" data-act="prev" aria-label="Previous"' + (prevOk ? '' : ' disabled') + '>‹</button>' +
+      '<span><span class="hdp-sel" aria-live="polite">' + txt + '</span><br><span class="hdp-hint">' + hint + '</span></span>' +
+      '<button type="button" class="hdp-navbtn" data-act="next" aria-label="Next"' + (nextOk ? '' : ' disabled') + '>›</button>';
+    M.el.querySelector('[data-act="apply"]').disabled = !M.ps;
+    M.el.querySelector('.hdp-note').textContent = first ? 'Available: ' + (isY ? first + ' – ' + last : fmtYM(first) + ' – ' + fmtYM(last)) : '';
+    M.el.querySelectorAll('.hdp-presets [data-preset]').forEach(function (b) {
+      var pr = M.presets[+b.getAttribute('data-preset')];
+      b.setAttribute('aria-pressed', (pr[4] === 'single' ? pr[1] === M.ps : pr[4] === 'jump' ? !!M.jumpMode : false) ? 'true' : 'false');
+    });
+  }
+
   function monthGrid(ym, bd) {
     var y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1;
     var first = new Date(y, m, 1), startDow = (first.getDay() + 6) % 7;   // Monday-first
@@ -391,8 +587,10 @@
   new MutationObserver(function (muts) {
     for (var i = 0; i < muts.length; i++) for (var j = 0; j < muts[i].addedNodes.length; j++) {
       var n = muts[i].addedNodes[j];
-      if (n.nodeType === 1 && (n.matches('input[type="date"],select') || n.querySelector('input[type="date"],select'))) {
+      var late = n.nodeType === 1 && n.tagName === 'OPTION' && n.parentElement && n.parentElement.tagName === 'SELECT' && !n.parentElement.__hdpSingle;
+      if (late || (n.nodeType === 1 && (n.matches('input[type="date"],select') || n.querySelector('input[type="date"],select')))) {
         pairs = pairs.filter(function (p) { return p.a.isConnected && p.b.isConnected; });
+        singles = singles.filter(function (p) { return p.sel.isConnected; });
         if (!q) { q = true; setTimeout(function () { q = false; scan(); }, 30); }
         return;
       }
@@ -402,5 +600,6 @@
   window.addEventListener('load', scan);
   setTimeout(scan, 1500);
 
-  window.HubDatePicker = { pairs: function () { return pairs; }, open: function (i) { open(pairs[i || 0]); }, scan: scan };
+  window.HubDatePicker = { pairs: function () { return pairs; }, singles: function () { return singles; },
+    open: function (i) { open(pairs[i || 0]); }, openSingle: function (i) { open(singles[i || 0]); }, scan: scan };
 })();
