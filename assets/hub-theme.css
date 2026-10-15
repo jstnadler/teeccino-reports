@@ -1,0 +1,143 @@
+/* hub-theme.css — chrome for the site-wide theme switch + shared date-range picker.
+   Owner: HubSmith. Loaded by assets/hub-theme.js. Every color here comes from the
+   --hub-* tokens hub-theme.js publishes on <html>, so all three themes share one sheet. */
+
+html { color-scheme: dark; }
+html[data-hub-theme="light"], html[data-hub-theme="cream"] { color-scheme: light; }
+
+/* ── Theme switch (in the nav, or floating on pages without the nav) ───────── */
+.hub-theme-switch {
+  display: inline-flex; align-items: center; gap: 0; padding: 2px;
+  border: 1px solid var(--hub-border); border-radius: 7px;
+  background: var(--hub-surface);
+  font: 600 12px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.hub-theme-switch button {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  color: var(--hub-muted); font: inherit; padding: 5px 9px; border-radius: 5px;
+}
+.hub-theme-switch button:hover { color: var(--hub-ink); }
+.hub-theme-switch button[aria-pressed="true"] { background: var(--hub-accent); color: var(--hub-accent-ink); }
+.hub-theme-switch button:focus-visible { outline: 2px solid var(--hub-accent); outline-offset: 1px; }
+.hub-theme-float {
+  position: fixed; right: 14px; bottom: 14px; z-index: 2147483000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .18); border-radius: 8px;
+}
+@media print { .hub-theme-float, .hub-theme-switch { display: none !important; } }
+
+/* ── Hub nav in Light / Cream (nav.html's own <style> is the Dark design) ──── */
+html[data-hub-theme="light"] #hub-nav-bar, html[data-hub-theme="cream"] #hub-nav-bar {
+  background: color-mix(in srgb, var(--hub-surface) 94%, transparent);
+  border-bottom-color: var(--hub-border);
+}
+html[data-hub-theme="light"] #hub-nav-bar .brand, html[data-hub-theme="cream"] #hub-nav-bar .brand,
+html[data-hub-theme="light"] #hub-nav-bar .home-link, html[data-hub-theme="cream"] #hub-nav-bar .home-link { color: var(--hub-accent); }
+html[data-hub-theme="light"] #hub-nav-bar .home-link, html[data-hub-theme="cream"] #hub-nav-bar .home-link {
+  border-color: color-mix(in srgb, var(--hub-accent) 40%, transparent);
+}
+html[data-hub-theme="light"] #hub-nav-bar .group-label, html[data-hub-theme="cream"] #hub-nav-bar .group-label { color: var(--hub-muted); }
+html[data-hub-theme="light"] #hub-nav-bar a.nav-link, html[data-hub-theme="cream"] #hub-nav-bar a.nav-link { color: var(--hub-ink2); }
+html[data-hub-theme="light"] #hub-nav-bar a.nav-link:hover, html[data-hub-theme="cream"] #hub-nav-bar a.nav-link:hover,
+html[data-hub-theme="light"] #hub-nav-bar a.nav-link.active, html[data-hub-theme="cream"] #hub-nav-bar a.nav-link.active {
+  color: var(--hub-accent); background: color-mix(in srgb, var(--hub-accent) 10%, transparent);
+}
+html[data-hub-theme="light"] #hub-search input, html[data-hub-theme="cream"] #hub-search input {
+  background: var(--hub-surface); border-color: var(--hub-border); color: var(--hub-ink);
+}
+html[data-hub-theme="light"] #hub-search input::placeholder, html[data-hub-theme="cream"] #hub-search input::placeholder { color: var(--hub-muted); }
+html[data-hub-theme="light"] #hub-search-results, html[data-hub-theme="cream"] #hub-search-results {
+  background: var(--hub-surface); border-color: var(--hub-border); box-shadow: 0 12px 32px rgba(0, 0, 0, .12);
+}
+html[data-hub-theme="light"] #hub-search-results a.sr-item, html[data-hub-theme="cream"] #hub-search-results a.sr-item { color: var(--hub-ink); }
+html[data-hub-theme="light"] #hub-search-results .sr-title, html[data-hub-theme="cream"] #hub-search-results .sr-title { color: var(--hub-accent); }
+html[data-hub-theme="light"] #hub-search-results .sr-meta, html[data-hub-theme="cream"] #hub-search-results .sr-meta,
+html[data-hub-theme="light"] #hub-search-results .sr-cat, html[data-hub-theme="cream"] #hub-search-results .sr-cat { color: var(--hub-muted); }
+/* Owner badge chip: gold-on-navy chip only reads on Dark. */
+html[data-hub-theme="light"] #report-owner-badge .rob-agent, html[data-hub-theme="cream"] #report-owner-badge .rob-agent {
+  background: var(--hub-accent); color: var(--hub-accent-ink);
+}
+html[data-hub-theme="dark"] #report-owner-badge { color: var(--hub-muted); }
+html[data-hub-theme="dark"] #report-owner-badge .rob-to { color: var(--hub-ink2); }
+
+/* ── Shared date-range picker (assets/hub-datepicker.js) ───────────────────── */
+.hdp-field {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  min-height: 30px; padding: 5px 10px; border-radius: 7px;
+  border: 1px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-ink);
+  font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap; vertical-align: middle;
+}
+.hdp-field:hover { border-color: var(--hub-accent); }
+.hdp-field:focus-visible { outline: 2px solid var(--hub-accent); outline-offset: 1px; }
+.hdp-field .hdp-ico { color: var(--hub-muted); font-size: 13px; }
+.hdp-field .hdp-caret { color: var(--hub-muted); font-size: 10px; }
+.hdp-hidden { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important;
+  clip: rect(0 0 0 0) !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important; padding: 0 !important; margin: -1px !important; }
+
+.hdp-backdrop {
+  position: fixed; inset: 0; z-index: 2147483100; display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .45); padding: 16px;
+}
+html[data-hub-theme="light"] .hdp-backdrop, html[data-hub-theme="cream"] .hdp-backdrop { background: rgba(30, 20, 15, .28); }
+.hdp-modal {
+  background: var(--hub-surface); color: var(--hub-ink); border: 1px solid var(--hub-border);
+  border-radius: 12px; box-shadow: 0 24px 64px rgba(0, 0, 0, .35);
+  font: 14px/1.35 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: grid; grid-template-columns: 170px auto; max-width: 100%; max-height: calc(100vh - 32px); overflow: auto;
+}
+.hdp-presets { border-right: 1px solid var(--hub-border); padding: 12px 8px; display: flex; flex-direction: column; gap: 2px; background: var(--hub-raised); border-radius: 12px 0 0 12px; }
+.hdp-presets .hdp-ph { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--hub-muted); padding: 4px 10px 6px; font-weight: 600; }
+.hdp-presets button {
+  appearance: none; border: 0; background: transparent; color: var(--hub-ink2); text-align: left;
+  font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 6px; cursor: pointer;
+}
+.hdp-presets button:hover { background: var(--hub-surface); color: var(--hub-ink); }
+.hdp-presets button[aria-pressed="true"] { background: var(--hub-accent); color: var(--hub-accent-ink); }
+.hdp-presets button:disabled { opacity: .45; cursor: default; }
+.hdp-main { padding: 14px 16px 12px; min-width: 0; }
+.hdp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.hdp-head .hdp-sel { font-weight: 600; font-size: 14px; }
+.hdp-head .hdp-hint { font-size: 12px; color: var(--hub-muted); }
+.hdp-navbtn {
+  appearance: none; border: 1px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-ink);
+  width: 30px; height: 30px; border-radius: 7px; cursor: pointer; font-size: 15px; line-height: 1;
+}
+.hdp-navbtn:hover { border-color: var(--hub-accent); color: var(--hub-accent); }
+.hdp-navbtn:disabled { opacity: .35; cursor: default; }
+.hdp-cals { display: flex; gap: 22px; align-items: flex-start; }
+.hdp-cal { width: 238px; }
+.hdp-cal .hdp-mt { text-align: center; font-weight: 600; font-size: 13px; margin: 2px 0 8px; color: var(--hub-ink); }
+.hdp-grid { display: grid; grid-template-columns: repeat(7, 34px); gap: 0; }
+.hdp-grid.hdp-months { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.hdp-dow { font-size: 11px; color: var(--hub-muted); text-align: center; padding-bottom: 4px; }
+.hdp-day {
+  appearance: none; border: 0; background: transparent; color: var(--hub-ink); font: inherit; font-size: 13px;
+  height: 32px; cursor: pointer; border-radius: 0; position: relative;
+}
+.hdp-months .hdp-day { height: 40px; border-radius: 7px; border: 1px solid var(--hub-grid); }
+.hdp-day:hover:not(:disabled) { outline: 1px solid var(--hub-accent); outline-offset: -1px; border-radius: 6px; }
+.hdp-day.hdp-out { visibility: hidden; }
+.hdp-day:disabled { color: var(--hub-muted); opacity: .38; cursor: default; }
+.hdp-day.hdp-today { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.hdp-day.hdp-in { background: color-mix(in srgb, var(--hub-accent) 16%, var(--hub-surface)); }
+html[data-hub-theme="dark"] .hdp-day.hdp-in { background: color-mix(in srgb, var(--hub-accent) 24%, var(--hub-surface)); }
+.hdp-day.hdp-start, .hdp-day.hdp-end { background: var(--hub-accent); color: var(--hub-accent-ink); font-weight: 700; }
+.hdp-day.hdp-start { border-radius: 7px 0 0 7px; }
+.hdp-day.hdp-end { border-radius: 0 7px 7px 0; }
+.hdp-day.hdp-start.hdp-end { border-radius: 7px; }
+.hdp-months .hdp-day.hdp-in, .hdp-months .hdp-day.hdp-start, .hdp-months .hdp-day.hdp-end { border-radius: 7px; }
+.hdp-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--hub-border); }
+.hdp-foot .hdp-note { font-size: 12px; color: var(--hub-muted); }
+.hdp-btn {
+  appearance: none; border: 1px solid var(--hub-border); background: var(--hub-surface); color: var(--hub-ink);
+  font: 600 13px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 8px 14px; border-radius: 7px; cursor: pointer;
+}
+.hdp-btn.hdp-primary { background: var(--hub-accent); border-color: var(--hub-accent); color: var(--hub-accent-ink); }
+.hdp-btn:disabled { opacity: .45; cursor: default; }
+.hdp-btn:focus-visible, .hdp-day:focus-visible, .hdp-presets button:focus-visible { outline: 2px solid var(--hub-accent); outline-offset: 1px; }
+@media (max-width: 640px) {
+  .hdp-modal { grid-template-columns: 1fr; }
+  .hdp-presets { flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--hub-border); border-radius: 12px 12px 0 0; }
+  .hdp-presets .hdp-ph { width: 100%; }
+  .hdp-cal + .hdp-cal { display: none; }
+}

@@ -56,6 +56,18 @@
     document.head.appendChild(link);
   })();
 
+  /* 0.5) THEME — Dark / Light / Cream (assets/hub-theme.js). The deploy step
+     injects hub-theme.js as the first <head> child of every page so it applies
+     before first paint. This is the FALLBACK for a page served without that tag
+     (local preview, a skipped deploy step): load it now (post-paint), and in
+     either case mount the theme switch into the nav's #hub-theme-slot. */
+  (function mountTheme() {
+    if (window.HubTheme) { window.HubTheme.ensureSwitch(); return; }
+    var t = document.createElement('script');
+    t.src = '/teeccino-reports/assets/hub-theme.js';
+    t.onload = function () { if (window.HubTheme) window.HubTheme.ensureSwitch(); };
+    document.head.appendChild(t);
+  })();
   var params = new URLSearchParams(window.location.search);
   var shareParam = params.get('share');
   var shareOn = false;
