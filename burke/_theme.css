@@ -1,0 +1,132 @@
+/*
+  Burke's portal — LIGHT theme.  Owner: HubSmith (clawd-hubsmith). Portal-scoped (§18).
+  Linked from burke/_nav.html; every rule is gated on html[data-portal-theme="light"], which
+  burke/_theme.js sets from localStorage. With the attribute absent or "dark", this file does
+  nothing, so dark (the default) renders exactly as the generators wrote it.
+
+  WHY OVERRIDES, NOT PAGE EDITS: every burke/*.html dashboard is regenerated daily (DataOps
+  07:00 run; Orinoco for index + inventory-cover). Hand edits would be overwritten. This file
+  rides in on the portal nav, which every page already fetches, so it survives the rebuild.
+
+  Specificity: html[attr] + selector always outranks the pages' own `:root{}` / `.fb-band{}` /
+  element rules, so no !important is needed EXCEPT against inline style="" attributes.
+
+  FOUR LAYERS:
+   1. Shared variables (amazon, -ads, -asin-daily, -funnel, -movers, -decisions).
+   2. Findings band (--fb-*), written by DataOps' findings_band.py.
+   3. Pages with hardcoded colors: index.html, amazon-inventory-cover.html, plus a few literals
+      in amazon-funnel / amazon-decisions.
+   4. CHART ATTRIBUTE MAP. The charts do not use CSS variables — they write the dark palette's
+      neutrals straight into SVG attributes (fill="#93a89a", stroke="#24382b", …). CSS beats a
+      presentation attribute, so each dark neutral is remapped by exact value below.
+      FRAGILE BY DESIGN: if a generator changes one of these hex values, that mark silently
+      stays dark-palette in light mode. The durable fix is page-side (charts read variables +
+      re-render on the `burke-theme-change` event) — that is the generator owners' call.
+      Values were taken from the generators' output on 2026-10-15.
+*/
+
+/* ---------- 1. shared variables ---------- */
+html[data-portal-theme="light"] {
+  color-scheme: light;
+  --bg:#f4f7f4; --card:#ffffff; --ink:#1c2a21; --muted:#55655b;
+  --line:#c9d4cc; --grid:#e3e9e4; --input-bg:#ffffff; --hover-bg:#eef3ef;
+  --prov-bg:#eef6f0; --prov-ink:#1d3a28; --raised:#f0f4f1; --accent-ink:#ffffff;
+  --gold:#8a6a12; --good:#0b7a5b; --warn:#8c6a00; --bad:#b4233f; --crit:#b4233f;
+  --up:#0b7a5b; --down:#b4233f;
+  --net:#0b7a5b; --promo:#8c6a00; --fees:#b4233f; --blue:#1f5fb8;
+  /* amazon-inventory-cover.html's own names */
+  --page:#f4f7f4; --surface-1:#ffffff; --text-primary:#1c2a21; --text-secondary:#3f4d44;
+  --gridline:#e3e9e4; --baseline:#b9c4bc;
+  --brand-green:#2E7D32; --brand-green-dark:#1f5e23;
+}
+html[data-portal-theme="light"] body { background:#f4f7f4; color:#1c2a21; }
+html[data-portal-theme="light"] .modal,
+html[data-portal-theme="light"] .drill { background:rgba(20,33,26,.35); }
+html[data-portal-theme="light"] #tt { box-shadow:0 6px 22px rgba(0,0,0,.14); }
+
+/* ---------- 2. findings band ---------- */
+html[data-portal-theme="light"] .fb-band {
+  --fb-crit-ink:#b4233f; --fb-warn-ink:#8c6a00; --fb-info-ink:#1f5fb8;
+  --fb-tier1-bg:rgba(0,0,0,.035); --fb-tier2-bg:#ffffff; --fb-hatch:rgba(0,0,0,.035);
+  --fb-ink:#1c2a21; --fb-muted:#55655b; --fb-line:#cfd8d2;
+}
+html[data-portal-theme="light"] .fb-t1 .fb-tag { background:rgba(0,0,0,.05); }
+
+/* ---------- 3a. index.html (portal home) ---------- */
+html[data-portal-theme="light"] .header h1 {
+  background:linear-gradient(135deg,#1f5e23,#2E7D32);
+  -webkit-background-clip:text; background-clip:text;
+}
+html[data-portal-theme="light"] .header .sub,
+html[data-portal-theme="light"] .card-desc { color:#55655b; }
+html[data-portal-theme="light"] .report-card {
+  background:#ffffff; border-color:#d5ddd7; color:#1c2a21;
+  box-shadow:0 1px 2px rgba(20,33,26,.05);
+}
+html[data-portal-theme="light"] .report-card:hover { background:#f1f8f2; border-color:#2E7D32; }
+html[data-portal-theme="light"] .card-title { color:#1f6e2a; }
+html[data-portal-theme="light"] .section-label { color:#55655b; }
+html[data-portal-theme="light"] .section-label.action { color:#8a6a12; opacity:1; }
+html[data-portal-theme="light"] .report-card.action { background:#fdf8ea; border-color:#e2c97f; border-left-color:#b58a1e; }
+html[data-portal-theme="light"] .report-card.action:hover { background:#faf1d6; border-color:#b58a1e; }
+html[data-portal-theme="light"] .report-card.action .card-title { color:#7a5c0c; }
+html[data-portal-theme="light"] .report-card.action .card-badge { color:#7a5c0c; border-color:#b58a1e; background:rgba(181,138,30,.10); }
+html[data-portal-theme="light"] .report-card.action .card-badge::before { background:#b58a1e; }
+html[data-portal-theme="light"] footer { color:#55655b; border-top-color:rgba(0,0,0,.08); }
+
+/* ---------- 3b. amazon-inventory-cover.html ---------- */
+html[data-portal-theme="light"] .stat-tile,
+html[data-portal-theme="light"] .panel { background:#ffffff; border-color:#d5ddd7; }
+html[data-portal-theme="light"] .container th,
+html[data-portal-theme="light"] .container td { border-bottom-color:#e3e9e4; }
+html[data-portal-theme="light"] .tooltip {
+  background:#ffffff; color:#1c2a21; border-color:#c9d4cc; box-shadow:0 4px 14px rgba(0,0,0,.14);
+}
+html[data-portal-theme="light"] .tooltip b { color:#1f6e2a; }
+html[data-portal-theme="light"] .caveat { background:#fdf8ea; border-left-color:#d4a843; color:#4a4630; }
+html[data-portal-theme="light"] .caveat b { color:#7a5c0c; }
+html[data-portal-theme="light"] .range-btn { background:#ffffff; border-color:#c9d4cc; color:#3f4d44; }
+html[data-portal-theme="light"] .range-btn:hover { background:#eef3ef; color:#1c2a21; }
+html[data-portal-theme="light"] .range-btn.active { background:#1f5e23; border-color:#2E7D32; color:#ffffff; }
+html[data-portal-theme="light"] .range-custom input[type="date"] { background:#ffffff; border-color:#c9d4cc; color:#1c2a21; }
+html[data-portal-theme="light"] .ratio-dot { stroke:#ffffff; }
+
+/* ---------- 3c. literals in amazon-funnel / amazon-decisions ---------- */
+html[data-portal-theme="light"] .tip { background:#ffffff; box-shadow:0 6px 20px rgba(0,0,0,.14); }
+html[data-portal-theme="light"] .warnbox { background:#fdf6e7; }
+html[data-portal-theme="light"] .pill.who { color:#1f6e2a; }
+html[data-portal-theme="light"] dl.fields dd.nothing { color:#b4233f; }
+html[data-portal-theme="light"] .human .tell b { color:#1f6e2a; }
+
+/* ---------- 4. chart attribute map (dark neutral -> light neutral) ---------- */
+/* surfaces: the 2px "ring" strokes and halo text strokes drawn in the card color */
+html[data-portal-theme="light"] svg [fill="#1b2c22" i],
+html[data-portal-theme="light"] svg [fill="#1a2a20" i],
+html[data-portal-theme="light"] svg [fill="#14211a" i] { fill:#ffffff; }
+html[data-portal-theme="light"] svg [stroke="#1b2c22" i],
+html[data-portal-theme="light"] svg [stroke="#1a2a20" i],
+html[data-portal-theme="light"] svg [stroke="#14211a" i] { stroke:#ffffff; }
+html[data-portal-theme="light"] svg [style*="stroke:#1a2a20" i],
+html[data-portal-theme="light"] svg [style*="stroke:#1b2c22" i] { stroke:#ffffff !important; }
+/* gridlines */
+html[data-portal-theme="light"] svg [stroke="#24382b" i],
+html[data-portal-theme="light"] svg [stroke="#22332a" i],
+html[data-portal-theme="light"] svg [stroke="#2c2c2a" i] { stroke:#e3e9e4; }
+/* zero / divider lines */
+html[data-portal-theme="light"] svg [stroke="#294036" i],
+html[data-portal-theme="light"] svg [stroke="#383835" i] { stroke:#b9c4bc; }
+/* muted: axis labels, "Other" series, crosshair, hatch */
+html[data-portal-theme="light"] svg [fill="#93a89a" i],
+html[data-portal-theme="light"] svg [fill="#9aa0a6" i],
+html[data-portal-theme="light"] svg [fill="#94a3b8" i] { fill:#5f6f65; }
+html[data-portal-theme="light"] svg [stroke="#93a89a" i],
+html[data-portal-theme="light"] svg [stroke="#9aa0a6" i],
+html[data-portal-theme="light"] svg [stroke="#94a3b8" i] { stroke:#7d8b82; }
+/* ink: value labels */
+html[data-portal-theme="light"] svg [fill="#e6efe8" i],
+html[data-portal-theme="light"] svg [fill="#e8eaed" i] { fill:#1c2a21; }
+/* inline-styled muted text in funnel tables / chart titles */
+html[data-portal-theme="light"] [style*="color:#9aa0a6" i],
+html[data-portal-theme="light"] [style*="color:#93a89a" i] { color:#55655b !important; }
+html[data-portal-theme="light"] [style*="color:#D4A843" i],
+html[data-portal-theme="light"] [style*="color:#C9A227" i] { color:#8a6a12 !important; }
