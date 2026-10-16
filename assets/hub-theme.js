@@ -473,7 +473,7 @@
     } catch (e) {}
   }
   function fixContrastIn(node) {
-    if (!ctx || ctx.identity || node.nodeType !== 1) return;
+    if (!ctx || node.nodeType !== 1) return;          // runs in Dark too (Justin, 2026-10-15)
     var cache = new Map();
     var list = [node].concat(Array.prototype.slice.call(node.querySelectorAll('*')));
     for (var i = 0; i < list.length; i++) {
@@ -651,13 +651,14 @@
   function flush() { try { flushInner(); } catch (e) { warn(e); } }
   function flushInner() {
     flushQueued = false;
-    if (!ctx || ctx.identity) { pendingNodes = []; return; }
-    processSheets();
+    if (!ctx) { pendingNodes = []; return; }
+    // Dark-native page in Dark: no recolor, but the contrast pass still runs.
+    if (!ctx.identity) processSheets();
     var nodes = pendingNodes; pendingNodes = [];
     selfWrote = new Set();
     freeze(true);
     try {
-      for (var i = 0; i < nodes.length; i++) if (nodes[i].isConnected) processTree(nodes[i]);
+      if (!ctx.identity) for (var i = 0; i < nodes.length; i++) if (nodes[i].isConnected) processTree(nodes[i]);
       // A new stylesheet can recolor anything, so a sheet arrival re-checks the whole body.
       var roots = sheetsAdded ? [document.body] : nodes; sheetsAdded = false;
       for (var k = 0; k < roots.length; k++) if (roots[k] && roots[k].isConnected) fixContrastIn(roots[k]);
@@ -701,16 +702,17 @@
     if (!ctx.identity) {
       processSheets();
       processTree(document.body || root);
-      fixContrastIn(document.body || root);
       if (window.Chart) { hookChart(window.Chart); themeChartDefaults(window.Chart); }
     }
     eachChart(function (ch) {
       if (!ctx.identity) themeChart(ch);
       try { ch.update('none'); } catch (e) {}
     });
+    // Every theme, including Dark-as-authored: text below 4.5:1 on its own background is lifted.
+    fixContrastIn(document.body || root);
     if (!observer && window.MutationObserver) {
       observer = new MutationObserver(function (muts) {
-        if (!ctx || ctx.identity) return;
+        if (!ctx) return;
         for (var i = 0; i < muts.length; i++) handleRec(muts[i], null);
       });
       observer.observe(root, { childList: true, subtree: true, attributes: true,
