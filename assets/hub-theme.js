@@ -381,15 +381,20 @@
     for (var i = st.length - 1; i >= 0; i--) {
       var prop = st[i], role = roleOf(prop);
       if (!role) continue;
+      // Our own theme tokens live inline on <html>; any later write to <html style> (nav sets
+      // --hub-nav-h) re-queues it, and remapping them flipped --hub-accent-ink to ink (3.4:1 chips).
+      if (prop.indexOf('--hub-') === 0) continue;
       if (chipKid && role === 'text') continue;
       var v = st.getPropertyValue(prop);
+      var co = prop === 'color' && cOver.get(el);
+      if (co && co[2] === v) continue;               // our own contrast override
       if (seen[prop] === v) continue;                 // our own output
       var nv = mapValue(v, role);
       if (nv == null) continue;
       var pr = st.getPropertyPriority(prop);
-      journal.push([st, prop, v, pr, el]);
       st.setProperty(prop, nv, pr);
       seen[prop] = st.getPropertyValue(prop);
+      journal.push([st, prop, v, pr, el, seen[prop]]);
     }
     inlineSeen.set(el, seen);
   }
@@ -402,11 +407,110 @@
       if (!v || seen[a] === v) continue;
       var nv = mapValue(v, a === 'color' ? 'text' : roleOf(a));
       if (nv == null) continue;
-      journal.push(['attr', el, a, v]);
+      journal.push(['attr', el, a, v, nv]);
       el.setAttribute(a, nv); seen[a] = nv;
     }
     attrSeen.set(el, seen);
   }
+  // ── contrast against the element's OWN painted background ──────────────────
+  // The role mapper recolors each declaration in isolation and fits text against the
+  // THEME GROUND. Text that sits on its own tinted fill (a selected toggle, a good/warn/bad
+  // pill, a tinted panel) can then land at 4.0–4.4:1. This pass runs after recoloring and
+  // measures each text-bearing element against the composite of every painted ancestor
+  // layer (alpha-aware), then moves only lightness — hue kept — until it reaches 4.5:1.
+  // Overrides are inline !important, journaled, and re-derived when class/style changes.
+  var CTARGET = 4.5;
+  var cOver = new WeakMap();           // el → [origValue, origPriority, ourValue]
+  var selfWrote = null;                // Set of elements written during a flush (observer echo filter)
+  function bgLayer(cs) {
+    var c = parse(cs.backgroundColor);
+    if (c && c.a > 0.01) return c;
+    var bi = cs.backgroundImage;
+    if (bi && bi !== 'none' && !/url\(/.test(bi)) {
+      var m = bi.match(COLOR_RE); COLOR_RE.lastIndex = 0;
+      if (m) { var g = parse(m[0]); if (g && g.a > 0.01) return g; }
+    }
+    return null;
+  }
+  function over(top, bot) {
+    var a = top.a;
+    return { r: top.r * a + bot.r * (1 - a), g: top.g * a + bot.g * (1 - a), b: top.b * a + bot.b * (1 - a), a: 1 };
+  }
+  function paintedBg(el, cache) {
+    var stack = [], base = null;
+    for (var a = el; a && a.nodeType === 1; a = a.parentElement) {
+      if (cache.has(a)) { base = cache.get(a); break; }
+      var l = bgLayer(getComputedStyle(a));
+      if (l) { stack.push([a, l]); if (l.a >= 0.999) { base = l; stack.pop(); cache.set(a, l); break; } }
+      else stack.push([a, null]);
+    }
+    if (!base) base = ctx.tBg;
+    for (var i = stack.length - 1; i >= 0; i--) {
+      if (stack[i][1]) base = over(stack[i][1], base);
+      cache.set(stack[i][0], base);
+    }
+    return base;
+  }
+  function hasOwnText(el) {
+    for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && /\S/.test(n.nodeValue)) return true;
+    return false;
+  }
+  // Many pages ship `transition: all`. A recolor then animates, and a mid-flight computed
+  // color/background is what we'd measure (a card still half-dark → text fitted LIGHT on a
+  // white card, 2:1). So transitions are frozen while we rewrite + measure. Toggled via
+  // sheet.disabled — no DOM mutation, so the observer never sees it.
+  var noTrans = null;
+  function freeze(on) {
+    try {
+      if (!noTrans) {
+        noTrans = document.createElement('style');
+        noTrans.setAttribute('data-hub-theme-keep', '');
+        noTrans.textContent = '*,*::before,*::after{transition:none !important}';
+        (document.head || root).appendChild(noTrans);
+      }
+      if (noTrans.sheet) noTrans.sheet.disabled = !on;
+      if (on) void getComputedStyle(root).color;       // settle styles under the freeze
+    } catch (e) {}
+  }
+  function fixContrastIn(node) {
+    if (!ctx || ctx.identity || node.nodeType !== 1) return;
+    var cache = new Map();
+    var list = [node].concat(Array.prototype.slice.call(node.querySelectorAll('*')));
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      if (el.namespaceURI !== 'http://www.w3.org/1999/xhtml' || /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE|OPTION)$/.test(el.tagName)) continue;
+      var had = cOver.get(el);
+      if (had) {                                   // re-derive from the page's own value
+        cOver.delete(el);
+        if (el.style.getPropertyValue('color') === had[2]) {   // page hasn't re-set it since
+          el.style.setProperty('color', had[0], had[1]);
+          if (selfWrote) selfWrote.add(el);
+        }
+      }
+      if (!hasOwnText(el)) continue;
+      if (el.closest('[data-hub-theme-keep],svg') || el.__hubChip || inChip(el)) continue;
+      var cs = getComputedStyle(el);
+      // No visibility check: the pre-paint hold makes the whole body visibility:hidden while
+      // this runs. Fixing an invisible element is harmless; skipping all of them was not.
+      if (cs.display === 'none') continue;
+      if (/text/.test((cs.webkitBackgroundClip || '') + (cs.backgroundClip || ''))) continue;
+      var fg = parse(cs.color); if (!fg || fg.a < 0.3) continue;
+      var bg = paintedBg(el, cache);
+      var eff = fg.a < 1 ? over(fg, bg) : fg;
+      if (contrast(eff, bg) >= CTARGET) continue;
+      var darker = lum(bg) > 0.18;
+      var fit = fitContrast({ r: fg.r, g: fg.g, b: fg.b, a: 1 }, bg, CTARGET + 0.1, darker);
+      if (contrast(fit, bg) < CTARGET) fit = darker ? { r: 0, g: 0, b: 0, a: 1 } : { r: 255, g: 255, b: 255, a: 1 };
+      var nv = fmt(fit);
+      var ov = el.style.getPropertyValue('color'), op = el.style.getPropertyPriority('color');
+      el.style.setProperty('color', nv, 'important');
+      var wrote = el.style.getPropertyValue('color');
+      cOver.set(el, [ov, op, wrote]);
+      journal.push([el.style, 'color', ov, op, el, wrote]);
+      if (selfWrote) selfWrote.add(el);
+    }
+  }
+
   function processTree(node) {
     if (node.nodeType !== 1) return;
     if (node.hasAttribute('style')) processInline(node);
@@ -420,10 +524,14 @@
   function revertAll() {
     for (var i = journal.length - 1; i >= 0; i--) {
       var j = journal[i];
-      if (j[0] === 'attr') { j[1].setAttribute(j[2], j[3]); continue; }
+      if (j[0] === 'attr') { if (j[1].getAttribute(j[2]) === j[4]) j[1].setAttribute(j[2], j[3]); continue; }
+      // Inline entries: restore only if the value is still the one WE wrote. If the page has
+      // re-set it since (a toggle click), the page's newer value wins — restoring our older
+      // "original" brought back a stale selected state on theme switch.
+      if (j.length > 5 && j[0].getPropertyValue(j[1]) !== j[5]) continue;
       try { j[0].setProperty(j[1], j[2], j[3]); } catch (e) {}
     }
-    journal = []; memo = {};
+    journal = []; memo = {}; cOver = new WeakMap();
     doneSheets = new WeakSet(); inlineSeen = new WeakMap(); attrSeen = new WeakMap();
     revertCharts();
   }
@@ -546,12 +654,40 @@
     if (!ctx || ctx.identity) { pendingNodes = []; return; }
     processSheets();
     var nodes = pendingNodes; pendingNodes = [];
-    for (var i = 0; i < nodes.length; i++) if (nodes[i].isConnected) processTree(nodes[i]);
+    selfWrote = new Set();
+    freeze(true);
+    try {
+      for (var i = 0; i < nodes.length; i++) if (nodes[i].isConnected) processTree(nodes[i]);
+      // A new stylesheet can recolor anything, so a sheet arrival re-checks the whole body.
+      var roots = sheetsAdded ? [document.body] : nodes; sheetsAdded = false;
+      for (var k = 0; k < roots.length; k++) if (roots[k] && roots[k].isConnected) fixContrastIn(roots[k]);
+    } finally {
+      // Drop the observer's echo of our own writes; keep anything the page did meanwhile.
+      if (observer) {
+        var recs = observer.takeRecords();
+        for (var r = 0; r < recs.length; r++) handleRec(recs[r], selfWrote);
+      }
+      selfWrote = null;
+      freeze(false);
+    }
+  }
+  var sheetsAdded = false;
+  function handleRec(m, skip) {
+    if (m.type === 'attributes') { if (!(skip && skip.has(m.target))) queue(m.target); return; }
+    for (var j = 0; j < m.addedNodes.length; j++) {
+      var a = m.addedNodes[j];
+      // el.textContent = '658' on an empty span adds only a TEXT node; the span itself now
+      // carries text for the first time and needs its contrast checked.
+      if (a.nodeType === 3) { if (m.target && m.target.nodeType === 1 && /\S/.test(a.nodeValue)) queue(m.target); continue; }
+      if (a.nodeType !== 1) continue;
+      if (a.tagName === 'STYLE' || a.tagName === 'LINK') sheetsAdded = true;
+      queue(a);
+    }
   }
   function queue(n) { pendingNodes.push(n); if (!flushQueued) { flushQueued = true; Promise.resolve().then(flush); } }
 
   function warn(e) { try { console.warn('[hub-theme]', e); } catch (x) {} }
-  function apply() { try { applyInner(); } catch (e) { warn(e); release(); } }
+  function apply() { freeze(true); try { applyInner(); } catch (e) { warn(e); release(); } freeze(false); }
   function applyInner() {
     revertAll();
     ctx = null;
@@ -565,6 +701,7 @@
     if (!ctx.identity) {
       processSheets();
       processTree(document.body || root);
+      fixContrastIn(document.body || root);
       if (window.Chart) { hookChart(window.Chart); themeChartDefaults(window.Chart); }
     }
     eachChart(function (ch) {
@@ -574,16 +711,10 @@
     if (!observer && window.MutationObserver) {
       observer = new MutationObserver(function (muts) {
         if (!ctx || ctx.identity) return;
-        for (var i = 0; i < muts.length; i++) {
-          var m = muts[i];
-          if (m.type === 'attributes') { queue(m.target); continue; }
-          for (var j = 0; j < m.addedNodes.length; j++) {
-            var a = m.addedNodes[j];
-            if (a.nodeType === 1) queue(a);
-          }
-        }
+        for (var i = 0; i < muts.length; i++) handleRec(muts[i], null);
       });
-      observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'fill', 'stroke'] });
+      observer.observe(root, { childList: true, subtree: true, attributes: true,
+        attributeFilter: ['style', 'fill', 'stroke', 'class', 'aria-pressed', 'aria-selected', 'disabled'] });
     }
     release();
   }
