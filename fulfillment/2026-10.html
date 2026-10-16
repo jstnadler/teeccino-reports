@@ -77,6 +77,15 @@
   .sw-closed { background:rgba(139,147,167,0.30); border:1px solid rgba(139,147,167,0.60); }
   .sw-avg { height:0; border-top:2px dashed #c9d1d9; border-radius:0; }
   .sw-placed { background:#6C8CF0; }
+  .sw-roll { height:0; border-top:3px solid #f0f6fc; border-radius:0; }
+  .tw-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:14px; margin-top:14px; }
+  @media (max-width: 900px) { .tw-grid { grid-template-columns:minmax(0,1fr); } }
+  .est { display:inline-block; font-size:0.68em; font-weight:700; letter-spacing:.05em;
+          color:#e3b341; border:1px solid rgba(227,179,65,0.5); border-radius:4px;
+          padding:0 5px; margin-left:6px; vertical-align:middle; }
+  .placeholder-card { border:2px dashed rgba(255,255,255,0.18); border-radius:10px;
+                       padding:18px 20px; color:#aab; font-size:0.9em; line-height:1.6; }
+  .placeholder-card strong { color:#e6edf3; }
   .lg-btn { background:none; border:1px solid rgba(255,255,255,0.12); border-radius:6px;
             color:inherit; font:inherit; padding:3px 8px; cursor:pointer;
             display:inline-flex; align-items:center; gap:6px; }
@@ -110,7 +119,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — October 2026</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-16 12:52. · 122,406 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-16 13:01. · 122,406 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -199,18 +208,18 @@
     <div class="hero-grid">
         <div class="hero-card">
             <div class="hero-label">Per Shipping Day</div>
-            <div class="hero-value">180</div>
+            <div class="hero-value">192</div>
             <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Total Fulfilled</div>
-            <div class="hero-value">2,163</div>
+            <div class="hero-value">2,107</div>
             <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Shipping Days</div>
-            <div class="hero-value">12</div>
-            <div class="hero-sub">of 16 calendar days</div>
+            <div class="hero-value">11</div>
+            <div class="hero-sub">of 15 calendar days</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Busiest Day</div>
@@ -220,19 +229,19 @@
         <div class="hero-card">
             <div class="hero-label">Median Shipping Day</div>
             <div class="hero-value">193</div>
-            <div class="hero-sub">quietest 56 on 2026-10-16</div>
+            <div class="hero-sub">quietest 68 on 2026-10-12</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Per Calendar Day</div>
-            <div class="hero-value">135</div>
-            <div class="hero-sub">same orders spread over all 16 days &mdash; not a throughput rate</div>
+            <div class="hero-value">140</div>
+            <div class="hero-sub">same orders spread over all 15 days &mdash; not a throughput rate</div>
         </div></div>
     <div class="definitions" style="margin-top:14px;margin-bottom:18px">
       The warehouse ships on business days, so this window contains 4 weekend days.
-      <strong>Per Shipping Day</strong> (180) divides by the
-      12 days that actually shipped and is the real throughput rate.
-      <strong>Per Calendar Day</strong> (135) divides the same orders
-      by all 16 days and so understates output by 25%
+      <strong>Per Shipping Day</strong> (192) divides by the
+      11 days that actually shipped and is the real throughput rate.
+      <strong>Per Calendar Day</strong> (140) divides the same orders
+      by all 15 days and so understates output by 27%
       &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-10-16</strong>. This month is still in progress; only days with shipment data are included.<br>
       Counts <strong>2,163 orders &mdash; DTC, Target and Walmart</strong>
       &mdash; which is 99.3% of the 2,178 orders that shipped in
@@ -245,7 +254,8 @@
       <button type="button" class="lg-btn" data-ds="0" aria-pressed="true"><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</button>
       <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
       <button type="button" class="lg-btn" data-ds="1" aria-pressed="true"><i class="sw sw-placed"></i>Orders placed that day</button>
-      <button type="button" class="lg-btn" data-ds="avg" aria-pressed="true"><i class="sw sw-avg"></i>Average fulfilled per shipping day</button>
+      <button type="button" class="lg-btn" data-ds="2" aria-pressed="true"><i class="sw sw-roll"></i>Rolling 7-day average (per shipping day)</button>
+      <button type="button" class="lg-btn" data-ds="avg" aria-pressed="false"><i class="sw sw-avg"></i>Flat october 2026 average</button>
       <span class="lg-hint">Click a series to hide or show it</span>
     </div>
     <div class="chart-wrap" style="height:min(68vh,640px);min-height:420px">
@@ -255,7 +265,7 @@
       day the customer placed them. The two bars will not match on any single day &mdash;
       an order placed Sunday ships Monday &mdash; but over a few days they should track
       each other; a run of placed bars standing taller than fulfilled bars is a growing
-      backlog. Orders Placed is complete through <strong>2026-10-15</strong>; the last 1 day(s) show no blue bar because the order feed lands a day behind shipments, not because nobody ordered.
+      backlog. Orders Placed is complete through <strong>2026-10-15</strong>; the last 1 day(s) show no blue bar because the order feed lands a day behind shipments, not because nobody ordered. The <strong>white line</strong> is the rolling 7-day average: for each day, the orders fulfilled over that day and the 6 before it, divided by the shipping days among them, so weekends do not pull it down. Most recently <strong>191 per shipping day</strong> (957 orders over 5 shipping days to 2026-10-15). Today&rsquo;s bar is drawn faded: the day is still being shipped, so it is left out of the line and every average.
     </div>
     <div class="chart-wrap" style="height:auto;margin-top:18px">
       <div class="wd-title">Workload by Day of Week</div>
@@ -303,14 +313,15 @@
             </tr>
             <tr>
                 <td><strong>Friday</strong></td>
-                <td class="num">140</td>
-                <td class="num">421</td>
-                <td class="num">3</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:51.3%"></div></div></td>
+                <td class="num">182</td>
+                <td class="num">365</td>
+                <td class="num">2</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:66.7%"></div></div></td>
             </tr></tbody>
             </table></div>
     </div>
   </div>
+
 
   <!-- Hero KPIs -->
   <div class="section">
@@ -919,17 +930,24 @@ const F_LABELS = ["2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-
 const F_COUNTS = [177, 196, 0, 0, 139, 212, 198, 228, 169, 0, 0, 68, 335, 193, 192, 56];
 const F_KINDS  = ["shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping"];
 const F_PLACED = [224, 197, 176, 339, 114, 92, 83, 100, 94, 92, 109, 96, 93, 79, 108, null];
-const F_AVG    = 180.2;
+const F_AVG    = 191.5;
+const F_ROLL   = [171.6, 180.8, 180.8, 180.8, 173.2, 171.0, 184.4, 194.6, 189.2, 189.2, 189.2, 175.0, 199.6, 198.6, 191.4, null];
+const F_ROLL_T = [858, 904, 904, 904, 866, 855, 922, 973, 946, 946, 946, 875, 998, 993, 957, null];
+const F_ROLL_D = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, null];
+const F_PROG   = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true];
 const F_KIND_TEXT = {
   shipping: 'shipped',
   weekend:  'weekend \u2014 warehouse closed',
-  closed:   'no shipments (holiday or shutdown)'
+  closed:   'no shipments (holiday or shutdown)',
+  pending:  'today \u2014 nothing shipped yet'
 };
 // One measure (orders fulfilled), one y-axis, one data series. Closed days
 // keep a visible muted stub so a closure reads as "we were shut" rather than
 // as missing data.
 const fulfilledCtx = document.getElementById('fulfilledChart').getContext('2d');
-let F_SHOW_AVG = true;
+// Flat average starts OFF (2026-10-16): the rolling line now answers "what is
+// normal right now", and two reference lines on one chart compete.
+let F_SHOW_AVG = false;
 const fulfilledChartObj = new Chart(fulfilledCtx, {
   type: 'bar',
   data: {
@@ -937,9 +955,10 @@ const fulfilledChartObj = new Chart(fulfilledCtx, {
     datasets: [{
       label: 'Orders Fulfilled',
       data: F_COUNTS,
-      backgroundColor: F_KINDS.map(k => k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.30)'),
-      borderColor:     F_KINDS.map(k => k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.60)'),
-      borderWidth:     F_KINDS.map(k => k === 'shipping' ? 0 : 1),
+      backgroundColor: F_KINDS.map((k, i) => F_PROG[i] ? 'rgba(212,168,67,0.28)' : (k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.30)')),
+      borderColor:     F_KINDS.map((k, i) => (F_PROG[i] || k === 'shipping') ? '#D4A843' : 'rgba(139,147,167,0.60)'),
+      borderWidth:     F_KINDS.map((k, i) => F_PROG[i] ? 1 : (k === 'shipping' ? 0 : 1)),
+      order: 2,
       borderRadius: 4,
       borderSkipped: false,
       // A closed day is genuinely 0 and must not be floored to a fake value;
@@ -954,6 +973,21 @@ const fulfilledChartObj = new Chart(fulfilledCtx, {
       backgroundColor: '#6C8CF0',
       borderRadius: 4,
       borderSkipped: false,
+      order: 2,
+    }, {
+      // Rolling 7-day average per shipping day, drawn over the bars.
+      // null on today's in-progress day -> the line stops at yesterday.
+      type: 'line',
+      label: 'Rolling 7-day average',
+      data: F_ROLL,
+      borderColor: '#f0f6fc',
+      backgroundColor: '#f0f6fc',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.25,
+      spanGaps: false,
+      order: 0,
     }]
   },
   options: {
@@ -973,6 +1007,13 @@ const fulfilledChartObj = new Chart(fulfilledCtx, {
               const p = ctx.parsed.y;
               return 'Placed: ' + (p == null ? 'not in yet' : p.toLocaleString() + ' orders');
             }
+            if (ctx.datasetIndex === 2) {
+              const i = ctx.dataIndex;
+              if (F_ROLL[i] == null) return '7-day average: not counted (day in progress)';
+              return '7-day average: ' + Math.round(F_ROLL[i]) + ' per shipping day ('
+                     + F_ROLL_T[i].toLocaleString() + ' over ' + F_ROLL_D[i] + ' shipping days)';
+            }
+            if (F_PROG[ctx.dataIndex]) return 'Fulfilled so far today: ' + ctx.parsed.y.toLocaleString() + ' (in progress)';
             const k = F_KINDS[ctx.dataIndex];
             if (k !== 'shipping') return 'Fulfilled: 0 — ' + F_KIND_TEXT[k];
             const v = ctx.parsed.y;
@@ -1057,6 +1098,7 @@ document.querySelectorAll('#fLegend .lg-btn').forEach(btn => {
     fulfilledChartObj.update();
   });
 });
+
 
 
 const DT_ROWS = [{"date": "2026-10-01", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 170, "target": 7, "walmart": 0, "total": 177, "placed": 224, "sla_n": 170, "avg": 2.38, "p1": 0.0, "p2": 62.4, "late": 1}, {"date": "2026-10-02", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 183, "target": 13, "walmart": 0, "total": 196, "placed": 197, "sla_n": 183, "avg": 2.27, "p1": 0.0, "p2": 73.2, "late": 0}, {"date": "2026-10-03", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 176, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-04", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 339, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-05", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 114, "target": 25, "walmart": 0, "total": 139, "placed": 114, "sla_n": 114, "avg": 4.94, "p1": 1.8, "p2": 1.8, "late": 112}, {"date": "2026-10-06", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 204, "target": 8, "walmart": 0, "total": 212, "placed": 92, "sla_n": 204, "avg": 4.98, "p1": 0.0, "p2": 0.0, "late": 204}, {"date": "2026-10-07", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 193, "target": 5, "walmart": 0, "total": 198, "placed": 83, "sla_n": 193, "avg": 5.09, "p1": 0.0, "p2": 0.0, "late": 193}, {"date": "2026-10-08", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 218, "target": 10, "walmart": 0, "total": 228, "placed": 100, "sla_n": 218, "avg": 4.78, "p1": 0.0, "p2": 0.0, "late": 217}, {"date": "2026-10-09", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 165, "target": 4, "walmart": 0, "total": 169, "placed": 94, "sla_n": 165, "avg": 4.99, "p1": 0.0, "p2": 0.0, "late": 165}, {"date": "2026-10-10", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 92, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-11", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 109, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-12", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 68, "target": 0, "walmart": 0, "total": 68, "placed": 96, "sla_n": 68, "avg": 7.59, "p1": 0.0, "p2": 0.0, "late": 68}, {"date": "2026-10-13", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 302, "target": 33, "walmart": 0, "total": 335, "placed": 93, "sla_n": 302, "avg": 7.43, "p1": 0.3, "p2": 0.3, "late": 301}, {"date": "2026-10-14", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 185, "target": 8, "walmart": 0, "total": 193, "placed": 79, "sla_n": 185, "avg": 5.43, "p1": 0.5, "p2": 0.5, "late": 184}, {"date": "2026-10-15", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 186, "target": 6, "walmart": 0, "total": 192, "placed": 108, "sla_n": 186, "avg": 4.45, "p1": 0.0, "p2": 0.0, "late": 171}, {"date": "2026-10-16", "dow": "Fri", "kind": "shipping", "partial": true, "dtc": 51, "target": 5, "walmart": 0, "total": 56, "placed": null, "sla_n": 51, "avg": 4.08, "p1": 0.0, "p2": 0.0, "late": 50}];

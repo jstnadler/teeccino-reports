@@ -77,6 +77,15 @@
   .sw-closed { background:rgba(139,147,167,0.30); border:1px solid rgba(139,147,167,0.60); }
   .sw-avg { height:0; border-top:2px dashed #c9d1d9; border-radius:0; }
   .sw-placed { background:#6C8CF0; }
+  .sw-roll { height:0; border-top:3px solid #f0f6fc; border-radius:0; }
+  .tw-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:14px; margin-top:14px; }
+  @media (max-width: 900px) { .tw-grid { grid-template-columns:minmax(0,1fr); } }
+  .est { display:inline-block; font-size:0.68em; font-weight:700; letter-spacing:.05em;
+          color:#e3b341; border:1px solid rgba(227,179,65,0.5); border-radius:4px;
+          padding:0 5px; margin-left:6px; vertical-align:middle; }
+  .placeholder-card { border:2px dashed rgba(255,255,255,0.18); border-radius:10px;
+                       padding:18px 20px; color:#aab; font-size:0.9em; line-height:1.6; }
+  .placeholder-card strong { color:#e6edf3; }
   .lg-btn { background:none; border:1px solid rgba(255,255,255,0.12); border-radius:6px;
             color:inherit; font:inherit; padding:3px 8px; cursor:pointer;
             display:inline-flex; align-items:center; gap:6px; }
@@ -110,7 +119,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-16 12:52. · 122,406 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-16 13:01. · 122,406 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -244,18 +253,18 @@
     <div class="hero-grid">
         <div class="hero-card">
             <div class="hero-label">Per Shipping Day</div>
-            <div class="hero-value">176</div>
+            <div class="hero-value">179</div>
             <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Total Fulfilled</div>
-            <div class="hero-value">7,568</div>
+            <div class="hero-value">7,512</div>
             <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Shipping Days</div>
-            <div class="hero-value">43</div>
-            <div class="hero-sub">of 60 calendar days</div>
+            <div class="hero-value">42</div>
+            <div class="hero-sub">of 59 calendar days</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Busiest Day</div>
@@ -264,20 +273,20 @@
         </div>
         <div class="hero-card">
             <div class="hero-label">Median Shipping Day</div>
-            <div class="hero-value">177</div>
-            <div class="hero-sub">quietest 56 on 2026-10-16</div>
+            <div class="hero-value">178</div>
+            <div class="hero-sub">quietest 68 on 2026-10-12</div>
         </div>
         <div class="hero-card">
             <div class="hero-label">Per Calendar Day</div>
-            <div class="hero-value">126</div>
-            <div class="hero-sub">same orders spread over all 60 days &mdash; not a throughput rate</div>
+            <div class="hero-value">127</div>
+            <div class="hero-sub">same orders spread over all 59 days &mdash; not a throughput rate</div>
         </div></div>
     <div class="definitions" style="margin-top:14px;margin-bottom:18px">
       The warehouse ships on business days, so this window contains 16 weekend days and 1 weekday(s) with no shipments (holiday or shutdown).
-      <strong>Per Shipping Day</strong> (176) divides by the
-      43 days that actually shipped and is the real throughput rate.
-      <strong>Per Calendar Day</strong> (126) divides the same orders
-      by all 60 days and so understates output by 28%
+      <strong>Per Shipping Day</strong> (179) divides by the
+      42 days that actually shipped and is the real throughput rate.
+      <strong>Per Calendar Day</strong> (127) divides the same orders
+      by all 59 days and so understates output by 29%
       &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-10-16</strong>.<br>
       Counts <strong>7,568 orders &mdash; DTC, Target and Walmart</strong>
       &mdash; which is 98.3% of the 7,695 orders that shipped in
@@ -290,7 +299,8 @@
       <button type="button" class="lg-btn" data-ds="0" aria-pressed="true"><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</button>
       <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
       <button type="button" class="lg-btn" data-ds="1" aria-pressed="true"><i class="sw sw-placed"></i>Orders placed that day</button>
-      <button type="button" class="lg-btn" data-ds="avg" aria-pressed="true"><i class="sw sw-avg"></i>Average fulfilled per shipping day</button>
+      <button type="button" class="lg-btn" data-ds="2" aria-pressed="true"><i class="sw sw-roll"></i>Rolling 7-day average (per shipping day)</button>
+      <button type="button" class="lg-btn" data-ds="avg" aria-pressed="false"><i class="sw sw-avg"></i>Flat last 60 days average</button>
       <span class="lg-hint">Click a series to hide or show it</span>
     </div>
     <div class="chart-wrap" style="height:min(68vh,640px);min-height:420px">
@@ -300,60 +310,125 @@
       day the customer placed them. The two bars will not match on any single day &mdash;
       an order placed Sunday ships Monday &mdash; but over a few days they should track
       each other; a run of placed bars standing taller than fulfilled bars is a growing
-      backlog. Orders Placed is complete through <strong>2026-10-15</strong>; the last 1 day(s) show no blue bar because the order feed lands a day behind shipments, not because nobody ordered.
+      backlog. Orders Placed is complete through <strong>2026-10-15</strong>; the last 1 day(s) show no blue bar because the order feed lands a day behind shipments, not because nobody ordered. The <strong>white line</strong> is the rolling 7-day average: for each day, the orders fulfilled over that day and the 6 before it, divided by the shipping days among them, so weekends do not pull it down. Most recently <strong>191 per shipping day</strong> (957 orders over 5 shipping days to 2026-10-15). Today&rsquo;s bar is drawn faded: the day is still being shipped, so it is left out of the line and every average.
     </div>
-    <div class="chart-wrap" style="height:auto;margin-top:18px">
-      <div class="wd-title">Workload by Day of Week</div>
-      <div class="wd-sub">Averaged over days that shipped, so a closed weekend
-        does not drag a weekday down.</div>
-      <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Day of Week</th>
-                        <th class="num">Per Shipping Day</th>
-                        <th class="num">Total Orders</th>
-                        <th class="num">Days Shipped</th>
-                        <th style="width:30%">Relative Volume</th>
-                    </tr>
-                </thead>
-                <tbody>
+    
+  </div>
+
+  <!-- Typical week (Justin 2026-10-16) -->
+  <div class="section">
+    <div class="section-title">What a Typical Week Looks Like &mdash; Last 12 Full Weeks</div>
+    <div class="section-sub">
+      Daily counts swing a lot, so this section plans by the <strong>week</strong>.
+      It uses the 12 complete Monday&ndash;Sunday weeks from
+      <strong>Jul 20</strong> to <strong>Oct 11</strong>; the current
+      week is left out because it is not finished. Same orders as the chart above
+      (DTC, Target and Walmart), counted on the day they shipped.
+      Figures marked <span class="est">ESTIMATE</span> describe recent weeks &mdash;
+      they are not a forecast, and a promotion will push a week above the range.
+    </div>
+    <div class="hero-grid">
+      <div class="hero-card">
+        <div class="hero-label">Typical Week<span class="est">ESTIMATE</span></div>
+        <div class="hero-value">~786</div>
+        <div class="hero-sub">orders fulfilled &mdash; the middle week of the last 12</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Usual Range<span class="est">ESTIMATE</span></div>
+        <div class="hero-value">697&ndash;914</div>
+        <div class="hero-sub">half of recent weeks fell inside this band</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Lowest &amp; Highest Week</div>
+        <div class="hero-value">626&ndash;964</div>
+        <div class="hero-sub">week of Jul 27 / week of Sep 14</div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-label">Orders Coming In</div>
+        <div class="hero-value">~780</div>
+        <div class="hero-sub">orders placed in a typical week (12 complete weeks) &mdash; the workload arriving</div>
+      </div>
+    </div>
+    <div class="tw-grid">
+      <div class="chart-wrap" style="height:340px;min-width:0">
+        <canvas id="typicalWeekChart"></canvas>
+      </div>
+      <div class="chart-wrap" style="height:auto;min-width:0">
+        <div class="wd-title">Day-of-Week Pattern</div>
+        <div class="wd-sub">Typical = the middle value for that weekday over the
+          12 weeks, so one catch-up day (like the Tuesday after a holiday)
+          does not distort it. Only days the warehouse shipped are counted.</div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Day</th><th class="num">Typical</th>
+              <th class="num">Usual range</th><th class="num">Low&ndash;high</th>
+              <th class="num">Days</th><th style="width:26%"></th></tr></thead>
+            <tbody>
             <tr>
                 <td><strong>Monday</strong></td>
-                <td class="num">146</td>
-                <td class="num">1,021</td>
-                <td class="num">7</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:63.5%"></div></div></td>
+                <td class="num"><strong>169</strong></td>
+                <td class="num">137&ndash;186</td>
+                <td class="num">109&ndash;210</td>
+                <td class="num">11</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:93.1%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Tuesday</strong></td>
-                <td class="num">230</td>
-                <td class="num">2,068</td>
-                <td class="num">9</td>
+                <td class="num"><strong>182</strong></td>
+                <td class="num">175&ndash;215</td>
+                <td class="num">160&ndash;387</td>
+                <td class="num">12</td>
                 <td><div class="wd-track"><div class="wd-bar" style="width:100.0%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Wednesday</strong></td>
-                <td class="num">183</td>
-                <td class="num">1,648</td>
-                <td class="num">9</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:79.7%"></div></div></td>
+                <td class="num"><strong>158</strong></td>
+                <td class="num">135&ndash;200</td>
+                <td class="num">118&ndash;250</td>
+                <td class="num">12</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:86.8%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Thursday</strong></td>
-                <td class="num">168</td>
-                <td class="num">1,516</td>
-                <td class="num">9</td>
+                <td class="num"><strong>133</strong></td>
+                <td class="num">120&ndash;181</td>
+                <td class="num">86&ndash;228</td>
+                <td class="num">12</td>
                 <td><div class="wd-track"><div class="wd-bar" style="width:73.3%"></div></div></td>
             </tr>
             <tr>
                 <td><strong>Friday</strong></td>
-                <td class="num">146</td>
-                <td class="num">1,315</td>
-                <td class="num">9</td>
-                <td><div class="wd-track"><div class="wd-bar" style="width:63.6%"></div></div></td>
+                <td class="num"><strong>147</strong></td>
+                <td class="num">83&ndash;162</td>
+                <td class="num">79&ndash;196</td>
+                <td class="num">12</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:81.0%"></div></div></td>
             </tr></tbody>
-            </table></div>
+          </table>
+        </div>
+        <div class="wd-sub" style="margin-top:10px;margin-bottom:0"><strong>There is a weekly rhythm.</strong> Tuesday is the heaviest day (typically 182 orders) and Thursday the lightest (typically 133) &mdash; a gap of about 48 orders. Part of the day-to-day swing is this weekly pattern; the rest is ordinary variation, which is why the weekly total is the steadier number to plan by.</div>
+      </div>
+    </div>
+    <div class="definitions" style="margin-top:12px">
+      <strong>How to read it:</strong> gold bars are orders fulfilled each week; the blue
+      line is orders placed that week; the shaded band is the usual range and the dashed
+      line the typical week. &ldquo;Usual range&rdquo; is the middle half of the
+      12 weeks (25th to 75th percentile), so by construction about a quarter of weeks
+      land above it and a quarter below. Holiday weeks are kept in, marked with an asterisk: week of Sep 7 (4 shipping days, 959 orders). Orders placed over a holiday do not go away, so a short week is not a light week.
+    </div>
+
+    <div class="section-title" style="margin-top:22px;font-size:1.02em">Staffing &amp; Hours Worked</div>
+    <div class="placeholder-card">
+      <strong>No staffing or hours data is available to this report yet, so it does not
+      estimate staffing.</strong><br>
+      We checked every source this report can read. ShipStation records each shipment
+      but not who packed it or how long it took. The production schedule records
+      operators on the production lines, not the pick-and-pack team. No timesheet or
+      payroll export was found.<br>
+      <strong>This space is reserved for it.</strong> With daily hours worked (or people
+      on shift) for the shipping team, this section would show orders fulfilled per labor
+      hour by day and week next to the counts above &mdash; so a heavy week can be matched
+      to the hours needed to clear it.
     </div>
   </div>
 
@@ -688,11 +763,10 @@
         <div class="hero-value" style="color:#ff7b72">123</div>
         <div class="hero-sub">waiting more than 3 shipping days</div>
       </div>
-      <div class="hero-card">
-        <div class="hero-label">Oldest Open Order</div>
-        <div class="hero-value">20</div>
-        <div class="hero-sub">shipping days waiting (29 calendar)</div>
-      </div>
+      <!-- "Oldest Open Order" tile REMOVED 2026-10-16 at Justin's direction: one
+           stuck order is usually an outlier and should not raise a flag. The
+           Queue-by-Age table below still shows every order, oldest bands included.
+           Do not re-add a single-order max as a headline. -->
     </div>
     <div class="definitions">
       <strong>Age is counted in shipping days, not calendar days</strong>, and the
@@ -1073,7 +1147,7 @@ new Chart(distCtx, {
   }
 });
 
-const BH = [{"d": "2026-07-20", "m": 3, "lo": 2, "hi": 3, "mx": 4, "n": 170, "p": false}, {"d": "2026-07-21", "m": 2, "lo": 2, "hi": 3, "mx": 5, "n": 191, "p": false}, {"d": "2026-07-22", "m": 1, "lo": 1, "hi": 2, "mx": 3, "n": 150, "p": false}, {"d": "2026-07-23", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 124, "p": false}, {"d": "2026-07-24", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 84, "p": false}, {"d": "2026-07-27", "m": 2, "lo": 2, "hi": 2, "mx": 4, "n": 155, "p": false}, {"d": "2026-07-28", "m": 1, "lo": 1, "hi": 2, "mx": 4, "n": 177, "p": false}, {"d": "2026-07-29", "m": 1, "lo": 0, "hi": 1, "mx": 2, "n": 127, "p": false}, {"d": "2026-07-30", "m": 0, "lo": 0, "hi": 1, "mx": 1, "n": 86, "p": false}, {"d": "2026-07-31", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 81, "p": false}, {"d": "2026-08-03", "m": 2, "lo": 2, "hi": 3, "mx": 5, "n": 169, "p": false}, {"d": "2026-08-04", "m": 2, "lo": 1, "hi": 2, "mx": 3, "n": 182, "p": false}, {"d": "2026-08-05", "m": 1, "lo": 1, "hi": 1, "mx": 2, "n": 118, "p": false}, {"d": "2026-08-06", "m": 1, "lo": 0, "hi": 1, "mx": 3, "n": 124, "p": false}, {"d": "2026-08-07", "m": 0, "lo": 0, "hi": 1, "mx": 2, "n": 80, "p": false}, {"d": "2026-08-10", "m": 3, "lo": 2, "hi": 3, "mx": 10, "n": 116, "p": false}, {"d": "2026-08-11", "m": 3, "lo": 2, "hi": 3, "mx": 4, "n": 164, "p": false}, {"d": "2026-08-12", "m": 3, "lo": 2, "hi": 3, "mx": 3, "n": 165, "p": false}, {"d": "2026-08-13", "m": 2, "lo": 1, "hi": 3, "mx": 4, "n": 142, "p": false}, {"d": "2026-08-14", "m": 1, "lo": 1, "hi": 2, "mx": 5, "n": 79, "p": false}, {"d": "2026-08-17", "m": 3, "lo": 2, "hi": 3, "mx": 6, "n": 210, "p": false}, {"d": "2026-08-18", "m": 3, "lo": 2, "hi": 3, "mx": 9, "n": 169, "p": false}, {"d": "2026-08-19", "m": 2, "lo": 2, "hi": 3, "mx": 9, "n": 204, "p": false}, {"d": "2026-08-20", "m": 2, "lo": 2, "hi": 2, "mx": 3, "n": 152, "p": false}, {"d": "2026-08-21", "m": 2, "lo": 2, "hi": 2, "mx": 6, "n": 148, "p": false}, {"d": "2026-08-24", "m": 4, "lo": 4, "hi": 4, "mx": 8, "n": 194, "p": false}, {"d": "2026-08-25", "m": 3, "lo": 2, "hi": 4, "mx": 11, "n": 178, "p": false}, {"d": "2026-08-26", "m": 2, "lo": 1, "hi": 2, "mx": 6, "n": 186, "p": false}, {"d": "2026-08-27", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 116, "p": false}, {"d": "2026-08-28", "m": 0, "lo": 0, "hi": 1, "mx": 3, "n": 102, "p": false}, {"d": "2026-08-31", "m": 2, "lo": 1, "hi": 3, "mx": 14, "n": 199, "p": false}, {"d": "2026-09-01", "m": 1, "lo": 0, "hi": 1, "mx": 7, "n": 181, "p": false}, {"d": "2026-09-02", "m": 1, "lo": 1, "hi": 1, "mx": 14, "n": 136, "p": false}, {"d": "2026-09-03", "m": 1, "lo": 1, "hi": 1, "mx": 2, "n": 121, "p": false}, {"d": "2026-09-04", "m": 0, "lo": 0, "hi": 1, "mx": 2, "n": 160, "p": false}, {"d": "2026-09-08", "m": 3, "lo": 3, "hi": 4, "mx": 6, "n": 387, "p": false}, {"d": "2026-09-09", "m": 2, "lo": 2, "hi": 3, "mx": 3, "n": 209, "p": false}, {"d": "2026-09-10", "m": 3, "lo": 2, "hi": 3, "mx": 6, "n": 217, "p": false}, {"d": "2026-09-11", "m": 3, "lo": 2, "hi": 3, "mx": 11, "n": 146, "p": false}, {"d": "2026-09-14", "m": 5, "lo": 5, "hi": 5, "mx": 8, "n": 109, "p": false}, {"d": "2026-09-15", "m": 5, "lo": 5, "hi": 5, "mx": 7, "n": 223, "p": false}, {"d": "2026-09-16", "m": 4, "lo": 3, "hi": 5, "mx": 6, "n": 250, "p": false}, {"d": "2026-09-17", "m": 2, "lo": 2, "hi": 3, "mx": 4, "n": 194, "p": false}, {"d": "2026-09-18", "m": 2, "lo": 1, "hi": 2, "mx": 4, "n": 188, "p": false}, {"d": "2026-09-21", "m": 3, "lo": 2, "hi": 3, "mx": 3, "n": 135, "p": false}, {"d": "2026-09-22", "m": 2, "lo": 2, "hi": 3, "mx": 4, "n": 160, "p": false}, {"d": "2026-09-23", "m": 2, "lo": 1, "hi": 2, "mx": 3, "n": 141, "p": false}, {"d": "2026-09-24", "m": 2, "lo": 1, "hi": 2, "mx": 2, "n": 119, "p": false}, {"d": "2026-09-25", "m": 1, "lo": 1, "hi": 2, "mx": 6, "n": 150, "p": false}, {"d": "2026-09-28", "m": 2, "lo": 1, "hi": 3, "mx": 5, "n": 177, "p": false}, {"d": "2026-09-29", "m": 1, "lo": 1, "hi": 2, "mx": 3, "n": 223, "p": false}, {"d": "2026-09-30", "m": 2, "lo": 1, "hi": 2, "mx": 11, "n": 131, "p": false}, {"d": "2026-10-01", "m": 2, "lo": 2, "hi": 3, "mx": 8, "n": 177, "p": false}, {"d": "2026-10-02", "m": 2, "lo": 2, "hi": 3, "mx": 3, "n": 196, "p": false}, {"d": "2026-10-05", "m": 5, "lo": 5, "hi": 5, "mx": 6, "n": 139, "p": false}, {"d": "2026-10-06", "m": 5, "lo": 5, "hi": 5, "mx": 6, "n": 212, "p": false}, {"d": "2026-10-07", "m": 5, "lo": 5, "hi": 5, "mx": 8, "n": 198, "p": false}, {"d": "2026-10-08", "m": 5, "lo": 4, "hi": 5, "mx": 7, "n": 228, "p": false}, {"d": "2026-10-09", "m": 5, "lo": 5, "hi": 5, "mx": 5, "n": 169, "p": false}, {"d": "2026-10-12", "m": 8, "lo": 7, "hi": 8, "mx": 8, "n": 68, "p": false}, {"d": "2026-10-13", "m": 7, "lo": 6, "hi": 8, "mx": 9, "n": 335, "p": false}, {"d": "2026-10-14", "m": 5, "lo": 5, "hi": 6, "mx": 8, "n": 193, "p": false}, {"d": "2026-10-15", "m": 4, "lo": 4, "hi": 5, "mx": 11, "n": 192, "p": false}, {"d": "2026-10-16", "m": 4, "lo": 4, "hi": 4, "mx": 7, "n": 56, "p": true}];
+const BH = [{"d": "2026-07-20", "m": 3, "lo": 2, "hi": 3, "n": 170, "p": false}, {"d": "2026-07-21", "m": 2, "lo": 2, "hi": 3, "n": 191, "p": false}, {"d": "2026-07-22", "m": 1, "lo": 1, "hi": 2, "n": 150, "p": false}, {"d": "2026-07-23", "m": 1, "lo": 0, "hi": 1, "n": 124, "p": false}, {"d": "2026-07-24", "m": 1, "lo": 0, "hi": 1, "n": 84, "p": false}, {"d": "2026-07-27", "m": 2, "lo": 2, "hi": 2, "n": 155, "p": false}, {"d": "2026-07-28", "m": 1, "lo": 1, "hi": 2, "n": 177, "p": false}, {"d": "2026-07-29", "m": 1, "lo": 0, "hi": 1, "n": 127, "p": false}, {"d": "2026-07-30", "m": 0, "lo": 0, "hi": 1, "n": 86, "p": false}, {"d": "2026-07-31", "m": 1, "lo": 0, "hi": 1, "n": 81, "p": false}, {"d": "2026-08-03", "m": 2, "lo": 2, "hi": 3, "n": 169, "p": false}, {"d": "2026-08-04", "m": 2, "lo": 1, "hi": 2, "n": 182, "p": false}, {"d": "2026-08-05", "m": 1, "lo": 1, "hi": 1, "n": 118, "p": false}, {"d": "2026-08-06", "m": 1, "lo": 0, "hi": 1, "n": 124, "p": false}, {"d": "2026-08-07", "m": 0, "lo": 0, "hi": 1, "n": 80, "p": false}, {"d": "2026-08-10", "m": 3, "lo": 2, "hi": 3, "n": 116, "p": false}, {"d": "2026-08-11", "m": 3, "lo": 2, "hi": 3, "n": 164, "p": false}, {"d": "2026-08-12", "m": 3, "lo": 2, "hi": 3, "n": 165, "p": false}, {"d": "2026-08-13", "m": 2, "lo": 1, "hi": 3, "n": 142, "p": false}, {"d": "2026-08-14", "m": 1, "lo": 1, "hi": 2, "n": 79, "p": false}, {"d": "2026-08-17", "m": 3, "lo": 2, "hi": 3, "n": 210, "p": false}, {"d": "2026-08-18", "m": 3, "lo": 2, "hi": 3, "n": 169, "p": false}, {"d": "2026-08-19", "m": 2, "lo": 2, "hi": 3, "n": 204, "p": false}, {"d": "2026-08-20", "m": 2, "lo": 2, "hi": 2, "n": 152, "p": false}, {"d": "2026-08-21", "m": 2, "lo": 2, "hi": 2, "n": 148, "p": false}, {"d": "2026-08-24", "m": 4, "lo": 4, "hi": 4, "n": 194, "p": false}, {"d": "2026-08-25", "m": 3, "lo": 2, "hi": 4, "n": 178, "p": false}, {"d": "2026-08-26", "m": 2, "lo": 1, "hi": 2, "n": 186, "p": false}, {"d": "2026-08-27", "m": 1, "lo": 0, "hi": 1, "n": 116, "p": false}, {"d": "2026-08-28", "m": 0, "lo": 0, "hi": 1, "n": 102, "p": false}, {"d": "2026-08-31", "m": 2, "lo": 1, "hi": 3, "n": 199, "p": false}, {"d": "2026-09-01", "m": 1, "lo": 0, "hi": 1, "n": 181, "p": false}, {"d": "2026-09-02", "m": 1, "lo": 1, "hi": 1, "n": 136, "p": false}, {"d": "2026-09-03", "m": 1, "lo": 1, "hi": 1, "n": 121, "p": false}, {"d": "2026-09-04", "m": 0, "lo": 0, "hi": 1, "n": 160, "p": false}, {"d": "2026-09-08", "m": 3, "lo": 3, "hi": 4, "n": 387, "p": false}, {"d": "2026-09-09", "m": 2, "lo": 2, "hi": 3, "n": 209, "p": false}, {"d": "2026-09-10", "m": 3, "lo": 2, "hi": 3, "n": 217, "p": false}, {"d": "2026-09-11", "m": 3, "lo": 2, "hi": 3, "n": 146, "p": false}, {"d": "2026-09-14", "m": 5, "lo": 5, "hi": 5, "n": 109, "p": false}, {"d": "2026-09-15", "m": 5, "lo": 5, "hi": 5, "n": 223, "p": false}, {"d": "2026-09-16", "m": 4, "lo": 3, "hi": 5, "n": 250, "p": false}, {"d": "2026-09-17", "m": 2, "lo": 2, "hi": 3, "n": 194, "p": false}, {"d": "2026-09-18", "m": 2, "lo": 1, "hi": 2, "n": 188, "p": false}, {"d": "2026-09-21", "m": 3, "lo": 2, "hi": 3, "n": 135, "p": false}, {"d": "2026-09-22", "m": 2, "lo": 2, "hi": 3, "n": 160, "p": false}, {"d": "2026-09-23", "m": 2, "lo": 1, "hi": 2, "n": 141, "p": false}, {"d": "2026-09-24", "m": 2, "lo": 1, "hi": 2, "n": 119, "p": false}, {"d": "2026-09-25", "m": 1, "lo": 1, "hi": 2, "n": 150, "p": false}, {"d": "2026-09-28", "m": 2, "lo": 1, "hi": 3, "n": 177, "p": false}, {"d": "2026-09-29", "m": 1, "lo": 1, "hi": 2, "n": 223, "p": false}, {"d": "2026-09-30", "m": 2, "lo": 1, "hi": 2, "n": 131, "p": false}, {"d": "2026-10-01", "m": 2, "lo": 2, "hi": 3, "n": 177, "p": false}, {"d": "2026-10-02", "m": 2, "lo": 2, "hi": 3, "n": 196, "p": false}, {"d": "2026-10-05", "m": 5, "lo": 5, "hi": 5, "n": 139, "p": false}, {"d": "2026-10-06", "m": 5, "lo": 5, "hi": 5, "n": 212, "p": false}, {"d": "2026-10-07", "m": 5, "lo": 5, "hi": 5, "n": 198, "p": false}, {"d": "2026-10-08", "m": 5, "lo": 4, "hi": 5, "n": 228, "p": false}, {"d": "2026-10-09", "m": 5, "lo": 5, "hi": 5, "n": 169, "p": false}, {"d": "2026-10-12", "m": 8, "lo": 7, "hi": 8, "n": 68, "p": false}, {"d": "2026-10-13", "m": 7, "lo": 6, "hi": 8, "n": 335, "p": false}, {"d": "2026-10-14", "m": 5, "lo": 5, "hi": 6, "n": 193, "p": false}, {"d": "2026-10-15", "m": 4, "lo": 4, "hi": 5, "n": 192, "p": false}, {"d": "2026-10-16", "m": 4, "lo": 4, "hi": 4, "n": 56, "p": true}];
 (function() {
   const ctx = document.getElementById('behindChart').getContext('2d');
   const fmtD = (s, o) => new Date(s + 'T12:00:00').toLocaleDateString('en-US', o);
@@ -1115,7 +1189,8 @@ const BH = [{"d": "2026-07-20", "m": 3, "lo": 2, "hi": 3, "mx": 4, "n": 170, "p"
               const r = BH[it.dataIndex];
               return [r.m + ' days behind (typical order)',
                       'Middle half: ' + r.lo + '–' + r.hi + ' days',
-                      'Oldest shipped: ' + r.mx + ' days',
+                      // 'Oldest shipped' REMOVED 2026-10-16 (Justin): a single old
+                      // order is an outlier, not a signal. Do not re-add.
                       r.n.toLocaleString() + ' orders shipped'];
             }
           }
@@ -1138,17 +1213,24 @@ const F_LABELS = ["2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-
 const F_COUNTS = [169, 204, 152, 148, 0, 0, 194, 178, 186, 116, 102, 0, 0, 199, 181, 136, 121, 160, 0, 0, 0, 387, 209, 217, 146, 0, 0, 109, 223, 250, 194, 188, 0, 0, 135, 160, 141, 119, 150, 0, 0, 177, 223, 131, 177, 196, 0, 0, 139, 212, 198, 228, 169, 0, 0, 68, 335, 193, 192, 56];
 const F_KINDS  = ["shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "closed", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping", "weekend", "weekend", "shipping", "shipping", "shipping", "shipping", "shipping"];
 const F_PLACED = [123, 152, 209, 79, 80, 69, 73, 83, 88, 78, 117, 91, 87, 99, 176, 108, 101, 197, 179, 173, 234, 189, 162, 231, 112, 57, 84, 96, 109, 103, 87, 95, 101, 109, 103, 102, 96, 100, 190, 79, 110, 290, 199, 254, 224, 197, 176, 339, 114, 92, 83, 100, 94, 92, 109, 96, 93, 79, 108, null];
-const F_AVG    = 176.0;
+const F_AVG    = 178.9;
+const F_ROLL   = [153.0, 160.8, 162.8, 176.6, 176.6, 176.6, 173.4, 175.2, 171.6, 164.4, 155.2, 155.2, 155.2, 156.2, 156.8, 146.8, 147.8, 159.4, 159.4, 159.4, 149.5, 201.0, 219.2, 243.2, 239.8, 239.8, 239.8, 213.6, 180.8, 189.0, 184.4, 192.8, 192.8, 192.8, 198.0, 185.4, 163.6, 148.6, 141.0, 141.0, 141.0, 149.4, 162.0, 160.0, 171.6, 180.8, 180.8, 180.8, 173.2, 171.0, 184.4, 194.6, 189.2, 189.2, 189.2, 175.0, 199.6, 198.6, 191.4, null];
+const F_ROLL_T = [765, 804, 814, 883, 883, 883, 867, 876, 858, 822, 776, 776, 776, 781, 784, 734, 739, 797, 797, 797, 598, 804, 877, 973, 959, 959, 959, 1068, 904, 945, 922, 964, 964, 964, 990, 927, 818, 743, 705, 705, 705, 747, 810, 800, 858, 904, 904, 904, 866, 855, 922, 973, 946, 946, 946, 875, 998, 993, 957, null];
+const F_ROLL_D = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, null];
+const F_PROG   = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true];
 const F_KIND_TEXT = {
   shipping: 'shipped',
   weekend:  'weekend \u2014 warehouse closed',
-  closed:   'no shipments (holiday or shutdown)'
+  closed:   'no shipments (holiday or shutdown)',
+  pending:  'today \u2014 nothing shipped yet'
 };
 // One measure (orders fulfilled), one y-axis, one data series. Closed days
 // keep a visible muted stub so a closure reads as "we were shut" rather than
 // as missing data.
 const fulfilledCtx = document.getElementById('fulfilledChart').getContext('2d');
-let F_SHOW_AVG = true;
+// Flat average starts OFF (2026-10-16): the rolling line now answers "what is
+// normal right now", and two reference lines on one chart compete.
+let F_SHOW_AVG = false;
 const fulfilledChartObj = new Chart(fulfilledCtx, {
   type: 'bar',
   data: {
@@ -1156,9 +1238,10 @@ const fulfilledChartObj = new Chart(fulfilledCtx, {
     datasets: [{
       label: 'Orders Fulfilled',
       data: F_COUNTS,
-      backgroundColor: F_KINDS.map(k => k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.30)'),
-      borderColor:     F_KINDS.map(k => k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.60)'),
-      borderWidth:     F_KINDS.map(k => k === 'shipping' ? 0 : 1),
+      backgroundColor: F_KINDS.map((k, i) => F_PROG[i] ? 'rgba(212,168,67,0.28)' : (k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.30)')),
+      borderColor:     F_KINDS.map((k, i) => (F_PROG[i] || k === 'shipping') ? '#D4A843' : 'rgba(139,147,167,0.60)'),
+      borderWidth:     F_KINDS.map((k, i) => F_PROG[i] ? 1 : (k === 'shipping' ? 0 : 1)),
+      order: 2,
       borderRadius: 4,
       borderSkipped: false,
       // A closed day is genuinely 0 and must not be floored to a fake value;
@@ -1173,6 +1256,21 @@ const fulfilledChartObj = new Chart(fulfilledCtx, {
       backgroundColor: '#6C8CF0',
       borderRadius: 4,
       borderSkipped: false,
+      order: 2,
+    }, {
+      // Rolling 7-day average per shipping day, drawn over the bars.
+      // null on today's in-progress day -> the line stops at yesterday.
+      type: 'line',
+      label: 'Rolling 7-day average',
+      data: F_ROLL,
+      borderColor: '#f0f6fc',
+      backgroundColor: '#f0f6fc',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.25,
+      spanGaps: false,
+      order: 0,
     }]
   },
   options: {
@@ -1192,6 +1290,13 @@ const fulfilledChartObj = new Chart(fulfilledCtx, {
               const p = ctx.parsed.y;
               return 'Placed: ' + (p == null ? 'not in yet' : p.toLocaleString() + ' orders');
             }
+            if (ctx.datasetIndex === 2) {
+              const i = ctx.dataIndex;
+              if (F_ROLL[i] == null) return '7-day average: not counted (day in progress)';
+              return '7-day average: ' + Math.round(F_ROLL[i]) + ' per shipping day ('
+                     + F_ROLL_T[i].toLocaleString() + ' over ' + F_ROLL_D[i] + ' shipping days)';
+            }
+            if (F_PROG[ctx.dataIndex]) return 'Fulfilled so far today: ' + ctx.parsed.y.toLocaleString() + ' (in progress)';
             const k = F_KINDS[ctx.dataIndex];
             if (k !== 'shipping') return 'Fulfilled: 0 — ' + F_KIND_TEXT[k];
             const v = ctx.parsed.y;
@@ -1276,6 +1381,69 @@ document.querySelectorAll('#fLegend .lg-btn').forEach(btn => {
     fulfilledChartObj.update();
   });
 });
+
+
+(function () {
+  const TW = {"labels": ["Jul 20", "Jul 27", "Aug 3", "Aug 10", "Aug 17", "Aug 24", "Aug 31", "Sep 7*", "Sep 14", "Sep 21", "Sep 28", "Oct 5"], "n": [719, 626, 673, 666, 883, 776, 797, 959, 964, 705, 904, 946], "placed": [622, 721, 779, 787, 846, 617, 1033, 1069, 700, 780, 1679, 684], "days": [5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 5], "closed": [[], [], [], [], [], [], [], ["Sep 7"], [], [], [], []], "med": 786, "p25": 697.0, "p75": 914.5};
+  const el = document.getElementById('typicalWeekChart');
+  if (!el) return;
+  new Chart(el.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: TW.labels,
+      datasets: [
+        { label: 'Fulfilled', data: TW.n, backgroundColor: '#D4A843', borderRadius: 4, order: 2 },
+        { type: 'line', label: 'Placed', data: TW.placed, borderColor: '#6C8CF0',
+          backgroundColor: '#6C8CF0', borderWidth: 2, pointRadius: 3, tension: 0.2, order: 0 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Orders per Week (Mon–Sun)', color: '#D4A843', font: { size: 14 } },
+        tooltip: { callbacks: {
+          title: it => 'Week of ' + TW.labels[it[0].dataIndex].replace('*', ''),
+          label: c => c.datasetIndex === 1
+            ? 'Placed: ' + (c.parsed.y == null ? 'not complete yet' : c.parsed.y.toLocaleString())
+            : 'Fulfilled: ' + c.parsed.y.toLocaleString() + ' over ' + TW.days[c.dataIndex] + ' shipping days',
+          afterBody: it => {
+            const cl = TW.closed[it[0].dataIndex];
+            return cl.length ? ['Holiday week — closed ' + cl.join(', ')] : [];
+          }
+        } }
+      },
+      scales: {
+        x: { ticks: { color: '#aaa', font: { size: 10 } }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' },
+             title: { display: true, text: 'Orders', color: '#888' } }
+      }
+    },
+    plugins: [{
+      id: 'twBand',
+      beforeDatasetsDraw(chart) {
+        const a = chart.chartArea, ctx = chart.ctx, y = chart.scales.y;
+        const top = y.getPixelForValue(TW.p75), bot = y.getPixelForValue(TW.p25);
+        ctx.save();
+        ctx.fillStyle = 'rgba(201,209,217,0.10)';
+        ctx.fillRect(a.left, top, a.right - a.left, bot - top);
+        const m = y.getPixelForValue(TW.med);
+        ctx.strokeStyle = '#c9d1d9'; ctx.setLineDash([6, 4]); ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(a.left, m); ctx.lineTo(a.right, m); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = '600 10px -apple-system, Segoe UI, sans-serif';
+        const txt = 'typical ~' + Math.round(TW.med).toLocaleString();
+        const tw = ctx.measureText(txt).width;
+        ctx.fillStyle = 'rgba(22,33,62,0.92)';
+        ctx.fillRect(a.left + 4, m - 16, tw + 10, 14);
+        ctx.fillStyle = '#c9d1d9'; ctx.textBaseline = 'middle';
+        ctx.fillText(txt, a.left + 9, m - 9);
+        ctx.restore();
+      }
+    }]
+  });
+})();
 
 
 const DT_ROWS = [{"date": "2026-08-18", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 165, "target": 4, "walmart": 0, "total": 169, "placed": 123, "sla_n": 165, "avg": 2.84, "p1": 0.0, "p2": 38.8, "late": 21}, {"date": "2026-08-19", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 199, "target": 5, "walmart": 0, "total": 204, "placed": 152, "sla_n": 199, "avg": 2.59, "p1": 4.0, "p2": 57.3, "late": 13}, {"date": "2026-08-20", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 144, "target": 8, "walmart": 0, "total": 152, "placed": 209, "sla_n": 144, "avg": 1.94, "p1": 17.4, "p2": 88.9, "late": 0}, {"date": "2026-08-21", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 7, "walmart": 0, "total": 148, "placed": 79, "sla_n": 141, "avg": 2.01, "p1": 16.3, "p2": 92.2, "late": 7}, {"date": "2026-08-22", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 80, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-23", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 69, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-24", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 177, "target": 17, "walmart": 0, "total": 194, "placed": 73, "sla_n": 177, "avg": 4.02, "p1": 0.0, "p2": 0.0, "late": 160}, {"date": "2026-08-25", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 177, "target": 1, "walmart": 0, "total": 178, "placed": 83, "sla_n": 177, "avg": 3.23, "p1": 0.6, "p2": 26.6, "late": 63}, {"date": "2026-08-26", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 183, "target": 3, "walmart": 0, "total": 186, "placed": 88, "sla_n": 183, "avg": 2.08, "p1": 42.1, "p2": 79.8, "late": 23}, {"date": "2026-08-27", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 111, "target": 5, "walmart": 0, "total": 116, "placed": 78, "sla_n": 111, "avg": 0.69, "p1": 100.0, "p2": 100.0, "late": 0}, {"date": "2026-08-28", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 100, "target": 2, "walmart": 0, "total": 102, "placed": 117, "sla_n": 100, "avg": 0.41, "p1": 98.0, "p2": 99.0, "late": 0}, {"date": "2026-08-29", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 91, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-30", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 87, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-08-31", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 185, "target": 14, "walmart": 0, "total": 199, "placed": 99, "sla_n": 185, "avg": 2.3, "p1": 25.4, "p2": 70.8, "late": 5}, {"date": "2026-09-01", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 175, "target": 6, "walmart": 0, "total": 181, "placed": 176, "sla_n": 175, "avg": 1.15, "p1": 76.6, "p2": 94.3, "late": 6}, {"date": "2026-09-02", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 131, "target": 5, "walmart": 0, "total": 136, "placed": 108, "sla_n": 131, "avg": 0.89, "p1": 98.5, "p2": 98.5, "late": 1}, {"date": "2026-09-03", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 114, "target": 7, "walmart": 0, "total": 121, "placed": 101, "sla_n": 114, "avg": 1.03, "p1": 76.3, "p2": 100.0, "late": 0}, {"date": "2026-09-04", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 157, "target": 3, "walmart": 0, "total": 160, "placed": 197, "sla_n": 157, "avg": 0.51, "p1": 97.5, "p2": 100.0, "late": 0}, {"date": "2026-09-05", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 179, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-06", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 173, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-07", "dow": "Mon", "kind": "closed", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 234, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-08", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 357, "target": 30, "walmart": 0, "total": 387, "placed": 189, "sla_n": 357, "avg": 3.1, "p1": 0.0, "p2": 21.8, "late": 112}, {"date": "2026-09-09", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 193, "target": 16, "walmart": 0, "total": 209, "placed": 162, "sla_n": 193, "avg": 2.42, "p1": 0.0, "p2": 58.0, "late": 0}, {"date": "2026-09-10", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 214, "target": 3, "walmart": 0, "total": 217, "placed": 231, "sla_n": 214, "avg": 2.6, "p1": 0.9, "p2": 42.5, "late": 7}, {"date": "2026-09-11", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 5, "walmart": 0, "total": 146, "placed": 112, "sla_n": 141, "avg": 2.6, "p1": 0.7, "p2": 44.0, "late": 1}, {"date": "2026-09-12", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 57, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-13", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 84, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-14", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 94, "target": 15, "walmart": 0, "total": 109, "placed": 96, "sla_n": 94, "avg": 4.97, "p1": 1.1, "p2": 2.1, "late": 91}, {"date": "2026-09-15", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 212, "target": 11, "walmart": 0, "total": 223, "placed": 109, "sla_n": 212, "avg": 5.02, "p1": 0.0, "p2": 0.0, "late": 212}, {"date": "2026-09-16", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 245, "target": 5, "walmart": 0, "total": 250, "placed": 103, "sla_n": 245, "avg": 4.3, "p1": 0.0, "p2": 0.4, "late": 177}, {"date": "2026-09-17", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 186, "target": 8, "walmart": 0, "total": 194, "placed": 87, "sla_n": 186, "avg": 2.36, "p1": 9.1, "p2": 59.1, "late": 8}, {"date": "2026-09-18", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 181, "target": 7, "walmart": 0, "total": 188, "placed": 95, "sla_n": 181, "avg": 1.78, "p1": 43.1, "p2": 87.3, "late": 17}, {"date": "2026-09-19", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 101, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-20", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 109, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-21", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 105, "target": 30, "walmart": 0, "total": 135, "placed": 103, "sla_n": 105, "avg": 2.7, "p1": 1.0, "p2": 29.5, "late": 0}, {"date": "2026-09-22", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 151, "target": 9, "walmart": 0, "total": 160, "placed": 102, "sla_n": 151, "avg": 2.44, "p1": 3.3, "p2": 57.6, "late": 7}, {"date": "2026-09-23", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 132, "target": 9, "walmart": 0, "total": 141, "placed": 96, "sla_n": 132, "avg": 1.92, "p1": 22.0, "p2": 86.4, "late": 0}, {"date": "2026-09-24", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 111, "target": 8, "walmart": 0, "total": 119, "placed": 100, "sla_n": 111, "avg": 1.54, "p1": 45.9, "p2": 100.0, "late": 0}, {"date": "2026-09-25", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 141, "target": 9, "walmart": 0, "total": 150, "placed": 190, "sla_n": 141, "avg": 1.23, "p1": 70.9, "p2": 97.2, "late": 3}, {"date": "2026-09-26", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 79, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-27", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 110, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-09-28", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 160, "target": 17, "walmart": 0, "total": 177, "placed": 290, "sla_n": 160, "avg": 2.17, "p1": 25.6, "p2": 58.8, "late": 1}, {"date": "2026-09-29", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 214, "target": 9, "walmart": 0, "total": 223, "placed": 199, "sla_n": 214, "avg": 1.46, "p1": 62.6, "p2": 91.1, "late": 0}, {"date": "2026-09-30", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 128, "target": 3, "walmart": 0, "total": 131, "placed": 254, "sla_n": 128, "avg": 2.07, "p1": 27.3, "p2": 93.0, "late": 9}, {"date": "2026-10-01", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 170, "target": 7, "walmart": 0, "total": 177, "placed": 224, "sla_n": 170, "avg": 2.38, "p1": 0.0, "p2": 62.4, "late": 1}, {"date": "2026-10-02", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 183, "target": 13, "walmart": 0, "total": 196, "placed": 197, "sla_n": 183, "avg": 2.27, "p1": 0.0, "p2": 73.2, "late": 0}, {"date": "2026-10-03", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 176, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-04", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 339, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-05", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 114, "target": 25, "walmart": 0, "total": 139, "placed": 114, "sla_n": 114, "avg": 4.94, "p1": 1.8, "p2": 1.8, "late": 112}, {"date": "2026-10-06", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 204, "target": 8, "walmart": 0, "total": 212, "placed": 92, "sla_n": 204, "avg": 4.98, "p1": 0.0, "p2": 0.0, "late": 204}, {"date": "2026-10-07", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 193, "target": 5, "walmart": 0, "total": 198, "placed": 83, "sla_n": 193, "avg": 5.09, "p1": 0.0, "p2": 0.0, "late": 193}, {"date": "2026-10-08", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 218, "target": 10, "walmart": 0, "total": 228, "placed": 100, "sla_n": 218, "avg": 4.78, "p1": 0.0, "p2": 0.0, "late": 217}, {"date": "2026-10-09", "dow": "Fri", "kind": "shipping", "partial": false, "dtc": 165, "target": 4, "walmart": 0, "total": 169, "placed": 94, "sla_n": 165, "avg": 4.99, "p1": 0.0, "p2": 0.0, "late": 165}, {"date": "2026-10-10", "dow": "Sat", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 92, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-11", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 109, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-10-12", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 68, "target": 0, "walmart": 0, "total": 68, "placed": 96, "sla_n": 68, "avg": 7.59, "p1": 0.0, "p2": 0.0, "late": 68}, {"date": "2026-10-13", "dow": "Tue", "kind": "shipping", "partial": false, "dtc": 302, "target": 33, "walmart": 0, "total": 335, "placed": 93, "sla_n": 302, "avg": 7.43, "p1": 0.3, "p2": 0.3, "late": 301}, {"date": "2026-10-14", "dow": "Wed", "kind": "shipping", "partial": false, "dtc": 185, "target": 8, "walmart": 0, "total": 193, "placed": 79, "sla_n": 185, "avg": 5.43, "p1": 0.5, "p2": 0.5, "late": 184}, {"date": "2026-10-15", "dow": "Thu", "kind": "shipping", "partial": false, "dtc": 186, "target": 6, "walmart": 0, "total": 192, "placed": 108, "sla_n": 186, "avg": 4.45, "p1": 0.0, "p2": 0.0, "late": 171}, {"date": "2026-10-16", "dow": "Fri", "kind": "shipping", "partial": true, "dtc": 51, "target": 5, "walmart": 0, "total": 56, "placed": null, "sla_n": 51, "avg": 4.08, "p1": 0.0, "p2": 0.0, "late": 50}];
