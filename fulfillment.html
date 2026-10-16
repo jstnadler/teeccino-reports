@@ -82,6 +82,16 @@
             display:inline-flex; align-items:center; gap:6px; }
   .lg-btn:hover { border-color:rgba(255,255,255,0.35); }
   .lg-btn[aria-pressed="false"] { opacity:0.4; text-decoration:line-through; }
+  .behind-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:14px; }
+  @media (max-width: 900px) { .behind-grid { grid-template-columns:minmax(0,1fr); } }
+  .behind-side { display:grid; gap:14px; }
+  .behind-side .hero-card { padding:12px 16px; }
+  .behind-side .hero-value { font-size:1.5em; }
+  .hero-value .unit { font-size:.5em; color:#888; font-weight:600; }
+  .behind-hero { display:flex; flex-direction:column; justify-content:center; }
+  .behind-value { font-size:4.6em; font-weight:800; color:#fff; line-height:1; margin:6px 0; }
+  .behind-value span { font-size:0.35em; color:#999; font-weight:600; }
+  .behind-status { font-weight:700; font-size:1.05em; margin-bottom:8px; }
   .lg-hint { color:#777; font-size:0.85em; font-style:italic; }
 </style>
 </head>
@@ -100,7 +110,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time</h1>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-16 08:58. · 122,406 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-10-16 12:41. · 122,406 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -155,6 +165,60 @@
         }
     }
     </script>
+
+
+  <!-- Days behind: Justin 2026-10-16, the first thing on the page -->
+  <div class="section" style="margin-top:8px">
+    <div class="section-title">How Many Days Behind Are We?</div>
+    
+    <div class="behind-grid">
+      <div class="hero-card behind-hero">
+        <div class="hero-label">Days behind &mdash; Thu Oct 15</div>
+        <div class="behind-value">4 <span>days</span></div>
+        <div class="behind-status" style="color:#ff7b72">&#9679; Behind</div>
+        <div class="hero-sub" style="font-size:0.9em;color:#aaa;line-height:1.5">
+          On Thu Oct 15 the warehouse shipped <strong>192</strong> orders.
+          The typical one was placed on <strong>Sun Oct 11</strong>; most were placed 4&ndash;5 days earlier. So far today (56 orders out the door) the reading is <strong>4 days</strong> &mdash; a partial day, not the headline.
+        </div>
+      </div>
+      <div class="behind-side">
+        <div class="hero-card">
+          <div class="hero-label">A week earlier</div>
+          <div class="hero-value">5 <span class="unit">days</span></div>
+          <div class="hero-sub">1 day better now than a week earlier</div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-label">Typical, last 30 days</div>
+          <div class="hero-value">3 <span class="unit">days</span></div>
+          <div class="hero-sub">median of the daily readings</div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-label">Oldest order still waiting</div>
+          <div class="hero-value">29 <span class="unit">days</span></div>
+          <div class="hero-sub">of 400 open orders &mdash; often one stuck order; see Backlog below</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:320px;margin-top:14px"><canvas id="behindChart"></canvas></div>
+    <div class="chart-legend">
+      <span><i class="sw sw-ship" style="height:3px"></i>Days behind (typical order shipped that day)</span>
+      <span><i class="sw" style="background:rgba(212,168,67,0.22)"></i>Middle half of that day&rsquo;s orders</span>
+      <span><i class="sw sw-avg" style="border-top-color:#ff7b72"></i>3-day line</span>
+      <span>Hollow point = today, still in progress</span>
+    </div>
+    <div class="definitions" style="margin-top:12px">
+      <strong>What &ldquo;days behind&rdquo; means.</strong> For each shipping day, we take
+      every order that went out that day and count how many calendar days ago it was
+      placed. The headline is the <em>typical</em> (median) order &mdash; &ldquo;we are
+      shipping orders placed N days ago.&rdquo; It uses the most recent <em>complete</em>
+      shipping day, because the day still being worked is a partial read. Counts DTC,
+      Target and Walmart orders, the same ones the warehouse picks. Monday readings run
+      higher because the weekend&rsquo;s orders are in them &mdash; that is real customer
+      waiting, not a glitch. The oldest-order tile sits beside the headline rather than
+      being it, because a single stuck order would set that number no matter how fast
+      everything else is moving. Last 90 days shown; refreshes every morning.
+    </div>
+  </div>
 
   <div class="banner banner-bad">Slow — only 15% of orders shipped within 1 day.</div>
 
@@ -1015,6 +1079,67 @@ new Chart(distCtx, {
     },
   }
 });
+
+const BH = [{"d": "2026-07-20", "m": 3, "lo": 2, "hi": 3, "mx": 4, "n": 170, "p": false}, {"d": "2026-07-21", "m": 2, "lo": 2, "hi": 3, "mx": 5, "n": 191, "p": false}, {"d": "2026-07-22", "m": 1, "lo": 1, "hi": 2, "mx": 3, "n": 150, "p": false}, {"d": "2026-07-23", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 124, "p": false}, {"d": "2026-07-24", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 84, "p": false}, {"d": "2026-07-27", "m": 2, "lo": 2, "hi": 2, "mx": 4, "n": 155, "p": false}, {"d": "2026-07-28", "m": 1, "lo": 1, "hi": 2, "mx": 4, "n": 177, "p": false}, {"d": "2026-07-29", "m": 1, "lo": 0, "hi": 1, "mx": 2, "n": 127, "p": false}, {"d": "2026-07-30", "m": 0, "lo": 0, "hi": 1, "mx": 1, "n": 86, "p": false}, {"d": "2026-07-31", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 81, "p": false}, {"d": "2026-08-03", "m": 2, "lo": 2, "hi": 3, "mx": 5, "n": 169, "p": false}, {"d": "2026-08-04", "m": 2, "lo": 1, "hi": 2, "mx": 3, "n": 182, "p": false}, {"d": "2026-08-05", "m": 1, "lo": 1, "hi": 1, "mx": 2, "n": 118, "p": false}, {"d": "2026-08-06", "m": 1, "lo": 0, "hi": 1, "mx": 3, "n": 124, "p": false}, {"d": "2026-08-07", "m": 0, "lo": 0, "hi": 1, "mx": 2, "n": 80, "p": false}, {"d": "2026-08-10", "m": 3, "lo": 2, "hi": 3, "mx": 10, "n": 116, "p": false}, {"d": "2026-08-11", "m": 3, "lo": 2, "hi": 3, "mx": 4, "n": 164, "p": false}, {"d": "2026-08-12", "m": 3, "lo": 2, "hi": 3, "mx": 3, "n": 165, "p": false}, {"d": "2026-08-13", "m": 2, "lo": 1, "hi": 3, "mx": 4, "n": 142, "p": false}, {"d": "2026-08-14", "m": 1, "lo": 1, "hi": 2, "mx": 5, "n": 79, "p": false}, {"d": "2026-08-17", "m": 3, "lo": 2, "hi": 3, "mx": 6, "n": 210, "p": false}, {"d": "2026-08-18", "m": 3, "lo": 2, "hi": 3, "mx": 9, "n": 169, "p": false}, {"d": "2026-08-19", "m": 2, "lo": 2, "hi": 3, "mx": 9, "n": 204, "p": false}, {"d": "2026-08-20", "m": 2, "lo": 2, "hi": 2, "mx": 3, "n": 152, "p": false}, {"d": "2026-08-21", "m": 2, "lo": 2, "hi": 2, "mx": 6, "n": 148, "p": false}, {"d": "2026-08-24", "m": 4, "lo": 4, "hi": 4, "mx": 8, "n": 194, "p": false}, {"d": "2026-08-25", "m": 3, "lo": 2, "hi": 4, "mx": 11, "n": 178, "p": false}, {"d": "2026-08-26", "m": 2, "lo": 1, "hi": 2, "mx": 6, "n": 186, "p": false}, {"d": "2026-08-27", "m": 1, "lo": 0, "hi": 1, "mx": 1, "n": 116, "p": false}, {"d": "2026-08-28", "m": 0, "lo": 0, "hi": 1, "mx": 3, "n": 102, "p": false}, {"d": "2026-08-31", "m": 2, "lo": 1, "hi": 3, "mx": 14, "n": 199, "p": false}, {"d": "2026-09-01", "m": 1, "lo": 0, "hi": 1, "mx": 7, "n": 181, "p": false}, {"d": "2026-09-02", "m": 1, "lo": 1, "hi": 1, "mx": 14, "n": 136, "p": false}, {"d": "2026-09-03", "m": 1, "lo": 1, "hi": 1, "mx": 2, "n": 121, "p": false}, {"d": "2026-09-04", "m": 0, "lo": 0, "hi": 1, "mx": 2, "n": 160, "p": false}, {"d": "2026-09-08", "m": 3, "lo": 3, "hi": 4, "mx": 6, "n": 387, "p": false}, {"d": "2026-09-09", "m": 2, "lo": 2, "hi": 3, "mx": 3, "n": 209, "p": false}, {"d": "2026-09-10", "m": 3, "lo": 2, "hi": 3, "mx": 6, "n": 217, "p": false}, {"d": "2026-09-11", "m": 3, "lo": 2, "hi": 3, "mx": 11, "n": 146, "p": false}, {"d": "2026-09-14", "m": 5, "lo": 5, "hi": 5, "mx": 8, "n": 109, "p": false}, {"d": "2026-09-15", "m": 5, "lo": 5, "hi": 5, "mx": 7, "n": 223, "p": false}, {"d": "2026-09-16", "m": 4, "lo": 3, "hi": 5, "mx": 6, "n": 250, "p": false}, {"d": "2026-09-17", "m": 2, "lo": 2, "hi": 3, "mx": 4, "n": 194, "p": false}, {"d": "2026-09-18", "m": 2, "lo": 1, "hi": 2, "mx": 4, "n": 188, "p": false}, {"d": "2026-09-21", "m": 3, "lo": 2, "hi": 3, "mx": 3, "n": 135, "p": false}, {"d": "2026-09-22", "m": 2, "lo": 2, "hi": 3, "mx": 4, "n": 160, "p": false}, {"d": "2026-09-23", "m": 2, "lo": 1, "hi": 2, "mx": 3, "n": 141, "p": false}, {"d": "2026-09-24", "m": 2, "lo": 1, "hi": 2, "mx": 2, "n": 119, "p": false}, {"d": "2026-09-25", "m": 1, "lo": 1, "hi": 2, "mx": 6, "n": 150, "p": false}, {"d": "2026-09-28", "m": 2, "lo": 1, "hi": 3, "mx": 5, "n": 177, "p": false}, {"d": "2026-09-29", "m": 1, "lo": 1, "hi": 2, "mx": 3, "n": 223, "p": false}, {"d": "2026-09-30", "m": 2, "lo": 1, "hi": 2, "mx": 11, "n": 131, "p": false}, {"d": "2026-10-01", "m": 2, "lo": 2, "hi": 3, "mx": 8, "n": 177, "p": false}, {"d": "2026-10-02", "m": 2, "lo": 2, "hi": 3, "mx": 3, "n": 196, "p": false}, {"d": "2026-10-05", "m": 5, "lo": 5, "hi": 5, "mx": 6, "n": 139, "p": false}, {"d": "2026-10-06", "m": 5, "lo": 5, "hi": 5, "mx": 6, "n": 212, "p": false}, {"d": "2026-10-07", "m": 5, "lo": 5, "hi": 5, "mx": 8, "n": 198, "p": false}, {"d": "2026-10-08", "m": 5, "lo": 4, "hi": 5, "mx": 7, "n": 228, "p": false}, {"d": "2026-10-09", "m": 5, "lo": 5, "hi": 5, "mx": 5, "n": 169, "p": false}, {"d": "2026-10-12", "m": 8, "lo": 7, "hi": 8, "mx": 8, "n": 68, "p": false}, {"d": "2026-10-13", "m": 7, "lo": 6, "hi": 8, "mx": 9, "n": 335, "p": false}, {"d": "2026-10-14", "m": 5, "lo": 5, "hi": 6, "mx": 8, "n": 193, "p": false}, {"d": "2026-10-15", "m": 4, "lo": 4, "hi": 5, "mx": 11, "n": 192, "p": false}, {"d": "2026-10-16", "m": 4, "lo": 4, "hi": 4, "mx": 7, "n": 56, "p": true}];
+(function() {
+  const ctx = document.getElementById('behindChart').getContext('2d');
+  const fmtD = (s, o) => new Date(s + 'T12:00:00').toLocaleDateString('en-US', o);
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: BH.map(r => r.d),
+      datasets: [
+        { label: 'hi', data: BH.map(r => r.hi), borderWidth: 0, pointRadius: 0,
+          pointHitRadius: 0, fill: '+1', backgroundColor: 'rgba(212,168,67,0.18)' },
+        { label: 'lo', data: BH.map(r => r.lo), borderWidth: 0, pointRadius: 0,
+          pointHitRadius: 0, fill: false },
+        { label: 'Days behind', data: BH.map(r => r.m), borderColor: '#D4A843',
+          borderWidth: 2, tension: 0, pointRadius: BH.map(r => r.p ? 5 : 2.5),
+          pointHoverRadius: 6, pointHitRadius: 10,
+          pointBackgroundColor: BH.map(r => r.p ? '#1a1a2e' : '#D4A843'),
+          pointBorderColor: '#D4A843', pointBorderWidth: BH.map(r => r.p ? 2 : 0),
+          segment: { borderDash: c => BH[c.p1DataIndex].p ? [4, 4] : undefined } },
+        { label: 'sla', data: BH.map(() => 3), borderColor: 'rgba(255,123,114,0.7)',
+          borderWidth: 1, borderDash: [5, 5], pointRadius: 0, pointHitRadius: 0, fill: false },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: 'Days Behind — each shipping day, last 90 days',
+                 color: '#D4A843', font: { size: 14 } },
+        tooltip: {
+          filter: i => i.dataset.label === 'Days behind',
+          callbacks: {
+            title: it => {
+              const r = BH[it[0].dataIndex];
+              return fmtD(r.d, {weekday:'short', month:'short', day:'numeric'})
+                + (r.p ? ' (in progress)' : '');
+            },
+            label: it => {
+              const r = BH[it.dataIndex];
+              return [r.m + ' days behind (typical order)',
+                      'Middle half: ' + r.lo + '–' + r.hi + ' days',
+                      'Oldest shipped: ' + r.mx + ' days',
+                      r.n.toLocaleString() + ' orders shipped'];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#888', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12,
+               callback: function(v) { return fmtD(this.getLabelForValue(v), {month:'short', day:'numeric'}); } },
+             grid: { display: false } },
+        y: { beginAtZero: true, suggestedMax: 8, ticks: { color: '#888', stepSize: 1 },
+             title: { display: true, text: 'Days', color: '#888' },
+             grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+})();
+
 
 const F_LABELS = ["2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09", "2026-10-10", "2026-10-11", "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16"];
 const F_COUNTS = [169, 204, 152, 148, 0, 0, 194, 178, 186, 116, 102, 0, 0, 199, 181, 136, 121, 160, 0, 0, 0, 387, 209, 217, 146, 0, 0, 109, 223, 250, 194, 188, 0, 0, 135, 160, 141, 119, 150, 0, 0, 177, 223, 131, 177, 196, 0, 0, 139, 212, 198, 228, 169, 0, 0, 68, 335, 193, 192, 56];
