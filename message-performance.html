@@ -206,6 +206,16 @@ td.ulimg { width:84px; padding:6px 8px; }
 .tagpick .tpchip button { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.05em; padding:0 2px; }
 .tagpick .tpchip button:hover { color:#fbbf24; }
 .tagpick select.tpp { max-width:24em; }
+.tagpick .tpnew { display:flex; flex-wrap:wrap; gap:5px; align-items:center; margin-top:6px; padding:6px 7px;
+  border:1px dashed rgba(251,191,36,.5); border-radius:6px; background:rgba(251,191,36,.05); }
+.tagpick .tpnew input { background:#0b1220; color:#e2e8f0; border:1px solid rgba(255,255,255,.25);
+  border-radius:6px; font-size:.8em; padding:3px 6px; width:16em; max-width:100%; }
+.tagpick .tpnew button { background:rgba(255,255,255,.06); color:#e2e8f0; border:1px solid rgba(255,255,255,.2);
+  border-radius:6px; font-size:.76em; padding:3px 9px; cursor:pointer; }
+.tagpick .tpnew button.go { background:rgba(251,191,36,.15); color:#fbbf24; border-color:rgba(251,191,36,.5); }
+.tagpick .tpnew .tpnl { font-size:.74em; color:#fbbf24; font-weight:600; }
+.tagpick .tpnew .tpne { font-size:.74em; color:#f87171; flex-basis:100%; }
+.tagpick .tpnew .tpnh { font-size:.72em; color:#94a3b8; flex-basis:100%; }
 .tagpick .tpx { background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.1em; }
 .tpbar { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;
   background:rgba(94,234,212,.06); border:1px solid rgba(94,234,212,.3); border-radius:10px;
@@ -410,7 +420,7 @@ a.ulview:hover { text-decoration:underline; }
   <h1>Message Performance</h1>
   <div class="sub">What we actually said, and which of it earned attention &mdash;
     2025-10-17 to 2026-10-16</div>
-  <div class="updated">Last updated October 17, 2026 at 01:15 AM &bull; refreshed daily by the analytics pipeline</div>
+  <div class="updated">Last updated October 17, 2026 at 01:17 AM &bull; refreshed daily by the analytics pipeline</div>
 </div>
 
 <div class="caveat">
@@ -1073,6 +1083,55 @@ const TAGQ_KEY = 'msgperf.tagQueue.v1';
 function tqLoad() { try { return JSON.parse(localStorage.getItem(TAGQ_KEY) || '{}'); } catch (e) { return {}; } }
 function tqSave(q) { try { localStorage.setItem(TAGQ_KEY, JSON.stringify(q)); } catch (e) {} tsSchedule(); }
 let TAGQ = tqLoad();
+/* ---- New pillars (Justin 2026-10-17) ---------------------------------------------------
+   Justin can add a pillar from any picker ("+ New pillar..."). It is usable at once in every
+   picker on the page (rows AND the ad panel), and is saved on the SAME channel as tags -- the
+   "ad-tags" set, itemId "@pillar:<name>" -- so it works wherever tag auto-save works, including
+   in the app. pull_tags.py registers it in custom_pillars.json BEFORE applying tags, so a tag
+   using it is accepted; any pillar NOT registered that way is still rejected. Pillars save
+   before tags. A pillar is never deleted from the page. Names are checked with the same
+   rules as message_taxonomy.pillar_name_problem(). */
+const PIL_KEY = 'msgperf.newPillars.v1', PIL_PFX = '@pillar:', PIL_MAX = 40;
+let PILQ = (function () { try { return JSON.parse(localStorage.getItem(PIL_KEY) || '{}'); } catch (e) { return {}; } })();
+function pilSave() { try { localStorage.setItem(PIL_KEY, JSON.stringify(PILQ)); } catch (e) {} tsSchedule(); }
+const NEWPIL = {};   /* concept -> {v: draft name, err: message} while its "new pillar" box is open */
+function tpPillars() {
+  const base = (F.tagopts && F.tagopts.pillars) || [], have = new Set(base.map(p => p.name.toLowerCase()));
+  const extra = Object.keys(PILQ).filter(n => !have.has(n.toLowerCase()))
+    .map(n => ({ name: n, subs: [], label: n, custom: true, pending: true }));
+  if (!extra.length) return base;
+  const i = base.findIndex(p => p.name === '(offer-led, no message)');   /* above offer-led, like the server */
+  return i < 0 ? base.concat(extra) : base.slice(0, i).concat(extra, base.slice(i));
+}
+function tpNewOk(n) {
+  if (!n) return 'Type a name first.';
+  if (n.length > PIL_MAX) return 'Keep it to ' + PIL_MAX + ' characters or fewer.';
+  if ('(@'.indexOf(n[0]) >= 0 || /[|<>"\\]/.test(n)) return 'Names can\'t start with ( or @, or use | < > " \\';
+  const PL = tpPillars();
+  const taken = PL.map(p => p.name.toLowerCase()).concat(PL.map(p => p.label.toLowerCase()),
+    ['(unclassified)', '(needs creative review)']);
+  if (taken.indexOf(n.toLowerCase()) >= 0) return 'There is already a pillar called that.';
+  return '';
+}
+function tpNewBox(c) {
+  return Array.from(document.querySelectorAll('.tpnew input')).filter(el => el.dataset.c === c);
+}
+function tpNewOpen(c) {
+  NEWPIL[c] = { v: '', err: '' }; ulRender();
+  setTimeout(() => { const el = tpNewBox(c)[0]; if (el) el.focus(); }, 0);
+}
+function tpNewCancel(c) { delete NEWPIL[c]; ulRender(); }
+function tpNewAdd(c, btn) {
+  /* the row and the ad panel can both show this box: read the one that was used */
+  const box = btn && btn.closest ? btn.closest('.tpnew') : null;
+  const el = (box && box.querySelector('input')) || tpNewBox(c)[0];
+  const n = ((el && el.value) || '').replace(/\s+/g, ' ').trim(), err = tpNewOk(n);
+  if (err) { NEWPIL[c] = { v: n, err: err }; ulRender(); return; }
+  PILQ[n] = { name: n, created_at: new Date().toISOString().slice(0, 10) };
+  delete NEWPIL[c];
+  pilSave();
+  tpSet(c, 'primary', n);      /* tag this ad with it straight away */
+}
 /* ---- Auto-save (2026-10-16) ------------------------------------------------------------
    Every pick is saved as it is made to the shared approval service (SearchSmith's
    teeccino-review-api, tenant "ad-tags"); DataOps' pull job applies new picks every ~30 min.
@@ -1098,10 +1157,20 @@ const RKEY = (function () {
 let SYNCED = (function () { try { return JSON.parse(localStorage.getItem(SYNC_KEY) || '{}'); } catch (e) { return {}; } })();
 const TS = { busy: false, timer: null, vtimer: null, err: '', lastOk: null, tooBig: {} };
 function tsPersist() { try { localStorage.setItem(SYNC_KEY, JSON.stringify(SYNCED)); } catch (e) {} }
-function tsNote(c) { const q = TAGQ[c]; return q && q.primary ? JSON.stringify(q) : ''; }
+function tsNote(c) {
+  if (c.indexOf(PIL_PFX) === 0) {
+    const p = PILQ[c.slice(PIL_PFX.length)];
+    return p ? JSON.stringify({ kind: 'pillar', name: p.name, created_at: p.created_at }) : '';
+  }
+  const q = TAGQ[c]; return q && q.primary ? JSON.stringify(q) : '';
+}
 function tsPending() {
-  const s = new Set(Object.keys(TAGQ).concat(Object.keys(SYNCED)));
-  return Array.from(s).filter(c => !TS.tooBig[c] && tsNote(c) !== (SYNCED[c] || ''));
+  const s = new Set(Object.keys(PILQ).map(n => PIL_PFX + n).concat(Object.keys(TAGQ), Object.keys(SYNCED)));
+  /* Pillars before tags, so a tag never reaches the service ahead of the pillar it uses.
+     A pillar is never tombstoned: once it is live on the page tsPrune drops both copies. */
+  return Array.from(s).filter(c => !TS.tooBig[c] && tsNote(c) !== (SYNCED[c] || '')
+      && !(c.indexOf(PIL_PFX) === 0 && !tsNote(c)))
+    .sort((a, b) => (b.indexOf(PIL_PFX) === 0) - (a.indexOf(PIL_PFX) === 0));
 }
 function tsSchedule(ms) {
   if (!RKEY) return;
@@ -1152,7 +1221,16 @@ async function tsRead(boot) {
   const applied = new Set(F.tagapplied || []);
   let changed = false;
   if (boot) {
+    const live = new Set(((F.tagopts && F.tagopts.pillars) || []).map(p => p.name));
     Object.keys(srv).forEach(c => {
+      if (c.indexOf(PIL_PFX) === 0) {                  /* a pillar made in another browser */
+        const n = c.slice(PIL_PFX.length);
+        if (srv[c] && !live.has(n) && !PILQ[n]) {
+          try { const p = JSON.parse(srv[c]); PILQ[n] = { name: n, created_at: p.created_at || '' };
+                SYNCED[c] = srv[c]; changed = true; } catch (e) {}
+        }
+        return;
+      }
       if (applied.has(c)) return;
       const local = tsNote(c), was = SYNCED[c] || '';
       if (local !== was) return;                       /* unsent local change wins */
@@ -1162,14 +1240,19 @@ async function tsRead(boot) {
     });
   }
   Object.keys(SYNCED).forEach(c => { if (SYNCED[c] && srv[c] !== SYNCED[c]) { delete SYNCED[c]; changed = true; } });
-  if (changed) { tsPersist(); try { localStorage.setItem(TAGQ_KEY, JSON.stringify(TAGQ)); } catch (e) {} if (UL) ulRender(); }
+  if (changed) { tsPersist(); try { localStorage.setItem(TAGQ_KEY, JSON.stringify(TAGQ));
+    localStorage.setItem(PIL_KEY, JSON.stringify(PILQ)); } catch (e) {} if (UL) ulRender(); }
   TS.err = ''; tpBar(); tsSchedule(0);
 }
 /* Tags already live on the page (applied from an earlier pick) need no local copy. */
 (function tsPrune() {
   const applied = F.tagapplied || []; let n = 0;
   applied.forEach(c => { if (TAGQ[c]) { delete TAGQ[c]; n++; } if (SYNCED[c] !== undefined) { delete SYNCED[c]; n++; } });
-  if (n) { try { localStorage.setItem(TAGQ_KEY, JSON.stringify(TAGQ)); } catch (e) {} tsPersist(); }
+  /* pillars already in the page's own list are live: drop both local copies, send nothing */
+  ((F.tagopts && F.tagopts.pillars) || []).forEach(p => {
+    if (PILQ[p.name]) { delete PILQ[p.name]; n++; }
+    if (SYNCED[PIL_PFX + p.name] !== undefined) { delete SYNCED[PIL_PFX + p.name]; n++; } });
+  if (n) { try { localStorage.setItem(TAGQ_KEY, JSON.stringify(TAGQ)); localStorage.setItem(PIL_KEY, JSON.stringify(PILQ)); } catch (e) {} tsPersist(); }
 })();
 setTimeout(() => tsRead(true), 0);
 function conceptOf(r) { return F.con[F.ad[r.ad][2]]; }
@@ -1184,7 +1267,7 @@ function tagPicker(r) {
   const sg = !picked && F.tagsugg ? F.tagsugg[c] : null;
   const q = picked || sg || {};
   const n = conceptAdCount(c);
-  const pill = T.pillars.find(p => p.name === q.primary);
+  const PL = tpPillars(), pill = PL.find(p => p.name === q.primary);
   const opt = (v, sel, lbl) => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(lbl || v)}</option>`;
   /* single-quoted handler attributes: esc() leaves ' alone, and concepts like "Deb's ..." have one */
   const ce = esc(JSON.stringify(c)).replace(/'/g, '&#39;');
@@ -1194,7 +1277,8 @@ function tagPicker(r) {
       ${esc(sg.why || '')}</div>` : ''}
     <div class="tps">
       <select onchange='tpSet(${ce},"primary",this.value)' aria-label="Pillar">
-        ${opt('', q.primary || '', 'Pillar…')}${T.pillars.map(p => opt(p.name, q.primary, p.label)).join('')}</select>
+        ${opt('', q.primary || '', 'Pillar…')}${PL.map(p => opt(p.name, q.primary, p.label + (p.custom ? ' ★' : ''))).join('')}
+        <option value="__new__">+ New pillar…</option></select>
       <select onchange='tpSet(${ce},"sub",this.value)' aria-label="Sub-pillar" ${pill && pill.subs.length ? '' : 'disabled'}>
         ${opt('', q.sub || '', 'Sub-pillar…')}${(pill ? pill.subs : []).map(x => opt(x, q.sub)).join('')}</select>
       <select onchange='tpSet(${ce},"vehicle",this.value)' aria-label="Vehicle">
@@ -1202,6 +1286,14 @@ function tagPicker(r) {
       <select onchange='tpSet(${ce},"offer",this.value)' aria-label="Offer">
         ${opt('', q.offer || '', 'Offer…')}${T.offers.map(x => opt(x, q.offer)).join('')}</select>
     </div>
+    ${NEWPIL[c] ? `<div class="tpnew"><span class="tpnl">New pillar</span>
+      <input data-c="${esc(c)}" maxlength="${PIL_MAX}" value="${esc(NEWPIL[c].v)}" placeholder="e.g. Morning Ritual"
+        aria-label="New pillar name" onkeydown='if(event.key==="Enter"){tpNewAdd(${ce},this)}else if(event.key==="Escape"){tpNewCancel(${ce})}'>
+      <button class="go" onclick='tpNewAdd(${ce},this)'>Add pillar &amp; tag this ad</button>
+      <button onclick='tpNewCancel(${ce})'>Cancel</button>
+      ${NEWPIL[c].err ? `<span class="tpne">${esc(NEWPIL[c].err)}</span>` : ''}
+      <span class="tpnh">It joins every pillar list on this page right away (marked &#9733;) and saves with your tags.
+        For an idea none of the existing pillars fits.</span></div>` : ''}
     <div class="tps tpprod">${tpMulti(c, ce, q)}
       ${sg ? `<button class="tpok" onclick='tpAccept(${ce})'>&#10003; Accept</button>` : ''}
       ${picked && picked.primary ? `<button class="tpx" onclick='tpClear(${ce})' title="Remove this pick">&times;</button>` : ''}
@@ -1279,10 +1371,11 @@ function tpOpenSuggestions() {
   return Array.from(seen);
 }
 function tpSet(c, field, v) {
+  if (field === 'primary' && v === '__new__') { tpNewOpen(c); return; }
   const q = TAGQ[c] || (sgBase(c) ? Object.assign(sgBase(c), { note: 'edited DataOps suggestion' }) : {});
   q[field] = v;
   if (field === 'primary') {                       /* a sub only means something under its pillar */
-    const pill = F.tagopts.pillars.find(p => p.name === v);
+    const pill = tpPillars().find(p => p.name === v);
     if (!pill || pill.subs.indexOf(q.sub) < 0) q.sub = pill && pill.subs.length === 1 ? pill.subs[0] : '';
   }
   const empty = a => !a || !a.length;
@@ -1296,7 +1389,10 @@ function tpReady() { return Object.keys(TAGQ).filter(c => TAGQ[c].primary); }
 function tpCopy() {
   const ready = tpReady();
   if (!ready.length) return;
-  const block = 'APPLY TAGS\n' + JSON.stringify({ tags: ready.map(c => Object.assign({ concept: c }, TAGQ[c])) }, null, 1);
+  const used = new Set(ready.map(c => TAGQ[c].primary));
+  const pils = Object.keys(PILQ).filter(n => used.has(n));
+  const block = 'APPLY TAGS\n' + JSON.stringify(Object.assign(pils.length ? { pillars: pils } : {},
+    { tags: ready.map(c => Object.assign({ concept: c }, TAGQ[c])) }), null, 1);
   const done = () => { const b = document.getElementById('tpcopybtn'); if (b) { b.textContent = 'Copied — paste it in #dataops'; } };
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(block).then(done, () => tpShow(block));
   else tpShow(block);
