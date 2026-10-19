@@ -160,7 +160,7 @@ const STL={ok:'Pulled',empty:'Pulled · no rows yet',blocked:'Blocked',error:'Er
 document.getElementById('src').innerHTML=Object.keys(SRC).map(k=>{
   const p=P.pulls[k];
   if(!p) return `<div class="card"><h3>${SRC[k][0]}<span class="st none">Never pulled</span></h3><p>${SRC[k][1]}</p></div>`;
-  const ex=(k==='ga4'&&p.last_ok)?`<li>Test clicks excluded: ${n0((P.excluded||{}).override||0)}${(P.excluded||{})['(not set)']?' · unlabelled: '+n0(P.excluded['(not set)']):''}</li>`:(P.other_attr_rows?`<li>${P.other_attr_rows} attribution row(s) from other campaigns not shown</li>`:'');
+  const ex=(k==='ga4'&&p.last_ok)?`<li>Test clicks excluded: ${n0((P.excluded||{}).override||0)}${(P.excluded||{})['(not set)']?' · unlabelled: '+n0(P.excluded['(not set)']):''}</li>`:(k!=='ga4'&&P.other_attr_rows?`<li>${P.other_attr_rows} attribution row(s) from other campaigns not shown</li>`:'');
   return `<div class="card"><h3>${SRC[k][0]}<span class="st ${p.status}">${STL[p.status]||p.status}</span></h3>
    <ul><li>${SRC[k][1]}</li><li>Last run ${esc(p.run_at.slice(0,16).replace('T',' '))} UTC, window ${p.start} → ${p.end}, ${p.rows} row(s)</li>
    ${p.status==='blocked'||p.status==='error'?`<li><b>${esc(p.note)}</b>${p.last_ok?' · last good pull '+esc(p.last_ok.slice(0,10)):' · no successful pull yet'}</li>`:''}${ex}</ul></div>`}).join('');
