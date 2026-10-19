@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon.ca Referrals — Teeccino</title>
+<style>
+  :root{--bg0:#1a1a2e;--bg1:#16213e;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.09);
+    --gold:#D4A843;--text:#ffffff;--text2:#cbd5e1;--muted:#94a3b8;--dim:#64748b;--grid:rgba(255,255,255,0.07);
+    --s-banner:#3987e5;--s-pdp:#d95926;--s-card:#199e70;--warn:#c98500;--bad:#e66767;--good:#3fa63f}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;
+    background:linear-gradient(135deg,var(--bg0) 0%,var(--bg1) 100%);min-height:100vh;color:var(--text);
+    padding:20px;padding-top:70px;font-size:14px;line-height:1.5}
+  .wrap{max-width:min(1400px,96vw);margin:0 auto}
+  .header{text-align:center;margin-bottom:24px}
+  .header h1{font-size:2.1em;font-weight:800;letter-spacing:-.5px;
+    background:linear-gradient(135deg,#D4A843,#F5D784,#D4A843);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .header .sub{color:var(--muted);margin-top:6px}
+  .header .updated{color:var(--dim);font-size:.8em;margin-top:4px}
+  .section-header{display:flex;align-items:center;gap:12px;margin:30px 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(212,168,67,.2)}
+  .section-header h2{font-size:1.1em;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:12px;min-width:0}
+  .card:has(> table){overflow-x:auto}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(520px,100%),1fr));gap:12px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .kpi .val{font-size:26px;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+  .kpi .cmp{font-size:12px;color:var(--dim)}
+  .cad{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:1px 6px;border-radius:99px;
+    border:1px solid var(--gold);color:var(--gold);vertical-align:3px;margin-left:5px}
+  .zero{border:1px dashed rgba(212,168,67,.55);background:rgba(212,168,67,.06);border-radius:12px;padding:18px 20px;margin-top:6px}
+  .zero h3{color:var(--gold);font-size:1.05em;margin-bottom:6px}
+  .zero p{color:var(--text2);font-size:13px;max-width:980px}
+  .src{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:12px;margin-top:12px}
+  .src .card{margin-top:0}
+  .src h3{font-size:13px;margin-bottom:6px}
+  .st{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;margin-left:6px;border:1px solid}
+  .st.ok,.st.empty{color:var(--good);border-color:var(--good)}
+  .st.blocked,.st.error{color:var(--bad);border-color:var(--bad)}
+  .st.none{color:var(--muted);border-color:var(--muted)}
+  .src p,.src li{font-size:12.5px;color:var(--text2)}
+  .src ul{margin:4px 0 0 18px}
+  h3.ct{font-size:13px;margin-bottom:2px}
+  .cs{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--text2);margin:2px 0 8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  svg text{fill:var(--muted);font-size:11px}
+  .empty-plot{fill:var(--dim);font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums;white-space:nowrap}
+  th:first-child,td:first-child,td.l,th.l{text-align:left}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  td.dash{color:var(--dim)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+  .note{font-size:12.5px;color:var(--text2);background:rgba(255,255,255,.03);border-left:3px solid var(--gold);
+    border-radius:6px;padding:10px 14px;margin-top:10px}
+  .note b{color:var(--text)}
+  .tip{position:fixed;pointer-events:none;background:#101828;border:1px solid var(--border);border-radius:6px;
+    padding:7px 10px;font-size:12px;opacity:0;transition:opacity .1s;z-index:50;font-variant-numeric:tabular-nums}
+  footer{margin-top:34px;font-size:11.5px;color:var(--dim);border-top:1px solid var(--border);padding-top:12px}
+  footer li{margin:3px 0 3px 16px}
+</style></head>
+<body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(function(r){if(!r.ok)throw r;return r.text();}).then(function(html){
+    var slot=document.getElementById('hub-nav'); slot.innerHTML=html;
+    document.body.classList.add('has-hub-nav');
+    slot.querySelectorAll('script').forEach(function(s){
+      var n=document.createElement('script');
+      if(s.src){n.src=s.src;}else{n.textContent=s.textContent;}
+      document.head.appendChild(n);
+    });
+  }).catch(function(){});
+</script>
+<div class="wrap">
+<div class="header">
+  <h1>Amazon.ca Referrals</h1>
+  <div class="sub">Canadian visitors sent from teeccino.com to Amazon.ca — clicks (GA4) vs Amazon-attributed orders &amp; sales (CAD)</div>
+  <div class="updated" id="upd"></div>
+</div>
+<div id="zero"></div>
+<div class="src" id="src"></div>
+
+<div class="section-header"><h2>Totals since <span id="since"></span></h2></div>
+<div class="kpis" id="kpis"></div>
+
+<div class="section-header"><h2>Daily trend</h2></div>
+<div class="grid2">
+  <div class="card"><h3 class="ct">Clicks to Amazon.ca, by surface (GA4)</h3>
+    <div class="cs">Real Canadian visitors only — test clicks excluded. Stacked by where the link was.</div>
+    <div class="legend" id="lg1"></div><div id="c1"></div></div>
+  <div class="card"><h3 class="ct">Amazon-attributed orders (Amazon Attribution)</h3>
+    <div class="cs">Orders Amazon credits to these links, 14-day last-touch. Sales in CAD are in the table below.</div>
+    <div class="legend" id="lg2"></div><div id="c2"></div></div>
+</div>
+<div class="card"><h3 class="ct">Daily detail</h3>
+  <div class="cs">A dash means that source was not pulled for that day — it is not a zero. Today is a partial day.</div>
+  <table id="dt"></table></div>
+
+<div class="section-header"><h2>By surface</h2></div>
+<div class="card"><table id="st"></table>
+  <div class="note"><b>Click-to-order rate</b> = Amazon-attributed orders ÷ GA4 clicks on that surface. The two systems count independently (GA4 counts the click on our site; Amazon counts the visit it received), so read it as a ratio of two sources, not a funnel step. Shown only once a surface has clicks.</div></div>
+
+<div class="section-header"><h2>Top products by clicks</h2></div>
+<div class="card"><table id="pt"></table>
+  <div class="note">Products are identified by their teeccino.com product page (Shopify handle). A product page can cover several sizes, so this is a page, not a specific item number. "Search" means the link sent the visitor to an Amazon.ca search rather than a single listing.</div></div>
+
+<footer><b>How this is built</b><ul id="foot"></ul></footer>
+</div>
+<div class="tip" id="tip"></div>
+<script type="application/json" id="payload">{"collect_start":"2026-10-19","today":"2026-10-19","built":"2026-10-19 16:50","surfaces":["banner","pdp","card"],"daily":[{"date":"2026-10-19","partial":true,"ga4":null,"amz":{"banner":{"clicks":0,"dpv":0,"atc":0,"orders":0,"units":0,"sales":0,"orders_total":0,"sales_total":0},"pdp":{"clicks":0,"dpv":0,"atc":0,"orders":0,"units":0,"sales":0,"orders_total":0,"sales_total":0},"card":{"clicks":0,"dpv":0,"atc":0,"orders":0,"units":0,"sales":0,"orders_total":0,"sales_total":0},"other":{"clicks":0,"dpv":0,"atc":0,"orders":0,"units":0,"sales":0,"orders_total":0,"sales_total":0}}}],"products":[],"excluded":{},"other_attr_rows":0,"pulls":{"ga4":{"run_at":"2026-10-19T23:50:05+00:00","start":"2026-10-19","end":"2026-10-19","status":"blocked","rows":0,"note":"Google Analytics login has expired -- needs a quick browser re-login (ga4_reauth.py)","last_ok":null},"amazon_attribution":{"run_at":"2026-10-19T23:50:06+00:00","start":"2026-10-19","end":"2026-10-19","status":"empty","rows":0,"note":"1 day(s) queried, profile 2031667754789258, advertiser 577303580473360972, currency CAD","last_ok":"2026-10-19T23:50:06+00:00"}},"campaign":"tcom_geo_ca"}</script>
+<script>
+(function(){
+const P=JSON.parse(document.getElementById('payload').textContent);
+const S=P.surfaces, COL={banner:'var(--s-banner)',pdp:'var(--s-pdp)',card:'var(--s-card)'};
+const LAB={banner:'Banner',pdp:'Product page button',card:'Collection card Quick Add'};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n0=v=>v==null?'—':Math.round(v).toLocaleString('en-US');
+const cad=v=>v==null?'—':'C$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=v=>v==null?'—':(v*100).toFixed(1)+'%';
+const tip=document.getElementById('tip');
+function showTip(e,h){tip.innerHTML=h;tip.style.opacity=1;tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY+12)+'px'}
+function hideTip(){tip.style.opacity=0}
+
+document.getElementById('upd').textContent='Built '+P.built+' · collecting since '+P.collect_start;
+document.getElementById('since').textContent=P.collect_start;
+
+// ---- totals
+const T={clicks:0,ga4Days:0,amzDays:0,orders:0,sales:0,dpv:0,atc:0,amzClicks:0,ordersTot:0,salesTot:0};
+const bySurf={}; S.forEach(s=>bySurf[s]={clicks:0,aclicks:0,dpv:0,atc:0,orders:0,units:0,sales:0});
+P.daily.forEach(r=>{
+  if(r.ga4){T.ga4Days++; S.forEach(s=>{T.clicks+=r.ga4[s];bySurf[s].clicks+=r.ga4[s]}); T.clicks+=r.ga4['(not set)']||0}
+  if(r.amz){T.amzDays++; Object.entries(r.amz).forEach(([s,m])=>{
+    T.orders+=m.orders;T.sales+=m.sales;T.dpv+=m.dpv;T.atc+=m.atc;T.amzClicks+=m.clicks;T.ordersTot+=m.orders_total;T.salesTot+=m.sales_total;
+    if(bySurf[s]){const b=bySurf[s];b.aclicks+=m.clicks;b.dpv+=m.dpv;b.atc+=m.atc;b.orders+=m.orders;b.units+=m.units;b.sales+=m.sales}})}
+});
+const haveG=T.ga4Days>0, haveA=T.amzDays>0;
+const kp=[
+ ['Clicks to Amazon.ca (GA4)', haveG?n0(T.clicks):'—', haveG?`real CA visitors · ${T.ga4Days} day(s) pulled`:'not yet pulled'],
+ ['Amazon visits from links', haveA?n0(T.amzClicks):'—', haveA?'Amazon Attribution click-throughs':'not yet pulled'],
+ ['Detail page views', haveA?n0(T.dpv):'—', '14-day last-touch'],
+ ['Add-to-carts', haveA?n0(T.atc):'—', '14-day last-touch'],
+ ['Attributed orders', haveA?n0(T.orders):'—', haveA?`promoted products · ${n0(T.ordersTot)} incl. brand halo`:'14-day last-touch'],
+ ['Attributed sales <span class="cad">CAD</span>', haveA?cad(T.sales):'—', haveA?`${cad(T.salesTot)} incl. brand halo · never mixed with USD`:'Canadian dollars'],
+];
+document.getElementById('kpis').innerHTML=kp.map(k=>`<div class="kpi"><div class="lab">${k[0]}</div><div class="val">${k[1]}</div><div class="cmp">${k[2]}</div></div>`).join('');
+
+// ---- zero state
+if(T.clicks===0 && T.orders===0 && T.amzClicks===0){
+  const d=Math.round((new Date(P.today)-new Date(P.collect_start))/864e5)+1;
+  document.getElementById('zero').innerHTML=`<div class="zero"><h3>Collecting since ${P.collect_start} — no referral data yet</h3>
+  <p>Both measurement sources started on ${P.collect_start} (day ${d} of collection). Every figure below is either a real count from a completed pull or a dash. Nothing on this page is estimated. Amazon credits an order up to 14 days after the click, so orders will trail clicks by up to two weeks.</p></div>`;
+}
+
+// ---- source status
+const SRC={ga4:['GA4 — click events','Event amazon_ca_click, property G-QG7N4XBQHK'],amazon_attribution:['Amazon Attribution — Amazon.ca','Campaign '+P.campaign+', ad groups banner / pdp / card']};
+const STL={ok:'Pulled',empty:'Pulled · no rows yet',blocked:'Blocked',error:'Error'};
+document.getElementById('src').innerHTML=Object.keys(SRC).map(k=>{
+  const p=P.pulls[k];
+  if(!p) return `<div class="card"><h3>${SRC[k][0]}<span class="st none">Never pulled</span></h3><p>${SRC[k][1]}</p></div>`;
+  const ex=(k==='ga4'&&p.last_ok)?`<li>Test clicks excluded: ${n0((P.excluded||{}).override||0)}${(P.excluded||{})['(not set)']?' · unlabelled: '+n0(P.excluded['(not set)']):''}</li>`:(P.other_attr_rows?`<li>${P.other_attr_rows} attribution row(s) from other campaigns not shown</li>`:'');
+  return `<div class="card"><h3>${SRC[k][0]}<span class="st ${p.status}">${STL[p.status]||p.status}</span></h3>
+   <ul><li>${SRC[k][1]}</li><li>Last run ${esc(p.run_at.slice(0,16).replace('T',' '))} UTC, window ${p.start} → ${p.end}, ${p.rows} row(s)</li>
+   ${p.status==='blocked'||p.status==='error'?`<li><b>${esc(p.note)}</b>${p.last_ok?' · last good pull '+esc(p.last_ok.slice(0,10)):' · no successful pull yet'}</li>`:''}${ex}</ul></div>`}).join('');
+
+// ---- charts (stacked bars, one axis each)
+function bars(el,lg,getter,keys,emptyMsg){
+  document.getElementById(lg).innerHTML=keys.map(s=>`<span><i style="background:${COL[s]}"></i>${LAB[s]}</span>`).join('');
+  const W=640,H=220,m={l:36,r:8,t:10,b:26},iw=W-m.l-m.r,ih=H-m.t-m.b,D=P.daily,n=D.length;
+  const vals=D.map(r=>getter(r)); const tot=vals.map(v=>v?keys.reduce((a,s)=>a+(v[s]||0),0):0);
+  const mx=Math.max(...tot,0);
+  let g=`<svg viewBox="0 0 ${W} ${H}" role="img">`;
+  const top=mx>0?Math.ceil(mx/4)*4:4;
+  for(let i=0;i<=4;i++){const y=m.t+ih-ih*i/4;g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${m.l-6}" y="${y+4}" text-anchor="end">${Math.round(top*i/4)}</text>`}
+  const bw=Math.max(2,Math.min(28,iw/n-2));
+  D.forEach((r,i)=>{const x=m.l+iw*(i+.5)/n-bw/2;const v=vals[i];
+    if(n<=16||i%Math.ceil(n/12)===0) g+=`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle">${r.date.slice(5)}</text>`;
+    if(!v){g+=`<text x="${x+bw/2}" y="${m.t+ih-4}" text-anchor="middle" class="empty-plot">–</text>`;return}
+    let y0=m.t+ih;keys.forEach(s=>{const h=ih*(v[s]||0)/top;if(h<=0)return;const y=y0-h;
+      g+=`<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(0,h-2)}" rx="2" fill="${COL[s]}"/>`;y0=y});
+    g+=`<rect x="${x-3}" y="${m.t}" width="${bw+6}" height="${ih}" fill="transparent" data-i="${i}"/>`});
+  if(mx===0) g+=`<text x="${m.l+iw/2}" y="${m.t+ih/2}" text-anchor="middle" class="empty-plot">${emptyMsg}</text>`;
+  g+='</svg>'; const c=document.getElementById(el); c.innerHTML=g;
+  c.querySelectorAll('rect[data-i]').forEach(rc=>{rc.addEventListener('mousemove',e=>{const r=D[+rc.dataset.i],v=vals[+rc.dataset.i];
+    showTip(e,`<b>${r.date}${r.partial?' (partial)':''}</b><br>`+(v?keys.map(s=>`${LAB[s]}: ${n0(v[s])}`).join('<br>'):'not pulled'))});rc.addEventListener('mouseleave',hideTip)});
+}
+bars('c1','lg1',r=>r.ga4,S,haveG?'No clicks recorded yet':'GA4 not pulled yet');
+bars('c2','lg2',r=>r.amz?Object.fromEntries(S.map(s=>[s,r.amz[s].orders])):null,S,haveA?'No attributed orders yet':'Amazon Attribution not pulled yet');
+
+// ---- daily table (newest first)
+const dt=document.getElementById('dt');
+dt.innerHTML='<thead><tr><th class="l">Date</th><th>GA4 clicks</th>'+S.map(s=>`<th>${s}</th>`).join('')+'<th>Amazon visits</th><th>Detail views</th><th>Add-to-carts</th><th>Orders</th><th>Sales (CAD)</th></tr></thead><tbody>'+
+ P.daily.slice().reverse().map(r=>{const g=r.ga4,a=r.amz;const A=k=>a?Object.values(a).reduce((x,m)=>x+m[k],0):null;
+  const G=g?S.reduce((x,s)=>x+g[s],0)+(g['(not set)']||0):null;const td=(v,f)=>`<td class="${v==null?'dash':''}">${f(v)}</td>`;
+  return `<tr><td class="l">${r.date}${r.partial?' <span style="color:var(--dim)">(partial)</span>':''}</td>${td(G,n0)}${S.map(s=>td(g?g[s]:null,n0)).join('')}${td(A('clicks'),n0)}${td(A('dpv'),n0)}${td(A('atc'),n0)}${td(A('orders'),n0)}${td(A('sales'),cad)}</tr>`}).join('')+'</tbody>';
+
+// ---- surface table
+document.getElementById('st').innerHTML='<thead><tr><th class="l">Surface</th><th>GA4 clicks</th><th>Amazon visits</th><th>Detail views</th><th>Add-to-carts</th><th>Orders</th><th>Units</th><th>Sales (CAD)</th><th>Click-to-order rate</th></tr></thead><tbody>'+
+ S.map(s=>{const b=bySurf[s];const rate=(haveG&&haveA&&b.clicks>0)?b.orders/b.clicks:null;
+  return `<tr><td class="l"><span class="sw" style="background:${COL[s]}"></span>${LAB[s]}</td><td>${haveG?n0(b.clicks):'—'}</td><td>${haveA?n0(b.aclicks):'—'}</td><td>${haveA?n0(b.dpv):'—'}</td><td>${haveA?n0(b.atc):'—'}</td><td>${haveA?n0(b.orders):'—'}</td><td>${haveA?n0(b.units):'—'}</td><td>${haveA?cad(b.sales):'—'}</td><td class="${rate==null?'dash':''}">${pct(rate)}</td></tr>`}).join('')+'</tbody>';
+
+// ---- products
+const pt=document.getElementById('pt');
+pt.innerHTML='<thead><tr><th class="l">Product page</th><th class="l">Link goes to</th><th class="l">Surface</th><th>Clicks</th></tr></thead><tbody>'+
+ (P.products.length?P.products.slice(0,25).map(p=>`<tr><td class="l">${p.handle==='(not set)'?'<span style="color:var(--muted)">No specific product</span>':esc(p.handle)}</td><td class="l">${p.dest==='search'?'Amazon.ca search':p.dest==='product'?'Amazon.ca listing':esc(p.dest)}</td><td class="l">${esc(LAB[p.surface]||p.surface)}</td><td>${n0(p.clicks)}</td></tr>`).join('')
+  :`<tr><td class="l dash" colspan="4">${haveG?'No product clicks recorded yet.':'GA4 not pulled yet — no product clicks to show.'}</td></tr>`)+'</tbody>';
+
+document.getElementById('foot').innerHTML=[
+ 'Clicks: GA4 event amazon_ca_click from teeccino.com (property G-QG7N4XBQHK). Only real Canadian visitors (geo_source = trace) are counted; QA/test clicks (override) are excluded and their count is shown above. Surface, destination and product detail exist only from 2026-10-19.',
+ 'Orders and sales: Amazon Attribution for Amazon.ca, campaign '+esc(P.campaign)+', ad groups banner / pdp / card. Attribution is <b>last-touch with a 14-day window</b> — the Amazon API offers only 14-day metrics for this report, confirming the window. "Brand halo" adds purchases of other Teeccino products on Amazon.ca after the click.',
+ 'All money on this page is <b>Canadian dollars (CAD)</b>. It is not converted and is never added to USD teeccino.com revenue.',
+ 'Clicks re-pull a trailing 7 days nightly (GA4 settles over ~3 days); Amazon re-pulls a trailing 21 days because orders keep arriving for 14 days after a click.',
+].map(x=>'<li>'+x+'</li>').join('');
+})();
+</script>
+</body></html>
