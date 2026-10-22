@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T16:20:59.138833-07:00",
-  "generatedAtUTC": "2026-10-21T23:20:59.138833+00:00",
+  "generatedAt": "2026-10-22T07:45:02.240882-07:00",
+  "generatedAtUTC": "2026-10-22T14:45:02.240882+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -13,9 +13,9 @@
       "owner": "shopkeeper",
       "present": true,
       "error": null,
-      "generatedAt": "2026-10-21T07:45:02-07:00",
-      "ageSeconds": 30957,
-      "ageHuman": "8h ago",
+      "generatedAt": "2026-10-22T07:45:02-07:00",
+      "ageSeconds": 0,
+      "ageHuman": "0m ago",
       "stale": false,
       "thresholdSeconds": 2592000
     },
@@ -26,7 +26,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 3048683,
+      "ageSeconds": 3104126,
       "ageHuman": "35d ago",
       "stale": true,
       "thresholdSeconds": 2592000
@@ -38,7 +38,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-10-05T10:35:23-07:00",
-      "ageSeconds": 1403136,
+      "ageSeconds": 1458579,
       "ageHuman": "16d ago",
       "stale": true,
       "thresholdSeconds": 86400,
@@ -51,8 +51,8 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-10-21T08:51:10-07:00",
-      "ageSeconds": 26989,
-      "ageHuman": "7h ago",
+      "ageSeconds": 82432,
+      "ageHuman": "22h ago",
       "stale": false,
       "thresholdSeconds": 172800
     }
@@ -1004,14 +1004,14 @@
       "lifecycle": "DECLARED",
       "lifecycleReason": "record exists and starts 2026-10-25, but preflight is FAIL -- ARMED requires preflight PASS (spec 7.4b)",
       "order": 4,
-      "daysLabel": "in 4 days",
+      "daysLabel": "in 3 days",
       "timeline": {
         "startsAtDate": "2026-10-25",
         "endsAtDate": "2026-10-31",
         "startsAtISO": "2026-10-25T07:00:00+00:00",
         "endsAtISO": "2026-11-01T06:59:59+00:00",
         "earlyAccessDate": "2026-10-12",
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -1449,11 +1449,11 @@
           "ownerCount": 1,
           "group": "mechanic",
           "teardownKind": "required",
-          "launchState": "pending",
+          "launchState": "armed",
           "teardownState": "pending",
           "launchTarget": "TWO automatic nodes: 'Halloween Sale OTP' -> custom.discount, and 'Halloween Sale SUB' -> custom.first_subscription_discount. fsd is the INCREMENT on Stay.ai's always-on 15%, never a marketing percentage. Window 2026-10-25 .. 2026-10-31 (7 days). Scope: SITEWIDE (major). Rates d=19 / fsd=11, advertised 25% OFF / 30% OFF First Shipment -- VERIFIED 2026-10-01. SCOPE CARRIES TWO DECLARED CONSTRAINTS: gift cards are OUT (standing exclusion, see giftCardScopeExclusion2026_09_15), and NINETEEN variants currently display a badge below the declared 25% claim (see anchorExposure2026_09_15) -- advertisedVerified is False and must not be flipped without re-running skills/promo-calendar/_measure_markup_floor_20260914.py. COLLECTION-SCOPE TRAP: if the nodes read a smart collection keyed on custom.discount == N, sweeping variants to a new N drops them OUT of the collection the node reads.",
           "teardownTarget": "TEARDOWN IS TWO OBJECTS -- DO BOTH, or the price reverts and the label does not. (1) Deactivate/expire both nodes, 'Halloween Sale OTP' and 'Halloween Sale SUB'. (2) Revert custom.discount AND custom.first_subscription_discount across every in-scope DTC storefront variant (SITEWIDE -- resolve and state the count at dispatch). *** BASELINE-AWARE: the target is NOT zero everywhere. *** November's FOTM is TURKEY TAIL at custom.discount=20 / custom.first_subscription_discount=10, and it rolls over on the SAME MORNING as this teardown. The target for FOTM-tagged variants is 20/10 on the NOVEMBER flavour -- not 0, and not October's Mocha. Everything else sitewide goes to 0/0. Read which promo and which FOTM are live before writing any zero: a zero-seeking teardown that does not know the baseline either aborts or, worse, wipes the evergreen. Zeroing blind would wipe the evergreen that is supposed to survive this promo. Ends 2026-10-31 23:59 PT; teardown fires 2026-11-01 00:01 PT. *** COLLISION: 2026-11-01 is ALSO the FOTM roll date. *** The November FOTM (Turkey Tail) and the November free packet arm on exactly the day this teardown fires, and NOTHING auto-fires the roll. Sequence them deliberately and confirm BOTH landed: a teardown that zeroes first and a roll that arms second are two writes to the same fields on the same morning. Bound lateness at BOTH ends (RULING 6).",
-          "launchEvidence": null,
+          "launchEvidence": "ARMED 2026-10-21, NOT YET LIVE. Nodes read back by ID: 'Halloween Sale OTP' gid://shopify/DiscountAutomaticNode/1581246415096 (19% one-time, collection 'Discount = 19') and 'Halloween Sale SUB' gid://shopify/DiscountAutomaticNode/1581246447864 (11% subscription, recurringCycleLimit 1, collection 'First Subscription Discount = 11'); both SCHEDULED startsAt 2026-10-25T07:00:00Z, endsAt null, combinesWith order=F product=T shipping=F. Metafield sweep armed: Shopkeeper-HalloweenLaunch-20261025 (00:02 PT) writes 19/11 to 230 of 238 sitewide variants (141 products; eGift Card x5 excluded; Mocha 8 held 20/11); backup 01:30; verify+promo_phase_gate 09:00. Teardown armed: Shopkeeper-HalloweenTeardown-20261101 00:01 PT, SafetyNet 07:30 PST, Verify 10:00 PST; tag-resolved baseline; Nov FOTM job waits on its latch (GATE H). Cart evidence pending launch.",
           "teardownEvidence": null,
           "launchVerifiedBy": null,
           "teardownVerifiedBy": null
@@ -1497,19 +1497,19 @@
           "ownerCount": 1,
           "group": "data-driven",
           "teardownKind": "manual",
-          "launchState": "pending",
+          "launchState": "done",
           "teardownState": "pending",
           "launchTarget": "PRE-LAUNCH, DUE 2026-10-20 (5 days before Halloween opens 2026-10-25; one creation serves Halloween, BFCM, Ship Before the Holidays and New Year's -- all d=19/fsd=11). Create two smart collections, titles EXACTLY 'Discount = 19' and 'First Subscription Discount = 11', rule VARIANT_METAFIELD_DEFINITION EQUALS '19' / '11' on custom.discount / custom.first_subscription_discount, published to Online Store + Shop (pattern of _sws_promo_2026_08.py). Look up by TITLE, never handle (Discount = 18 carries handle discount-15). They sit EMPTY until the launch metafield sweep. TARGET STATE: both exist, published, 0 members, before 2026-10-20. promo_slate_2026.py preflight [BLOCK]s without them.",
           "teardownTarget": "After 2026-10-31: collections STAY (empty, reused by the next 19/11 major). TARGET STATE: 0 members once custom.discount/fsd revert -- membership empties with the metafield teardown on 'Discount nodes + metafields'; nothing to delete.",
-          "launchEvidence": null,
+          "launchEvidence": "Created 2026-10-21: 'Discount = 19' gid://shopify/Collection/511640273144 (handle discount-19, rule VARIANT_METAFIELD_DEFINITION EQUALS 19 on custom.discount, 0 members) and 'First Subscription Discount = 11' gid://shopify/Collection/511640305912 (handle first-subscription-discount-11, EQUALS 11 on custom.first_subscription_discount, 4 members = Oct FOTM Mocha products at fsd=11, expected). Both published Online Store + Shop; read back.",
           "teardownEvidence": null,
-          "launchVerifiedBy": null,
+          "launchVerifiedBy": "shopkeeper",
           "teardownVerifiedBy": null
         }
       ],
       "surfacesSummary": {
         "total": 22,
-        "launchDone": 0,
+        "launchDone": 1,
         "teardownDone": 0,
         "unowned": 0,
         "multiOwner": 0,
@@ -1519,8 +1519,8 @@
         "preflight": {
           "result": "FAIL",
           "exitCode": 1,
-          "ranAt": "2026-09-15T12:53:35.592747-07:00",
-          "ranAtAge": "36d ago",
+          "ranAt": "2026-10-21T16:43:51.029465-07:00",
+          "ranAtAge": "15h ago",
           "checks": [
             {
               "check": "window: preflight phase matches the clock",
@@ -1532,13 +1532,13 @@
               "check": "record: declared scope 'full'",
               "owner": "promosmith",
               "status": "PASS",
-              "detail": "1 of 21 surfaces out of scope, not judged: Organic social posts"
+              "detail": "1 of 22 surfaces out of scope, not judged: Organic social posts"
             },
             {
               "check": "record: every surface has an owner (RULING 3)",
               "owner": "promosmith",
               "status": "PASS",
-              "detail": "20 surfaces, all owned"
+              "detail": "21 surfaces, all owned"
             },
             {
               "check": "record: no surface owned by committee (RULING 3)",
@@ -1553,10 +1553,10 @@
               "detail": "all required teardowns have an explicit target"
             },
             {
-              "check": "question BLOCKING: WHICH $0.00 twin is the Halloween gift, and has anyone physi",
-              "owner": "justin",
-              "status": "FAIL",
-              "detail": "raised by promosmith 2026-09-14 -- must be resolved with Justin before launch"
+              "check": "questions: no blocking question unresolved",
+              "owner": "promosmith",
+              "status": "PASS",
+              "detail": "0 open non-blocking, 1 resolved"
             },
             {
               "check": "record: rates stated (RULING 5)",
@@ -1574,18 +1574,17 @@
               "check": "scheduled jobs: all fire (rc=0, not just Ready) [scope: MACHINE-WIDE, none declared]",
               "owner": "agentsmith",
               "status": "FAIL",
-              "detail": "[taskhealth] 2026-09-15T19:53:34+00:00  tasks=51 unhealthy=20 info=9 (+24 more)"
+              "detail": "[taskhealth] 2026-10-21T23:43:48+00:00  tasks=140 unhealthy=28 info=10 (+32 more)"
             },
             {
               "check": "gift: declared, built and giftable",
               "owner": "shopkeeper",
-              "status": "FAIL",
-              "detail": "GIFT: BLOCKED -- 1 of 2 checks failed"
+              "status": "PASS",
+              "detail": "GIFT: PASS -- 8 checks, all green"
             }
           ],
           "failingOwners": [
             "agentsmith",
-            "justin",
             "shopkeeper"
           ]
         },
@@ -1650,6 +1649,21 @@
           "at": "2026-10-21T23:20:46+00:00",
           "by": "promosmith",
           "entry": "Frother GWP threshold $65 -> $75 on Justin's instruction 2026-10-21 ('iTS ACTUALLY GOING TO BE FREE FROTHER OVER 75 LOCK THAT IN.'). Gift twin resolved by GID 9043762839800/46377468756216; blocking question closed. Live read: tier 3 product=free-frother, threshold=0; no Halloween nodes yet; no arm job registered."
+        },
+        {
+          "at": "2026-10-21T23:22:50+00:00",
+          "by": "promosmith",
+          "entry": "PREFLIGHT OVERRIDE BY JUSTIN 2026-10-21, #promosmith, option 'Override and send Halloween out now'. Gate rc=1 on 2 MACHINE-WIDE job defects not owned by this promo (scheduled jobs: safe action shape @shopkeeper; all fire @agentsmith). All promo-specific checks PASS incl. gift 8/8. Dispatching Shopkeeper (nodes + rate collections + metafields) and ThemeSmith (tier-3 arm at 75 Oct 25 / disarm Nov 1). Machine-wide job health stays open with its owners; NOT waived for launch/teardown gates."
+        },
+        {
+          "at": "2026-10-21T23:41:00.756914+00:00",
+          "by": "shopkeeper",
+          "event": "Mechanics armed: 2 collections + 2 SCHEDULED nodes created, 6 scheduled jobs registered, Nov FOTM GATE H added."
+        },
+        {
+          "at": "2026-10-21T21:57:00-07:00",
+          "by": "themesmith",
+          "event": "Theme surfaces staged on LIVE (date-gated 10-25..10-31); FOTM campaign_sale_end_date rolled 2026-10-31 -> 2026-11-30 (pure render gate; satisfies Shopkeeper-NovFOTM GATE T); Nov 1 theme teardown jobs registered; frother headline added to tier-3 jobs."
         }
       ],
       "narrative": [
@@ -1895,8 +1909,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -1914,7 +1928,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -1930,14 +1944,14 @@
       "lifecycle": "DECLARED",
       "lifecycleReason": "in the declared slate, no record file at promo-records/new-years-sale-2027-01.json",
       "order": 4,
-      "daysLabel": "in 70 days",
+      "daysLabel": "in 69 days",
       "timeline": {
         "startsAtDate": "2026-12-30",
         "endsAtDate": "2027-01-05",
         "startsAtISO": "2026-12-30T07:00:00+00:00",
         "endsAtISO": "2027-01-06T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": false,
@@ -2168,8 +2182,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2187,7 +2201,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2203,14 +2217,14 @@
       "lifecycle": "DECLARED",
       "lifecycleReason": "in the declared slate, no record file at promo-records/winter-solstice-sale-2026-12.json",
       "order": 4,
-      "daysLabel": "in 59 days",
+      "daysLabel": "in 58 days",
       "timeline": {
         "startsAtDate": "2026-12-19",
         "endsAtDate": "2026-12-21",
         "startsAtISO": "2026-12-19T07:00:00+00:00",
         "endsAtISO": "2026-12-22T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": false,
@@ -2444,8 +2458,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2463,7 +2477,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2479,14 +2493,14 @@
       "lifecycle": "DECLARED",
       "lifecycleReason": "in the declared slate, no record file at promo-records/gift-the-ritual-2026-12.json",
       "order": 4,
-      "daysLabel": "in 51 days",
+      "daysLabel": "in 50 days",
       "timeline": {
         "startsAtDate": "2026-12-11",
         "endsAtDate": "2026-12-17",
         "startsAtISO": "2026-12-11T07:00:00+00:00",
         "endsAtISO": "2026-12-18T06:59:59+00:00",
         "earlyAccessDate": "2026-12-10",
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": false,
@@ -2740,8 +2754,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -2759,7 +2773,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -2775,14 +2789,14 @@
       "lifecycle": "DECLARED",
       "lifecycleReason": "record exists and starts 2026-11-19, but preflight is FAIL -- ARMED requires preflight PASS (spec 7.4b)",
       "order": 4,
-      "daysLabel": "in 29 days",
+      "daysLabel": "in 28 days",
       "timeline": {
         "startsAtDate": "2026-11-19",
         "endsAtDate": "2026-12-02",
         "startsAtISO": "2026-11-19T07:00:00+00:00",
         "endsAtISO": "2026-12-03T06:59:59+00:00",
         "earlyAccessDate": "2026-11-19",
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -3664,8 +3678,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -3683,7 +3697,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -3699,14 +3713,14 @@
       "lifecycle": "DECLARED",
       "lifecycleReason": "record exists and starts 2026-11-09, but preflight is FAIL -- ARMED requires preflight PASS (spec 7.4b)",
       "order": 4,
-      "daysLabel": "in 19 days",
+      "daysLabel": "in 18 days",
       "timeline": {
         "startsAtDate": "2026-11-09",
         "endsAtDate": "2026-11-11",
         "startsAtISO": "2026-11-09T07:00:00+00:00",
         "endsAtISO": "2026-11-12T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -4339,8 +4353,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -4358,7 +4372,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -4374,14 +4388,14 @@
       "lifecycle": "ENDED - TEARDOWN OPEN",
       "lifecycleReason": "teardown gate not-run (exit never run); record status=open",
       "order": 1,
-      "daysLabel": "ended 4 days ago",
+      "daysLabel": "ended 5 days ago",
       "timeline": {
         "startsAtDate": "2026-10-15",
         "endsAtDate": "2026-10-17",
         "startsAtISO": "2026-10-15T07:00:00+00:00",
         "endsAtISO": "2026-10-18T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -5135,8 +5149,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -5154,7 +5168,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -5170,14 +5184,14 @@
       "lifecycle": "ENDED - TEARDOWN OPEN",
       "lifecycleReason": "record status=open",
       "order": 1,
-      "daysLabel": "ended 17 days ago",
+      "daysLabel": "ended 18 days ago",
       "timeline": {
         "startsAtDate": "2026-09-27",
         "endsAtDate": "2026-10-04",
         "startsAtISO": "2026-09-27T07:00:00+00:00",
         "endsAtISO": "2026-10-05T06:59:59+00:00",
         "earlyAccessDate": "2026-09-03",
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -5686,7 +5700,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-09-27T17:23:17.204146-07:00",
-          "ranAtAge": "23d ago",
+          "ranAtAge": "24d ago",
           "checks": [
             {
               "check": "window: preflight phase is appropriate",
@@ -6086,8 +6100,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -6105,7 +6119,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -6121,14 +6135,14 @@
       "lifecycle": "ENDED - TEARDOWN OPEN",
       "lifecycleReason": "teardown gate FAIL (exit 1); record status=open",
       "order": 1,
-      "daysLabel": "ended 40 days ago",
+      "daysLabel": "ended 41 days ago",
       "timeline": {
         "startsAtDate": "2026-09-03",
         "endsAtDate": "2026-09-11",
         "startsAtISO": "2026-09-03T07:00:00+00:00",
         "endsAtISO": "2026-09-12T06:59:59+00:00",
         "earlyAccessDate": "2026-09-03",
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -7582,8 +7596,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -7601,7 +7615,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -7617,14 +7631,14 @@
       "lifecycle": "CLOSED",
       "lifecycleReason": "teardown gate PASS (exit 0) and record status=closed",
       "order": 5,
-      "daysLabel": "ended 51 days ago",
+      "daysLabel": "ended 52 days ago",
       "timeline": {
         "startsAtDate": "2026-08-28",
         "endsAtDate": "2026-08-31",
         "startsAtISO": "2026-08-28T07:00:00+00:00",
         "endsAtISO": "2026-09-01T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -8553,8 +8567,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -8572,7 +8586,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -8588,14 +8602,14 @@
       "lifecycle": "CLOSED",
       "lifecycleReason": "teardown gate PASS (exit 0) and record status=closed",
       "order": 5,
-      "daysLabel": "ended 62 days ago",
+      "daysLabel": "ended 63 days ago",
       "timeline": {
         "startsAtDate": "2026-08-13",
         "endsAtDate": "2026-08-20",
         "startsAtISO": "2026-08-13T07:00:00+00:00",
         "endsAtISO": "2026-08-21T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -9435,8 +9449,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -9454,7 +9468,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -9470,14 +9484,14 @@
       "lifecycle": "CLOSED",
       "lifecycleReason": "teardown gate PASS (exit 0) and record status=closed",
       "order": 5,
-      "daysLabel": "ended 73 days ago",
+      "daysLabel": "ended 74 days ago",
       "timeline": {
         "startsAtDate": "2026-08-07",
         "endsAtDate": "2026-08-09",
         "startsAtISO": "2026-08-07T07:00:00+00:00",
         "endsAtISO": "2026-08-10T06:59:59+00:00",
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7); the browser recomputes this at render, so a stale page cannot claim a fresh relative time"
       },
       "hasRecord": true,
@@ -10122,8 +10136,8 @@
           "block": "timeline mirror",
           "source": "promo-hub-calendar.json",
           "present": true,
-          "generatedAt": "2026-10-21T07:45:02-07:00",
-          "ageHuman": "8h ago",
+          "generatedAt": "2026-10-22T07:45:02-07:00",
+          "ageHuman": "0m ago",
           "stale": false,
           "owner": "shopkeeper"
         },
@@ -10141,7 +10155,7 @@
           "source": "promo-hub-analytics.json",
           "present": true,
           "generatedAt": "2026-10-21T08:51:10-07:00",
-          "ageHuman": "7h ago",
+          "ageHuman": "22h ago",
           "stale": false,
           "owner": "dataops"
         }
@@ -10204,14 +10218,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "calendar-feed only, pre-record-contract (before 2026-08)",
       "order": 6,
-      "daysLabel": "ended 82 days ago",
+      "daysLabel": "ended 83 days ago",
       "timeline": {
         "startsAtDate": "2026-07-25",
         "endsAtDate": "2026-07-31",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10318,14 +10332,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "calendar-feed only, pre-record-contract (before 2026-08)",
       "order": 6,
-      "daysLabel": "ended 96 days ago",
+      "daysLabel": "ended 97 days ago",
       "timeline": {
         "startsAtDate": "2026-07-10",
         "endsAtDate": "2026-07-17",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10432,14 +10446,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "calendar-feed only, pre-record-contract (before 2026-08)",
       "order": 6,
-      "daysLabel": "ended 108 days ago",
+      "daysLabel": "ended 109 days ago",
       "timeline": {
         "startsAtDate": "2026-07-03",
         "endsAtDate": "2026-07-05",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10510,14 +10524,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 120 days ago",
+      "daysLabel": "ended 121 days ago",
       "timeline": {
         "startsAtDate": "2026-06-17",
         "endsAtDate": "2026-06-23",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10589,14 +10603,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 128 days ago",
+      "daysLabel": "ended 129 days ago",
       "timeline": {
         "startsAtDate": "2026-06-11",
         "endsAtDate": "2026-06-15",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10668,14 +10682,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 138 days ago",
+      "daysLabel": "ended 139 days ago",
       "timeline": {
         "startsAtDate": "2026-06-01",
         "endsAtDate": "2026-06-05",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10747,14 +10761,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 148 days ago",
+      "daysLabel": "ended 149 days ago",
       "timeline": {
         "startsAtDate": "2026-05-19",
         "endsAtDate": "2026-05-26",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10826,14 +10840,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 164 days ago",
+      "daysLabel": "ended 165 days ago",
       "timeline": {
         "startsAtDate": "2026-05-07",
         "endsAtDate": "2026-05-10",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10905,14 +10919,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 174 days ago",
+      "daysLabel": "ended 175 days ago",
       "timeline": {
         "startsAtDate": "2026-04-19",
         "endsAtDate": "2026-04-30",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -10984,14 +10998,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 210 days ago",
+      "daysLabel": "ended 211 days ago",
       "timeline": {
         "startsAtDate": "2026-03-17",
         "endsAtDate": "2026-03-25",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11063,14 +11077,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 227 days ago",
+      "daysLabel": "ended 228 days ago",
       "timeline": {
         "startsAtDate": "2026-03-05",
         "endsAtDate": "2026-03-08",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11142,14 +11156,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 232 days ago",
+      "daysLabel": "ended 233 days ago",
       "timeline": {
         "startsAtDate": "2026-03-02",
         "endsAtDate": "2026-03-03",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11221,14 +11235,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 235 days ago",
+      "daysLabel": "ended 236 days ago",
       "timeline": {
         "startsAtDate": "2026-02-25",
         "endsAtDate": "2026-02-28",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11300,14 +11314,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 244 days ago",
+      "daysLabel": "ended 245 days ago",
       "timeline": {
         "startsAtDate": "2026-02-12",
         "endsAtDate": "2026-02-19",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11379,14 +11393,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 257 days ago",
+      "daysLabel": "ended 258 days ago",
       "timeline": {
         "startsAtDate": "2026-01-22",
         "endsAtDate": "2026-02-06",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11458,14 +11472,14 @@
       "lifecycle": "HISTORICAL",
       "lifecycleReason": "rebuilt from Shopify's discount record; dates are the first and last order that used the discount",
       "order": 6,
-      "daysLabel": "ended 281 days ago",
+      "daysLabel": "ended 282 days ago",
       "timeline": {
         "startsAtDate": "2026-01-07",
         "endsAtDate": "2026-01-13",
         "startsAtISO": null,
         "endsAtISO": null,
         "earlyAccessDate": null,
-        "computedAgainst": "2026-10-21",
+        "computedAgainst": "2026-10-22",
         "basis": "calendar-day difference in PT (UTC-7) (mirror row)"
       },
       "window": {
@@ -11554,7 +11568,7 @@
         "results": {
           "orders": 278,
           "gross": 14430.22,
-          "spend": 1091.58,
+          "spend": 2644.58,
           "coveredDays": 3,
           "days": 3
         }
