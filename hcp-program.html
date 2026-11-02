@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>HCP Program — Teeccino</title>
+<style>
+  :root{--bg0:#1a1a2e;--bg1:#16213e;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.09);
+    --gold:#D4A843;--text:#ffffff;--text2:#cbd5e1;--muted:#94a3b8;--dim:#64748b;--grid:rgba(255,255,255,0.07);
+    --bar:#3987e5;--ok:#3fa36b;--part:#c98500;--none:#64748b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;
+    background:linear-gradient(135deg,var(--bg0) 0%,var(--bg1) 100%);min-height:100vh;color:var(--text);
+    padding:20px;padding-top:70px;font-size:14px;line-height:1.5}
+  .wrap{max-width:min(1400px,96vw);margin:0 auto}
+  .header{text-align:center;margin-bottom:22px}
+  .header h1{font-size:2.1em;font-weight:800;letter-spacing:-.5px;
+    background:linear-gradient(135deg,#D4A843,#F5D784,#D4A843);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .header .sub{color:var(--muted);margin-top:6px}
+  .header .updated{color:var(--dim);font-size:.8em;margin-top:4px}
+  .section-header{display:flex;align-items:center;gap:12px;margin:30px 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(212,168,67,.2)}
+  .section-header h2{font-size:1.1em;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-top:12px;min-width:0}
+  .card:has(> table){overflow-x:auto}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(520px,100%),1fr));gap:12px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .kpi .val{font-size:26px;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+  .kpi .cmp{font-size:12px;color:var(--dim)}
+  h3.ct{font-size:13px;margin-bottom:2px}
+  .cs{font-size:12px;color:var(--muted);margin-bottom:8px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  svg text{fill:var(--muted);font-size:11px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  td.dash{color:var(--dim)}
+  .st{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;border:1px solid;white-space:nowrap}
+  .st.ok{color:var(--ok);border-color:var(--ok)} .st.ok::before{content:"\2713  "}
+  .st.part{color:var(--part);border-color:var(--part)} .st.part::before{content:"\25D0  "}
+  .st.none{color:var(--muted);border-color:var(--none)} .st.none::before{content:"\25CB  "}
+  .note{font-size:12.5px;color:var(--text2);background:rgba(255,255,255,.03);border-left:3px solid var(--gold);border-radius:6px;padding:10px 14px;margin-top:10px}
+  .tip{position:fixed;pointer-events:none;background:#101828;border:1px solid var(--border);border-radius:6px;
+    padding:7px 10px;font-size:12px;opacity:0;transition:opacity .1s;z-index:50;font-variant-numeric:tabular-nums}
+  footer{margin-top:34px;font-size:11.5px;color:var(--dim);border-top:1px solid var(--border);padding-top:12px}
+  footer li{margin:3px 0 3px 16px}
+</style></head>
+<body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(function(r){if(!r.ok)throw r;return r.text();}).then(function(html){
+    var slot=document.getElementById('hub-nav'); slot.innerHTML=html;
+    document.body.classList.add('has-hub-nav');
+    slot.querySelectorAll('script').forEach(function(s){
+      var n=document.createElement('script');
+      if(s.src){n.src=s.src;}else{n.textContent=s.textContent;}
+      document.head.appendChild(n);
+    });
+  }).catch(function(){});
+</script>
+<div class="wrap">
+<div class="header">
+  <h1>Healthcare Practitioner Program</h1>
+  <div class="sub">From the practitioner lists to mailers, responses, samples, follow-up email and patient sales</div>
+  <div class="updated" id="upd"></div>
+</div>
+<div class="kpis" id="kpis"></div>
+
+<div class="section-header"><h2>The program, stage by stage</h2></div>
+<div class="card"><table id="funnel"></table>
+<div class="note">Stages marked <span class="st none">Not tracked yet</span> are not zero, we just can't count them yet. The last column says what would let us count them.</div></div>
+
+<div class="section-header"><h2>Mailers</h2></div>
+<div class="grid2">
+  <div class="card"><h3 class="ct">Practitioners sent a first mailer, by month</h3>
+    <div class="cs" id="mailcs"></div><div id="mailchart"></div></div>
+  <div class="card"><h3 class="ct">Where the first mailers went (top states)</h3>
+    <div class="cs">Naturopaths only. These are the only list with mailing dates recorded.</div><table id="states"></table></div>
+</div>
+<div class="card"><h3 class="ct">The practitioner lists</h3>
+  <div class="cs" id="listcs"></div><table id="lists"></table></div>
+
+<div class="section-header"><h2>Responses</h2></div>
+<div class="grid2">
+  <div class="card"><h3 class="ct">Visits to the practitioner portal page, by month</h3>
+    <div class="cs">Visits that started on the page. The sample request form is on this page.</div><div id="portalchart"></div></div>
+  <div class="card"><h3 class="ct">Mailer QR code scans</h3><div class="cs" id="qrcs"></div><table id="qr"></table></div>
+</div>
+
+<div class="section-header"><h2>Follow-up email</h2></div>
+<div class="card"><h3 class="ct">Practitioner emails</h3><div class="cs" id="emcs"></div><table id="emails"></table></div>
+<div class="card"><h3 class="ct">Email list size</h3><div class="cs">People on each practitioner email list, by day.</div><table id="klists"></table></div>
+
+<div class="section-header"><h2>Restocks and sales</h2></div>
+<div class="grid2">
+  <div class="card"><h3 class="ct">Visits to the sample restock page, by month</h3>
+    <div class="cs">The page practitioners use to ask for more samples (live since Oct 2026).</div><table id="restock"></table></div>
+  <div class="card"><h3 class="ct">Orders that started on a practitioner page</h3><div class="cs">Excludes cancelled orders. A practitioner's own order, or a patient who found the portal.</div><div id="orders"></div></div>
+</div>
+
+<footer><ul id="foot"></ul></footer>
+</div>
+<div class="tip" id="tip"></div>
+<script type="application/json" id="payload">{"updated":"2026-11-02 11:54","lists_asof":"2026-11-02","lists":[{"name":"Midwives","contacts":15517,"with_email":2081,"with_address":15213,"states":49,"mail_tracked":false},{"name":"Naturopaths","contacts":6999,"with_email":3200,"with_address":6854,"states":55,"mail_tracked":true},{"name":"Nutritionists","contacts":6309,"with_email":664,"with_address":3889,"states":47,"mail_tracked":false},{"name":"Functional doctors","contacts":1527,"with_email":1289,"with_address":1125,"states":53,"mail_tracked":false}],"list_files_edited":{"Naturopaths":"2026-10-27T13:58:59","Midwives":"2026-10-12T11:43:23","Nutritionists":"2026-10-23T11:27:03","Functional doctors":"2026-10-29T10:48:14"},"mail_months":[{"month":"2025-12","first":747,"second":0,"reship":0},{"month":"2026-01","first":625,"second":0,"reship":0},{"month":"2026-04","first":1975,"second":10,"reship":0},{"month":"2026-05","first":0,"second":0,"reship":2},{"month":"2026-06","first":0,"second":25,"reship":48},{"month":"2026-07","first":1254,"second":12,"reship":2},{"month":"2026-08","first":111,"second":26,"reship":0},{"month":"2026-09","first":24,"second":4,"reship":0},{"month":"2026-10","first":0,"second":1,"reship":0}],"mail_states":[{"state":"Washington","pieces":973},{"state":"Oregon","pieces":951},{"state":"California","pieces":767},{"state":"Arizona","pieces":761},{"state":"Connecticut","pieces":213},{"state":"Colorado","pieces":111},{"state":"Vermont","pieces":98},{"state":"New Hampshire","pieces":75},{"state":"Montana","pieces":68},{"state":"Minnesota","pieces":55},{"state":"Texas","pieces":54},{"state":"New York","pieces":46}],"mail_totals":{"first":4736,"reship":52,"second":78},"mail_crosscheck":4711,"ga4_asof":"2026-11-01","portal":[{"month":"2025-12","sessions":37,"email":0,"engaged":36},{"month":"2026-01","sessions":19,"email":0,"engaged":19},{"month":"2026-02","sessions":9,"email":0,"engaged":9},{"month":"2026-03","sessions":0,"email":0,"engaged":0},{"month":"2026-04","sessions":11,"email":0,"engaged":11},{"month":"2026-05","sessions":19,"email":0,"engaged":19},{"month":"2026-06","sessions":14,"email":0,"engaged":10},{"month":"2026-07","sessions":24,"email":0,"engaged":13},{"month":"2026-08","sessions":35,"email":0,"engaged":28},{"month":"2026-09","sessions":18,"email":1,"engaged":10},{"month":"2026-10","sessions":46,"email":32,"engaged":32},{"month":"2026-11","sessions":0,"email":0,"engaged":0}],"restock":[{"month":"2026-10","sessions":11,"email":10,"engaged":8},{"month":"2026-11","sessions":0,"email":0,"engaged":0}],"qr":[{"code":"KLJGEAVM46RY","label":"Sampler QR code","sessions":1,"first":"2026-08-26","last":"2026-08-26"},{"code":"Z2DGSEBQ6MIH","label":"Instants QR code","sessions":1,"first":"2026-08-27","last":"2026-08-27"}],"qr_status":{"last_run":"2026-11-02T19:53:44+00:00","status":"ok","last_ok":"2026-11-02T19:53:44+00:00"},"klaviyo_lists":[{"name":"HCP - Cold List","date":"2026-10-29","profiles":1315},{"name":"HCP - Cold List","date":"2026-10-31","profiles":1212},{"name":"HCP - Cold List","date":"2026-11-01","profiles":1212},{"name":"HCP - Cold List","date":"2026-11-02","profiles":1210},{"name":"HCP - Warm List","date":"2026-10-29","profiles":100},{"name":"HCP - Warm List","date":"2026-10-31","profiles":96},{"name":"HCP - Warm List","date":"2026-11-01","profiles":96},{"name":"HCP - Warm List","date":"2026-11-02","profiles":96}],"emails":[{"source":"HCP Cold Flow","message":"HCP - Cold - Email 1","step":1,"delivered":1251,"opens":565,"clicks":37,"unsubs":0,"bounces":0,"recipients":1324},{"source":"HCP Cold Flow","message":"HCP - Cold - Email 2","step":2,"delivered":0,"opens":0,"clicks":0,"unsubs":0,"bounces":0,"recipients":0},{"source":"HCP Cold Flow","message":"Copy of HCP - Cold - Email 2","step":3,"delivered":0,"opens":6,"clicks":1,"unsubs":0,"bounces":0,"recipients":0},{"source":"Campaign","message":"Health Care Practitioner Flow - Email 1","step":null,"delivered":96,"opens":60,"clicks":7,"unsubs":3,"bounces":3,"recipients":99,"sent":"2026-10-29"}],"klaviyo_asof":"2026-11-02","hcp_page_orders":{"orders":1,"revenue":28.48,"first":"2026-08-31","last":"2026-08-31"}}</script>
+<script>
+const P=JSON.parse(document.getElementById('payload').textContent);
+const fmt=n=>n==null?'—':Number(n).toLocaleString('en-US');
+const usd=n=>n==null?'—':'$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0});
+const pct=(a,b)=>(b?((100*a/b).toFixed(1)+'%'):'—');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mlab=m=>{const[y,mm]=m.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+mm-1]+' '+y.slice(2)};
+const sum=(a,k)=>a.reduce((s,r)=>s+(r[k]||0),0);
+const tip=document.getElementById('tip');
+document.getElementById('upd').textContent='Updated '+P.updated+' · lists read '+P.lists_asof+' · website data through '+P.ga4_asof+' · email data through '+P.klaviyo_asof;
+
+const contacts=sum(P.lists,'contacts'), mailedFirst=P.mail_totals.first||0;
+const portalVisits=sum(P.portal,'sessions'), restockVisits=sum(P.restock,'sessions');
+const qrScans=sum(P.qr,'sessions');
+const em=P.emails.filter(e=>e.delivered>0);
+const emDel=sum(em,'delivered'), emOpen=sum(em,'opens'), emClick=sum(em,'clicks');
+const kp=[
+ ['Practitioners on our lists',fmt(contacts),P.lists.length+' lists'],
+ ['Sent a mailer',fmt(mailedFirst),'naturopaths only · '+fmt((P.mail_totals.second||0)+(P.mail_totals.reship||0))+' second or re-sent'],
+ ['Portal page visits',fmt(portalVisits),'since '+(P.portal[0]?mlab(P.portal[0].month):'—')],
+ ['Emails delivered',fmt(emDel),pct(emOpen,emDel)+' opened · '+pct(emClick,emDel)+' clicked'],
+];
+document.getElementById('kpis').innerHTML=kp.map(k=>`<div class="kpi"><div class="lab">${k[0]}</div><div class="val">${k[1]}</div><div class="cmp">${k[2]}</div></div>`).join('');
+
+const ST={ok:'Measured',part:'Partly measured',none:'Not tracked yet'};
+const F=[
+ ['1. On our lists',fmt(contacts)+' practitioners','ok','Four lists. Mailing addresses on '+fmt(sum(P.lists,'with_address'))+', emails on '+fmt(sum(P.lists,'with_email'))+'.','—'],
+ ['2. Mailed',fmt(mailedFirst)+' naturopaths','part','Midwives, nutritionists and functional doctors have no mailing dates recorded yet.','A ship date for each practitioner on every list, in the same "1st Shipment" column the Naturopath list uses.'],
+ ['3. Responded',fmt(portalVisits)+' portal visits · '+fmt(qrScans)+' QR scans','part','The sample request form is filled in on the portal page. The form answers are held in the form app and aren\'t in our data yet.','A regular export of the form submissions (or have the form add each practitioner to Klaviyo), and a check of which QR code is on each mailer.'],
+ ['4. Sent samples','—','none','Sample boxes are packed and shipped by hand, outside Shopify.','A ship date for each sample box, either on the lists or as a $0 order in Shopify.'],
+ ['5. Follow-up email',fmt(emDel)+' delivered','ok',pct(emOpen,emDel)+' opened, '+pct(emClick,emDel)+' clicked across the practitioner emails.','—'],
+ ['6. Asked for a restock',fmt(restockVisits)+' restock page visits','part','We see visits to the page. Restock requests go to the form app.','Same form export as step 3.'],
+ ['7. Patient sales','—','none','We can\'t tell which code is printed on the patient card. The ebook QR on it opens the PDF directly, so its scans don\'t reach our website analytics.','Confirm the code on the card (or make one just for practitioners\' patients). Point the card\'s QR at a teeccino.com page with a tracking tag, not straight at the PDF.'],
+];
+document.getElementById('funnel').innerHTML='<tr><th>Stage</th><th class="n">Count</th><th>Status</th><th>What we see</th><th>What would complete it</th></tr>'+
+ F.map(f=>`<tr><td><b>${f[0]}</b></td><td class="n">${f[1]}</td><td><span class="st ${f[2]}">${ST[f[2]]}</span></td><td>${esc(f[3])}</td><td>${esc(f[4])}</td></tr>`).join('');
+
+function bars(el,rows,key,label){
+  if(!rows.length){document.getElementById(el).innerHTML='<div class="cs">No data yet.</div>';return}
+  const W=640,H=220,L=44,B=26,T=10,mx=Math.max(...rows.map(r=>r[key]||0))||1;
+  const step=(W-L)/rows.length,bw=Math.max(4,Math.min(46,step-6));
+  const raw=Math.max(1,mx/4),mag=Math.pow(10,Math.floor(Math.log10(raw))),stp=[1,2,2.5,5,10].map(k=>k*mag).find(k=>k>=raw&&Number.isInteger(k))||Math.ceil(raw);
+  const n=Math.ceil(mx/stp),top=stp*n;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">`;
+  for(let i=0;i<=n;i++){const v=stp*i,y=H-B-(H-B-T)*v/top;s+=`<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--grid)"/><text x="${L-6}" y="${y+4}" text-anchor="end">${fmt(Math.round(v))}</text>`}
+  const every=Math.ceil(rows.length/12);
+  rows.forEach((r,i)=>{const v=r[key]||0,h=(H-B-T)*v/top,x=L+i*step+(step-bw)/2,y=H-B-h;
+    s+=`<path d="M${x},${H-B} V${y+Math.min(4,h)} q0,-4 4,-4 h${bw-8} q4,0 4,4 V${H-B} Z" fill="var(--bar)" data-i="${i}"/>`;
+    s+=`<rect x="${L+i*step}" y="${T}" width="${step}" height="${H-B-T}" fill="transparent" data-i="${i}"/>`;
+    if(i%every===0)s+=`<text x="${L+i*step+step/2}" y="${H-8}" text-anchor="middle">${mlab(r.month)}</text>`});
+  s+='</svg>';const box=document.getElementById(el);box.innerHTML=s;
+  box.querySelectorAll('[data-i]').forEach(n=>{n.addEventListener('mousemove',e=>{const r=rows[+n.dataset.i];
+    tip.innerHTML=`<b>${mlab(r.month)}</b><br>${label}: ${fmt(r[key])}`+(r.email!=null?`<br>from email: ${fmt(r.email)}`:'')+(r.second!=null?`<br>second / re-sent: ${fmt((r.second||0)+(r.reship||0))}`:'');
+    tip.style.opacity=1;tip.style.left=(e.clientX+12)+'px';tip.style.top=(e.clientY+12)+'px'});
+    n.addEventListener('mouseleave',()=>tip.style.opacity=0)});
+}
+document.getElementById('mailcs').textContent='Naturopaths only, by first ship date. Our tally tab adds up to '+fmt(P.mail_crosscheck)+' against '+fmt(mailedFirst)+' here, a close match.';
+bars('mailchart',P.mail_months.filter(r=>r.first>0),'first','First mailers');
+bars('portalchart',P.portal,'sessions','Portal visits');
+
+document.getElementById('states').innerHTML='<tr><th>State</th><th class="n">Practitioners mailed</th></tr>'+P.mail_states.map(r=>`<tr><td>${esc(r.state)}</td><td class="n">${fmt(r.pieces)}</td></tr>`).join('');
+const fe=P.list_files_edited;
+document.getElementById('listcs').textContent='Read from the team\'s spreadsheets on '+P.lists_asof+'. Counts only. No names or contact details are stored or shown here.';
+document.getElementById('lists').innerHTML='<tr><th>List</th><th class="n">Practitioners</th><th class="n">With mailing address</th><th class="n">With email</th><th>Mailing dates recorded</th><th>Spreadsheet last edited</th></tr>'+
+ P.lists.map(l=>`<tr><td>${esc(l.name)}</td><td class="n">${fmt(l.contacts)}</td><td class="n">${fmt(l.with_address)}</td><td class="n">${fmt(l.with_email)}</td><td>${l.mail_tracked?'<span class="st ok">Yes</span>':'<span class="st none">No</span>'}</td><td>${esc((fe[l.name]||'').slice(0,10))}</td></tr>`).join('');
+
+const qs=P.qr_status;
+document.getElementById('qrcs').textContent='Scans that reached teeccino.com, by QR code. '+(qs.status==='blocked'?'The latest pull failed (website analytics login). Figures are from the last good pull on '+(qs.last_ok||'—').slice(0,10)+'.':'Checked '+(qs.last_ok||'—').slice(0,10)+'.');
+document.getElementById('qr').innerHTML='<tr><th>QR code</th><th class="n">Scans</th><th>First</th><th>Latest</th></tr>'+
+ P.qr.map(r=>`<tr><td>${esc(r.label)}</td><td class="n">${fmt(r.sessions)}</td><td>${r.first}</td><td>${r.last}</td></tr>`).join('')+
+ '<tr><td>Patient ebook card</td><td class="dash n">Not tracked</td><td colspan="2" class="dash">Opens the PDF directly, so the visit never reaches our analytics. Only the QR app counts these scans.</td></tr>';
+
+document.getElementById('emcs').textContent='Unique opens and clicks. Opens can be overstated by privacy features in some email apps.';
+document.getElementById('emails').innerHTML='<tr><th>Email</th><th>From</th><th class="n">Delivered</th><th class="n">Opened</th><th class="n">Clicked</th><th class="n">Unsubscribed</th></tr>'+
+ P.emails.map(e=>`<tr><td>${esc(e.message)}${e.sent?' <span class="cs">('+e.sent+')</span>':''}</td><td>${esc(e.source==='Campaign'?'One-off send':e.source)}</td>`+
+  (e.delivered>0?`<td class="n">${fmt(e.delivered)}</td><td class="n">${pct(e.opens,e.delivered)}</td><td class="n">${pct(e.clicks,e.delivered)}</td><td class="n">${fmt(e.unsubs)}</td>`:'<td class="n dash" colspan="4">Not sent yet</td>')+'</tr>').join('');
+
+const kl={};P.klaviyo_lists.forEach(r=>{(kl[r.date]=kl[r.date]||{})[r.name]=r.profiles});
+const kn=[...new Set(P.klaviyo_lists.map(r=>r.name))],kd=Object.keys(kl).sort().reverse().slice(0,14);
+document.getElementById('klists').innerHTML='<tr><th>Date</th>'+kn.map(n=>`<th class="n">${esc(n)}</th>`).join('')+'</tr>'+
+ kd.map(d=>'<tr><td>'+d+'</td>'+kn.map(n=>`<td class="n">${fmt(kl[d][n])}</td>`).join('')+'</tr>').join('');
+
+document.getElementById('restock').innerHTML='<tr><th>Month</th><th class="n">Visits</th><th class="n">From email</th></tr>'+
+ (P.restock.length?P.restock.map(r=>`<tr><td>${mlab(r.month)}</td><td class="n">${fmt(r.sessions)}</td><td class="n">${fmt(r.email)}</td></tr>`).join(''):'<tr><td colspan="3" class="dash">No visits yet</td></tr>');
+const o=P.hcp_page_orders;
+document.getElementById('orders').innerHTML=`<div class="kpi" style="border:none;padding:0"><div class="val">${fmt(o.orders)} order${o.orders===1?'':'s'} · ${usd(o.revenue)}</div><div class="cmp">${o.orders?(o.first===o.last?'on '+o.first:'between '+o.first+' and '+o.last):''}. Patient purchases from the handout card can't be counted until its code is confirmed. See stage 7.</div></div>`;
+
+document.getElementById('foot').innerHTML=[
+ 'Mailers: the per-practitioner "1st Shipment", "2nd Shipment" and "Reshipped" dates on each state tab of the Naturopath list. The team\'s Shipment Source tally tab is used only as a cross-check.',
+ 'Portal and restock visits: Google Analytics visits that started on those pages, excluding traffic flagged as bots.',
+ 'QR scans: visits that landed on teeccino.com through a mailer QR code, identified by the code\'s own ID.',
+ 'Email: Klaviyo, lists and flows with "HCP" or "Practitioner" in the name.',
+ 'This page is public, so it shows counts only.'
+].map(x=>'<li>'+esc(x)+'</li>').join('');
+</script>
+</body></html>
