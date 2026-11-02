@@ -119,7 +119,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — November 2026</h1><div class="restatement-note" style="margin:8px 0;padding:6px 10px;border-left:3px solid #b8860b;font-size:12px;opacity:.85">Cancelled orders (including the Oct 26-27, 2026 fraud wave) are excluded, and giveaway-only orders are counted separately from orders, as of Oct 28, 2026. Figures published before that date read higher.</div>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-11-01 08:35. · 124,382 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-11-02 09:33. · 124,423 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -273,16 +273,16 @@
         </tr>
         <tr>
             <td><strong>October 2026</strong></td>
-            <td class="num">3,602</td>
-            <td class="num">3.49</td>
+            <td class="num">3,643</td>
+            <td class="num">3.48</td>
             <td class="num">3.00</td>
             <td class="num">6.00</td>
-            <td class="num">2.7%</td>
-            <td class="num">24.3%</td>
-            <td class="num">42.0%</td>
-            <td class="num">51.3%</td>
-            <td class="num">86.3%</td>
-            <td class="num">94.6%</td>
+            <td class="num">2.6%</td>
+            <td class="num">24.0%</td>
+            <td class="num">41.5%</td>
+            <td class="num">51.8%</td>
+            <td class="num">86.5%</td>
+            <td class="num">94.7%</td>
             <td class="num">99.9%</td>
         </tr>
         <tr>
@@ -301,16 +301,16 @@
         </tr>
         <tr>
             <td><strong>Trailing 12 months</strong></td>
-            <td class="num">39,225</td>
+            <td class="num">39,266</td>
             <td class="num">2.76</td>
             <td class="num">2.00</td>
             <td class="num">5.00</td>
             <td class="num">10.7%</td>
             <td class="num">31.4%</td>
             <td class="num">54.9%</td>
-            <td class="num">72.3%</td>
+            <td class="num">72.4%</td>
             <td class="num">91.7%</td>
-            <td class="num">96.0%</td>
+            <td class="num">96.1%</td>
             <td class="num">98.0%</td>
         </tr></tbody>
         </table></div>
@@ -326,6 +326,71 @@
   </div>
 
   
+  <!-- Daily table: the numbers behind the ship-date chart -->
+  <div class="section">
+    <div class="section-title">Daily Detail &mdash; November 2026</div>
+    <div class="section-sub">
+      The figures behind the chart above, one row per calendar day
+      (2 days, 1 of them shipping days and
+      1 closed). <strong>Closed days are shown by
+      default</strong> &mdash; a day the warehouse did not ship is the reason a
+      gap exists, so hiding it turns the gap into an unexplained jump in the
+      date column.
+      <strong>Order counts are DTC + Target + Walmart</strong> (the team&rsquo;s
+      workload); <strong>the SLA columns are DTC only</strong> (the service
+      promise). They are different populations on purpose &mdash; a figure in one
+      group does not reconcile against a figure in the other.
+      <strong>Orders Placed</strong> is the same channel scope as the shipped
+      columns (DTC + Target + Walmart), counted on the day the order came in
+      &mdash; so it is the demand that arrived against the work that went out.
+      It is deliberately still shown on closed days: weekend orders do not
+      vanish, they queue up and become Monday. <strong>Orders Placed is complete through 2026-11-01</strong> &mdash; the order feed lands a day behind the shipping feed, so the 1 newer day(s) show a dash rather than a zero. A dash there means <em>not in yet</em>, not <em>nobody ordered</em>.
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      <label style="color:#888;font-size:0.85em">
+        <input type="checkbox" id="dtOnlyShip"> Shipping days only
+      </label>
+      <label style="color:#888;font-size:0.85em">Rows
+        <select id="dtPageSize">
+          <option>15</option><option>25</option><option>50</option><option>All</option>
+        </select>
+      </label>
+      <span id="dtCount" style="color:#888;font-size:0.85em"></span>
+    </div>
+    <div class="table-scroll">
+      <table id="dtTable">
+        <thead><tr>
+          <th data-k="date">Date</th>
+          <th>Day</th>
+          <th class="num" data-k="dtc">DTC</th>
+          <th class="num" data-k="target">Target</th>
+          <th class="num" data-k="walmart">Walmart</th>
+          <th class="num" data-k="total">Total Shipped</th>
+          <th class="num" data-k="placed">Orders Placed</th>
+          <th class="num" data-k="avg">Avg Days (DTC)</th>
+          <th class="num" data-k="p1">&le; 1 Day</th>
+          <th class="num" data-k="p2">&le; 2 Days</th>
+          <th class="num" data-k="late">&gt; 3 Days</th>
+        </tr></thead>
+        <tbody id="dtBody"></tbody>
+      </table>
+    </div>
+    <div id="dtPager" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"></div>
+    <div class="definitions" style="margin-top:14px">
+      Click a column header to sort. Tick <em>Shipping days only</em> to drop the
+      closed days; the row count above then names how many were withheld.
+      <strong>Days with no shipments show a dash, not
+      a zero</strong> &mdash; the warehouse ships business days only, and a closed
+      Saturday rendered as &ldquo;0 orders, 0% on time&rdquo; reads as a failure
+      instead of a weekend. A row marked <em>in progress</em> is the current ship
+      day: it is still being worked, its averages are a partial read, and it is
+      shown so the day is not mistaken for missing.
+      <strong>Orders Placed counts orders by the day they were placed</strong>,
+      not by the day they shipped, so it will not tie out to the shipped columns
+      on any single row &mdash; an order placed Sunday ships Monday. Over a full
+      window the two converge, minus whatever is still in the queue.
+    </div>
+  </div>
 
   <!-- Carrier breakdown -->
   <div class="section">
@@ -493,6 +558,99 @@ new Chart(distCtx, {
 
 
 
+
+const DT_ROWS = [{"date": "2026-11-01", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 126, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-11-02", "dow": "Mon", "kind": "shipping", "partial": true, "dtc": 41, "target": 9, "walmart": 0, "total": 50, "placed": null, "sla_n": 41, "avg": 3.0, "p1": 0.0, "p2": 0.0, "late": 0}];
+let dtSortKey = 'date', dtSortDir = -1, dtPage = 1;
+
+function dtPageSize() {
+  const v = document.getElementById('dtPageSize').value;
+  return v === 'All' ? Infinity : parseInt(v, 10);
+}
+// Filter AND sort the FULL matching set here; render() only slices it. Slicing
+// before sorting would make "sort by avg days" show the top N of an arbitrary N.
+function dtCompute() {
+  const onlyShip = document.getElementById('dtOnlyShip').checked;
+  const rows = DT_ROWS.filter(r => !onlyShip || r.kind === 'shipping');
+  const k = dtSortKey;
+  rows.sort((a, b) => {
+    const av = a[k], bv = b[k];
+    // Nulls sort to the END in BOTH directions. A null here means "the warehouse
+    // was closed", which is not a low value - a sentinel of -Infinity would put
+    // every closed day at the top when sorting ascending. Ties break on date so
+    // the order is deterministic across renders (a comparator that returns NaN
+    // is non-transitive and silently randomises the whole group).
+    if (av == null && bv == null) return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    let c = 0;
+    if (typeof av === 'string' || typeof bv === 'string') c = av < bv ? -1 : av > bv ? 1 : 0;
+    else c = av - bv;
+    if (c !== 0) return c * dtSortDir;
+    return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+  });
+  return rows;
+}
+function dtRender() {
+  const rows = dtCompute();
+  const size = dtPageSize();
+  const pages = Math.max(1, Math.ceil(rows.length / (size === Infinity ? rows.length || 1 : size)));
+  if (dtPage > pages) dtPage = pages;
+  const start = size === Infinity ? 0 : (dtPage - 1) * size;
+  const slice = size === Infinity ? rows : rows.slice(start, start + size);
+  const num = v => v == null ? '<span style="color:#555">&mdash;</span>' : v;
+  const pct = v => v == null ? '<span style="color:#555">&mdash;</span>' : v.toFixed(1) + '%';
+  document.getElementById('dtBody').innerHTML = slice.map(r => {
+    const tag = r.partial
+      ? ' <span style="font-size:0.75em;color:#e3b341">in progress</span>'
+      : (r.kind === 'weekend' ? ' <span style="font-size:0.75em;color:#666">weekend</span>'
+      : (r.kind === 'closed' ? ' <span style="font-size:0.75em;color:#666">closed</span>' : ''));
+    const lateCell = r.late == null ? num(null)
+      : (r.late > 0 ? '<span style="color:#ff7b72">' + r.late + '</span>' : '0');
+    return '<tr' + (r.kind !== 'shipping' ? ' style="opacity:.55"' : '') + '>'
+      + '<td>' + r.date + tag + '</td><td>' + r.dow + '</td>'
+      + '<td class="num">' + (r.total ? r.dtc : num(null)) + '</td>'
+      + '<td class="num">' + (r.total ? r.target : num(null)) + '</td>'
+      + '<td class="num">' + (r.total ? r.walmart : num(null)) + '</td>'
+      + '<td class="num"><strong>' + (r.total ? r.total : num(null)) + '</strong></td>'
+      // NOT gated on r.total: a closed day still takes orders, and that is the
+      // single most useful thing this column says. Brighter than its neighbours
+      // so it stays legible through the dimming applied to a non-shipping row.
+      + '<td class="num" style="color:#e6edf3">' + num(r.placed) + '</td>'
+      + '<td class="num">' + (r.avg == null ? num(null) : r.avg.toFixed(2)) + '</td>'
+      + '<td class="num">' + pct(r.p1) + '</td><td class="num">' + pct(r.p2) + '</td>'
+      + '<td class="num">' + lateCell + '</td></tr>';
+  }).join('');
+  // Counts recompute against the LIVE filter set, never a fixed number -- and a
+  // withheld row the reader cannot see was withheld makes the table a subset
+  // with no way to know it, so the hidden count rides on the toggle. Same rule
+  // as the 0-unit rows on product-units.html.
+  const dtHidden = DT_ROWS.length - rows.length;
+  document.getElementById('dtCount').textContent =
+    rows.length + ' day(s)'
+    + (dtHidden ? ' · ' + dtHidden + ' closed day(s) hidden' : '')
+    + (size === Infinity ? '' : ' · page ' + dtPage + ' of ' + pages);
+  const pg = document.getElementById('dtPager');
+  pg.innerHTML = (pages <= 1 || size === Infinity) ? '' :
+    Array.from({length: pages}, (_, i) => i + 1).map(i =>
+      '<button data-p="' + i + '" style="background:' + (i === dtPage ? '#D4A843' : 'rgba(255,255,255,0.06)')
+      + ';color:' + (i === dtPage ? '#1a1a2e' : '#aaa')
+      + ';border:1px solid rgba(255,255,255,0.12);border-radius:5px;padding:4px 9px;cursor:pointer">'
+      + i + '</button>').join('');
+  pg.querySelectorAll('button').forEach(b =>
+    b.onclick = () => { dtPage = parseInt(b.dataset.p, 10); dtRender(); });
+}
+document.querySelectorAll('#dtTable th[data-k]').forEach(th => {
+  th.style.cursor = 'pointer';
+  th.onclick = () => {
+    const k = th.dataset.k;
+    if (dtSortKey === k) dtSortDir = -dtSortDir; else { dtSortKey = k; dtSortDir = -1; }
+    dtPage = 1;  // any sort or filter change resets to page 1
+    dtRender();
+  };
+});
+document.getElementById('dtOnlyShip').onchange = () => { dtPage = 1; dtRender(); };
+document.getElementById('dtPageSize').onchange = () => { dtPage = 1; dtRender(); };
+dtRender();
 
 </script>
 
