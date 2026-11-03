@@ -119,7 +119,7 @@
 
 <div class="container">
   <h1>🚚 Fulfillment Time — November 2026</h1><div class="restatement-note" style="margin:8px 0;padding:6px 10px;border-left:3px solid #b8860b;font-size:12px;opacity:.85">Cancelled orders (including the Oct 26-27, 2026 fraud wave) are excluded, and giveaway-only orders are counted separately from orders, as of Oct 28, 2026. Figures published before that date read higher.</div>
-  <p class="sub">DTC days from order placed to first shipment. Generated 2026-11-02 09:33. · 124,423 matched orders in DB.</p>
+  <p class="sub">DTC days from order placed to first shipment. Generated 2026-11-03 09:23. · 124,722 matched orders in DB.</p>
 
   
     <div class="month-picker">
@@ -191,6 +191,108 @@
   </div>
 
 
+  <!-- Fulfilled orders per day (ship-date axis) -->
+  <div class="section">
+    <div class="section-title">Fulfilled Orders per Day &mdash; November 2026</div>
+    <div class="section-sub">
+      <strong>This panel is measured on ship date, not order date &mdash; and on a
+      wider set of orders than the panels below it.</strong>
+      Every other panel on this page answers &ldquo;how fast did an order ship?&rdquo;
+      for <strong>DTC orders only</strong>, because that is where the service promise
+      lives. This one answers &ldquo;how much did the pick-and-pack team put out the
+      door each day?&rdquo;, so it counts <strong>DTC plus Target plus Walmart</strong>
+      &mdash; those are picked and packed here alongside everything else, and leaving
+      them out understated the team. Different question, different axis, different
+      population: a figure here does not reconcile against a figure above, by design.
+    </div>
+    <div class="hero-grid">
+        <div class="hero-card">
+            <div class="hero-label">Per Shipping Day</div>
+            <div class="hero-value">296</div>
+            <div class="hero-sub">orders fulfilled on an average day the warehouse shipped</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Total Fulfilled</div>
+            <div class="hero-value">296</div>
+            <div class="hero-sub">orders shipped in this window &mdash; DTC, Target and Walmart</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Shipping Days</div>
+            <div class="hero-value">1</div>
+            <div class="hero-sub">of 2 calendar days</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Busiest Day</div>
+            <div class="hero-value">296</div>
+            <div class="hero-sub">2026-11-02</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Median Shipping Day</div>
+            <div class="hero-value">296</div>
+            <div class="hero-sub">quietest 296 on 2026-11-02</div>
+        </div>
+        <div class="hero-card">
+            <div class="hero-label">Per Calendar Day</div>
+            <div class="hero-value">148</div>
+            <div class="hero-sub">same orders spread over all 2 days &mdash; not a throughput rate</div>
+        </div></div>
+    <div class="definitions" style="margin-top:14px;margin-bottom:18px">
+      The warehouse ships on business days, so this window contains 1 weekend days.
+      <strong>Per Shipping Day</strong> (296) divides by the
+      1 days that actually shipped and is the real throughput rate.
+      <strong>Per Calendar Day</strong> (148) divides the same orders
+      by all 2 days and so understates output by 50%
+      &mdash; it is shown only so the two are not mistaken for each other. Shipment data runs through <strong>2026-11-03</strong>. This month is still in progress; only days with shipment data are included.<br>
+      Counts <strong>361 orders &mdash; DTC, Target and Walmart</strong>
+      &mdash; which is 97.6% of the 370 orders that shipped in
+      this window. The other 9: <strong>9 non-Shopify shipments</strong> (SO&hellip; and WW&hellip; order numbers from other systems, with no Shopify order to match). The non-Shopify shipments are real warehouse work this panel does not yet count; they are named rather than absorbed so the shortfall stays visible.
+      An order is counted once, on its <em>first</em> shipment date.
+    </div>
+    <!-- Full-width at Justin's request 2026-10-07: 120 grouped bars in a 2fr
+         column were too small to read. Weekday table moved below it. -->
+    <div class="chart-legend" id="fLegend" style="margin-bottom:8px">
+      <button type="button" class="lg-btn" data-ds="0" aria-pressed="true"><i class="sw sw-ship"></i>Orders fulfilled (shipping day)</button>
+      <span><i class="sw sw-closed"></i>Weekend / closed &mdash; zero shipments</span>
+      <button type="button" class="lg-btn" data-ds="1" aria-pressed="true"><i class="sw sw-placed"></i>Orders placed that day</button>
+      <button type="button" class="lg-btn" data-ds="2" aria-pressed="true"><i class="sw sw-roll"></i>Rolling 7-day average (per shipping day)</button>
+      <button type="button" class="lg-btn" data-ds="avg" aria-pressed="false"><i class="sw sw-avg"></i>Flat november 2026 average</button>
+      <span class="lg-hint">Click a series to hide or show it</span>
+    </div>
+    <div class="chart-wrap" style="height:min(68vh,640px);min-height:420px">
+      <canvas id="fulfilledChart"></canvas></div>
+    <div class="definitions" style="margin-top:10px">
+      <strong>Orders Placed</strong> counts the same orders (DTC, Target, Walmart) by the
+      day the customer placed them. The two bars will not match on any single day &mdash;
+      an order placed Sunday ships Monday &mdash; but over a few days they should track
+      each other; a run of placed bars standing taller than fulfilled bars is a growing
+      backlog. Orders Placed is complete through <strong>2026-11-02</strong>; the last 1 day(s) show no blue bar because the order feed lands a day behind shipments, not because nobody ordered. The <strong>white line</strong> is the rolling 7-day average: for each day, the orders fulfilled over that day and the 6 before it, divided by the shipping days among them, so weekends do not pull it down. Most recently <strong>236 per shipping day</strong> (1,182 orders over 5 shipping days to 2026-11-02). Today&rsquo;s bar is drawn faded: the day is still being shipped, so it is left out of the line and every average.
+    </div>
+    <div class="chart-wrap" style="height:auto;margin-top:18px">
+      <div class="wd-title">Workload by Day of Week</div>
+      <div class="wd-sub">Averaged over days that shipped, so a closed weekend
+        does not drag a weekday down.</div>
+      <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day of Week</th>
+                        <th class="num">Per Shipping Day</th>
+                        <th class="num">Total Orders</th>
+                        <th class="num">Days Shipped</th>
+                        <th style="width:30%">Relative Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td><strong>Monday</strong></td>
+                <td class="num">296</td>
+                <td class="num">296</td>
+                <td class="num">1</td>
+                <td><div class="wd-track"><div class="wd-bar" style="width:100.0%"></div></div></td>
+            </tr></tbody>
+            </table></div>
+    </div>
+  </div>
 
 
   <!-- Hero KPIs -->
@@ -273,16 +375,16 @@
         </tr>
         <tr>
             <td><strong>October 2026</strong></td>
-            <td class="num">3,643</td>
-            <td class="num">3.48</td>
+            <td class="num">3,942</td>
+            <td class="num">3.42</td>
             <td class="num">3.00</td>
             <td class="num">6.00</td>
-            <td class="num">2.6%</td>
-            <td class="num">24.0%</td>
-            <td class="num">41.5%</td>
-            <td class="num">51.8%</td>
-            <td class="num">86.5%</td>
-            <td class="num">94.7%</td>
+            <td class="num">2.4%</td>
+            <td class="num">22.2%</td>
+            <td class="num">41.2%</td>
+            <td class="num">55.5%</td>
+            <td class="num">87.5%</td>
+            <td class="num">95.1%</td>
             <td class="num">99.9%</td>
         </tr>
         <tr>
@@ -301,15 +403,15 @@
         </tr>
         <tr>
             <td><strong>Trailing 12 months</strong></td>
-            <td class="num">39,266</td>
+            <td class="num">39,565</td>
             <td class="num">2.76</td>
             <td class="num">2.00</td>
             <td class="num">5.00</td>
-            <td class="num">10.7%</td>
-            <td class="num">31.4%</td>
-            <td class="num">54.9%</td>
-            <td class="num">72.4%</td>
-            <td class="num">91.7%</td>
+            <td class="num">10.6%</td>
+            <td class="num">31.2%</td>
+            <td class="num">54.7%</td>
+            <td class="num">72.6%</td>
+            <td class="num">91.8%</td>
             <td class="num">96.1%</td>
             <td class="num">98.0%</td>
         </tr></tbody>
@@ -331,7 +433,7 @@
     <div class="section-title">Daily Detail &mdash; November 2026</div>
     <div class="section-sub">
       The figures behind the chart above, one row per calendar day
-      (2 days, 1 of them shipping days and
+      (3 days, 2 of them shipping days and
       1 closed). <strong>Closed days are shown by
       default</strong> &mdash; a day the warehouse did not ship is the reason a
       gap exists, so hiding it turns the gap into an unexplained jump in the
@@ -344,7 +446,7 @@
       columns (DTC + Target + Walmart), counted on the day the order came in
       &mdash; so it is the demand that arrived against the work that went out.
       It is deliberately still shown on closed days: weekend orders do not
-      vanish, they queue up and become Monday. <strong>Orders Placed is complete through 2026-11-01</strong> &mdash; the order feed lands a day behind the shipping feed, so the 1 newer day(s) show a dash rather than a zero. A dash there means <em>not in yet</em>, not <em>nobody ordered</em>.
+      vanish, they queue up and become Monday. <strong>Orders Placed is complete through 2026-11-02</strong> &mdash; the order feed lands a day behind the shipping feed, so the 1 newer day(s) show a dash rather than a zero. A dash there means <em>not in yet</em>, not <em>nobody ordered</em>.
     </div>
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
       <label style="color:#888;font-size:0.85em">
@@ -557,9 +659,182 @@ new Chart(distCtx, {
 });
 
 
+const F_LABELS = ["2026-11-01", "2026-11-02", "2026-11-03"];
+const F_COUNTS = [0, 296, 65];
+const F_KINDS  = ["weekend", "shipping", "shipping"];
+const F_PLACED = [125, 126, null];
+const F_AVG    = 296.0;
+const F_ROLL   = [218.6, 236.4, null];
+const F_ROLL_T = [1093, 1182, null];
+const F_ROLL_D = [5, 5, null];
+const F_PROG   = [false, false, true];
+const F_KIND_TEXT = {
+  shipping: 'shipped',
+  weekend:  'weekend \u2014 warehouse closed',
+  closed:   'no shipments (holiday or shutdown)',
+  pending:  'today \u2014 nothing shipped yet'
+};
+// One measure (orders fulfilled), one y-axis, one data series. Closed days
+// keep a visible muted stub so a closure reads as "we were shut" rather than
+// as missing data.
+const fulfilledCtx = document.getElementById('fulfilledChart').getContext('2d');
+// Flat average starts OFF (2026-10-16): the rolling line now answers "what is
+// normal right now", and two reference lines on one chart compete.
+let F_SHOW_AVG = false;
+const fulfilledChartObj = new Chart(fulfilledCtx, {
+  type: 'bar',
+  data: {
+    labels: F_LABELS,
+    datasets: [{
+      label: 'Orders Fulfilled',
+      data: F_COUNTS,
+      backgroundColor: F_KINDS.map((k, i) => F_PROG[i] ? 'rgba(212,168,67,0.28)' : (k === 'shipping' ? '#D4A843' : 'rgba(139,147,167,0.30)')),
+      borderColor:     F_KINDS.map((k, i) => (F_PROG[i] || k === 'shipping') ? '#D4A843' : 'rgba(139,147,167,0.60)'),
+      borderWidth:     F_KINDS.map((k, i) => F_PROG[i] ? 1 : (k === 'shipping' ? 0 : 1)),
+      order: 2,
+      borderRadius: 4,
+      borderSkipped: false,
+      // A closed day is genuinely 0 and must not be floored to a fake value;
+      // the 3px stub is drawn only so the reader can see the day exists.
+      minBarLength: 3,
+    }, {
+      // Inflow. Drawn on closed days too, on purpose: weekend and holiday
+      // orders do not vanish, they queue up and become Monday's workload.
+      // null past the order feed's cutoff -> no bar, never a fake zero.
+      label: 'Orders Placed',
+      data: F_PLACED,
+      backgroundColor: '#6C8CF0',
+      borderRadius: 4,
+      borderSkipped: false,
+      order: 2,
+    }, {
+      // Rolling 7-day average per shipping day, drawn over the bars.
+      // null on today's in-progress day -> the line stops at yesterday.
+      type: 'line',
+      label: 'Rolling 7-day average',
+      data: F_ROLL,
+      borderColor: '#f0f6fc',
+      backgroundColor: '#f0f6fc',
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.25,
+      spanGaps: false,
+      order: 0,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      title: { display: true,
+                text: 'Orders Fulfilled vs Orders Placed per Day',
+                color: '#D4A843', font: { size: 14 } },
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: items => items[0].label,
+          label: ctx => {
+            if (ctx.datasetIndex === 1) {
+              const p = ctx.parsed.y;
+              return 'Placed: ' + (p == null ? 'not in yet' : p.toLocaleString() + ' orders');
+            }
+            if (ctx.datasetIndex === 2) {
+              const i = ctx.dataIndex;
+              if (F_ROLL[i] == null) return '7-day average: not counted (day in progress)';
+              return '7-day average: ' + Math.round(F_ROLL[i]) + ' per shipping day ('
+                     + F_ROLL_T[i].toLocaleString() + ' over ' + F_ROLL_D[i] + ' shipping days)';
+            }
+            if (F_PROG[ctx.dataIndex]) return 'Fulfilled so far today: ' + ctx.parsed.y.toLocaleString() + ' (in progress)';
+            const k = F_KINDS[ctx.dataIndex];
+            if (k !== 'shipping') return 'Fulfilled: 0 — ' + F_KIND_TEXT[k];
+            const v = ctx.parsed.y;
+            const rel = v - F_AVG;
+            const sign = rel >= 0 ? '+' : '\u2212';
+            return 'Fulfilled: ' + v.toLocaleString() + ' orders  (' + sign
+                   + Math.abs(rel).toFixed(0) + ' vs avg)';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#aaa', font: { size: 11 }, maxRotation: 90, minRotation: 90,
+          autoSkip: true, maxTicksLimit: 60,
+          callback: function (v, i) { return F_LABELS[i] ? F_LABELS[i].slice(5) : ''; }
+        },
+        grid: { display: false },
+      },
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: 'Orders', color: '#888' },
+        ticks: { color: '#888' },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+      }
+    },
+  },
+  plugins: [{
+    // Average reference line, direct-labeled so its value never has to be
+    // read off an axis.
+    id: 'avgLine',
+    afterDatasetsDraw(chart) {
+      if (!F_SHOW_AVG) return;
+      const a = chart.chartArea, ctx = chart.ctx;
+      const y = chart.scales.y.getPixelForValue(F_AVG);
+      if (!isFinite(y)) return;
+      ctx.save();
+      ctx.strokeStyle = '#c9d1d9';
+      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(a.left, y);
+      ctx.lineTo(a.right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Label sits at the LEFT edge on an opaque chip. At the right edge it
+      // landed on top of the tallest bar and became unreadable; a reference
+      // label that collides with the data is worse than no label.
+      const txt = 'avg ' + F_AVG.toFixed(0) + ' fulfilled/shipping day';
+      ctx.font = '600 10px -apple-system, Segoe UI, sans-serif';
+      const tw = ctx.measureText(txt).width;
+      const bx = a.left + 4, by = y - 15, bw = tw + 10, bh = 14;
+      ctx.fillStyle = 'rgba(22,33,62,0.92)';
+      ctx.strokeStyle = 'rgba(201,209,217,0.45)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, bw, bh, 3);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#c9d1d9';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(txt, bx + 5, by + bh / 2 + 0.5);
+      ctx.restore();
+    }
+  }]
+});
+// Click-to-hide legend (Justin 2026-10-07). Real <button>s so it works by
+// keyboard too; the y-axis rescales to whatever is left visible.
+document.querySelectorAll('#fLegend .lg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const k = btn.dataset.ds;
+    let on;
+    if (k === 'avg') { F_SHOW_AVG = !F_SHOW_AVG; on = F_SHOW_AVG; }
+    else {
+      const i = +k;
+      on = !fulfilledChartObj.isDatasetVisible(i);
+      fulfilledChartObj.setDatasetVisibility(i, on);
+    }
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    fulfilledChartObj.update();
+  });
+});
 
 
-const DT_ROWS = [{"date": "2026-11-01", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 126, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-11-02", "dow": "Mon", "kind": "shipping", "partial": true, "dtc": 41, "target": 9, "walmart": 0, "total": 50, "placed": null, "sla_n": 41, "avg": 3.0, "p1": 0.0, "p2": 0.0, "late": 0}];
+
+const DT_ROWS = [{"date": "2026-11-01", "dow": "Sun", "kind": "weekend", "partial": false, "dtc": 0, "target": 0, "walmart": 0, "total": 0, "placed": 125, "sla_n": null, "avg": null, "p1": null, "p2": null, "late": null}, {"date": "2026-11-02", "dow": "Mon", "kind": "shipping", "partial": false, "dtc": 278, "target": 18, "walmart": 0, "total": 296, "placed": 126, "sla_n": 278, "avg": 2.6, "p1": 0.0, "p2": 39.6, "late": 0}, {"date": "2026-11-03", "dow": "Tue", "kind": "shipping", "partial": true, "dtc": 62, "target": 3, "walmart": 0, "total": 65, "placed": null, "sla_n": 62, "avg": 3.0, "p1": 0.0, "p2": 0.0, "late": 0}];
 let dtSortKey = 'date', dtSortDir = -1, dtPage = 1;
 
 function dtPageSize() {
