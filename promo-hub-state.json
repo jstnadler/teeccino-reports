@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-13T13:46:04.270211-07:00",
-  "generatedAtUTC": "2026-11-13T20:46:04.270211+00:00",
+  "generatedAt": "2026-11-13T13:49:06.487377-07:00",
+  "generatedAtUTC": "2026-11-13T20:49:06.487377+00:00",
   "staleWarnAfterSeconds": 86400,
   "composer": "compose_promo_hub.py v2 (card-per-promo)",
   "spec": "clawd-promosmith/docs/PROMO_PAGE_UNIFY_SPEC.md",
@@ -14,7 +14,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-11-13T07:45:02-07:00",
-      "ageSeconds": 21662,
+      "ageSeconds": 21844,
       "ageHuman": "6h ago",
       "stale": false,
       "thresholdSeconds": 2592000
@@ -25,10 +25,10 @@
       "owner": "shopkeeper",
       "present": true,
       "error": null,
-      "generatedAt": "2026-09-16T09:29:36-07:00",
-      "ageSeconds": 5026588,
-      "ageHuman": "58d ago",
-      "stale": true,
+      "generatedAt": "2026-11-13T12:48:15-08:00",
+      "ageSeconds": 51,
+      "ageHuman": "0m ago",
+      "stale": false,
       "thresholdSeconds": 2592000
     },
     "monitor": {
@@ -37,12 +37,12 @@
       "owner": "shopkeeper",
       "present": true,
       "error": null,
-      "generatedAt": "2026-11-01T20:04:52-07:00",
-      "ageSeconds": 1014072,
-      "ageHuman": "11d ago",
-      "stale": true,
+      "generatedAt": "2026-11-13T12:48:08-08:00",
+      "ageSeconds": 58,
+      "ageHuman": "0m ago",
+      "stale": false,
       "thresholdSeconds": 86400,
-      "joinPromoId": "halloween-sale-2026-10"
+      "joinPromoId": null
     },
     "analytics": {
       "key": "analytics",
@@ -51,7 +51,7 @@
       "present": true,
       "error": null,
       "generatedAt": "2026-11-12T08:20:17-08:00",
-      "ageSeconds": 102347,
+      "ageSeconds": 102529,
       "ageHuman": "1d ago",
       "stale": false,
       "thresholdSeconds": 172800
@@ -73,20 +73,7 @@
       "name": "Quit-Coffee / Starter Kit"
     }
   ],
-  "banners": [
-    {
-      "severity": "warning",
-      "code": "source-stale",
-      "title": "promo-hub-monitor.json is stale (11d ago)",
-      "detail": "Owner: shopkeeper. Threshold 24h."
-    },
-    {
-      "severity": "warning",
-      "code": "source-stale",
-      "title": "promo-hub-runbook.json is stale (58d ago)",
-      "detail": "Owner: shopkeeper. Threshold 720h."
-    }
-  ],
+  "banners": [],
   "globalAlerts": [],
   "evergreensByMonth": {
     "2026-01": {
@@ -1860,8 +1847,153 @@
       },
       "monitor": null,
       "monitorJoined": false,
-      "runbook": null,
-      "runbookJoined": false,
+      "runbook": {
+        "phase": "pre-launch",
+        "generatedAt": "2026-11-13T12:48:15-08:00",
+        "promo": {
+          "name": "Black Friday / Cyber Monday",
+          "tier": "major",
+          "scope": "sitewide",
+          "startsAt": "2026-11-19",
+          "endsAt": "2026-12-02",
+          "earlyAccess": "2026-11-19",
+          "functionalRate": {
+            "otp": 24,
+            "sub": 17
+          },
+          "advertisedRate": {
+            "otp": "30% OFF",
+            "sub": "35% OFF First Shipment"
+          },
+          "addOn": "FOUR-TIER GIFT LADDER (Justin 2026-09-14) -- BFCM's differentiator, in place of a deeper percentage. $25 free packet (evergreen) | FREE SHIPPING at $45 | 90055 (Teeccino Gold Scoop) at $50 | a free tote at $100, SWITCHING MID-SALE: 90051 (Teeccino Dandelion Tote) days 1-7 (11-19..11-25), then 90052 (Teeccino Maya Tote - Accessory) days 8-14 (11-26..12-02).",
+          "fotm": "Turkey Tail",
+          "freePacket": "Dandelion Caramel Nut",
+          "fotmAgreedBy": [
+            "declaredSlate",
+            "fotm-calendar-2026.json"
+          ],
+          "source": "clawd/data/projects/promo-calendar-management.json -> declaredSlate (RULING 5); FOTM cross-checked against fotm-calendar-2026.json"
+        },
+        "steps": [
+          {
+            "n": 1,
+            "name": "Pre-launch inventory check",
+            "owner": "shopkeeper",
+            "tool": "promo_inventory_analysis.py",
+            "status": "pending"
+          },
+          {
+            "n": 2,
+            "name": "Sitewide metafield sweep (custom.discount / first_subscription_discount)",
+            "owner": "shopkeeper",
+            "tool": "promo_metafield_update.py",
+            "status": "pending",
+            "note": "--discount 24 --first-sub 17 --sweep-month 11, dry-run first. Sitewide scope: every custom.webproduct=true product. GATE C (armed 2026-08-27) runs BEFORE the first write and exits non-zero if the live FOTM tag does not resolve to the declared FOTM for the sweep's month -- the dependency below is now enforced, not documented. promo_slate_2026.py halts the whole launch on a non-zero step 1, so steps 3-5 cannot run around it."
+          },
+          {
+            "n": 3,
+            "name": "FOTM restore (sweep clobbers FOTM 20/10)",
+            "owner": "shopkeeper",
+            "status": "pending",
+            "note": "Restore 20/10 on Turkey Tail -- the flavor declared for November, and no other. DEPENDENCY (GATE-ENFORCED, see step 2): the monthly changeover must run BEFORE the sweep or step 3 restores the previous month's flavor. CONFIRM THE CHANGEOVER TASK IS ARMED for the November rotation and that its GATE A window covers the first days of the month -- the specific task name and fire time are deliberately NOT printed here any more, because a scheduled-task literal on a pre-launch checklist is a dated claim that rots between promos (this row still named the September task while pointing at a different sale). If the changeover has not completed, GATE C blocks step 2 and the promo cannot launch onto the wrong flavor."
+          },
+          {
+            "n": 4,
+            "name": "Create OTP + SUB automatic discounts (endsAt=null)",
+            "owner": "shopkeeper",
+            "status": "pending",
+            "note": "NEVER bake the calendar end-date into endsAt -- Shopify auto-expiry is a silent teardown. Set combinesWith.productDiscounts consistently on BOTH nodes; one false node suppresses every other line in a mixed cart."
+          },
+          {
+            "n": 5,
+            "name": "Verify collection counts (Discount = 24, First Subscription Discount = 17)",
+            "owner": "shopkeeper",
+            "status": "pending",
+            "note": "Smart-collection reindex is non-monotonic -- poll until the SET matches, not the count. Then the launch phase gate on a TWO-product CROSS-LANE cart."
+          },
+          {
+            "n": 6,
+            "name": "Storefront surfaces (theme settings, pill label, announcement bar)",
+            "owner": "themesmith",
+            "status": "pending",
+            "note": "RULING 1: ThemeSmith owns every campaign_sale_* value AND the code. Pill label 'Black Friday / Cyber Monday' -- no percentage in the label (the pill appends 'Save N%' from compare_at and a second % reads as a contradiction)."
+          },
+          {
+            "n": 7,
+            "name": "Email / SMS (Klaviyo + Attentive) -- HUMAN, Hershee",
+            "owner": "hershee",
+            "ownerKind": "human",
+            "agentDispatched": false,
+            "status": "pending",
+            "note": "Early access 2026-11-19. Hershee runs Klaviyo + Attentive directly (Justin, 2026-08-28). No agent owns or verifies this row -- machine-unverifiable, print it at every phase gate and never auto-pass it. Discount code, if any, comes from Shopkeeper so the send cannot promise what the cart refuses -- that request now arrives from a human, not from an agent."
+          },
+          {
+            "n": 8,
+            "name": "Paid amplification coordination",
+            "owner": "adsmith",
+            "status": "pending"
+          }
+        ],
+        "stepsSummary": {
+          "total": 8,
+          "done": 0,
+          "pending": 8,
+          "blocked": 0,
+          "byOwner": {
+            "shopkeeper": {
+              "total": 5,
+              "done": 0
+            },
+            "themesmith": {
+              "total": 1,
+              "done": 0
+            },
+            "hershee": {
+              "total": 1,
+              "done": 0
+            },
+            "adsmith": {
+              "total": 1,
+              "done": 0
+            }
+          }
+        },
+        "teardown": {
+          "armed": false,
+          "owner": "shopkeeper",
+          "targetAt": "2026-12-03T00:01:00-08:00",
+          "declaredWithLaunch": true,
+          "note": "RULING 4: declared at launch, per surface, with an owner and a target value. RULING 6: an armed job is a write scheduled in the past against a store that has moved on -- bound lateness at both ends and read which promo is live before writing any zero.",
+          "steps": [
+            {
+              "action": "Deactivate both Black Friday / Cyber Monday automatic discount nodes (OTP + SUB)",
+              "owner": "shopkeeper",
+              "target": "status INACTIVE on both nodes"
+            },
+            {
+              "action": "Zero custom.discount and custom.first_subscription_discount sitewide",
+              "owner": "shopkeeper",
+              "target": "0 / 0 on every webproduct EXCEPT the FOTM carve-out; restore the prevailing baseline, never a blind zero"
+            },
+            {
+              "action": "Revert campaign pill label",
+              "owner": "themesmith",
+              "target": "'Flavor of the Month'"
+            },
+            {
+              "action": "Free shipping threshold",
+              "owner": "shopkeeper",
+              "target": "$59 -- UNCHANGED. RULING 7: this promo does NOT drop the threshold, so there is nothing to restore and NO zone write should fire. Confirm $59 in all 5 zones of the General profile and in delivery profile 93173678328; do not write."
+            },
+            {
+              "action": "Re-establish FOTM 20/10",
+              "owner": "shopkeeper",
+              "target": "Turkey Tail at custom.discount=20 / custom.first_subscription_discount=10, FOTM tag intact, both FOTM nodes ACTIVE with endsAt=null"
+            }
+          ]
+        }
+      },
+      "runbookJoined": true,
       "residual": null,
       "residualJoined": false,
       "analytics": null,
@@ -1910,9 +2042,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -2198,9 +2330,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -2474,9 +2606,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -2770,9 +2902,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -3515,9 +3647,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -4437,205 +4569,10 @@
       "note": {
         "v": "WINDOW: Sunday Oct 25 - SATURDAY Oct 31, ending ON Halloween. 2025 ran Oct 29 - Nov 2 and crossed the month boundary; 2026 deliberately does NOT, because November's major is BFCM and a sitewide sale with a November tail would put two sitewide sales in that month. Halloween 2026 falls on a Saturday, so ending on the 31st captures the weekend without needing the boundary crossing 2025 used. CLEARANCE: Labor Day ends Sep 10 and BFCM starts Nov 24, so 24 clear days to the next major -- comfortably past the 14-day target."
       },
-      "monitor": {
-        "discounts": [
-          {
-            "title": "FOTM OTP",
-            "type": "otp",
-            "percent": 20,
-            "active": true,
-            "endsAt": null,
-            "evergreen": true
-          },
-          {
-            "title": "FOTM Subscription",
-            "type": "sub",
-            "percent": 10,
-            "active": true,
-            "endsAt": null,
-            "evergreen": true
-          },
-          {
-            "title": "Halloween Sale OTP",
-            "type": "otp",
-            "percent": 19,
-            "active": true,
-            "endsAt": null,
-            "evergreen": false
-          },
-          {
-            "title": "Halloween Sale SUB",
-            "type": "sub",
-            "percent": 16,
-            "active": true,
-            "endsAt": null,
-            "evergreen": false
-          }
-        ],
-        "metafields": {
-          "custom.discount": 19,
-          "custom.first_subscription_discount": 16,
-          "basis": "declaredSlate[2026-10] halloween-sale-2026-10 2026-10-23..2026-11-02"
-        },
-        "collectionCounts": {
-          "Discount": 141,
-          "FirstSubscriptionDiscount": 143,
-          "basis": "products in 'Discount = 19' / 'First Subscription Discount = 16'"
-        },
-        "freeShippingThreshold": 59.0,
-        "alerts": [],
-        "notScanned": [
-          "stale-discount-display"
-        ]
-      },
-      "monitorJoined": true,
-      "runbook": {
-        "phase": "pre-launch",
-        "generatedAt": "2026-09-16T09:29:36-07:00",
-        "promo": {
-          "name": "Halloween Sale",
-          "tier": "major",
-          "scope": "sitewide",
-          "startsAt": "2026-10-25",
-          "endsAt": "2026-10-31",
-          "earlyAccess": "2026-10-12",
-          "functionalRate": {
-            "otp": 18,
-            "sub": 10
-          },
-          "advertisedRate": {
-            "otp": "25% OFF",
-            "sub": "30% OFF First Shipment"
-          },
-          "addOn": "$65 -> free Frother (90037)",
-          "fotm": "Mocha",
-          "freePacket": "Turkey Tail",
-          "fotmAgreedBy": [
-            "declaredSlate",
-            "fotm-calendar-2026.json"
-          ],
-          "source": "clawd/data/projects/promo-calendar-management.json -> declaredSlate (RULING 5); FOTM cross-checked against fotm-calendar-2026.json"
-        },
-        "steps": [
-          {
-            "n": 1,
-            "name": "Pre-launch inventory check",
-            "owner": "shopkeeper",
-            "tool": "promo_inventory_analysis.py",
-            "status": "pending"
-          },
-          {
-            "n": 2,
-            "name": "Sitewide metafield sweep (custom.discount / first_subscription_discount)",
-            "owner": "shopkeeper",
-            "tool": "promo_metafield_update.py",
-            "status": "pending",
-            "note": "--discount 18 --first-sub 10 --sweep-month 10, dry-run first. Sitewide scope: every custom.webproduct=true product. GATE C (armed 2026-08-27) runs BEFORE the first write and exits non-zero if the live FOTM tag does not resolve to the declared FOTM for the sweep's month -- the dependency below is now enforced, not documented. promo_slate_2026.py halts the whole launch on a non-zero step 1, so steps 3-5 cannot run around it."
-          },
-          {
-            "n": 3,
-            "name": "FOTM restore (sweep clobbers FOTM 20/10)",
-            "owner": "shopkeeper",
-            "status": "pending",
-            "note": "Restore 20/10 on Mocha -- the flavor declared for October, and no other. DEPENDENCY (GATE-ENFORCED, see step 2): the monthly changeover must run BEFORE the sweep or step 3 restores the previous month's flavor. CONFIRM THE CHANGEOVER TASK IS ARMED for the October rotation and that its GATE A window covers the first days of the month -- the specific task name and fire time are deliberately NOT printed here any more, because a scheduled-task literal on a pre-launch checklist is a dated claim that rots between promos (this row still named the September task while pointing at a different sale). If the changeover has not completed, GATE C blocks step 2 and the promo cannot launch onto the wrong flavor."
-          },
-          {
-            "n": 4,
-            "name": "Create OTP + SUB automatic discounts (endsAt=null)",
-            "owner": "shopkeeper",
-            "status": "pending",
-            "note": "NEVER bake the calendar end-date into endsAt -- Shopify auto-expiry is a silent teardown. Set combinesWith.productDiscounts consistently on BOTH nodes; one false node suppresses every other line in a mixed cart."
-          },
-          {
-            "n": 5,
-            "name": "Verify collection counts (Discount = 18, First Subscription Discount = 10)",
-            "owner": "shopkeeper",
-            "status": "pending",
-            "note": "Smart-collection reindex is non-monotonic -- poll until the SET matches, not the count. Then the launch phase gate on a TWO-product CROSS-LANE cart."
-          },
-          {
-            "n": 6,
-            "name": "Storefront surfaces (theme settings, pill label, announcement bar)",
-            "owner": "themesmith",
-            "status": "pending",
-            "note": "RULING 1: ThemeSmith owns every campaign_sale_* value AND the code. Pill label 'Halloween Sale' -- no percentage in the label (the pill appends 'Save N%' from compare_at and a second % reads as a contradiction)."
-          },
-          {
-            "n": 7,
-            "name": "Email / SMS (Klaviyo + Attentive) -- HUMAN, Hershee",
-            "owner": "hershee",
-            "ownerKind": "human",
-            "agentDispatched": false,
-            "status": "pending",
-            "note": "Early access 2026-10-12. Hershee runs Klaviyo + Attentive directly (Justin, 2026-08-28). No agent owns or verifies this row -- machine-unverifiable, print it at every phase gate and never auto-pass it. Discount code, if any, comes from Shopkeeper so the send cannot promise what the cart refuses -- that request now arrives from a human, not from an agent."
-          },
-          {
-            "n": 8,
-            "name": "Paid amplification coordination",
-            "owner": "adsmith",
-            "status": "pending"
-          }
-        ],
-        "stepsSummary": {
-          "total": 8,
-          "done": 0,
-          "pending": 8,
-          "blocked": 0,
-          "byOwner": {
-            "shopkeeper": {
-              "total": 5,
-              "done": 0
-            },
-            "themesmith": {
-              "total": 1,
-              "done": 0
-            },
-            "hershee": {
-              "total": 1,
-              "done": 0
-            },
-            "adsmith": {
-              "total": 1,
-              "done": 0
-            }
-          }
-        },
-        "teardown": {
-          "armed": false,
-          "owner": "shopkeeper",
-          "targetAt": "2026-11-01T00:01:00-07:00",
-          "declaredWithLaunch": true,
-          "note": "RULING 4: declared at launch, per surface, with an owner and a target value. RULING 6: an armed job is a write scheduled in the past against a store that has moved on -- bound lateness at both ends and read which promo is live before writing any zero.",
-          "steps": [
-            {
-              "action": "Deactivate both Halloween Sale automatic discount nodes (OTP + SUB)",
-              "owner": "shopkeeper",
-              "target": "status INACTIVE on both nodes"
-            },
-            {
-              "action": "Zero custom.discount and custom.first_subscription_discount sitewide",
-              "owner": "shopkeeper",
-              "target": "0 / 0 on every webproduct EXCEPT the FOTM carve-out; restore the prevailing baseline, never a blind zero"
-            },
-            {
-              "action": "Revert campaign pill label",
-              "owner": "themesmith",
-              "target": "'Flavor of the Month'"
-            },
-            {
-              "action": "Free shipping threshold",
-              "owner": "shopkeeper",
-              "target": "$59 -- UNCHANGED. RULING 7: this promo does NOT drop the threshold, so there is nothing to restore and NO zone write should fire. Confirm $59 in all 5 zones of the General profile and in delivery profile 93173678328; do not write."
-            },
-            {
-              "action": "Re-establish FOTM 20/10",
-              "owner": "shopkeeper",
-              "target": "Mocha at custom.discount=20 / custom.first_subscription_discount=10, FOTM tag intact, both FOTM nodes ACTIVE with endsAt=null"
-            }
-          ]
-        }
-      },
-      "runbookJoined": true,
+      "monitor": null,
+      "monitorJoined": false,
+      "runbook": null,
+      "runbookJoined": false,
       "residual": null,
       "residualJoined": false,
       "analytics": {
@@ -4718,9 +4655,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -5514,9 +5451,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -6465,9 +6402,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -7961,9 +7898,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -8560,7 +8497,7 @@
           "result": "FAIL",
           "exitCode": 1,
           "ranAt": "2026-08-28T13:48:29.321923-07:00",
-          "ranAtAge": "76d ago",
+          "ranAtAge": "77d ago",
           "checks": [
             {
               "check": "window: midflight phase matches the clock",
@@ -8932,9 +8869,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -9814,9 +9751,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
@@ -10501,9 +10438,9 @@
           "block": "live ops health",
           "source": "promo-hub-monitor.json",
           "present": true,
-          "generatedAt": "2026-11-01T20:04:52-07:00",
-          "ageHuman": "11d ago",
-          "stale": true,
+          "generatedAt": "2026-11-13T12:48:08-08:00",
+          "ageHuman": "0m ago",
+          "stale": false,
           "owner": "shopkeeper"
         },
         {
