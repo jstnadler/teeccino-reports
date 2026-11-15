@@ -18,7 +18,7 @@ IDEMPOTENT: a page that already references assets/hub-theme.js is left alone.
 
 SCOPE (excluded on purpose):
   klaviyo-previews/   email renders: must look like the email, not the site theme
-  burke/ crowley/ brendon/ orinoco/   isolated portals (AGENT_STANDARDS §18) — they
+  burke/ crowley/ brendon/ orinoco/ agency/   isolated portals (AGENT_STANDARDS §18) — they
                       must not load main-site assets; Burke has its own switch
   _partials/          fragments, not pages
   design/             brand style guide + storefront mockups: colors are the content
@@ -40,7 +40,7 @@ import sys
 from pathlib import Path
 
 TAG_SRC = "/teeccino-reports/assets/hub-theme.js"
-EXCLUDE_PREFIXES = ("klaviyo-previews/", "burke/", "crowley/", "brendon/", "orinoco/",
+EXCLUDE_PREFIXES = ("klaviyo-previews/", "burke/", "crowley/", "brendon/", "orinoco/", "agency/",
                     "_partials/", "design/", ".github/", "node_modules/")
 EXCLUDE_GLOBS = ("blog-seo-preview-*.html",)
 

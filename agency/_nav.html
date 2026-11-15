@@ -1,0 +1,101 @@
+<!--
+  PORTAL-SCOPED nav partial — Agency portal (the outside social media agency; agent: SocialSmith).
+  Owner: HubSmith. Modify only via clawd-hubsmith.
+  Created 2026-11-14 on Justin's approval ("own agency portal", 2026-11-14), following the
+  brendon/ and burke/ precedent.
+
+  ISOLATION (AGENT_STANDARDS §18): this nav links ONLY to pages inside agency/.
+  It MUST NOT link to Justin's main hub (/teeccino-reports/index.html), any of his dashboards,
+  or any other portal (brendon/, burke/, crowley/). This viewer is OUTSIDE the company, so the
+  rule is stricter here than on the employee portals: if the agency needs a view that exists
+  elsewhere on the site, it gets its OWN agency/NAME.html copy, built for an outside reader
+  (no costs, margins, supplier or creator terms) — never a link to the internal page.
+
+  It deliberately does NOT load the shared nav partial under /_partials/ — that one's boot
+  script powers search from Justin's pages.json, so mounting it here would make every one of
+  his manifest entries searchable from inside the agency's portal. That substitution is what
+  broke burke/ and crowley/ on 2026-08-04; it is refused at write time by
+  portal_export.assert_portal_safe(). Pure HTML + CSS here: no JS, no manifest read.
+
+  Accent = plum #6a3f8c, taken from SocialSmith's agency/social.html (the page this nav
+  wraps), on a light cream bar to match that page's light ground. Picked from the page, not
+  invented for the chrome.
+
+  How the portal's own pages include it (index.html + any agency/*.html page):
+      <div id="portal-nav"></div>
+      <script>
+        fetch('/teeccino-reports/agency/_nav.html')
+          .then(r => r.text())
+          .then(html => {
+            document.getElementById('portal-nav').innerHTML = html;
+            document.body.classList.add('has-portal-nav');
+          });
+      </script>
+  Pages that forget the class still get the top offset: the body:has() rule below applies it
+  whenever this bar is mounted.
+
+  Adding a page link: add an <a class="nav-link" href="/teeccino-reports/agency/NAME.html">
+  inside the `data-cat="dashboards"` group. Chrome is HubSmith-owned — SocialSmith dispatches
+  HubSmith to add the link when it publishes a page.
+
+  NO COUNTS OR STATUS TEXT IN THIS FILE. It is fetched by every page in the portal, so any
+  number here can contradict the page under it, everywhere at once. Counts go on the index card.
+-->
+<style>
+  /* Scoped via #portal-nav-bar so it never clashes with a host page. */
+  #portal-nav-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(250, 247, 243, 0.97);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid rgba(106, 63, 140, 0.28);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    flex-wrap: wrap; row-gap: 6px; line-height: 1.4;
+  }
+  #portal-nav-bar .brand {
+    font-weight: 700; font-size: 1.05em; color: #6a3f8c;
+    text-decoration: none; letter-spacing: -0.02em;
+  }
+  #portal-nav-bar .brand:hover { color: #4f2c6b; }
+  #portal-nav-bar .portal-tag {
+    color: #6b6259; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; border: 1px solid rgba(106, 63, 140, 0.35);
+    padding: 2px 8px; border-radius: 999px; margin-left: 2px;
+  }
+  #portal-nav-bar .group { display: flex; align-items: center; gap: 14px; margin-left: 16px; }
+  #portal-nav-bar .group-label {
+    color: #6b6259; font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  #portal-nav-bar a.nav-link {
+    color: #4a423a; text-decoration: none; font-size: 0.88em;
+    padding: 4px 10px; border-radius: 6px; transition: color 0.15s, background 0.15s;
+  }
+  #portal-nav-bar a.nav-link:hover { color: #6a3f8c; background: rgba(106, 63, 140, 0.08); }
+  #portal-nav-bar .spacer { flex: 1; }
+  #portal-nav-bar .home-link {
+    color: #6a3f8c; font-size: 0.85em; text-decoration: none;
+    border: 1px solid rgba(106, 63, 140, 0.35); padding: 4px 12px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  #portal-nav-bar .home-link:hover { background: rgba(106, 63, 140, 0.08); }
+
+  body.has-portal-nav, body:has(#portal-nav-bar) { padding-top: 72px; }
+  @media (max-width: 880px) {
+    #portal-nav-bar { gap: 8px; padding: 10px 12px; }
+    #portal-nav-bar .group { margin-left: 0; gap: 8px; }
+    #portal-nav-bar .group-label { display: none; }
+    #portal-nav-bar a.nav-link { font-size: 0.8em; padding: 3px 8px; }
+    body.has-portal-nav, body:has(#portal-nav-bar) { padding-top: 96px; }
+  }
+</style>
+<nav id="portal-nav-bar" aria-label="Agency portal navigation">
+  <a class="brand" href="/teeccino-reports/agency/index.html">Teeccino</a>
+  <span class="portal-tag">Agency Portal &middot; Social</span>
+  <div class="group" data-cat="dashboards">
+    <span class="group-label">Reports</span>
+    <a class="nav-link" href="/teeccino-reports/agency/social.html">Instagram performance</a>
+  </div>
+  <span class="spacer"></span>
+  <a class="home-link" href="/teeccino-reports/agency/index.html">All Reports &rarr;</a>
+</nav>
