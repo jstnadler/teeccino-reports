@@ -630,6 +630,7 @@ html[data-hub-theme="light"] .nownext,html[data-hub-theme="cream"] .nownext{--nn
 .nownext .nnrow.ended .nnname,.nownext .nnrow.ended .nnrate,.nownext .nnrow.ended .nndate,
 .nownext .nnrow.ended .nnwhen{color:var(--hub-muted,#94a3b8)}
 .nownext .nnrow.ended .nnname{font-weight:600}
+.nownext .nncont{font-size:11px;font-weight:500;font-style:italic;margin-left:7px;color:var(--hub-muted,#94a3b8);white-space:nowrap}
 .nownext .nnempty{font-size:13px;color:var(--hub-muted,#94a3b8);padding:7px 8px}
 .nownext .nnmonth{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
   color:var(--hub-ink2,#cbd5e1);margin:10px 0 2px;padding:0 8px 3px;border-bottom:1px solid var(--hub-border,#334155)}
@@ -2035,8 +2036,11 @@ function renderCalEarlier(host, year) {
 // own timezone -- never a frozen phrase from the payload.
 // Right column = the next NN_AHEAD_MONTHS WHOLE calendar months after this
 // one (Justin 2026-11-16: "always the next 2 full months", so the panel spans
-// >= 3 months). Grouped by start month; a promo spanning two months is listed
-// once, under the month it STARTS in. Empty months still render.
+// >= 3 months). Grouped by OVERLAP (Justin 2026-11-16, "Both months"): a
+// promo is listed under EVERY month its window touches -- including a promo
+// already on the left that runs on into next month -- and every appearance
+// after its start month carries a muted "continues from <Mon>" tag so it
+// never reads as a second promo. Empty months still render.
 const NN_AHEAD_MONTHS = 2;
 function renderNowNext(cards) {
   const host = document.getElementById('nownext');
@@ -2061,16 +2065,15 @@ function renderNowNext(cards) {
 
   const live = rows.filter(r => r.a <= t0 && r.b >= t0);
   const left = rows.filter(r => inMonth(r.a) || inMonth(r.b));
-  const leftSet = new Set(left);
   const aheadMonths = [];
   for (let i = 1; i <= NN_AHEAD_MONTHS; i++) {
     const d = new Date(Date.UTC(ty, tm + i, 1));
     aheadMonths.push({ y: d.getUTCFullYear(), m: d.getUTCMonth() });
   }
-  const groups = aheadMonths.map(g => ({ y: g.y, m: g.m, rows: rows.filter(r => {
-    const d = new Date(r.a);
-    return d.getUTCFullYear() === g.y && d.getUTCMonth() === g.m && !leftSet.has(r);
-  }) }));
+  const groups = aheadMonths.map(g => {
+    const m0 = Date.UTC(g.y, g.m, 1), m1 = Date.UTC(g.y, g.m + 1, 1) - MS_DAY;
+    return { y: g.y, m: g.m, m0: m0, rows: rows.filter(r => r.a <= m1 && r.b >= m0) };
+  });
   const span = MON[aheadMonths[0].m] + (aheadMonths.length > 1 ? ' – ' + MON[aheadMonths[aheadMonths.length - 1].m] : '');
   const next = rows.filter(r => r.a > t0)[0];
 
@@ -2079,8 +2082,10 @@ function renderNowNext(cards) {
     if (r.a <= t0) return { cls: 'live', txt: 'LIVE NOW' };
     return { cls: 'future', txt: inDays(Math.round((r.a - t0) / MS_DAY)) };
   };
-  const rowHTML = r => {
+  const rowHTML = (r, m0) => {
     const w = whenOf(r);
+    const cont = (m0 !== undefined && r.a < m0)
+      ? '<span class="nncont">continues from ' + esc(MON[new Date(r.a).getUTCMonth()]) + '</span>' : '';
     const rt = r.c.rates || {};
     const otp = rt.otp && hasV(rt.otp.advertised) ? rt.otp.advertised.v : null;
     const sub = rt.sub && hasV(rt.sub.advertised) ? rt.sub.advertised.v : null;
@@ -2089,7 +2094,7 @@ function renderNowNext(cards) {
     return '<div class="nnrow ' + w.cls + '" role="button" tabindex="0" data-nnid="' +
       esc(r.c.promoId || r.c.feedId || '') + '" data-nnuid="' + esc(domId(r.c)) + '">' +
       '<span class="nndate">' + esc(range(r)) + '</span>' +
-      '<span class="nnname">' + esc(nameOf(r)) + '<span class="badge ' + esc(tier) + '">' + esc(tier) + '</span></span>' +
+      '<span class="nnname">' + esc(nameOf(r)) + '<span class="badge ' + esc(tier) + '">' + esc(tier) + '</span>' + cont + '</span>' +
       '<span class="nnwhen">' + esc(w.txt) + '</span>' +
       (rate ? '<span class="nnrate">' + esc(rate) + '</span>' : '') + '</div>';
   };
@@ -2106,11 +2111,11 @@ function renderNowNext(cards) {
   }
   host.innerHTML = top + '<div class="nncols">' +
     '<div><h3>This month · ' + esc(MON_LONG[tm]) + '</h3>' +
-      (left.length ? left.map(rowHTML).join('') : '<div class="nnempty">No promo declared this month.</div>') + '</div>' +
+      (left.length ? left.map(r => rowHTML(r)).join('') : '<div class="nnempty">No promo declared this month.</div>') + '</div>' +
     '<div><h3>Coming up · ' + esc(span) + '</h3>' +
       groups.map(g => '<div class="nngroup" data-nnmonth="' + g.y + '-' + String(g.m + 1).padStart(2, '0') + '">' +
         '<div class="nnmonth">' + esc(MON_LONG[g.m]) + ' ' + g.y + '</div>' +
-        (g.rows.length ? g.rows.map(rowHTML).join('') : '<div class="nnempty">Nothing declared yet</div>') +
+        (g.rows.length ? g.rows.map(r => rowHTML(r, g.m0)).join('') : '<div class="nnempty">Nothing declared yet</div>') +
         '</div>').join('') + '</div>' +
     '</div>';
   host.style.display = '';
