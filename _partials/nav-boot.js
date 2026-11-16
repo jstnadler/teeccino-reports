@@ -149,7 +149,9 @@
       adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
       assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
       labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith',
-      designsmith: 'DesignSmith'
+      designsmith: 'DesignSmith', promosmith: 'PromoSmith', socialsmith: 'SocialSmith',
+      lifecyclesmith: 'LifecycleSmith', agencysmith: 'AgencySmith', operator: 'Operator',
+      amazonsmith: 'AmazonSmith', amazonadsmith: 'AmazonAdSmith', amazonlistingsmith: 'AmazonListingSmith'
     };
     var esc = function (str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -198,7 +200,9 @@
       adsmith: 'AdSmith', shopkeeper: 'Shopkeeper', themesmith: 'ThemeSmith',
       assetsmith: 'AssetSmith', hubsmith: 'HubSmith', brewsmith: 'BrewSmith',
       labsmith: 'LabSmith', searchsmith: 'SearchSmith', costsmith: 'CostSmith',
-      designsmith: 'DesignSmith'
+      designsmith: 'DesignSmith', promosmith: 'PromoSmith', socialsmith: 'SocialSmith',
+      lifecyclesmith: 'LifecycleSmith', agencysmith: 'AgencySmith', operator: 'Operator',
+      amazonsmith: 'AmazonSmith', amazonadsmith: 'AmazonAdSmith', amazonlistingsmith: 'AmazonListingSmith'
     };
     var esc = function (str) {
       return String(str == null ? '' : str)
