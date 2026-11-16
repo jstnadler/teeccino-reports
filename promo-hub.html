@@ -510,6 +510,34 @@ summary::marker { color:#64748b; }
 #calfull .fbar.minor.state-CLOSED        { border-color:rgb(96,165,250); }
 #calfull .fbar.minor.state-HISTORICAL    { border-color:rgb(129,178,240); opacity:1; }
 
+/* ---- SPEC 8.18 (Justin 2026-11-16): the promo box encloses its day cells ----
+   A week is ONE grid: row 1 = day cells, then one row per lane with a promo this
+   week. Each segment draws .pbox over rows 1..its bar row in the promo's colour.
+   The k-th bar row's box sits k steps further out (--pbk) so two promos in one
+   week nest instead of merging. pointer-events:none keeps bar click/hover as-is;
+   a transparent fill keeps today's cell and outline-only promos styled as before.
+   Colours are the SAME strings as the bars so the hub theme recolours them
+   identically in Light and Cream. */
+.wk.pwk{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin:0 0 5px;padding:0 1px}
+.pbox{pointer-events:none;position:relative;z-index:1;border:1px solid;border-radius:4px;
+  margin:calc(-2px - var(--pbk,0) * 2px)}
+.pbox.state-LIVE          { border-color:rgba(74,222,128,0.85); }
+.pbox.state-ENDEDOPEN     { border-color:rgba(248,113,113,0.90); }
+.pbox.state-RANUNRECORDED { border-color:rgba(251,191,36,0.90); }
+.pbox.state-ARMED, .pbox.state-DECLARED, .pbox.state-CLOSED { border-color:rgba(96,165,250,0.80); }
+.pbox.state-HISTORICAL    { border-color:rgba(96,165,250,0.80); opacity:0.72; }
+#calfull .fwk.pwk{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:0 0 12px;padding:0 4px}
+#calfull .pbox{border-width:2px;border-radius:9px;margin:calc(-4px - var(--pbk,0) * 4px)}
+#calfull .pbox.state-LIVE          { border-color:rgb(74,222,128); }
+#calfull .pbox.state-ENDEDOPEN     { border-color:rgb(248,113,113); }
+#calfull .pbox.state-RANUNRECORDED { border-color:rgb(251,191,36); }
+#calfull .pbox.state-ARMED, #calfull .pbox.state-DECLARED, #calfull .pbox.state-CLOSED { border-color:rgb(96,165,250); }
+#calfull .pbox.state-HISTORICAL    { border-color:rgb(129,178,240); opacity:1; }
+@media(max-width:680px){
+  #calfull .fwk.pwk{gap:3px;padding:0 3px}
+  #calfull .pbox{margin:calc(-3px - var(--pbk,0) * 3px)}
+}
+
 /* slate-500 #64748b measured 3.85-3.93:1 on this sheet -- below the 4.5 floor */
 #calfull .fyear{color:#a9b8cc}
 #calfull .fdow span{color:#a9b8cc}
@@ -1866,23 +1894,32 @@ function openCalMonth(year, m, cards, trigger) {
     }
     const wkStart = Date.UTC(year, m, w * 7 - lead + 1);
     const wkEnd = Date.UTC(year, m, w * 7 - lead + 7);
-    let laneHTML = '';
+    // SPEC 8.18 (Justin 2026-11-16): one week = one grid. Row 1 is the day cells,
+    // rows 2.. are one row per lane that has a promo THIS week, and each promo
+    // segment also draws a .pbox outline over rows 1..its own bar row, so the dates
+    // sit inside the promo. The box in the k-th bar row is pushed outward k steps
+    // (--pbk) so two promos sharing a week nest instead of merging borders.
+    let bars = '', boxes = '', row = 1;
     for (let li = 0; li < lanes.length; li++) {
       const inLane = segs.filter(s => s.lane === li && s.to >= wkStart && s.from <= wkEnd);
       if (!inLane.length) continue;
-      let bars = '';
+      row++;
       inLane.forEach(s => {
         const sFrom = Math.max(s.from, wkStart), sTo = Math.min(s.to, wkEnd);
         const c0 = Math.round((sFrom - wkStart) / MS_DAY) + 1;
         const c1 = Math.round((sTo - wkStart) / MS_DAY) + 2;
+        const sk = stateKey(s.c.lifecycle);
         const minor = String(s.c.tier || '').toUpperCase() !== 'MAJOR';
-        bars += '<div class="fbar state-' + stateKey(s.c.lifecycle) + (minor ? ' minor' : '') +
-          '" style="grid-column:' + c0 + '/' + c1 + '" data-promo="' + esc(domId(s.c)) + '">' +
+        bars += '<div class="fbar state-' + sk + (minor ? ' minor' : '') +
+          '" style="grid-column:' + c0 + '/' + c1 + ';grid-row:' + row + '" data-promo="' + esc(domId(s.c)) + '">' +
           (s.contL ? '\u2039 ' : '') + esc(s.c.name) + (s.contR ? ' \u203a' : '') + '</div>';
+        boxes += '<div class="pbox state-' + sk + (minor ? ' minor' : '') + '" aria-hidden="true"' +
+          ' data-box-promo="' + esc(domId(s.c)) + '" data-box-cols="' + c0 + '-' + (c1 - 1) +
+          '" style="grid-column:' + c0 + '/' + c1 + ';grid-row:1/' + (row + 1) + ';--pbk:' + (row - 2) + '"></div>';
       });
-      laneHTML += '<div class="fbarlane">' + bars + '</div>';
     }
-    body += '<div class="fwk"><div class="fwkdays">' + cells + '</div>' + laneHTML + '</div>';
+    body += '<div class="fwk pwk">' + cells.replace(/<div class="fdcell/g, (() => { let i = 0; return () => '<div style="grid-row:1;grid-column:' + (++i) + '" class="fdcell'; })()) +
+            bars + boxes + '</div>';
   }
 
   // spec 8.9.1 -- every promo listed with BOTH rate legs as functional -> advertised
@@ -2222,11 +2259,11 @@ function renderCalendar(cards, yearArg) {
       const wkStart = Date.UTC(year, m, w * 7 - lead + 1);
       const wkEnd = Date.UTC(year, m, w * 7 - lead + 7);
 
-      let laneHTML = '';
+      let bars = '', boxes = '', row = 1;
       for (let li = 0; li < laneCount; li++) {
         const inLane = segs.filter(s => s.lane === li && s.to >= wkStart && s.from <= wkEnd);
         if (!inLane.length) continue;
-        let bars = '';
+        row++;
         inLane.forEach(s => {
           const sFrom = Math.max(s.from, wkStart), sTo = Math.min(s.to, wkEnd);
           const c0 = Math.round((sFrom - wkStart) / MS_DAY) + 1;
@@ -2237,17 +2274,20 @@ function renderCalendar(cards, yearArg) {
           if (s.contL || sFrom > s.from) cl.push('cont-l');
           if (s.contR || sTo < s.to) cl.push('cont-r');
           const dd = Math.round((s.c.timeline ? (ymdToUTC(s.c.timeline.endsAtDate) - ymdToUTC(s.c.timeline.startsAtDate)) / MS_DAY + 1 : 0));
-          bars += '<div class="' + cl.join(' ') + '" style="grid-column:' + c0 + '/' + c1 + '"' +
+          boxes += '<div class="pbox state-' + sk + (minor ? ' minor' : '') + '" aria-hidden="true"' +
+            ' data-box-promo="' + esc(domId(s.c)) + '" data-box-cols="' + c0 + '-' + (c1 - 1) +
+            '" style="grid-column:' + c0 + '/' + c1 + ';grid-row:1/' + (row + 1) + ';--pbk:' + (row - 2) + '"></div>';
+          bars += '<div class="' + cl.join(' ') + '" style="grid-column:' + c0 + '/' + c1 + ';grid-row:' + row + '"' +
             ' data-promo="' + esc(domId(s.c)) + '"' +
             ' title="' + esc(s.c.name) + ' \u2014 ' + esc(s.c.tier || '') + ' \u2014 ' +
             esc((s.c.timeline || {}).startsAtDate || '?') + ' \u2192 ' +
             esc((s.c.timeline || {}).endsAtDate || '?') + ' (' + dd + 'd) \u2014 ' +
             esc(s.c.lifecycle) + '"></div>';
         });
-        laneHTML += '<div class="barlane">' + bars + '</div>';
       }
-      body += '<div class="wk"><div class="wkdays">' + cells + '</div>' +
-              (laneHTML ? '<div class="wkbars-wrap">' + laneHTML + '</div>' : '') + '</div>';
+      // SPEC 8.18: one grid per week -- see openCalMonth for the row/box model.
+      body += '<div class="wk pwk">' + cells.replace(/<div class="dcell/g, (() => { let i = 0; return () => '<div style="grid-row:1;grid-column:' + (++i) + '" class="dcell'; })()) +
+              bars + boxes + '</div>';
     }
 
     // spec 8.4: an empty month must SAY it is empty, never render blank
