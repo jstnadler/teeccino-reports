@@ -602,6 +602,43 @@ summary::marker { color:#64748b; }
 #caltip .tsub{color:#cbd5e1;font-weight:600;font-size:11.5px;display:block}
 #calendar .bar{position:relative}
 #calendar .bar::before{content:'';position:absolute;left:0;right:0;top:-5px;bottom:-5px}
+/* ---- THIS MONTH / COMING UP panel (Justin 2026-11-16, via HubSmith) ----
+   Answers "what is running, what's next" before anything else on the page.
+   Colours come from the site-wide --hub-* tokens so Dark / Light / Cream all
+   work; the fallbacks are the Dark values. Text uses ink/muted, never opacity,
+   so an ENDED row stays >= 4.5:1 (spec 8.10). */
+.nownext{--nn-green:#4ade80;--nn-blue:#93c5fd;
+  background:var(--hub-surface,#20263b);border:1px solid var(--hub-border,#334155);
+  border-radius:12px;padding:14px 16px 12px;margin:0 0 18px;text-align:left;color:var(--hub-ink,#e2e8f0)}
+html[data-hub-theme="light"] .nownext,html[data-hub-theme="cream"] .nownext{--nn-green:#15803d;--nn-blue:#1d4ed8}
+.nownext .nntop{font-size:15px;font-weight:700;margin-bottom:12px;color:var(--hub-ink,#e2e8f0)}
+.nownext .nntop.running{color:var(--nn-green)}
+.nownext .nntop .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--nn-green);margin-right:7px;vertical-align:1px}
+.nownext .nncols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:780px){.nownext .nncols{grid-template-columns:1fr}}
+.nownext h3{font-size:11.5px;letter-spacing:.10em;text-transform:uppercase;color:var(--hub-muted,#94a3b8);
+  font-weight:700;margin:0 0 6px}
+.nownext .nnrow{display:grid;grid-template-columns:118px 1fr auto;gap:4px 10px;align-items:baseline;
+  padding:7px 8px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.nownext .nnrow:hover,.nownext .nnrow:focus-visible{background:var(--hub-raised,#2a3148);border-color:var(--hub-border,#334155);outline:none}
+.nownext .nndate{font-size:12.5px;color:var(--hub-ink2,#cbd5e1);white-space:nowrap}
+.nownext .nnname{font-weight:700;font-size:14px;color:var(--hub-ink,#e2e8f0)}
+.nownext .nnname .badge{font-size:10px;margin-left:6px;vertical-align:1px}
+.nownext .nnrate{grid-column:2/4;font-size:12px;color:var(--hub-ink2,#cbd5e1)}
+.nownext .nnwhen{font-size:11.5px;font-weight:700;white-space:nowrap;color:var(--nn-blue)}
+.nownext .nnrow.live .nnwhen{color:var(--nn-green)}
+.nownext .nnrow.ended .nnname,.nownext .nnrow.ended .nnrate,.nownext .nnrow.ended .nndate,
+.nownext .nnrow.ended .nnwhen{color:var(--hub-muted,#94a3b8)}
+.nownext .nnrow.ended .nnname{font-weight:600}
+.nownext .nnempty{font-size:13px;color:var(--hub-muted,#94a3b8);padding:7px 8px}
+/* Month calendar: in the current year, months before this one fold away so
+   the current month is the first tile on screen (Justin 2026-11-16). */
+.calgrid .mon.earlier{display:none}
+.calgrid.showearlier .mon.earlier{display:block}
+.calearlier{margin:0 0 12px}
+.calearlier button{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.16);color:#cbd5e1;
+  border-radius:7px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
+.calearlier button:hover{border-color:rgba(96,165,250,.6)}
 </style>
 </head>
 <body>
@@ -626,6 +663,8 @@ summary::marker { color:#64748b; }
     <div class="buildstamp" id="buildstamp" style="display:none"></div>
   </div>
 
+  <div class="nownext" id="nownext" style="display:none" aria-label="This month and coming up"></div>
+
   <div class="tallies" id="tallies"></div>
   <div class="banners" id="banners"></div>
   <div id="calfull" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Month detail">
@@ -644,6 +683,7 @@ summary::marker { color:#64748b; }
       <div class="calyears" id="calyears"></div>
       <div class="calsub" id="calsub"></div>
     </div>
+    <div class="calearlier" id="calearlier" style="display:none"><button type="button" id="calearlierbtn" aria-expanded="false"></button></div>
     <div id="calendar" class="calgrid"></div>
     <div class="callegend" id="callegend"></div>
     <div class="calnoplace" id="calnoplace" style="display:none"></div>
@@ -1963,6 +2003,120 @@ function wireCalFull(cards, year) {
   document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeCalMonth(); });
 }
 
+// ---- Month calendar: fold the months already behind us -------------------
+// Justin 2026-11-16: the calendar must open on the CURRENT month. In the current
+// year the months before this one are folded under an "Earlier months" toggle,
+// so the current month is the first tile. Other years render in full, as before.
+// The toggle's state survives a year switch and back (CAL_SHOW_EARLIER).
+let CAL_SHOW_EARLIER = false;
+function renderCalEarlier(host, year) {
+  const wrap = document.getElementById('calearlier');
+  const btn = document.getElementById('calearlierbtn');
+  if (!wrap || !btn) return;
+  const n = host.querySelectorAll('.mon.earlier').length;
+  if (!n) { wrap.style.display = 'none'; host.classList.remove('showearlier'); return; }
+  const paint = () => {
+    host.classList.toggle('showearlier', CAL_SHOW_EARLIER);
+    btn.setAttribute('aria-expanded', CAL_SHOW_EARLIER ? 'true' : 'false');
+    btn.textContent = (CAL_SHOW_EARLIER ? 'Hide earlier months' : 'Show earlier months') +
+      ' (Jan' + (n > 1 ? '–' + CAL_MON[n - 1].slice(0, 3) : '') + ' ' + year + ')';
+  };
+  wrap.style.display = '';
+  btn.onclick = () => { CAL_SHOW_EARLIER = !CAL_SHOW_EARLIER; paint(); };
+  paint();
+}
+
+// ---- THIS MONTH / COMING UP (Justin 2026-11-16, via HubSmith) -------------
+// Reads the same `cards` the tiles render; dates are the declared window
+// (window.startsAt.v / endsAt.v), compared as CALENDAR days in the reader's
+// own timezone -- never a frozen phrase from the payload.
+const NN_AHEAD_DAYS = 75;
+function renderNowNext(cards) {
+  const host = document.getElementById('nownext');
+  if (!host) return;
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const t0 = todayUTCms();
+  const td = new Date(t0);
+  const ty = td.getUTCFullYear(), tm = td.getUTCMonth();
+  const rows = [];
+  (cards || []).forEach(c => {
+    const w = c.window || {};
+    const a = ymdToUTC(w.startsAt && w.startsAt.v), b = ymdToUTC(w.endsAt && w.endsAt.v);
+    if (a === null || b === null) return;
+    rows.push({ c: c, a: a, b: b });
+  });
+  rows.sort((x, y) => x.a - y.a || x.b - y.b);
+  const inMonth = ms => { const d = new Date(ms); return d.getUTCFullYear() === ty && d.getUTCMonth() === tm; };
+  const short = ms => { const d = new Date(ms); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); };
+  const range = r => short(r.a) + ' – ' + short(r.b);
+  const nameOf = r => r.c.name || '(unnamed)';
+  const inDays = n => n === 0 ? 'starts today' : (n === 1 ? 'in 1 day' : 'in ' + n + ' days');
+
+  const live = rows.filter(r => r.a <= t0 && r.b >= t0);
+  const left = rows.filter(r => inMonth(r.a) || inMonth(r.b));
+  const leftSet = new Set(left);
+  const right = rows.filter(r => r.a > t0 && r.a <= t0 + NN_AHEAD_DAYS * MS_DAY && !leftSet.has(r));
+  const next = rows.filter(r => r.a > t0)[0];
+
+  const whenOf = r => {
+    if (r.b < t0) return { cls: 'ended', txt: 'ENDED' };
+    if (r.a <= t0) return { cls: 'live', txt: 'LIVE NOW' };
+    return { cls: 'future', txt: inDays(Math.round((r.a - t0) / MS_DAY)) };
+  };
+  const rowHTML = r => {
+    const w = whenOf(r);
+    const rt = r.c.rates || {};
+    const otp = rt.otp && hasV(rt.otp.advertised) ? rt.otp.advertised.v : null;
+    const sub = rt.sub && hasV(rt.sub.advertised) ? rt.sub.advertised.v : null;
+    const rate = [otp, sub !== null ? 'Subs ' + sub : null].filter(Boolean).join(' · ');
+    const tier = r.c.tier || 'UNKNOWN';
+    return '<div class="nnrow ' + w.cls + '" role="button" tabindex="0" data-nnid="' +
+      esc(r.c.promoId || r.c.feedId || '') + '" data-nnuid="' + esc(domId(r.c)) + '">' +
+      '<span class="nndate">' + esc(range(r)) + '</span>' +
+      '<span class="nnname">' + esc(nameOf(r)) + '<span class="badge ' + esc(tier) + '">' + esc(tier) + '</span></span>' +
+      '<span class="nnwhen">' + esc(w.txt) + '</span>' +
+      (rate ? '<span class="nnrate">' + esc(rate) + '</span>' : '') + '</div>';
+  };
+
+  let top;
+  if (live.length) {
+    top = '<div class="nntop running"><span class="dot"></span>Running today: ' +
+      esc(live.map(nameOf).join(', ')) + '</div>';
+  } else if (next) {
+    top = '<div class="nntop">Nothing running today. Next up: ' + esc(nameOf(next)) +
+      ', starts ' + esc(short(next.a)) + ' (' + inDays(Math.round((next.a - t0) / MS_DAY)) + ')</div>';
+  } else {
+    top = '<div class="nntop">Nothing running today, and nothing declared ahead.</div>';
+  }
+  host.innerHTML = top + '<div class="nncols">' +
+    '<div><h3>This month · ' + esc(MON_LONG[tm]) + '</h3>' +
+      (left.length ? left.map(rowHTML).join('') : '<div class="nnempty">No promo declared this month.</div>') + '</div>' +
+    '<div><h3>Coming up · next ' + NN_AHEAD_DAYS + ' days</h3>' +
+      (right.length ? right.map(rowHTML).join('') : '<div class="nnempty">Nothing else declared in the next ' + NN_AHEAD_DAYS + ' days.</div>') + '</div>' +
+    '</div>';
+  host.style.display = '';
+
+  if (host.dataset.wired) return;
+  host.dataset.wired = '1';
+  const go = row => {
+    const id = row.getAttribute('data-nnid'), uid = row.getAttribute('data-nnuid');
+    let tile = id ? document.querySelector('#cards .tile[data-id="' + id.replace(/"/g, '') + '"]') : null;
+    if (!tile) tile = document.querySelector('.tile[data-target="d-' + uid + '"]');
+    if (!tile) return;
+    const pastHost = document.getElementById('pastcards');
+    if (pastHost && pastHost.contains(tile) && pastHost.classList.contains('hidden')) {
+      const pb = document.getElementById('pastbtn'); if (pb) pb.click();
+    }
+    if (tile.getAttribute('aria-expanded') !== 'true') tile.click();
+    tile.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  host.addEventListener('click', ev => { const r = ev.target.closest('.nnrow'); if (r) go(r); });
+  host.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const r = ev.target.closest('.nnrow'); if (r) { ev.preventDefault(); go(r); }
+  });
+}
+
 function renderCalendar(cards, yearArg) {
   const host = document.getElementById('calendar');
   if (!host) return;
@@ -2076,7 +2230,8 @@ function renderCalendar(cards, yearArg) {
     if (!segs.length) body += '<div class="monempty">no promo declared</div>';
 
 
-    html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') +
+    const isEarlier = year === new Date().getFullYear() && isPast;
+    html += '<div class="mon' + (isNow ? ' now' : '') + (isPast ? ' past' : '') + (isEarlier ? ' earlier' : '') +
       '" data-m="' + m + '" role="button" tabindex="0" aria-label="Open ' + CAL_MON[m] + ' full screen">' +
       '<div class="monhd"><span class="monnm">' + CAL_MON[m] + '</span>' + flags + '</div>' +
       // spec 8.13 amended: evergreens ABOVE the day grid, same order as the
@@ -2086,6 +2241,7 @@ function renderCalendar(cards, yearArg) {
       '<span>T</span><span>F</span><span>S</span></div>' + body + '</div>';
   }
   host.innerHTML = html;
+  renderCalEarlier(host, year);
 
   const inYear = placed.filter(p => new Date(p.a).getUTCFullYear() === year ||
                                      new Date(p.b).getUTCFullYear() === year).length;
@@ -2176,6 +2332,7 @@ fetch(STATE_URL + '?t=' + Date.now())
       '<div class="nodata">No active, armed or declared promos.</div>';
     wireGrid(document.getElementById('cards'));
     wireGrid(document.getElementById('pastcards'));
+    renderNowNext(cards);
     EVERGREENS_BY_MONTH = s.evergreensByMonth || {};
     renderArchive(s.archive);
     CAL_CARDS = cards.concat(archiveCards(s.archive, cards));
