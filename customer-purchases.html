@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Purchases | Teeccino</title>
+<style>
+html{--hub-nav-h:76px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a2e;color:#e8e8f0;line-height:1.5;padding:20px;padding-top:calc(var(--hub-nav-h) + 12px)}
+.wrap{max-width:min(1720px,96vw);margin:0 auto}
+h1{font-size:26px;color:#fff}
+.sub{color:#a9adc1;font-size:14px;margin:4px 0 16px}
+.bar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:#22253a;border:1px solid #33374f;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.grp label.t{color:#a9adc1;font-size:12px;margin-right:4px;text-transform:uppercase;letter-spacing:.04em}
+button.b{background:#2c3050;color:#e8e8f0;border:1px solid #3d4266;border-radius:6px;padding:5px 10px;font-size:13px;cursor:pointer}
+button.b.on{background:#D4A843;color:#1a1a2e;border-color:#D4A843;font-weight:600}
+button.b:disabled{opacity:.4;cursor:default}
+input[type=date],select,input[type=search]{background:#2c3050;color:#e8e8f0;border:1px solid #3d4266;border-radius:6px;padding:4px 8px;font-size:13px}
+.scope{color:#c9cce0;font-size:13px;margin:0 0 14px}
+.scope b{color:#fff}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.tile{background:#22253a;border:1px solid #33374f;border-radius:10px;padding:12px 14px}
+.tile .k{color:#a9adc1;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:26px;font-weight:650;color:#fff;margin-top:2px}
+.tile .d,.d{font-size:12px;color:#a9adc1}
+.up{color:#7bd88f}.dn{color:#f59e8b}
+.card{background:#22253a;border:1px solid #33374f;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.card h2{font-size:17px;color:#fff;margin-bottom:2px}
+.card .hint{color:#a9adc1;font-size:13px;margin-bottom:10px}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#c9cce0;margin-bottom:8px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.mix{display:grid;grid-template-columns:minmax(110px,160px) minmax(0,1fr);gap:8px 12px;align-items:center}
+.mix .lab{font-size:13px;color:#e8e8f0;text-align:right}
+.mix .bars{display:flex;flex-direction:column;gap:2px}
+.mix .row{display:flex;align-items:center;gap:8px;height:16px;cursor:default}
+.mix .fill{height:12px;border-radius:0 4px 4px 0;min-width:2px}
+.mix .num{font-size:12px;color:#c9cce0;white-space:nowrap}
+.tblwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:right;color:#a9adc1;font-weight:600;padding:7px 8px;border-bottom:1px solid #3d4266;cursor:pointer;white-space:nowrap;user-select:none}
+th.l,td.l{text-align:left}
+th .ar{opacity:.6;font-size:10px}
+td{text-align:right;padding:6px 8px;border-bottom:1px solid #2c3050;font-variant-numeric:tabular-nums}
+td.nm{max-width:48ch}
+td.nm .it{color:#a9adc1;margin-right:6px}
+td.nm .miss{color:#f0c674;font-style:italic}
+tr:hover td{background:#282c45}
+.pager{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px;font-size:13px;color:#a9adc1}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:13px;color:#a9adc1}
+details.fold{margin-top:8px;color:#c9cce0;font-size:13px}
+details.fold summary{cursor:pointer;color:#a9adc1}
+details.fold ul{margin:6px 0 0 18px}
+#tt{position:fixed;pointer-events:none;background:#0f1020;border:1px solid #3d4266;border-radius:6px;padding:7px 9px;font-size:12px;color:#e8e8f0;display:none;z-index:50;max-width:320px}
+.loading{color:#a9adc1;padding:30px 0}
+</style></head><body>
+<div id="hub-nav"></div>
+<script>
+  fetch('/teeccino-reports/_partials/nav.html').then(function(r){return r.text();}).then(function(html){
+    var slot=document.getElementById('hub-nav'); slot.innerHTML=html;
+    document.body.classList.add('has-hub-nav');
+    slot.querySelectorAll('script').forEach(function(s){
+      var n=document.createElement('script');
+      if(s.src){n.src=s.src;}else{n.textContent=s.textContent;}
+      document.head.appendChild(n);
+    });
+  }).catch(function(){});
+</script>
+<div class="wrap">
+<h1>Customer Purchases</h1>
+<div class="sub">What website customers bought, for any dates you pick: first-time vs returning customers, one-time vs subscription orders. Website (DTC) orders only; wholesale and Amazon are not included.</div>
+<div class="bar">
+ <div class="grp"><label class="t">Dates</label>
+  <span id="presets"></span>
+  <input type="date" id="from"> <span style="color:#a9adc1">to</span> <input type="date" id="to">
+ </div>
+ <div class="grp"><label class="t">Customers</label><span id="ctb"></span></div>
+ <div class="grp"><label class="t">Orders</label><span id="stb"></span></div>
+</div>
+<div class="scope" id="scope"></div>
+<div id="app" class="loading">Loading order data…</div>
+</div>
+<div id="tt"></div>
+<script>
+const C_NEW='#B8862A', C_RET='#4A90E2';
+const st={from:null,to:null,preset:'30',ct:'all',ot:'all',sort:'units',dir:-1,page:0,per:25,q:'',cat:''};
+let D=null, DAY0=null, NDAYS=0, PDAY=null;
+const $=id=>document.getElementById(id);
+const fmt=n=>n==null?'–':Math.round(n).toLocaleString('en-US');
+const money=c=>c==null?'–':'$'+Math.round(c/100).toLocaleString('en-US');
+const money2=c=>c==null?'–':'$'+(c/100).toFixed(2);
+const pct=x=>x==null?'–':(x*100).toFixed(1)+'%';
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function d2i(s){return Math.round((Date.parse(s+'T00:00:00Z')-DAY0)/864e5)}
+function i2d(i){return new Date(DAY0+i*864e5).toISOString().slice(0,10)}
+function yearBack(s){const d=new Date(s+'T00:00:00Z');d.setUTCFullYear(d.getUTCFullYear()-1);if(d.getUTCDate()!==+s.slice(8))d.setUTCDate(0);return d.toISOString().slice(0,10)}
+function nice(s){return new Date(s+'T00:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})}
+
+const PRESETS=[['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['mtd','This month'],['ytd','Year to date'],['365','Last 12 months'],['all','All']];
+function presetRange(p){
+  const end=D.asof, e=new Date(end+'T00:00:00Z');
+  if(p==='mtd')return [end.slice(0,8)+'01',end];
+  if(p==='ytd')return [end.slice(0,5)+'01-01',end];
+  if(p==='all')return [D.days[0],end];
+  return [new Date(e.getTime()-(+p-1)*864e5).toISOString().slice(0,10),end];
+}
+function otOk(ot){return st.ot==='all'||(st.ot==='sub'?ot===1:ot===0)}
+function pass(ct,ot){return otOk(ot)&&(st.ct==='all'||(st.ct==='new'?ct===0:ct===1))}
+
+// Re-aggregate the day-grain facts for one window. Customer type is applied to
+// everything except the New-vs-Returning comparisons, which always use both.
+function agg(a,b){
+  const P=D.P,n=P[0].length,np=D.prods.length;
+  const u=new Float64Array(np),f=new Float64Array(np),ow=new Float64Array(np),g=new Float64Array(np);
+  const owN=new Float64Array(np),owR=new Float64Array(np);
+  for(let k=0;k<n;k++){const di=PDAY[k];if(di<a)continue;if(di>b)break;
+    const ct=P[2][k],ot=P[3][k],pi=P[1][k];
+    if(otOk(ot)){if(ct===0)owN[pi]+=P[6][k];else owR[pi]+=P[6][k];}
+    if(!pass(ct,ot))continue;
+    u[pi]+=P[4][k];f[pi]+=P[5][k];ow[pi]+=P[6][k];g[pi]+=P[7][k];}
+  const O=D.O;let orders=0,units=0,gross=0,free=0,oN=0,oR=0;
+  for(let k=0;k<O[0].length;k++){const di=O[0][k];if(di<a||di>b)continue;const ct=O[1][k],ot=O[2][k];
+    if(otOk(ot)){if(ct===0)oN+=O[3][k];else oR+=O[3][k];}
+    if(!pass(ct,ot))continue;orders+=O[3][k];units+=O[4][k];gross+=O[5][k];free+=O[6][k];}
+  const C=D.C,nc=D.cats.length,cN=new Float64Array(nc),cR=new Float64Array(nc);
+  for(let k=0;k<C[0].length;k++){const di=C[0][k];if(di<a||di>b)continue;
+    if(otOk(C[3][k])){if(C[2][k]===0)cN[C[1][k]]+=C[4][k];else cR[C[1][k]]+=C[4][k];}}
+  let give=0;for(const [di,c] of D.giveaway)if(di>=a&&di<=b)give+=c;
+  return {u,f,ow,g,owN,owR,orders,units,gross,free,oN,oR,cN,cR,give};
+}
+
+function deltaHtml(cur,prev){
+  if(cur==null||prev==null||!prev)return '<span class="d">no comparison</span>';
+  const r=cur/prev-1;
+  return `<span class="${r>=0?'up':'dn'}">${r>=0?'▲':'▼'} ${(Math.abs(r)*100).toFixed(1)}%</span> <span class="d">vs same dates last year</span>`;
+}
+
+function compute(A,Pv){
+  const rows=[];
+  for(let i=0;i<D.prods.length;i++){
+    if(!A.u[i]&&!A.f[i])continue;
+    const p=D.prods[i];
+    if(st.cat&&p.cat!==st.cat)continue;
+    if(st.q){const lab=(p.item+' '+(p.name||'')+' '+p.skus.join(' ')).toLowerCase();if(!lab.includes(st.q.toLowerCase()))continue;}
+    const pn=A.oN?A.owN[i]/A.oN:null, pr=A.oR?A.owR[i]/A.oR:null;
+    rows.push({p,units:A.u[i],free:A.f[i],orders:A.ow[i],pen:A.orders?A.ow[i]/A.orders:null,
+      gross:A.g[i],share:A.units?A.u[i]/A.units:null,
+      yoy:(Pv&&Pv.u[i]>0)?A.u[i]/Pv.u[i]-1:null,
+      lean:(pn!=null&&pr>0&&(A.owN[i]+A.owR[i])>=20)?pn/pr:null});
+  }
+  // TOTAL order: nulls last in both directions, ties broken on item # (never NaN).
+  const key=st.sort,dir=st.dir;
+  const val=r=>key==='name'?(r.p.name||'~'+r.p.item).toLowerCase():key==='cat'?r.p.cat:r[key];
+  rows.sort((x,y)=>{const av=val(x),bv=val(y),an=av==null,bn=bv==null;
+    if(!(an&&bn)){if(an)return 1;if(bn)return -1;if(av<bv)return -dir;if(av>bv)return dir;}
+    return x.p.item<y.p.item?-1:x.p.item>y.p.item?1:0;});
+  return rows;
+}
+
+function render(){
+  const a=Math.max(0,d2i(st.from)),b=Math.min(NDAYS-1,d2i(st.to)),n=b-a+1;
+  const ps=yearBack(i2d(a)),pa=d2i(ps),pb=pa+n-1,hasPrev=pa>=0;
+  const A=agg(a,b),Pv=hasPrev?agg(pa,pb):null;
+  const who=st.ct==='all'?'all customers':st.ct==='new'?'first-time customers':'returning customers';
+  const what=st.ot==='all'?'all orders':st.ot==='sub'?'subscription orders':'one-time orders';
+  $('scope').innerHTML=`Showing <b>${nice(i2d(a))} – ${nice(i2d(b))}</b> (${n} days), ${who}, ${what}. `+
+    (hasPrev?`Compared with <b>${nice(i2d(pa))} – ${nice(i2d(pb))}</b>, the same ${n} days a year earlier.`
+            :`No year-earlier comparison: this page's data starts ${nice(D.days[0])}.`)+
+    (A.give?` <span class="d">${fmt(A.give)} giveaway-only order${A.give===1?"":"s"} (a free item, nothing paid) ${A.give===1?"is":"are"} left out.</span>`:'');
+  const tile=(k,v,cur,prev)=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${Pv?deltaHtml(cur,prev):'<span class="d">no comparison</span>'}</div></div>`;
+  const upo=A.orders?A.units/A.orders:null, gpo=A.orders?A.gross/A.orders:null;
+  const pupo=Pv&&Pv.orders?Pv.units/Pv.orders:null, pgpo=Pv&&Pv.orders?Pv.gross/Pv.orders:null;
+  let html=`<div class="tiles">
+   ${tile('Orders',fmt(A.orders),A.orders,Pv&&Pv.orders)}
+   ${tile('Units bought',fmt(A.units),A.units,Pv&&Pv.units)}
+   ${tile('Units per order',upo==null?'–':upo.toFixed(2),upo,pupo)}
+   ${tile('Sales at list price',money(A.gross),A.gross,Pv&&Pv.gross)}
+   ${tile('Per order, at list price',money2(gpo),gpo,pgpo)}
+   ${st.ct==='all'?tile('First-time customers',fmt(A.oN),A.oN,Pv&&Pv.oN):''}
+  </div>`;
+  const cats=D.cats.map((c,i)=>({c,i,n:A.oN?A.cN[i]/A.oN:0,r:A.oR?A.cR[i]/A.oR:0}))
+    .filter(x=>x.n>0||x.r>0).sort((x,y)=>Math.max(y.n,y.r)-Math.max(x.n,x.r));
+  const mx=Math.max(0.0001,...cats.map(x=>Math.max(x.n,x.r)));
+  const bar=(x,v,cnt,tot,col,lab)=>`<div class="row" data-tt="${esc(x.c)} · ${lab}: in ${pct(v)} of orders (${fmt(cnt)} of ${fmt(tot)})"><div class="fill" style="width:${(v/mx*82).toFixed(2)}%;background:${col}"></div><span class="num">${pct(v)}</span></div>`;
+  html+=`<div class="card"><h2>What's in the basket, by product type</h2>
+   <div class="hint">Share of orders that included at least one paid item of each type. First-time and returning customers are always shown side by side so you can see the difference. An order can include several types, so the bars add up to more than 100%.</div>
+   <div class="legend"><span><span class="sw" style="background:${C_NEW}"></span>First-time customers (${fmt(A.oN)} orders)</span><span><span class="sw" style="background:${C_RET}"></span>Returning customers (${fmt(A.oR)} orders)</span></div>
+   <div class="mix">`+(cats.length?cats.map(x=>`<div class="lab">${esc(x.c)}</div><div class="bars">${bar(x,x.n,A.cN[x.i],A.oN,C_NEW,'first-time')}${bar(x,x.r,A.cR[x.i],A.oR,C_RET,'returning')}</div>`).join(''):'<div class="d">No orders in this selection.</div>')+`</div></div>`;
+  const rows=compute(A,Pv);
+  const per=st.per==='all'?Math.max(rows.length,1):st.per, pages=Math.max(1,Math.ceil(rows.length/per));
+  if(st.page>=pages)st.page=0;
+  const slice=rows.slice(st.page*per,st.page*per+per);
+  const cols=[['name','Product',1],['cat','Type',1],['units','Units',0],['yoy','vs last year',0],['orders','Orders with it',0],['pen','% of orders',0],['gross','Sales at list',0],['share','Share of units',0],['lean','First-time lean',0],['free','Free units',0]];
+  const catOpts=['<option value="">All types</option>'].concat(D.cats.map(c=>`<option ${st.cat===c?'selected':''}>${esc(c)}</option>`)).join('');
+  html+=`<div class="card"><h2>What they bought, by product</h2>
+   <div class="hint">Every product bought in the dates and filters above, ranked by units. Paid items only in the rankings; free gifts sit in their own column. Click a column heading to sort.</div>
+   <div class="tools"><input type="search" id="q" placeholder="Search product or item #" value="${esc(st.q)}"><select id="cat">${catOpts}</select><span>${fmt(rows.length)} products</span></div>
+   <div class="tblwrap"><table><thead><tr><th class="l">#</th>`+cols.map(([k,l,left])=>`<th class="${left?'l':''}" data-k="${k}">${l} <span class="ar">${st.sort===k?(st.dir<0?'▼':'▲'):''}</span></th>`).join('')+`</tr></thead><tbody>`+
+   slice.map((r,j)=>{const p=r.p,nm=p.name?esc(p.name):`<span class="miss">${esc(p.why)}</span>`;
+     const yo=r.yoy==null?(Pv?'new':'–'):`<span class="${r.yoy>=0?'up':'dn'}">${r.yoy>=0?'+':''}${(r.yoy*100).toFixed(1)}%</span>`;
+     return `<tr><td class="l">${st.page*per+j+1}</td><td class="l nm" title="Shopify SKU(s): ${esc(p.skus.join(', '))}"><span class="it">${esc(p.item)}</span>${nm}</td><td class="l">${esc(p.cat)}</td><td>${fmt(r.units)}</td><td>${yo}</td><td>${fmt(r.orders)}</td><td>${pct(r.pen)}</td><td>${money(r.gross)}</td><td>${pct(r.share)}</td><td>${r.lean==null?'–':r.lean.toFixed(2)+'×'}</td><td>${r.free?fmt(r.free):'–'}</td></tr>`}).join('')+
+   `</tbody></table></div>
+   <div class="pager"><span>Rows <select id="per">${[10,25,50,100,'all'].map(v=>`<option value="${v}" ${String(st.per)===String(v)?'selected':''}>${v==='all'?'All':v}</option>`).join('')}</select></span>
+   <span><button class="b" id="prev" ${st.page<=0?'disabled':''}>‹ Prev</button> Page ${st.page+1} of ${pages} <button class="b" id="next" ${st.page>=pages-1?'disabled':''}>Next ›</button></span></div>
+   <details class="fold"><summary>How to read this table</summary><ul>
+    <li><b>Units</b>: paid packages bought. <b>Orders with it</b>: orders that included it at least once. <b>% of orders</b>: of all orders in your filters.</li>
+    <li><b>Sales at list</b>: units × the list price that day (our "True Gross"), not what the customer paid after discounts.</li>
+    <li><b>First-time lean</b>: how much more often it shows up in a first-time customer's order than a returning customer's. 2.00× = twice as often in first orders; below 1.00× = mostly reordered by regulars. Shown once a product is in at least 20 orders, and always uses both groups whatever the Customers filter says.</li>
+    <li><b>vs last year</b>: units against the same dates a year earlier; "new" = none sold then.</li>
+    <li>Products are named from the Product Catalog. One the catalog can't name says so rather than borrowing the Shopify title; hover a name to see its Shopify SKU(s).</li>
+   </ul></details></div>`;
+  html+=`<details class="fold"><summary>How this page is built</summary><ul>
+   <li>Website (DTC) orders only, ${nice(D.days[0])} to ${nice(D.asof)}. Today's partial day is left out; cancelled orders are excluded everywhere.</li>
+   <li>First-time = the customer's first non-cancelled order. Returning = any later order.</li>
+   <li>A subscription order is any order with at least one subscription item (first subscription orders and renewals both count).</li>
+   <li>Totals are checked against the main sales tables on every rebuild (to the order and the unit) and the page refuses to publish if they disagree. Rebuilt every morning.</li>
+   <li>Updated ${esc(D.updated)}.</li></ul></details>`;
+  $('app').className='';$('app').innerHTML=html;
+  document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(st.sort===k)st.dir=-st.dir;else{st.sort=k;st.dir=(k==='name'||k==='cat')?1:-1;}st.page=0;render();});
+  $('q').oninput=e=>{st.q=e.target.value;st.page=0;clearTimeout(window._qt);window._qt=setTimeout(()=>{render();const q=$('q');q.focus();q.setSelectionRange(q.value.length,q.value.length);},200)};
+  $('cat').onchange=e=>{st.cat=e.target.value;st.page=0;render();};
+  $('per').onchange=e=>{st.per=e.target.value==='all'?'all':+e.target.value;st.page=0;render();};
+  $('prev').onclick=()=>{st.page--;render();};$('next').onclick=()=>{st.page++;render();};
+  history.replaceState(null,'','#'+new URLSearchParams({from:st.from,to:st.to,ct:st.ct,ot:st.ot}).toString());
+}
+
+function buttons(){
+  $('presets').innerHTML=PRESETS.map(([k,l])=>`<button class="b ${st.preset===k?'on':''}" data-p="${k}">${l}</button>`).join(' ');
+  $('ctb').innerHTML=[['all','All'],['new','First-time'],['ret','Returning']].map(([k,l])=>`<button class="b ${st.ct===k?'on':''}" data-c="${k}">${l}</button>`).join(' ');
+  $('stb').innerHTML=[['all','All'],['one','One-time'],['sub','Subscription']].map(([k,l])=>`<button class="b ${st.ot===k?'on':''}" data-o="${k}">${l}</button>`).join(' ');
+  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{st.preset=b.dataset.p;[st.from,st.to]=presetRange(st.preset);syncDates();st.page=0;buttons();render();});
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.ct=b.dataset.c;st.page=0;buttons();render();});
+  document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{st.ot=b.dataset.o;st.page=0;buttons();render();});
+}
+function syncDates(){$('from').value=st.from;$('to').value=st.to;$('from').min=$('to').min=D.days[0];$('from').max=$('to').max=D.asof;}
+function matchPreset(){st.preset=null;for(const [k] of PRESETS){const [f,t]=presetRange(k);if(f===st.from&&t===st.to){st.preset=k;break;}}}
+function onDate(){let f=$('from').value,t=$('to').value;if(!f||!t)return;if(f<D.days[0])f=D.days[0];if(t>D.asof)t=D.asof;if(f>t)[f,t]=[t,f];st.from=f;st.to=t;matchPreset();syncDates();st.page=0;buttons();render();}
+
+document.addEventListener('mousemove',e=>{const r=e.target.closest&&e.target.closest('[data-tt]'),tt=$('tt');
+  if(!r){tt.style.display='none';return;}tt.textContent=r.dataset.tt;tt.style.display='block';
+  tt.style.left=Math.min(e.clientX+14,innerWidth-330)+'px';tt.style.top=(e.clientY+14)+'px';});
+
+fetch('customer-purchases-data.json?v=9531b25b401c').then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{
+  D=d;DAY0=Date.parse(D.days[0]+'T00:00:00Z');NDAYS=d2i(D.days[1])+1;
+  PDAY=new Int32Array(D.P[0].length);let acc=0;for(let k=0;k<PDAY.length;k++){acc+=D.P[0][k];PDAY[k]=acc;}
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get('from')&&h.get('to')){st.from=h.get('from')<D.days[0]?D.days[0]:h.get('from');st.to=h.get('to')>D.asof?D.asof:h.get('to');matchPreset();}
+  else [st.from,st.to]=presetRange(st.preset);
+  if(['all','new','ret'].includes(h.get('ct')))st.ct=h.get('ct');
+  if(['all','one','sub'].includes(h.get('ot')))st.ot=h.get('ot');
+  syncDates();$('from').onchange=onDate;$('to').onchange=onDate;buttons();render();
+}).catch(e=>{$('app').textContent='Could not load the order data ('+e.message+'). Try reloading the page.';});
+</script></body></html>
