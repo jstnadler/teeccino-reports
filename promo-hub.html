@@ -1478,6 +1478,8 @@ function tileHTML(c) {
   // Justin glances at. A count needs its basis.
   const oq = (c.openQuestions || []).filter(q => !q.resolution);
   const nBlock = oq.filter(q => q.blocking).length;
+  // 2026-11-23: a draft awaiting Justin's OK says so FIRST, before any health pip.
+  if (c.approvalStatus === 'pending') pips.push(`<span class="pip warn">⏳ PENDING APPROVAL</span>`);
   if (nDis)   pips.push(`<span class="pip bad">\u26d4 ${nDis} disagreement${nDis > 1 ? 's' : ''}</span>`);
   if (nDef)   pips.push(`<span class="pip bad">${nDef} defect${nDef > 1 ? 's' : ''}</span>`);
   if (nBlock) pips.push(`<span class="pip bad">${nBlock} blocking</span>`);
