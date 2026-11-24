@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales By ASIN, Last 30 Days &middot; Burke's Portal</title>
+<!-- Built by AmazonSmith 2026-11-24 from Burke's v3 "Amazon ASIN Sales YoY" sheet.
+     Static page; every number comes from sales-by-asin-30d-data.json, rebuilt daily by
+     clawd-amazonsmith/builders/build_burke_asin_30d.py. Do not hand-edit numbers here. -->
+<style>
+  :root { --bg:#14211a; --card:#1a2a20; --ink:#e8eaed; --muted:#9aa0a6;
+          --line:#294036; --gold:#D4A843; --s1:#2E9E6F; --band:#1d3026;
+          --good:#199e70; --bad:#e0644f; --input-bg:#12211a; }
+  html[data-portal-theme="light"] { --band:#f1f5f2; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:24px; }
+  body.has-portal-nav { padding-top:76px; }
+  .wrap { max-width:min(1500px,96vw); margin:0 auto; }
+  h1 { font-size:24px; margin:0 0 4px; } h1 .amz { color:var(--gold); }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:10px 0 18px; }
+  @media (max-width:900px){ .kpis { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .kpi .k { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .kpi .v { font-size:21px; font-weight:600; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .kpi .d { font-size:12.5px; color:var(--muted); margin-top:2px; font-variant-numeric:tabular-nums; }
+  .ctl { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 10px; }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; border-right:1px solid var(--line); }
+  .seg button:last-child { border-right:0; }
+  button { background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 12px;
+           font:inherit; font-size:13px; cursor:pointer; }
+  button:hover { border-color:var(--s1); }
+  .seg button.on { background:var(--s1); color:#fff; }
+  input[type=text] { background:var(--input-bg); color:var(--ink); border:1px solid var(--line); border-radius:6px;
+                     padding:6px 8px; font:inherit; font-size:13px; min-width:320px; }
+  label.chk { font-size:13px; color:var(--muted); }
+  .tbl-wrap { overflow:auto; max-height:78vh; border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums; }
+  th, td { padding:5px 10px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:11.5px; position:sticky; top:0; background:var(--card); cursor:pointer; z-index:1; }
+  th.grp { cursor:default; text-align:center; color:var(--ink); top:0; }
+  thead tr:nth-child(2) th { top:29px; }
+  th.sorted { color:var(--ink); }
+  td.l, th.l { text-align:left; }
+  td.desc { white-space:normal; min-width:300px; }
+  td.asin { font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+  td.asin a { color:inherit; text-decoration:none; border-bottom:1px dotted var(--muted); }
+  tr.band td { background:var(--band); }
+  tfoot td { font-weight:700; border-top:2px solid var(--line); position:sticky; bottom:0; background:var(--card); }
+  .up { color:var(--good); } .down { color:var(--bad); } .na { color:var(--muted); }
+  .tag { font-size:10.5px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:0 4px; margin-left:4px; }
+  .note { color:var(--muted); font-size:12.5px; margin:12px 0; line-height:1.55; }
+  footer { color:var(--muted); font-size:11.5px; margin:30px 0 10px; line-height:1.6; }
+</style></head>
+<body>
+<div id="portal-nav"></div>
+<script>
+  /* Portal-scoped nav (burke/_nav.html), never Justin's main hub nav. */
+  fetch('/teeccino-reports/burke/_nav.html').then(function(r){return r.text();}).then(function(html){
+    var el=document.getElementById('portal-nav'); el.innerHTML=html; document.body.classList.add('has-portal-nav');
+    el.querySelectorAll('script').forEach(function(s){var n=document.createElement('script'); if(s.src) n.src=s.src; else n.textContent=s.textContent; document.body.appendChild(n);});
+  }).catch(function(){});
+</script>
+<div class="wrap">
+  <h1><span class="amz">Amazon</span> Sales By ASIN, Last 30 Days</h1>
+  <div class="sub" id="sub">Loading…</div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="ctl">
+    <div class="seg" id="brandSeg">
+      <button data-v="WWB" class="on">WWB ASINs</button><button data-v="TEE">Teeccino ASINs</button><button data-v="ALL">Both</button>
+    </div>
+    <input type="text" id="find" placeholder="Find: ASIN, flavor, line or size (e.g. Mocha, 50 Count, B0DR3)">
+    <label class="chk"><input type="checkbox" id="grp" checked> Group by product</label>
+    <button id="csv">Download CSV</button>
+  </div>
+
+  <div class="tbl-wrap"><table id="t"></table></div>
+
+  <div class="note" id="note"></div>
+  <footer id="foot"></footer>
+</div>
+<script>
+(function(){
+  var D, brand='WWB', sortKey=null, sortDir=-1;
+  var $=function(id){return document.getElementById(id);};
+  var nf=new Intl.NumberFormat('en-US');
+  var mf=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});
+  var mf0=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fd(s,y){var p=s.split('-');return MON[+p[1]-1]+' '+(+p[2])+(y?', '+p[0]:'');}
+  function sgn(v,f){return (v>0?'+':v<0?'−':'')+f(Math.abs(v));}
+  function pct(a,b){ if(!a) return '<span class="na">n/a</span>'; var p=(b-a)/a*100;
+    return '<span class="'+(p>0?'up':p<0?'down':'')+'">'+sgn(p,function(x){return x.toFixed(1)+'%';})+'</span>'; }
+  function dif(a,b,f){ var d=b-a; return '<span class="'+(d>0?'up':d<0?'down':'')+'">'+sgn(d,f)+'</span>'; }
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+  fetch('sales-by-asin-30d-data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+    D=d; head(); kpis(); render();
+  }).catch(function(e){ $('sub').textContent='Could not load the data file: '+e; });
+
+  function head(){
+    var ty=fd(D.start)+' – '+fd(D.end,1), ly=fd(D.ly_start)+' – '+fd(D.ly_end,1);
+    $('sub').innerHTML='<b>'+ty+'</b> vs the same dates last year ('+ly+'). Ordered units and ordered product sales, US marketplace — the same numbers as Seller Central Business Reports. '+
+      'Updated every morning; the last '+D.lag_days+' days are left out because Amazon is still posting them.';
+    var n='Rows are grouped by product (every size and pack of a flavor sits together, biggest seller first), just like your v3 sheet. Untick “Group by product” to sort any column. '+
+      'Last year uses the same calendar dates, so the weekday mix and holiday timing can differ (e.g. Black Friday falls on a different date each year).';
+    if(D.lag_notes && D.lag_notes.length) n+=' <b>Today the window was moved back an extra day:</b> '+esc(D.lag_notes.join('; '))+'.';
+    $('note').innerHTML=n;
+    var c=D.check;
+    $('foot').innerHTML='Built '+esc(D.built)+'. Source: Amazon Sales &amp; Traffic report by child ASIN, pulled fresh each morning. '+
+      'Account total for the 30 days: '+nf.format(c.ty_units)+' units / '+mf0.format(c.ty_rev)+' (last year '+nf.format(c.ly_units)+' / '+mf0.format(c.ly_rev)+'). '+
+      'The ASIN rows can differ from that by a few dozen units because Amazon rolls up the two views separately.';
+  }
+  function sums(rows){ var s={u0:0,u1:0,r0:0,r1:0}; rows.forEach(function(r){s.u0+=r.u0;s.u1+=r.u1;s.r0+=r.r0;s.r1+=r.r1;}); return s; }
+  function kpis(){
+    var parts=[['All Amazon',D.rows],['WWB',D.rows.filter(function(r){return r.b==='WWB';})],['Teeccino',D.rows.filter(function(r){return r.b==='TEE';})]];
+    $('kpis').innerHTML=parts.map(function(p){ var s=sums(p[1]);
+      return '<div class="card kpi"><div class="k">'+p[0]+' · revenue</div><div class="v">'+mf0.format(s.r1)+' '+pct(s.r0,s.r1)+'</div>'+
+        '<div class="d">Last year '+mf0.format(s.r0)+' · Units '+nf.format(s.u1)+' vs '+nf.format(s.u0)+' ('+pct(s.u0,s.u1)+')</div></div>';
+    }).join('');
+  }
+  function rowsNow(){
+    var q=$('find').value.trim().toLowerCase();
+    return D.rows.filter(function(r){ return (brand==='ALL'||r.b===brand) &&
+      (!q || (r.a+' '+r.d+' '+r.it).toLowerCase().indexOf(q)>=0); });
+  }
+  function ordered(rows){
+    var k=function(r){return [r.r1,r.r0];};
+    if($('grp').checked){
+      var fam={}; rows.forEach(function(r){var f=(brand==='ALL'?r.b+'|':'')+r.f;(fam[f]=fam[f]||[]).push(r);});
+      var best=function(g){return g.reduce(function(m,r){return Math.max(m,r.r1);},0)*1e6+g.reduce(function(m,r){return Math.max(m,r.r0);},0)/1e3;};
+      var gs=Object.keys(fam).map(function(f){return fam[f].sort(function(a,b){return (b.r1-a.r1)||(b.r0-a.r0);});});
+      gs.sort(function(a,b){return best(b)-best(a);});
+      var out=[]; gs.forEach(function(g,i){g.forEach(function(r){out.push([r,i%2===1]);});}); return out;
+    }
+    var key=sortKey||'r1', f={du:function(r){return r.u1-r.u0;},dr:function(r){return r.r1-r.r0;},
+      pu:function(r){return r.u0?(r.u1-r.u0)/r.u0:-1e9;},pr:function(r){return r.r0?(r.r1-r.r0)/r.r0:-1e9;}}[key]||function(r){return r[key];};
+    return rows.slice().sort(function(a,b){var x=f(a),y=f(b); if(typeof x==='string') return sortDir*x.localeCompare(y); return sortDir*(x-y);}).map(function(r){return [r,false];});
+  }
+  var COLS=[['a','ASIN','l'],['d','Description','l'],['u0','Last year'],['u1','Last 30 days'],['du','Change'],['pu','% Change'],
+            ['r0','Last year'],['r1','Last 30 days'],['dr','Change'],['pr','% Change']];
+  function render(){
+    var rows=rowsNow(), o=ordered(rows), s=sums(rows);
+    var h='<thead><tr><th class="grp l" colspan="2"></th><th class="grp" colspan="4">Units</th><th class="grp" colspan="4">Revenue</th></tr><tr>'+
+      COLS.map(function(c){return '<th data-k="'+c[0]+'" class="'+(c[2]||'')+(sortKey===c[0]&&!$('grp').checked?' sorted':'')+'">'+c[1]+(sortKey===c[0]&&!$('grp').checked?(sortDir<0?' ▾':' ▴'):'')+'</th>';}).join('')+'</tr></thead><tbody>';
+    h+=o.map(function(x){var r=x[0];
+      return '<tr'+(x[1]?' class="band"':'')+'><td class="asin l"><a href="https://www.amazon.com/dp/'+r.a+'" target="_blank" rel="noopener">'+r.a+'</a></td>'+
+        '<td class="desc l"'+(r.it?' title="'+esc(r.it)+'"':'')+'>'+esc(r.d)+(brand==='ALL'?'<span class="tag">'+(r.b==='TEE'?'TCN':r.b)+'</span>':'')+(r.disc?'<span class="tag">discontinued</span>':'')+'</td>'+
+        '<td>'+nf.format(r.u0)+'</td><td>'+nf.format(r.u1)+'</td><td>'+dif(r.u0,r.u1,nf.format)+'</td><td>'+pct(r.u0,r.u1)+'</td>'+
+        '<td>'+mf.format(r.r0)+'</td><td>'+mf.format(r.r1)+'</td><td>'+dif(r.r0,r.r1,mf.format)+'</td><td>'+pct(r.r0,r.r1)+'</td></tr>';}).join('');
+    h+='</tbody><tfoot><tr><td class="l">TOTAL</td><td class="l">'+rows.length+' ASINs</td><td>'+nf.format(s.u0)+'</td><td>'+nf.format(s.u1)+'</td><td>'+dif(s.u0,s.u1,nf.format)+'</td><td>'+pct(s.u0,s.u1)+'</td>'+
+       '<td>'+mf.format(s.r0)+'</td><td>'+mf.format(s.r1)+'</td><td>'+dif(s.r0,s.r1,mf.format)+'</td><td>'+pct(s.r0,s.r1)+'</td></tr></tfoot>';
+    $('t').innerHTML=h;
+    $('t').querySelectorAll('th[data-k]').forEach(function(th){ th.onclick=function(){
+      var k=th.getAttribute('data-k'); if(sortKey===k) sortDir=-sortDir; else {sortKey=k; sortDir=(k==='a'||k==='d')?1:-1;}
+      $('grp').checked=false; render(); }; });
+  }
+  document.querySelectorAll('#brandSeg button').forEach(function(b){ b.onclick=function(){
+    document.querySelectorAll('#brandSeg button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); brand=b.getAttribute('data-v'); render(); }; });
+  $('find').oninput=render; $('grp').onchange=render;
+  $('csv').onclick=function(){
+    var rows=ordered(rowsNow()).map(function(x){return x[0];});
+    var L=[['ASIN','Brand','Description','Product catalog item','Units '+D.ly_start+' to '+D.ly_end,'Units '+D.start+' to '+D.end,'Revenue '+D.ly_start+' to '+D.ly_end,'Revenue '+D.start+' to '+D.end]];
+    rows.forEach(function(r){L.push([r.a,r.b==='TEE'?'Teeccino':r.b,r.d,r.it,r.u0,r.u1,r.r0.toFixed(2),r.r1.toFixed(2)]);});
+    var csv=L.map(function(l){return l.map(function(v){v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}).join('\r\n');
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
+    a.download='Amazon Sales By ASIN '+D.start+' to '+D.end+'.csv'; a.click();
+  };
+})();
+</script>
+</body></html>
