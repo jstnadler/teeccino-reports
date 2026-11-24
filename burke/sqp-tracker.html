@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search Query Tracker — Amazon</title>
+<!-- Built by AmazonSmith 2026-11-24. Automates Burke's Google Sheet "Teeccino - SQP Tracker".
+     Static page; all numbers come from sqp-tracker-data.json, rebuilt by
+     clawd-amazonsmith/builders/build_burke_sqp_tracker.py. Do not hand-edit numbers here.
+     Series color #2E9E6F is the dataviz-validated s1 of this portal (see amazon-funnel.html). -->
+<style>
+  :root { --bg:#14211a; --card:#1a2a20; --ink:#e8eaed; --muted:#9aa0a6;
+          --line:#294036; --gold:#D4A843; --s1:#2E9E6F; --s2:#8C74E0;
+          --good:#199e70; --warn:#bd8a2c; --bad:#e0644f; --grid:#22332a;
+          --prov-bg:#12211a; --prov-ink:#d6efe3; --input-bg:#12211a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:24px; }
+  body.has-portal-nav { padding-top:76px; }
+  .wrap { max-width:min(1720px,96vw); margin:0 auto; }
+  h1 { font-size:24px; margin:0 0 4px; } h1 .amz { color:var(--gold); }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:14px; }
+  h2 { font-size:16px; border-bottom:1px solid var(--line); padding-bottom:6px; margin:30px 0 10px; }
+  h2 .tag { font-size:11.5px; color:var(--muted); font-weight:400; }
+  .note { color:var(--muted); font-size:12.5px; margin:4px 0 10px; }
+  .prov { background:var(--prov-bg); border:1px solid var(--good); border-radius:8px; padding:10px 14px;
+          font-size:12.5px; color:var(--prov-ink); margin:10px 0 14px; line-height:1.55; }
+  .warnbox { border:1px solid var(--warn); border-left:4px solid var(--warn); border-radius:8px;
+             padding:10px 14px; font-size:12.5px; margin:10px 0 14px; line-height:1.55; }
+  .warnbox b { color:var(--warn); }
+  .panel { display:grid; grid-template-columns: 1.1fr 1.4fr 1.3fr; gap:14px; }
+  @media (max-width:1100px){ .panel { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  label.lbl { display:block; font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0 0 4px; }
+  select, textarea, input[type=text] { width:100%; background:var(--input-bg); color:var(--ink); border:1px solid var(--line);
+         border-radius:6px; padding:6px 8px; font:inherit; font-size:13px; }
+  textarea { resize:vertical; }
+  .row { display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:140px; }
+  button { background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:6px 10px;
+           font:inherit; font-size:12.5px; cursor:pointer; }
+  button:hover { border-color:var(--s1); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; border-right:1px solid var(--line); }
+  .seg button:last-child { border-right:0; }
+  .seg button.on { background:var(--s1); color:#fff; }
+  .asinlist { max-height:170px; overflow:auto; border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:12.5px; }
+  .asinlist label { display:flex; gap:6px; align-items:flex-start; padding:2px 0; cursor:pointer; }
+  .asinlist .k { color:var(--muted); font-size:11px; }
+  .tagb { font-size:10px; border:1px solid var(--line); border-radius:4px; padding:0 4px; color:var(--muted); }
+  .matched { font-size:12px; color:var(--muted); max-height:90px; overflow:auto; margin-top:6px; }
+  .tbl-wrap { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  th, td { padding:5px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:11.5px; position:sticky; top:0; background:var(--card); }
+  th.grp { text-align:center; border-bottom:1px solid var(--line); color:var(--ink); }
+  td:first-child, th:first-child { text-align:left; }
+  td.kw { text-align:left; white-space:normal; min-width:180px; }
+  td.na { color:var(--muted); }
+  .up { color:var(--good); } .down { color:var(--bad); }
+  tr.lat td { font-weight:600; }
+  .charts { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:1100px){ .charts { grid-template-columns:1fr; } }
+  .chart h3 { font-size:13px; margin:0 0 2px; } .chart .cs { font-size:11.5px; color:var(--muted); margin-bottom:6px; }
+  svg text { fill:var(--muted); font-size:10.5px; }
+  #tip { position:fixed; pointer-events:none; background:var(--card); border:1px solid var(--line); border-radius:6px;
+         padding:6px 9px; font-size:12px; display:none; z-index:50; box-shadow:0 4px 14px rgba(0,0,0,.3); }
+  .drv { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+  .kpi .k { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .kpi .v { font-size:21px; font-weight:600; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .kpi .d { font-size:12px; color:var(--muted); margin-top:2px; }
+  footer { color:var(--muted); font-size:11.5px; margin:36px 0 10px; }
+</style></head>
+<body>
+<div id="portal-nav"></div>
+<script>
+  /* Portal-scoped nav (burke/_nav.html), never Justin's main hub nav. */
+  fetch('/teeccino-reports/burke/_nav.html').then(function(r){return r.text();}).then(function(html){
+    var el=document.getElementById('portal-nav'); el.innerHTML=html; document.body.classList.add('has-portal-nav');
+    el.querySelectorAll('script').forEach(function(s){var n=document.createElement('script'); if(s.src) n.src=s.src; else n.textContent=s.textContent; document.body.appendChild(n);});
+  }).catch(function(){});
+</script>
+<div class="wrap">
+  <h1><span class="amz">Amazon</span> Search Query Tracker</h1>
+  <div class="sub">Your SQP Tracker sheet, automated. Pick a keyword group, see monthly search volume, our share, month-over-month and year-over-year, and what drove the change. <span id="built"></span></div>
+
+  <div class="panel">
+    <div class="card">
+      <label class="lbl">Keyword group</label>
+      <div class="row"><div><select id="preset"></select></div></div>
+      <label class="lbl">Search terms (one per line, * = wildcard, like your sheet)</label>
+      <textarea id="terms" rows="7" spellcheck="false"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="saveGrp">Save as group…</button><button id="delGrp">Delete group</button>
+      </div>
+      <div class="matched" id="matched"></div>
+    </div>
+    <div class="card">
+      <label class="lbl">Data source</label>
+      <div class="row"><div class="seg" id="srcSeg">
+        <button data-v="api" class="on">Our products — automatic</button>
+        <button data-v="sheet">Your sheet — Teeccino brand view</button>
+      </div></div>
+      <div id="apiCtl">
+        <label class="lbl">Brand</label>
+        <div class="row"><div class="seg" id="brandSeg">
+          <button data-v="WWB">WWB</button><button data-v="TEE">TCN</button><button data-v="ALL" class="on">Both</button>
+        </div></div>
+        <label class="lbl">Products (leave all unticked = every product of that brand)</label>
+        <div class="asinlist" id="asins"></div>
+        <div class="row" style="margin-top:6px"><button id="asinNone">Clear products</button></div>
+      </div>
+      <div id="srcNote" class="note"></div>
+    </div>
+    <div class="card">
+      <label class="lbl">Notes / findings (saved in this browser, per group)</label>
+      <textarea id="notes" rows="11" placeholder="Your notes for this keyword group…"></textarea>
+    </div>
+  </div>
+
+  <div id="cover"></div>
+
+  <h2>Monthly <span class="tag">totals are the whole Amazon market for these searches; "Ours" is our products</span></h2>
+  <div class="card tbl-wrap"><table id="tMonthly"></table></div>
+
+  <h2>Charts</h2>
+  <div class="charts">
+    <div class="card chart"><h3>Search volume</h3><div class="cs">All shoppers, these searches</div><div id="c1"></div></div>
+    <div class="card chart"><h3>Our clicks</h3><div class="cs">Hover for market total and our share</div><div id="c2"></div></div>
+    <div class="card chart"><h3>Our purchases</h3><div class="cs">Hover for market total and our share</div><div id="c3"></div></div>
+  </div>
+
+  <h2>What's driving it <span class="tag">latest month vs the same month last year</span></h2>
+  <div id="drivers"></div>
+
+  <h2>By keyword <span class="tag" id="kwTag"></span></h2>
+  <div class="row" style="max-width:340px"><div><label class="lbl">Month</label><select id="kwMonth"></select></div></div>
+  <div class="card tbl-wrap"><table id="tKw"></table></div>
+
+  <h2>Month-over-month trend <span class="tag">% change vs the prior month</span></h2>
+  <div class="card tbl-wrap"><table id="tMoM"></table></div>
+
+  <h2>Year-over-year trend <span class="tag">% change vs the same month a year earlier</span></h2>
+  <div class="card tbl-wrap"><table id="tYoY"></table></div>
+
+  <div class="prov" id="prov"></div>
+  <footer>Burke's private portal · built by AmazonSmith · read-only, nothing on Amazon is changed from this page</footer>
+</div>
+<div id="tip"></div>
+
+<script>
+(function(){
+const PRESETS = [
+  {name:'Hibiscus (WWB)', src:'api', brand:'WWB', asins:['B0DTVF3RT1','B0F8PBHYX6'],
+   terms:['hibiscus tea loose leaf','hibiscus tea','organic hibiscus tea loose leaf','loose leaf hibiscus tea','hibiscus tea organic','hibiscus leaves','hibiscus tea organic loose leaf','hibiscus flowers','organic hibiscus tea','hibiscus','organic hibiscus']},
+  {name:'Branded (from your sheet)', src:'sheet', brand:'TEE', asins:[], terms:['*teeccino*','*teecino*','*teechino*','*teccino*','*teaccino*']},
+  {name:'Chicory (from your sheet)', src:'sheet', brand:'ALL', asins:[], terms:['chicory']},
+];
+const LS='burkeSqpTracker.v1';
+const store = JSON.parse(localStorage.getItem(LS)||'{"groups":[],"notes":{}}');
+const save = ()=>localStorage.setItem(LS, JSON.stringify(store));
+let D, st={src:'api', brand:'ALL', asins:new Set(), terms:[], group:PRESETS[0].name};
+const $=id=>document.getElementById(id);
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const mlab=m=>MN[+m.slice(5)-1]+' '+m.slice(0,4);
+const fmt=v=>v==null||isNaN(v)?'—':Math.round(v).toLocaleString('en-US');
+const pct=v=>v==null||!isFinite(v)?'—':(v*100).toFixed(1)+'%';
+const chg=v=>v==null||!isFinite(v)?'<span class="na">—</span>':`<span class="${v>=0?'up':'down'}">${v>=0?'+':'−'}${Math.abs(v*100).toFixed(1)}%</span>`;
+const money=v=>v==null?'—':'$'+Math.round(v).toLocaleString('en-US');
+const prevM=(m,k)=>{let y=+m.slice(0,4),mo=+m.slice(5)-k; while(mo<1){mo+=12;y--;} return y+'-'+String(mo).padStart(2,'0');};
+
+function allGroups(){ return PRESETS.concat(store.groups); }
+function termRe(t){ t=t.trim().toLowerCase(); if(!t) return null;
+  const esc=t.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*').replace(/\?/g,'.'); return new RegExp('^'+esc+'$'); }
+
+fetch('sqp-tracker-data.json').then(r=>r.json()).then(d=>{ D=d; index(); initUI(); render(); })
+  .catch(e=>{ $('cover').innerHTML='<div class="warnbox"><b>Could not load the data file.</b> '+e+'</div>'; });
+
+function index(){
+  const n=D.queries.length;
+  D.mByQ=Array.from({length:n},()=>[]); D.oByQ=Array.from({length:n},()=>[]);
+  D.sByQ=Array.from({length:n},()=>[]); D.aByQ=Array.from({length:n},()=>[]);
+  D.api.market.forEach(r=>D.mByQ[r[1]].push(r)); D.api.ours.forEach(r=>D.oByQ[r[1]].push(r));
+  D.sheet.rows.forEach(r=>D.sByQ[r[1]].push(r)); D.ads.rows.forEach(r=>D.aByQ[r[1]].push(r));
+  D.asinIdx={}; D.asins.forEach((a,i)=>D.asinIdx[a.asin]=i);
+  $('built').textContent='Data rebuilt '+D.built+'.';
+}
+
+function initUI(){
+  fillPresets();
+  $('preset').onchange=()=>applyGroup($('preset').value);
+  $('terms').oninput=()=>{ st.terms=$('terms').value.split('\n'); render(); };
+  document.querySelectorAll('#srcSeg button').forEach(b=>b.onclick=()=>{st.src=b.dataset.v; render();});
+  document.querySelectorAll('#brandSeg button').forEach(b=>b.onclick=()=>{st.brand=b.dataset.v; st.asins.clear(); render();});
+  $('asinNone').onclick=()=>{st.asins.clear(); render();};
+  $('notes').oninput=()=>{ store.notes[st.group]=$('notes').value; save(); };
+  $('saveGrp').onclick=()=>{ const nm=prompt('Name for this keyword group:', st.group.endsWith('(WWB)')?'':st.group); if(!nm) return;
+    store.groups=store.groups.filter(g=>g.name!==nm);
+    store.groups.push({name:nm, src:st.src, brand:st.brand, asins:[...st.asins].map(i=>D.asins[i].asin), terms:st.terms.filter(t=>t.trim())});
+    if(store.notes[st.group] && !store.notes[nm]) store.notes[nm]=store.notes[st.group];
+    save(); fillPresets(); $('preset').value=nm; st.group=nm; };
+  $('delGrp').onclick=()=>{ if(PRESETS.some(p=>p.name===st.group)){alert('Built-in groups can\'t be deleted.');return;}
+    store.groups=store.groups.filter(g=>g.name!==st.group); save(); fillPresets(); applyGroup(PRESETS[0].name); };
+  $('kwMonth').onchange=()=>renderKw();
+  window.addEventListener('burke-theme-change', ()=>render());
+  const u=new URLSearchParams(location.search).get('group');
+  applyGroup(u && allGroups().some(g=>g.name===u)?u:PRESETS[0].name);
+}
+function fillPresets(){ $('preset').innerHTML=allGroups().map(g=>`<option>${g.name.replace(/</g,'&lt;')}</option>`).join(''); }
+function applyGroup(nm){ const g=allGroups().find(x=>x.name===nm); if(!g) return;
+  st.group=nm; st.src=g.src; st.brand=g.brand; st.terms=g.terms.slice();
+  st.asins=new Set(g.asins.map(a=>D.asinIdx[a]).filter(i=>i!=null)); st.missingAsins=g.asins.filter(a=>D.asinIdx[a]==null);
+  $('preset').value=nm; $('terms').value=st.terms.join('\n'); $('notes').value=store.notes[nm]||''; render(); }
+
+function matchedQueries(){
+  const res=st.terms.map(termRe).filter(Boolean); const out=[];
+  if(!res.length) return out;
+  D.queries.forEach((q,i)=>{ if(res.some(r=>r.test(q))) out.push(i); });
+  return out;
+}
+function asinOn(ai){ const a=D.asins[ai];
+  if(st.asins.size) return st.asins.has(ai);
+  return st.brand==='ALL' || a.brand===st.brand; }
+
+function compute(qs){
+  // returns {months:[], rows:{m:{vol,imp,clk,atc,pur,bimp,bclk,batc,bpur}}, perQ:{q:{m:{...}}}}
+  const rows={}, perQ={};
+  const get=(o,m)=>o[m]||(o[m]={vol:0,imp:0,clk:0,atc:0,pur:0,bimp:0,bclk:0,batc:0,bpur:0,aimp:0,aclk:0,aspend:0,apur:0,asales:0});
+  let months;
+  if(st.src==='api'){
+    months=D.api.months;
+    qs.forEach(q=>{ const pq=perQ[q]={};
+      D.mByQ[q].forEach(r=>{const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m); x.vol+=r[2];x.imp+=r[3];x.clk+=r[4];x.atc+=r[5];x.pur+=r[6];});});
+      D.oByQ[q].forEach(r=>{ if(!asinOn(r[2])) return; const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m); x.bimp+=r[3];x.bclk+=r[4];x.batc+=r[5];x.bpur+=r[6];});});
+    });
+  } else {
+    months=D.sheet.months;
+    qs.forEach(q=>{ const pq=perQ[q]={};
+      D.sByQ[q].forEach(r=>{const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m);
+        x.vol+=r[2];x.imp+=r[3];x.bimp+=r[4];x.clk+=r[5];x.bclk+=r[6];x.atc+=r[7];x.batc+=r[8];x.pur+=r[9];x.bpur+=r[10];});});
+    });
+  }
+  // ads by campaign brand
+  qs.forEach(q=>{ const pq=perQ[q]||(perQ[q]={});
+    D.aByQ[q].forEach(r=>{ const b=r[2]; const want= st.src==='sheet' ? 'TEE' : st.brand;
+      if(want!=='ALL' && b!==want) return; const m=D.ads.months[r[0]];
+      [rows,pq].forEach(o=>{const x=get(o,m); x.aimp+=r[3];x.aclk+=r[4];x.aspend+=r[5];x.apur+=r[6];x.asales+=r[7];});});
+  });
+  return {months, rows, perQ};
+}
+
+const COLS=[['vol','Search Volume'],['imp','Impressions'],['clk','Clicks'],['atc','Add to Cart'],['pur','Purchases']];
+const BC=[['bimp','Impressions'],['bclk','Clicks'],['batc','Add to Cart'],['bpur','Purchases']];
+const SH=[['imp','bimp','Impr.'],['clk','bclk','Clicks'],['atc','batc','Add to Cart'],['pur','bpur','Purchases']];
+function head(trendLabel){
+  return `<thead><tr><th></th><th></th><th class="grp" colspan="4">TOTAL (market)</th><th class="grp" colspan="4">OURS</th><th class="grp" colspan="4">OUR SHARE %</th>${trendLabel?'':'<th class="grp" colspan="4">OUR ADS on these terms</th>'}</tr>
+  <tr><th>Month</th>${COLS.map(c=>`<th>${c[1]}</th>`).join('')}${BC.map(c=>`<th>${c[1]}</th>`).join('')}${SH.map(c=>`<th>${c[2]}</th>`).join('')}
+  ${trendLabel?'':'<th>Ad clicks</th><th>Ad spend</th><th>Ad purchases</th><th>Ad sales</th>'}</tr></thead>`;
+}
+const share=(x,a,b)=>x[a]?x[b]/x[a]:null;
+const adsHave=m=>D.ads.months.includes(m);
+
+function render(){
+  if(!D) return;
+  document.querySelectorAll('#srcSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.src));
+  document.querySelectorAll('#brandSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.brand));
+  $('apiCtl').style.display=st.src==='api'?'':'none';
+  renderAsins();
+  const qs=matchedQueries(); st.qs=qs;
+  const C=compute(qs); st.C=C;
+  const withData=qs.filter(q=>Object.values(C.perQ[q]||{}).some(x=>x.vol||x.bimp||x.bpur));
+  $('matched').innerHTML = qs.length ? `<b>${withData.length}</b> search term${withData.length===1?'':'s'} with data: `+withData.slice(0,60).map(q=>D.queries[q]).join(' · ')+(withData.length>60?' …':'') : 'No terms entered.';
+  coverage(C, qs);
+  const ms=C.months.filter(m=>C.rows[m]);
+  const months=C.months;
+  // monthly
+  let h=head(false)+'<tbody>';
+  months.forEach((m,i)=>{ const x=C.rows[m]; const last=i===months.length-1;
+    if(!x){ h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+'<td class="na">—</td>'.repeat(17)+'</tr>'; return; }
+    h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+COLS.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')+BC.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')
+      +SH.map(c=>`<td>${pct(share(x,c[0],c[1]))}</td>`).join('')
+      +(adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td><td>${money(x.asales)}</td>`:'<td class="na" colspan="4" style="text-align:center">no ad data</td>')+'</tr>'; });
+  $('tMonthly').innerHTML=h+'</tbody>';
+  // trends
+  const trend=(k,id)=>{ let t=head(true)+'<tbody>';
+    months.forEach(m=>{ const x=C.rows[m], y=C.rows[prevM(m,k)];
+      if(!x||!y){ return; }
+      const r=(a,b)=>b?(a-b)/b:null; const rs=(c)=>{const s1=share(x,c[0],c[1]), s0=share(y,c[0],c[1]); return s1==null||s0==null||!s0?null:(s1-s0)/s0;};
+      t+=`<tr><td>${mlab(m)}</td>`+COLS.map(c=>`<td>${chg(r(x[c[0]],y[c[0]]))}</td>`).join('')+BC.map(c=>`<td>${chg(r(x[c[0]],y[c[0]]))}</td>`).join('')+SH.map(c=>`<td>${chg(rs(c))}</td>`).join('')+'</tr>'; });
+    if(t.endsWith('<tbody>')) t+=`<tr><td class="na" colspan="14">Not enough months yet for this comparison.</td></tr>`;
+    $(id).innerHTML=t+'</tbody>'; };
+  trend(1,'tMoM'); trend(12,'tYoY');
+  // charts
+  const cm=months.slice(-24);
+  bars('c1',cm.map(m=>({m, v:C.rows[m]?C.rows[m].vol:null, tip:C.rows[m]?`Search volume ${fmt(C.rows[m].vol)}`:'no data'})));
+  bars('c2',cm.map(m=>{const x=C.rows[m]; return {m, v:x?x.bclk:null, tip:x?`Our clicks ${fmt(x.bclk)}<br>Market ${fmt(x.clk)}<br>Our share ${pct(share(x,'clk','bclk'))}`:'no data'};}));
+  bars('c3',cm.map(m=>{const x=C.rows[m]; return {m, v:x?x.bpur:null, tip:x?`Our purchases ${fmt(x.bpur)}<br>Market ${fmt(x.pur)}<br>Our share ${pct(share(x,'pur','bpur'))}`:'no data'};}));
+  drivers(C);
+  const opts=months.filter(m=>C.rows[m]).slice().reverse();
+  const cur=$('kwMonth').value; $('kwMonth').innerHTML=opts.map(m=>`<option value="${m}">${mlab(m)}</option>`).join('');
+  if(opts.includes(cur)) $('kwMonth').value=cur;
+  renderKw();
+  prov();
+}
+
+function renderAsins(){
+  if(st.src!=='api') return;
+  const list=D.asins.map((a,i)=>[a,i]).filter(([a])=>st.brand==='ALL'||a.brand===st.brand)
+    .sort((x,y)=>(st.asins.has(y[1])-st.asins.has(x[1]))||String(x[0].item||'~').localeCompare(String(y[0].item||'~')));
+  $('asins').innerHTML=list.map(([a,i])=>`<label><input type="checkbox" data-i="${i}" ${st.asins.has(i)?'checked':''}>
+    <span>${a.item?`${a.item} (${a.name||'name not recorded in the catalog'})`:'Item not mapped'} <span class="tagb">${a.brand==='TEE'?'TCN':a.brand==='WWB'?'WWB':'?'}</span><br><span class="k">${a.asin}</span></span></label>`).join('');
+  $('asins').querySelectorAll('input').forEach(cb=>cb.onchange=()=>{ const i=+cb.dataset.i; cb.checked?st.asins.add(i):st.asins.delete(i); render(); });
+}
+
+function coverage(C, qs){
+  let html='';
+  if(st.src==='api'){
+    const miss=(st.missingAsins||[]);
+    if(miss.length) html+=`<div class="warnbox"><b>I don't have keyword data for ${miss.join(', ')}.</b> ${miss.includes('B0F8PBHYX6')?'B0F8PBHYX6 is 10044 (the 1 lb Hibiscus). ':''}Amazon only gives us search-query data for the products we request each month (about 40), and this one isn't in that list yet. Its sales still count in your other reports; it just has no keyword rows here. The ad columns do include its ads (they cover every campaign of the brand), which is why ad clicks can be higher than "our clicks".</div>`;
+    html+=`<div class="prov"><b>Automatic source:</b> Amazon's Search Query Performance report, by product, ${mlab(D.api.months[0])} to ${mlab(D.api.months[D.api.months.length-1])}. "Ours" adds up our products' numbers for each search. It runs <b>lower than Seller Central's brand view</b>, because Amazon only returns each product's top 100 searches and we request about 40 products a month. For example, Sep 2026 searches for "teeccino": your sheet shows 622 Teeccino purchases, this source 376. Use it for trends and share movement; use your sheet's numbers when you need the full brand total. Year-over-year is only possible from Sep 2026 on.</div>`;
+  } else {
+    html+=`<div class="prov"><b>Your sheet:</b> the Seller Central brand-view downloads you paste into the DATA tab (Teeccino brand only, top 1,000 searches a month), ${D.sheet.months.length?mlab(D.sheet.months[0])+' to '+mlab(D.sheet.months[D.sheet.months.length-1]):'none'}. Re-read from your Google Sheet every night, so a new month shows up here the day after you paste it. Worldwide Botanicals isn't in it; switch to the automatic source for WWB.${D.sheet.ok?'':' <b>'+(D.sheet.note||'')+'</b>'}</div>`;
+  }
+  $('cover').innerHTML=html;
+  $('srcNote').textContent = st.src==='api' ? 'Refreshes on its own every night.' : 'Updates when you paste a new month into your sheet.';
+}
+
+function bars(id, pts){
+  const W=520,H=210,L=46,R=8,T=10,B=34; const el=$(id);
+  const vals=pts.map(p=>p.v).filter(v=>v!=null); const mx=Math.max(1,...vals);
+  const step=niceStep(mx/4); const top=Math.ceil(mx/step)*step;
+  const n=pts.length, bw=(W-L-R)/Math.max(n,1), y=v=>T+(H-T-B)*(1-v/top);
+  const cs=getComputedStyle(document.body); const s1=cs.getPropertyValue('--s1').trim()||'#2E9E6F', grid=cs.getPropertyValue('--grid').trim()||'#22332a';
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="bar chart">`;
+  for(let v=0; v<=top+1e-9; v+=step){ s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="${grid}" stroke-width="1"/><text x="${L-6}" y="${y(v)+3}" text-anchor="end">${abbr(v)}</text>`; }
+  pts.forEach((p,i)=>{ const x=L+i*bw; const w=Math.max(2,bw-2);
+    if(p.v!=null && p.v>0){ const yy=y(p.v), hh=H-B-yy; const r=Math.min(4,w/2,hh);
+      s+=`<path d="M${x+1},${H-B} V${yy+r} Q${x+1},${yy} ${x+1+r},${yy} H${x+1+w-r} Q${x+1+w},${yy} ${x+1+w},${yy+r} V${H-B} Z" fill="${s1}"/>`; }
+    s+=`<rect x="${x}" y="${T}" width="${bw}" height="${H-T-B}" fill="transparent" data-tip="${mlab(p.m)}<br>${p.tip}"/>`;
+    if(n<=14 || i%2===(n-1)%2) s+=`<text x="${x+bw/2}" y="${H-B+13}" text-anchor="middle">${MN[+p.m.slice(5)-1]}</text>`;
+    if(p.m.endsWith('-01')||i===0) s+=`<text x="${x+bw/2}" y="${H-B+26}" text-anchor="middle">${p.m.slice(0,4)}</text>`;
+  });
+  el.innerHTML=s+'</svg>';
+  el.querySelectorAll('[data-tip]').forEach(r=>{ r.onmousemove=e=>{const t=$('tip'); t.innerHTML=r.dataset.tip; t.style.display='block'; t.style.left=(e.clientX+12)+'px'; t.style.top=(e.clientY+12)+'px';};
+    r.onmouseleave=()=>$('tip').style.display='none'; });
+}
+function niceStep(x){ const p=Math.pow(10,Math.floor(Math.log10(x||1))); const f=x/p; return (f<=1?1:f<=2?2:f<=5?5:10)*p; }
+function abbr(v){ return v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?(v/1e3).toFixed(v%1e3?1:0)+'k':String(v); }
+
+function drivers(C){
+  const ms=C.months.filter(m=>C.rows[m]); const m=ms[ms.length-1];
+  if(!m){ $('drivers').innerHTML='<div class="note">No data for these terms.</div>'; return; }
+  const x=C.rows[m], ly=C.rows[prevM(m,12)], pm=C.rows[prevM(m,1)];
+  let h='<div class="drv">';
+  const k=(t,v,d)=>`<div class="card kpi"><div class="k">${t}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  if(!ly){
+    h+=k('Our purchases, '+mlab(m), fmt(x.bpur), pm?`${mlab(prevM(m,1))}: ${fmt(pm.bpur)}`:'');
+    h+='</div><div class="note">There is no '+mlab(prevM(m,12))+' in this source yet, so I can\'t split the change into market vs share. '+(st.src==='api'?'The automatic source starts Sep 2025.':'')+'</div>';
+    $('drivers').innerHTML=h; return;
+  }
+  const s1=x.pur?x.bpur/x.pur:0, s0=ly.pur?ly.bpur/ly.pur:0;
+  const market=(x.pur-ly.pur)*s0, shareE=(s1-s0)*x.pur, tot=x.bpur-ly.bpur;
+  h+=k('Our purchases, '+mlab(m), fmt(x.bpur), `${mlab(prevM(m,12))}: ${fmt(ly.bpur)} (${tot>=0?'+':''}${fmt(tot)})`);
+  h+=k('From market size', (market>=0?'+':'')+fmt(market), `Market purchases on these searches ${fmt(ly.pur)} → ${fmt(x.pur)}, at last year's share`);
+  h+=k('From our share', (shareE>=0?'+':'')+fmt(shareE), `Our purchase share ${pct(s0)} → ${pct(s1)}`);
+  h+=k('Search volume', fmt(x.vol), `${mlab(prevM(m,12))}: ${fmt(ly.vol)} (${chg(ly.vol?(x.vol-ly.vol)/ly.vol:null)})`);
+  const cs1=share(x,'clk','bclk'), cs0=share(ly,'clk','bclk'), cv1=x.bclk?x.bpur/x.bclk:null, cv0=ly.bclk?ly.bpur/ly.bclk:null;
+  h+=k('Our click share', pct(cs1), `${mlab(prevM(m,12))}: ${pct(cs0)}`);
+  h+=k('Our purchases per click', pct(cv1), `${mlab(prevM(m,12))}: ${pct(cv0)}`);
+  h+='</div>';
+  // biggest keyword movers
+  const mv=st.qs.map(q=>{const a=(C.perQ[q]||{})[m], b=(C.perQ[q]||{})[prevM(m,12)]; return {q, d:(a?a.bpur:0)-(b?b.bpur:0), a, b};}).filter(o=>o.d).sort((p,q)=>p.d-q.d);
+  const lose=mv.slice(0,5), gain=mv.slice(-5).reverse().filter(o=>o.d>0);
+  const li=o=>`<li>${D.queries[o.q]}: ${o.d>0?'+':''}${fmt(o.d)} purchases (share ${pct(o.b&&o.b.pur?o.b.bpur/o.b.pur:null)} → ${pct(o.a&&o.a.pur?o.a.bpur/o.a.pur:null)}; market ${fmt(o.b?o.b.pur:0)} → ${fmt(o.a?o.a.pur:0)})</li>`;
+  h+=`<div class="note" style="margin-top:10px">"From market size" is how much our purchases would have moved if we had kept last year's share; "from our share" is the rest. The two add up to the total change.</div>`;
+  if(lose.some(o=>o.d<0)) h+=`<div class="card" style="margin-top:10px"><b>Biggest drops vs ${mlab(prevM(m,12))}</b><ul>${lose.filter(o=>o.d<0).map(li).join('')}</ul>${gain.length?`<b>Biggest gains</b><ul>${gain.map(li).join('')}</ul>`:''}</div>`;
+  $('drivers').innerHTML=h;
+}
+
+function renderKw(){
+  const C=st.C; const m=$('kwMonth').value; if(!C||!m){ $('tKw').innerHTML=''; return; }
+  const ly=prevM(m,12), pm=prevM(m,1);
+  $('kwTag').textContent=`${mlab(m)}, with change vs ${mlab(pm)} and ${mlab(ly)}`;
+  const rows=st.qs.map(q=>({q, x:(C.perQ[q]||{})[m], p:(C.perQ[q]||{})[pm], y:(C.perQ[q]||{})[ly]})).filter(o=>o.x&&(o.x.vol||o.x.bimp))
+    .sort((a,b)=>b.x.vol-a.x.vol);
+  const r=(a,b)=>b?(a-b)/b:null;
+  let h=`<thead><tr><th>Search term</th><th>Search volume</th><th>vs LY</th><th>Our impr. share</th><th>Our clicks</th><th>Our click share</th><th>Our purchases</th><th>Our purchase share</th><th>Share ${MN[+ly.slice(5)-1]} ${ly.slice(0,4)}</th><th>Purchases vs prior mo.</th><th>Purchases vs LY</th><th>Ad clicks</th><th>Ad spend</th><th>Ad purchases</th></tr></thead><tbody>`;
+  rows.forEach(o=>{ const x=o.x;
+    h+=`<tr><td class="kw">${D.queries[o.q]}</td><td>${fmt(x.vol)}</td><td>${chg(o.y?r(x.vol,o.y.vol):null)}</td><td>${pct(share(x,'imp','bimp'))}</td><td>${fmt(x.bclk)}</td><td>${pct(share(x,'clk','bclk'))}</td>
+    <td>${fmt(x.bpur)}</td><td>${pct(share(x,'pur','bpur'))}</td><td>${o.y?pct(share(o.y,'pur','bpur')):'—'}</td><td>${o.p?((x.bpur-o.p.bpur)>=0?'+':'')+fmt(x.bpur-o.p.bpur):'—'}</td><td>${o.y?((x.bpur-o.y.bpur)>=0?'+':'')+fmt(x.bpur-o.y.bpur):'—'}</td>
+    ${adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td>`:'<td class="na" colspan="3" style="text-align:center">no ad data</td>'}</tr>`; });
+  if(!rows.length) h+='<tr><td class="na" colspan="14">No data for these terms in this month.</td></tr>';
+  $('tKw').innerHTML=h+'</tbody>';
+}
+
+function prov(){
+  $('prov').innerHTML=`<b>How this page works.</b> Totals are the whole Amazon market for the searches in your group (taken once per search, never double-counted). Our share = ours ÷ total. Wildcards work like your sheet: <code>*teeccino*</code> matches any search containing "teeccino"; a search that matches two of your terms is counted once. Ad columns are our Sponsored ads on those exact search terms (ads data starts ${D.ads.first}); brand comes from the campaign name. Amazon search data refreshed ${String(D.api.ingested||'').slice(0,10)}; a month's numbers arrive a few days after it ends. Read-only: nothing on Amazon changes from this page.`;
+}
+})();
+</script>
+</body></html>
