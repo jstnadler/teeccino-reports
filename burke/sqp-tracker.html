@@ -97,10 +97,8 @@
     </div>
     <div class="card">
       <label class="lbl">Data source</label>
-      <div class="row"><div class="seg" id="srcSeg">
-        <button data-v="api" class="on">Our products — automatic</button>
-        <button data-v="sheet">Your sheets — Seller Central brand view</button>
-      </div></div>
+      <!-- Burke 2026-11-24: "Your sheets" toggle removed. Groups built from his sheets (the two brand-name groups) still read his sheets automatically. -->
+      <div class="row"><div id="srcLbl" style="font-size:13px"></div></div>
       <label class="lbl">Brand</label>
       <div class="row"><div class="seg" id="brandSeg">
         <button data-v="WWB">WWB</button><button data-v="TEE">TCN</button><button data-v="ALL" class="on">Both</button>
@@ -239,7 +237,7 @@ function initUI(){
   fillPresets();
   $('preset').onchange=()=>applyGroup($('preset').value);
   $('terms').oninput=()=>{ st.terms=$('terms').value.split('\n'); render(); };
-  document.querySelectorAll('#srcSeg button').forEach(b=>b.onclick=()=>{st.src=b.dataset.v; render();});
+
   document.querySelectorAll('#brandSeg button').forEach(b=>b.onclick=()=>{st.brand=b.dataset.v; st.asins.clear(); render();});
   $('asinNone').onclick=()=>{st.asins.clear(); render();};
   $('asinAll').onclick=()=>{ shownAsins().forEach(([a,i])=>st.asins.add(i)); render(); };
@@ -353,7 +351,7 @@ const adsHave=m=>D.ads.months.includes(m);
 
 function render(){
   if(!D) return;
-  document.querySelectorAll('#srcSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.src));
+  $('srcLbl').textContent = st.src==='api' ? 'Our products — automatic (Amazon search-query report)' : 'Your Seller Central brand-view sheet (this group is built from it)';
   document.querySelectorAll('#brandSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===st.brand));
   $('apiCtl').style.display=st.src==='api'?'':'none';
   renderAsins();
@@ -511,7 +509,18 @@ function renderKw(){
     <td>${fmt(x.bpur)}</td><td>${pct(share(x,'pur','bpur'))}</td><td>${o.y?pct(share(o.y,'pur','bpur')):'—'}</td><td>${o.p?((x.bpur-o.p.bpur)>=0?'+':'')+fmt(x.bpur-o.p.bpur):'—'}</td><td>${o.y?((x.bpur-o.y.bpur)>=0?'+':'')+fmt(x.bpur-o.y.bpur):'—'}</td>
     ${adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td>`:'<td class="na" colspan="3" style="text-align:center">no ad data</td>'}</tr>`; });
   if(!rows.length) h+='<tr><td class="na" colspan="14">No data for these terms in this month.</td></tr>';
-  $('tKw').innerHTML=h+'</tbody>';
+  h+='</tbody>';
+  if(rows.length>1){ // summed total of the terms shown; shares = summed ours / summed market (not an average of row shares)
+    const K=['vol','imp','clk','pur','bimp','bclk','bpur','aclk','aspend','apur'];
+    const sum=list=>{const t={}; K.forEach(k=>t[k]=0); list.forEach(o=>K.forEach(k=>t[k]+=o[k]||0)); return t;};
+    const T=sum(rows.map(o=>o.x)), wY=rows.filter(o=>o.y), wP=rows.filter(o=>o.p);
+    const TY=sum(wY.map(o=>o.y)), XY=sum(wY.map(o=>o.x)), TP=sum(wP.map(o=>o.p)), XP=sum(wP.map(o=>o.x));
+    const sg=v=>(v>=0?'+':'')+fmt(v);
+    h+=`<tfoot><tr class="lat" style="border-top:2px solid var(--line)"><td class="kw" title="Sum of the ${rows.length} terms above. Share columns are our summed numbers divided by the summed market. Changes vs LY / prior month only count terms that have data in both months.">Total (${rows.length} terms)</td><td>${fmt(T.vol)}</td><td>${chg(wY.length?r(XY.vol,TY.vol):null)}</td><td>${pct(share(T,'imp','bimp'))}</td><td>${fmt(T.bclk)}</td><td>${pct(share(T,'clk','bclk'))}</td>
+    <td>${fmt(T.bpur)}</td><td>${pct(share(T,'pur','bpur'))}</td><td>${wY.length?pct(share(TY,'pur','bpur')):'—'}</td><td>${wP.length?sg(XP.bpur-TP.bpur):'—'}</td><td>${wY.length?sg(XY.bpur-TY.bpur):'—'}</td>
+    ${adsHave(m)?`<td>${fmt(T.aclk)}</td><td>${money(T.aspend)}</td><td>${fmt(T.apur)}</td>`:'<td class="na" colspan="3" style="text-align:center">no ad data</td>'}</tr></tfoot>`;
+  }
+  $('tKw').innerHTML=h;
 }
 
 function prov(){
