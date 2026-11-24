@@ -45,6 +45,7 @@
   .asinlist { max-height:170px; overflow:auto; border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:12.5px; }
   .asinlist label { display:flex; gap:6px; align-items:flex-start; padding:2px 0; cursor:pointer; }
   .asinlist .k { color:var(--muted); font-size:11px; }
+  .tagso { font-size:10.5px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:0 4px; margin-left:4px; }
   .tagb { font-size:10px; border:1px solid var(--line); border-radius:4px; padding:0 4px; color:var(--muted); }
   .matched { font-size:12px; color:var(--muted); max-height:90px; overflow:auto; margin-top:6px; }
   .tbl-wrap { overflow-x:auto; }
@@ -121,6 +122,9 @@
   <h2>Monthly <span class="tag">totals are the whole Amazon market for these searches; "Ours" is our products</span></h2>
   <div class="card tbl-wrap"><table id="tMonthly"></table></div>
 
+  <h2>Sales of the ticked products <span class="tag">units sold and revenue by month, from Amazon's Business Reports</span></h2>
+  <div id="salesWrap"></div>
+
   <h2>Charts</h2>
   <div class="charts">
     <div class="card chart"><h3>Search volume</h3><div class="cs">All shoppers, these searches</div><div id="c1"></div></div>
@@ -181,6 +185,7 @@ function index(){
   D.api.market.forEach(r=>D.mByQ[r[1]].push(r)); D.api.ours.forEach(r=>D.oByQ[r[1]].push(r));
   D.sheet.rows.forEach(r=>D.sByQ[r[1]].push(r)); D.ads.rows.forEach(r=>D.aByQ[r[1]].push(r));
   D.asinIdx={}; D.asins.forEach((a,i)=>D.asinIdx[a.asin]=i);
+  D.salesBy={}; (D.sales?D.sales.rows:[]).forEach(r=>{ const m=D.sales.months[r[0]]; (D.salesBy[r[1]]||(D.salesBy[r[1]]={}))[m]=[r[2],r[3]]; });
   $('built').textContent='Data rebuilt '+D.built+'.';
 }
 
@@ -207,7 +212,7 @@ function initUI(){
 function fillPresets(){ $('preset').innerHTML=allGroups().map(g=>`<option>${g.name.replace(/</g,'&lt;')}</option>`).join(''); }
 function applyGroup(nm){ const g=allGroups().find(x=>x.name===nm); if(!g) return;
   st.group=nm; st.src=g.src; st.brand=g.brand; st.terms=g.terms.slice();
-  st.asins=new Set(g.asins.map(a=>D.asinIdx[a]).filter(i=>i!=null)); st.missingAsins=g.asins.filter(a=>D.asinIdx[a]==null); st.notPulled=(g.notPulled||[]).filter(a=>D.asinIdx[a]==null);
+  st.asins=new Set(g.asins.map(a=>D.asinIdx[a]).filter(i=>i!=null)); const noKw=a=>D.asinIdx[a]==null||D.asins[D.asinIdx[a]].kw===false; st.missingAsins=g.asins.filter(noKw); st.notPulled=(g.notPulled||[]).filter(noKw);
   $('preset').value=nm; $('terms').value=st.terms.join('\n'); $('notes').value=store.notes[nm]||''; render(); }
 
 function matchedQueries(){
@@ -251,9 +256,38 @@ const COLS=[['vol','Search Volume'],['imp','Impressions'],['clk','Clicks'],['atc
 const BC=[['bimp','Impressions'],['bclk','Clicks'],['batc','Add to Cart'],['bpur','Purchases']];
 const SH=[['imp','bimp','Impr.'],['clk','bclk','Clicks'],['atc','batc','Add to Cart'],['pur','bpur','Purchases']];
 function head(trendLabel){
-  return `<thead><tr><th></th><th></th><th class="grp" colspan="4">TOTAL (market)</th><th class="grp" colspan="4">OURS</th><th class="grp" colspan="4">OUR SHARE %</th>${trendLabel?'':'<th class="grp" colspan="4">OUR ADS on these terms</th>'}</tr>
+  const sl=!trendLabel&&salesOn();
+  return `<thead><tr><th></th><th></th><th class="grp" colspan="4">TOTAL (market)</th><th class="grp" colspan="4">OURS</th><th class="grp" colspan="4">OUR SHARE %</th>${trendLabel?'':'<th class="grp" colspan="4">OUR ADS on these terms</th>'}${sl?'<th class="grp" colspan="2">TICKED PRODUCTS\' SALES</th>':''}</tr>
   <tr><th>Month</th>${COLS.map(c=>`<th>${c[1]}</th>`).join('')}${BC.map(c=>`<th>${c[1]}</th>`).join('')}${SH.map(c=>`<th>${c[2]}</th>`).join('')}
-  ${trendLabel?'':'<th>Ad clicks</th><th>Ad spend</th><th>Ad purchases</th><th>Ad sales</th>'}</tr></thead>`;
+  ${trendLabel?'':'<th>Ad clicks</th><th>Ad spend</th><th>Ad purchases</th><th>Ad sales</th>'}${sl?'<th>Units sold</th><th>Revenue</th>':''}</tr></thead>`;
+}
+// ---- sales of the ticked products (Burke 2026-11-24: units sold + revenue, monthly, for the ticked ASINs) ----
+const salesOn=()=>st.src==='api'&&st.asins.size>0&&!!D.sales;
+function salesFor(m, list){ let u=0,r=0,any=false; (list||[...st.asins]).forEach(i=>{const x=(D.salesBy[i]||{})[m]; if(x){u+=x[0];r+=x[1];any=true;}}); return any?{u,r}:null; }
+const salesTd=m=>{ if(!salesOn()) return ''; if(!D.sales.months.includes(m)) return '<td class="na" colspan="2" style="text-align:center">no sales data</td>';
+  const s=salesFor(m); return `<td>${fmt(s?s.u:0)}</td><td>${money(s?s.r:0)}</td>`; };
+const pname=a=>a.item?`${a.item} (${a.name||'name not recorded in the catalog'})`:a.asin;
+function renderSales(){
+  const el=$('salesWrap');
+  if(!D.sales){ el.innerHTML='<div class="note">Sales data isn\'t in this build yet.</div>'; return; }
+  if(st.src!=='api'){ el.innerHTML='<div class="note">Product sales show with the automatic source. Switch to it and tick products in the list to see their units sold and revenue by month.</div>'; return; }
+  if(!st.asins.size){ el.innerHTML='<div class="note">Tick one or more products in the list above to see their units sold and revenue by month. Products marked "sales only" have no keyword data but can be ticked for sales.</div>'; return; }
+  const ids=[...st.asins], per=ids.length>1&&ids.length<=8; let ms=D.sales.months; const f0=ms.findIndex(m=>salesFor(m)); ms=f0<0?ms.slice(-1):ms.slice(f0);
+  let h=`<div class="card tbl-wrap"><table><thead><tr><th></th><th class="grp" colspan="5">ALL TICKED PRODUCTS (${ids.length})</th>${per?ids.map(i=>`<th class="grp" colspan="2" title="${D.asins[i].asin}">${pname(D.asins[i])}</th>`).join(''):''}</tr>
+    <tr><th>Month</th><th>Units sold</th><th>Revenue</th><th>Avg price</th><th>Units vs LY</th><th>Revenue vs LY</th>${per?ids.map(()=>'<th>Units</th><th>Revenue</th>').join(''):''}</tr></thead><tbody>`;
+  ms.forEach((m,k)=>{ const s=salesFor(m), hasLy=ms.includes(prevM(m,12)), y=hasLy?salesFor(prevM(m,12)):null; const u=s?s.u:0, r=s?s.r:0;
+    const yu=hasLy?(y?y.u:0):null, yr=hasLy?(y?y.r:0):null;
+    h+=`<tr${k===ms.length-1?' class="lat"':''}><td>${mlab(m)}</td><td>${fmt(u)}</td><td>${money(r)}</td><td>${u?'$'+(r/u).toFixed(2):'—'}</td><td>${chg(yu?(u-yu)/yu:null)}</td><td>${chg(yr?(r-yr)/yr:null)}</td>`
+      +(per?ids.map(i=>{const x=salesFor(m,[i]); return `<td>${fmt(x?x.u:0)}</td><td>${money(x?x.r:0)}</td>`;}).join(''):'')+'</tr>'; });
+  h+='</tbody></table></div>';
+  if(ids.length>8) h+='<div class="note">More than 8 products ticked, so only the combined total is shown. Tick 8 or fewer to see each product\'s own columns.</div>';
+  h+=`<div class="charts" style="margin-top:10px"><div class="card chart"><h3>Units sold</h3><div class="cs">Ticked products, by month</div><div id="cs1"></div></div><div class="card chart"><h3>Revenue</h3><div class="cs">Ticked products, by month</div><div id="cs2"></div></div></div>`;
+  const noKw=ids.filter(i=>D.asins[i].kw===false);
+  h+=`<div class="note">Units sold and revenue are Amazon's "units ordered" and "ordered product sales" (US, before refunds and Amazon fees), across every listing of each ticked product. A multipack listing counts as one unit. ${mlab(ms[0])} to ${mlab(ms[ms.length-1])}.${noKw.length?` ${noKw.length} ticked product${noKw.length>1?'s have':' has'} no keyword data (marked "sales only"), so ${noKw.length>1?'they add':'it adds'} sales here but nothing to "Ours" in the keyword tables.`:''}</div>`;
+  el.innerHTML=h;
+  const cm=ms.slice(-24);
+  bars('cs1',cm.map(m=>{const s=salesFor(m); return {m, v:s?s.u:0, tip:`Units sold ${fmt(s?s.u:0)}`};}));
+  bars('cs2',cm.map(m=>{const s=salesFor(m); return {m, v:s?s.r:0, tip:`Revenue ${money(s?s.r:0)}`};}));
 }
 const share=(x,a,b)=>x[a]?x[b]/x[a]:null;
 const adsHave=m=>D.ads.months.includes(m);
@@ -274,10 +308,10 @@ function render(){
   // monthly
   let h=head(false)+'<tbody>';
   months.forEach((m,i)=>{ const x=C.rows[m]; const last=i===months.length-1;
-    if(!x){ h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+'<td class="na">—</td>'.repeat(17)+'</tr>'; return; }
+    if(!x){ h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+'<td class="na">—</td>'.repeat(17)+salesTd(m)+'</tr>'; return; }
     h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+COLS.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')+BC.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')
       +SH.map(c=>`<td>${pct(share(x,c[0],c[1]))}</td>`).join('')
-      +(adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td><td>${money(x.asales)}</td>`:'<td class="na" colspan="4" style="text-align:center">no ad data</td>')+'</tr>'; });
+      +(adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td><td>${money(x.asales)}</td>`:'<td class="na" colspan="4" style="text-align:center">no ad data</td>')+salesTd(m)+'</tr>'; });
   $('tMonthly').innerHTML=h+'</tbody>';
   // trends
   const trend=(k,id)=>{ let t=head(true)+'<tbody>';
@@ -288,6 +322,7 @@ function render(){
     if(t.endsWith('<tbody>')) t+=`<tr><td class="na" colspan="14">Not enough months yet for this comparison.</td></tr>`;
     $(id).innerHTML=t+'</tbody>'; };
   trend(1,'tMoM'); trend(12,'tYoY');
+  renderSales();
   // charts
   const cm=months.slice(-24);
   bars('c1',cm.map(m=>({m, v:C.rows[m]?C.rows[m].vol:null, tip:C.rows[m]?`Search volume ${fmt(C.rows[m].vol)}`:'no data'})));
@@ -304,9 +339,9 @@ function render(){
 function renderAsins(){
   if(st.src!=='api') return;
   const list=D.asins.map((a,i)=>[a,i]).filter(([a])=>st.brand==='ALL'||a.brand===st.brand)
-    .sort((x,y)=>(st.asins.has(y[1])-st.asins.has(x[1]))||String(x[0].item||'~').localeCompare(String(y[0].item||'~')));
+    .sort((x,y)=>(st.asins.has(y[1])-st.asins.has(x[1]))||((y[0].kw!==false)-(x[0].kw!==false))||String(x[0].item||'~').localeCompare(String(y[0].item||'~')));
   $('asins').innerHTML=list.map(([a,i])=>`<label><input type="checkbox" data-i="${i}" ${st.asins.has(i)?'checked':''}>
-    <span>${a.item?`${a.item} (${a.name||'name not recorded in the catalog'})`:'Item not mapped'} <span class="tagb">${a.brand==='TEE'?'TCN':a.brand==='WWB'?'WWB':'?'}</span><br><span class="k">${a.asin}</span></span></label>`).join('');
+    <span>${a.item?`${a.item} (${a.name||'name not recorded in the catalog'})`:'Item not mapped'} <span class="tagb">${a.brand==='TEE'?'TCN':a.brand==='WWB'?'WWB':'?'}</span>${a.kw===false?'<span class="tagso" title="No search-query data for this product; ticking it adds its sales only">sales only</span>':''}<br><span class="k">${a.asin}</span></span></label>`).join('');
   $('asins').querySelectorAll('input').forEach(cb=>cb.onchange=()=>{ const i=+cb.dataset.i; cb.checked?st.asins.add(i):st.asins.delete(i); render(); });
 }
 
@@ -314,7 +349,7 @@ function coverage(C, qs){
   let html='';
   if(st.src==='api'){
     const miss=(st.missingAsins||[]);
-    if(miss.length) html+=`<div class="warnbox"><b>I don't have keyword data for ${miss.join(', ')}.</b> ${miss.includes('B0F8PBHYX6')?'B0F8PBHYX6 is 10044 (the 1 lb Hibiscus). ':''}Amazon only gives us search-query data for the products we request each month (about 40), and this one isn't in that list yet. Its sales still count in your other reports; it just has no keyword rows here. The ad columns do include its ads (they cover every campaign of the brand), which is why ad clicks can be higher than "our clicks".</div>`;
+    if(miss.length) html+=`<div class="warnbox"><b>I don't have keyword data for ${miss.join(', ')}.</b> ${miss.includes('B0F8PBHYX6')?'B0F8PBHYX6 is 10044 (the 1 lb Hibiscus). ':''}Amazon only gives us search-query data for the products we request each month (about 40), and this one isn't in that list yet. Tick it in the product list (marked "sales only") to see its units and revenue in the sales section; it just has no keyword rows. The ad columns do include its ads (they cover every campaign of the brand), which is why ad clicks can be higher than "our clicks".</div>`;
     if(!st.asins.size){ const np=(st.notPulled||[]);
       html+=`<div class="prov"><b>Brand level:</b> "Ours" adds up every ${st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'Worldwide Botanicals and Teeccino'} product we pull for each search. It isn't tied to one product; purchases are assumed to come from the relevant ones.${np.length?` Not counted yet: ${np.map(a=>a+(a==='B0F8PBHYX6'?' (10044 Hibiscus - Loose Tea - 1 lb)':'')).join(', ')}, which isn't in our monthly keyword pull, so our share here reads a little low.`:''}</div>`; }
     html+=`<div class="prov"><b>Automatic source:</b> Amazon's Search Query Performance report, by product, ${mlab(D.api.months[0])} to ${mlab(D.api.months[D.api.months.length-1])}. "Ours" adds up our products' numbers for each search. It runs <b>lower than Seller Central's brand view</b>, because Amazon only returns each product's top 100 searches and we request about 40 products a month. For example, Sep 2026 searches for "teeccino": your sheet shows 622 Teeccino purchases, this source 376. Use it for trends and share movement; use your sheet's numbers when you need the full brand total. Year-over-year is only possible from Sep 2026 on.</div>`;
