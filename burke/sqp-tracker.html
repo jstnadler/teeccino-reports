@@ -98,13 +98,13 @@
       <label class="lbl">Data source</label>
       <div class="row"><div class="seg" id="srcSeg">
         <button data-v="api" class="on">Our products — automatic</button>
-        <button data-v="sheet">Your sheet — Teeccino brand view</button>
+        <button data-v="sheet">Your sheets — Seller Central brand view</button>
+      </div></div>
+      <label class="lbl">Brand</label>
+      <div class="row"><div class="seg" id="brandSeg">
+        <button data-v="WWB">WWB</button><button data-v="TEE">TCN</button><button data-v="ALL" class="on">Both</button>
       </div></div>
       <div id="apiCtl">
-        <label class="lbl">Brand</label>
-        <div class="row"><div class="seg" id="brandSeg">
-          <button data-v="WWB">WWB</button><button data-v="TEE">TCN</button><button data-v="ALL" class="on">Both</button>
-        </div></div>
         <label class="lbl">Products (leave all unticked = every product of that brand)</label>
         <div class="asinlist" id="asins"></div>
         <div class="row" style="margin-top:6px"><button id="asinNone">Clear products</button></div>
@@ -156,8 +156,12 @@ const PRESETS = [
   {name:'Hibiscus (brand level)', src:'api', brand:'ALL', asins:[], notPulled:['B0F8PBHYX6'],
    terms:['hibiscus tea loose leaf','hibiscus tea','organic hibiscus tea loose leaf','loose leaf hibiscus tea','hibiscus tea organic','hibiscus leaves','hibiscus tea organic loose leaf','hibiscus flowers','organic hibiscus tea','hibiscus','organic hibiscus']},
   {name:'Branded (from your sheet)', src:'sheet', brand:'TEE', asins:[], terms:['*teeccino*','*teecino*','*teechino*','*teccino*','*teaccino*']},
-  {name:'Chicory (from your sheet)', src:'sheet', brand:'ALL', asins:[], terms:['chicory']},
+  {name:'Chicory (from your sheet)', src:'sheet', brand:'TEE', asins:[], terms:['chicory']},
+  {name:'WWB Branded (from your WWB sheet)', src:'sheet', brand:'WWB', asins:[], terms:['*worldwide botanicals*','*world wide botanicals*']},
+  {name:'Hibiscus flowers (from your WWB sheet)', src:'sheet', brand:'WWB', asins:[], terms:['hibiscus flowers']},
+  {name:'Lemon balm (from your WWB sheet)', src:'sheet', brand:'WWB', asins:[], terms:['lemon balm tea loose leaf']},
 ];
+const DISCO={'B0CZ4CNFXH':1,'B076DR77J5':1}; // Burke 2026-11-24: discontinued, not actively tracked
 const LS='burkeSqpTracker.v1';
 const store = JSON.parse(localStorage.getItem(LS)||'{"groups":[],"notes":{}}');
 const save = ()=>localStorage.setItem(LS, JSON.stringify(store));
@@ -183,7 +187,8 @@ function index(){
   D.mByQ=Array.from({length:n},()=>[]); D.oByQ=Array.from({length:n},()=>[]);
   D.sByQ=Array.from({length:n},()=>[]); D.aByQ=Array.from({length:n},()=>[]);
   D.api.market.forEach(r=>D.mByQ[r[1]].push(r)); D.api.ours.forEach(r=>D.oByQ[r[1]].push(r));
-  D.sheet.rows.forEach(r=>D.sByQ[r[1]].push(r)); D.ads.rows.forEach(r=>D.aByQ[r[1]].push(r));
+  D.sheet.rows.forEach(r=>D.sByQ[r[1]].push(r));
+  D.sheetW=D.sheetW||{months:[],rows:[]}; D.swByQ=Array.from({length:n},()=>[]); D.sheetW.rows.forEach(r=>D.swByQ[r[1]].push(r)); D.ads.rows.forEach(r=>D.aByQ[r[1]].push(r));
   D.asinIdx={}; D.asins.forEach((a,i)=>D.asinIdx[a.asin]=i);
   D.salesBy={}; (D.sales?D.sales.rows:[]).forEach(r=>{ const m=D.sales.months[r[0]]; (D.salesBy[r[1]]||(D.salesBy[r[1]]={}))[m]=[r[2],r[3]]; });
   $('built').textContent='Data rebuilt '+D.built+'.';
@@ -225,6 +230,11 @@ function asinOn(ai){ const a=D.asins[ai];
   if(st.asins.size) return st.asins.has(ai);
   return st.brand==='ALL' || a.brand===st.brand; }
 
+function sheetMonths(){
+  const t=D.sheet.months, w=D.sheetW.months;
+  if(st.brand==='TEE') return t.slice(); if(st.brand==='WWB') return w.slice();
+  return t.filter(m=>w.includes(m)); // Both: only months present in both sheets
+}
 function compute(qs){
   // returns {months:[], rows:{m:{vol,imp,clk,atc,pur,bimp,bclk,batc,bpur}}, perQ:{q:{m:{...}}}}
   const rows={}, perQ={};
@@ -237,15 +247,20 @@ function compute(qs){
       D.oByQ[q].forEach(r=>{ if(!asinOn(r[2])) return; const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m); x.bimp+=r[3];x.bclk+=r[4];x.batc+=r[5];x.bpur+=r[6];});});
     });
   } else {
-    months=D.sheet.months;
-    qs.forEach(q=>{ const pq=perQ[q]={};
-      D.sByQ[q].forEach(r=>{const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m);
-        x.vol+=r[2];x.imp+=r[3];x.bimp+=r[4];x.clk+=r[5];x.bclk+=r[6];x.atc+=r[7];x.batc+=r[8];x.pur+=r[9];x.bpur+=r[10];});});
+    months=sheetMonths();
+    const ok=new Set(months), useT=st.brand!=='WWB', useW=st.brand!=='TEE';
+    qs.forEach(q=>{ const pq=perQ[q]={}; const mk={}; // market taken once per query+month (TCN sheet first)
+      const add=(r,ms,brandCounts)=>{ const m=ms[r[0]]; if(!ok.has(m)) return; const first=!mk[m]; mk[m]=1;
+        [rows,pq].forEach(o=>{const x=get(o,m);
+          if(first){x.vol+=r[2];x.imp+=r[3];x.clk+=r[5];x.atc+=r[7];x.pur+=r[9];}
+          if(brandCounts){x.bimp+=r[4];x.bclk+=r[6];x.batc+=r[8];x.bpur+=r[10];}});};
+      D.sByQ[q].forEach(r=>add(r,D.sheet.months,useT));
+      D.swByQ[q].forEach(r=>add(r,D.sheetW.months,useW));
     });
   }
   // ads by campaign brand
   qs.forEach(q=>{ const pq=perQ[q]||(perQ[q]={});
-    D.aByQ[q].forEach(r=>{ const b=r[2]; const want= st.src==='sheet' ? 'TEE' : st.brand;
+    D.aByQ[q].forEach(r=>{ const b=r[2]; const want=st.brand;
       if(want!=='ALL' && b!==want) return; const m=D.ads.months[r[0]];
       [rows,pq].forEach(o=>{const x=get(o,m); x.aimp+=r[3];x.aclk+=r[4];x.aspend+=r[5];x.apur+=r[6];x.asales+=r[7];});});
   });
@@ -339,9 +354,9 @@ function render(){
 function renderAsins(){
   if(st.src!=='api') return;
   const list=D.asins.map((a,i)=>[a,i]).filter(([a])=>st.brand==='ALL'||a.brand===st.brand)
-    .sort((x,y)=>(st.asins.has(y[1])-st.asins.has(x[1]))||((y[0].kw!==false)-(x[0].kw!==false))||String(x[0].item||'~').localeCompare(String(y[0].item||'~')));
+    .sort((x,y)=>(st.asins.has(y[1])-st.asins.has(x[1]))||((!!DISCO[x[0].asin])-(!!DISCO[y[0].asin]))||((y[0].kw!==false)-(x[0].kw!==false))||String(x[0].item||'~').localeCompare(String(y[0].item||'~')));
   $('asins').innerHTML=list.map(([a,i])=>`<label><input type="checkbox" data-i="${i}" ${st.asins.has(i)?'checked':''}>
-    <span>${a.item?`${a.item} (${a.name||'name not recorded in the catalog'})`:'Item not mapped'} <span class="tagb">${a.brand==='TEE'?'TCN':a.brand==='WWB'?'WWB':'?'}</span>${a.kw===false?'<span class="tagso" title="No search-query data for this product; ticking it adds its sales only">sales only</span>':''}<br><span class="k">${a.asin}</span></span></label>`).join('');
+    <span>${a.item?`${a.item} (${a.name||'name not recorded in the catalog'})`:'Item not mapped'} <span class="tagb">${a.brand==='TEE'?'TCN':a.brand==='WWB'?'WWB':'?'}</span>${a.kw===false?'<span class="tagso" title="No search-query data for this product; ticking it adds its sales only">sales only</span>':''}${DISCO[a.asin]?'<span class="tagso" title="Discontinued (Burke, Nov 2026)">discontinued</span>':''}<br><span class="k">${a.asin}</span></span></label>`).join('');
   $('asins').querySelectorAll('input').forEach(cb=>cb.onchange=()=>{ const i=+cb.dataset.i; cb.checked?st.asins.add(i):st.asins.delete(i); render(); });
 }
 
@@ -354,7 +369,9 @@ function coverage(C, qs){
       html+=`<div class="prov"><b>Brand level:</b> "Ours" adds up every ${st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'Worldwide Botanicals and Teeccino'} product we pull for each search. It isn't tied to one product; purchases are assumed to come from the relevant ones.${np.length?` Not counted yet: ${np.map(a=>a+(a==='B0F8PBHYX6'?' (10044 Hibiscus - Loose Tea - 1 lb)':'')).join(', ')}, which isn't in our monthly keyword pull, so our share here reads a little low.`:''}</div>`; }
     html+=`<div class="prov"><b>Automatic source:</b> Amazon's Search Query Performance report, by product, ${mlab(D.api.months[0])} to ${mlab(D.api.months[D.api.months.length-1])}. "Ours" adds up our products' numbers for each search. It runs <b>lower than Seller Central's brand view</b>, because Amazon only returns each product's top 100 searches and we request about 40 products a month. For example, Sep 2026 searches for "teeccino": your sheet shows 622 Teeccino purchases, this source 376. Use it for trends and share movement; use your sheet's numbers when you need the full brand total. Year-over-year is only possible from Sep 2026 on.</div>`;
   } else {
-    html+=`<div class="prov"><b>Your sheet:</b> the Seller Central brand-view downloads you paste into the DATA tab (Teeccino brand only, top 1,000 searches a month), ${D.sheet.months.length?mlab(D.sheet.months[0])+' to '+mlab(D.sheet.months[D.sheet.months.length-1]):'none'}. Re-read from your Google Sheet whenever the page updates, so a month you paste in shows up here too. Worldwide Botanicals isn't in it; switch to the automatic source for WWB.${D.sheet.ok?'':' <b>'+(D.sheet.note||'')+'</b>'}</div>`;
+    const rng=ms=>ms.length?mlab(ms[0])+' to '+mlab(ms[ms.length-1]):'none';
+    html+=`<div class="prov"><b>Your sheets:</b> the Seller Central brand-view downloads (top 1,000 searches a month per brand). <b>Teeccino</b>: your Google Sheet, ${rng(D.sheet.months)}, re-read whenever the page updates, so a month you paste in shows up here too.${D.sheet.ok?'':' <b>'+(D.sheet.note||'')+'</b>'} <b>Worldwide Botanicals</b>: the WWB tracker file you sent on ${D.sheetW.file_date||'—'}, ${rng(D.sheetW.months)}; it isn't linked to a live Google Sheet yet, so later months come from the automatic source until it is.${D.sheetW.ok===false?' <b>'+(D.sheetW.note||'')+'</b>':''} ${st.brand==='ALL'?'"Both" shows only months that are in both sheets.':''}</div>`;
+    html+=`<div class="prov"><b>Sheet vs automatic:</b> the automatic source is built from each product's own report, so it usually reads lower than your sheets. Worldwide Botanicals, all searches: the automatic source caught 80% to 89% of your sheet's WWB purchases in most months (Jun 2026 read higher, 105%, because we pulled extra WWB products that month). On the 11 hibiscus searches it is close: 93% to 100% (Jul 2026: sheet 400, automatic 378). On very small groups like WWB brand-name searches (40 to 95 purchases a month) the two swing either way by up to about 30%.</div>`;
   }
   $('cover').innerHTML=html;
   $('srcNote').textContent = st.src==='api' ? 'Updates once a month, when Amazon releases the next month of search data (usually the first week). Last updated '+D.built+'.' : 'Picks up a new month the next time the page updates after you paste it into your sheet.';
