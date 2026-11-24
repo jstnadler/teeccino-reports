@@ -278,18 +278,18 @@ function sheetMonths(){
   return t.filter(m=>w.includes(m)); // Both: only months present in both sheets
 }
 function compute(qs){
-  // returns {months:[], rows:{m:{vol,imp,clk,atc,pur,bimp,bclk,batc,bpur}}, perQ:{q:{m:{...}}}}
-  const rows={}, perQ={};
+  // returns {months:[], rows:{m:{...}}, perQ:{q:{m:{...}}}, src:{m:'S'|'A'}, pair(m,p,q)}
+  // Burke 2026-11-24: brand-level groups show the full history back to Apr 2024 from his two
+  // brand-view sheets; months the sheets don't cover yet come from the automatic report.
+  // % changes always compare a month with one from the SAME source (pair), never across the seam.
   const get=(o,m)=>o[m]||(o[m]={vol:0,imp:0,clk:0,atc:0,pur:0,bimp:0,bclk:0,batc:0,bpur:0,aimp:0,aclk:0,aspend:0,apur:0,asales:0});
-  let months;
-  if(st.src==='api'){
-    months=D.api.months;
+  function apiPart(){ const rows={}, perQ={}, months=D.api.months;
     qs.forEach(q=>{ const pq=perQ[q]={};
       D.mByQ[q].forEach(r=>{const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m); x.vol+=r[2];x.imp+=r[3];x.clk+=r[4];x.atc+=r[5];x.pur+=r[6];});});
       D.oByQ[q].forEach(r=>{ if(!asinOn(r[2])) return; const m=months[r[0]]; [rows,pq].forEach(o=>{const x=get(o,m); x.bimp+=r[3];x.bclk+=r[4];x.batc+=r[5];x.bpur+=r[6];});});
     });
-  } else {
-    months=sheetMonths();
+    return {months:months.slice(), rows, perQ}; }
+  function sheetPart(){ const rows={}, perQ={}, months=sheetMonths();
     const ok=new Set(months), useT=st.brand!=='WWB', useW=st.brand!=='TEE';
     qs.forEach(q=>{ const pq=perQ[q]={}; const mk={}; // market taken once per query+month (TCN sheet first)
       const add=(r,ms,brandCounts)=>{ const m=ms[r[0]]; if(!ok.has(m)) return; const first=!mk[m]; mk[m]=1;
@@ -299,14 +299,31 @@ function compute(qs){
       D.sByQ[q].forEach(r=>add(r,D.sheet.months,useT));
       D.swByQ[q].forEach(r=>add(r,D.sheetW.months,useW));
     });
-  }
-  // ads by campaign brand
-  qs.forEach(q=>{ const pq=perQ[q]||(perQ[q]={});
+    return {months, rows, perQ}; }
+  let parts, months, rows={}, perQ={}, src={};
+  if(st.src==='api' && st.asins.size){ parts={A:apiPart()}; }          // ticked products: sheets can't split by product
+  else if(st.src==='api'){ parts={S:sheetPart(), A:apiPart()}; }       // brand level: sheets first, automatic after
+  else { parts={S:sheetPart()}; }
+  const has=(k,m)=>!!parts[k]&&parts[k].months.includes(m);
+  months=[...new Set([].concat(...Object.values(parts).map(p=>p.months)))].sort();
+  months.forEach(m=>{ const k=has('S',m)?'S':'A'; src[m]=k; const P=parts[k];
+    if(P.rows[m]) rows[m]=Object.assign({},P.rows[m]);
+    qs.forEach(q=>{ const v=(P.perQ[q]||{})[m]; if(v) (perQ[q]||(perQ[q]={}))[m]=Object.assign({},v); }); });
+  qs.forEach(q=>{ if(!perQ[q]) perQ[q]={}; });
+  // a month and its comparison month from one source: sheets if both are in them, else automatic if both are, else as shown
+  const pair=(m,p,q)=>{ const pick=k=>q==null?[parts[k].rows[m],parts[k].rows[p]]:[(parts[k].perQ[q]||{})[m],(parts[k].perQ[q]||{})[p]];
+    if(has('S',m)&&has('S',p)) return pick('S'); if(has('A',m)&&has('A',p)) return pick('A');
+    return [q==null?rows[m]:(perQ[q]||{})[m], undefined]; }; // different sources: no comparison
+  // ads by campaign brand (added to the rows shown)
+  qs.forEach(q=>{ const pq=perQ[q];
     D.aByQ[q].forEach(r=>{ const b=r[2]; const want=st.brand;
       if(want!=='ALL' && b!==want) return; const m=D.ads.months[r[0]];
       [rows,pq].forEach(o=>{const x=get(o,m); x.aimp+=r[3];x.aclk+=r[4];x.aspend+=r[5];x.apur+=r[6];x.asales+=r[7];});});
   });
-  return {months, rows, perQ};
+  // ads-only months (no search data) must not become table rows
+  Object.keys(rows).forEach(m=>{ if(!src[m]) delete rows[m]; else if(!parts[src[m]].rows[m]) rows[m].nosq=1; });
+  qs.forEach(q=>Object.keys(perQ[q]).forEach(m=>{ if(!src[m]) delete perQ[q][m]; }));
+  return {months, rows, perQ, src, pair, mixed:!!(parts.S&&parts.A)};
 }
 
 const COLS=[['vol','Search Volume'],['imp','Impressions'],['clk','Clicks'],['atc','Add to Cart'],['pur','Purchases']];
@@ -367,13 +384,14 @@ function render(){
   let h=head(false)+'<tbody>';
   months.forEach((m,i)=>{ const x=C.rows[m]; const last=i===months.length-1;
     if(!x){ h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+'<td class="na">—</td>'.repeat(17)+salesTd(m)+'</tr>'; return; }
-    h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td>`+COLS.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')+BC.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')
+    if(x.nosq){ h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}</td><td class="na" colspan="13" style="text-align:center">no search data for these terms</td>`+(adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td><td>${money(x.asales)}</td>`:'<td class="na" colspan="4" style="text-align:center">no ad data</td>')+salesTd(m)+'</tr>'; return; }
+    h+=`<tr${last?' class="lat"':''}><td>${mlab(m)}${C.mixed?(C.src[m]==='S'?' <span class="tagso" title="From your Seller Central brand-view sheets">sheet</span>':' <span class="tagso" title="From the automatic search-query report (reads lower than the sheets)">auto</span>'):''}</td>`+COLS.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')+BC.map(c=>`<td>${fmt(x[c[0]])}</td>`).join('')
       +SH.map(c=>`<td>${pct(share(x,c[0],c[1]))}</td>`).join('')
       +(adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td><td>${money(x.asales)}</td>`:'<td class="na" colspan="4" style="text-align:center">no ad data</td>')+salesTd(m)+'</tr>'; });
   $('tMonthly').innerHTML=h+'</tbody>';
   // trends
   const trend=(k,id)=>{ let t=head(true)+'<tbody>';
-    months.forEach(m=>{ const x=C.rows[m], y=C.rows[prevM(m,k)];
+    months.forEach(m=>{ if(!C.rows[m]||C.rows[m].nosq) return; const [x,y]=C.pair(m,prevM(m,k)); if(y&&y.nosq) return;
       if(!x||!y){ return; }
       const r=(a,b)=>b?(a-b)/b:null; const rs=(c)=>{const s1=share(x,c[0],c[1]), s0=share(y,c[0],c[1]); return s1==null||s0==null||!s0?null:(s1-s0)/s0;};
       t+=`<tr><td>${mlab(m)}</td>`+COLS.map(c=>`<td>${chg(r(x[c[0]],y[c[0]]))}</td>`).join('')+BC.map(c=>`<td>${chg(r(x[c[0]],y[c[0]]))}</td>`).join('')+SH.map(c=>`<td>${chg(rs(c))}</td>`).join('')+'</tr>'; });
@@ -382,12 +400,12 @@ function render(){
   trend(1,'tMoM'); trend(12,'tYoY');
   renderSales();
   // charts
-  const cm=months.slice(-24);
-  bars('c1',cm.map(m=>({m, v:C.rows[m]?C.rows[m].vol:null, tip:C.rows[m]?`Search volume ${fmt(C.rows[m].vol)}`:'no data'})));
-  bars('c2',cm.map(m=>{const x=C.rows[m]; return {m, v:x?x.bclk:null, tip:x?`Our clicks ${fmt(x.bclk)}<br>Market ${fmt(x.clk)}<br>Our share ${pct(share(x,'clk','bclk'))}`:'no data'};}));
-  bars('c3',cm.map(m=>{const x=C.rows[m]; return {m, v:x?x.bpur:null, tip:x?`Our purchases ${fmt(x.bpur)}<br>Market ${fmt(x.pur)}<br>Our share ${pct(share(x,'pur','bpur'))}`:'no data'};}));
+  const cm=months.slice(-24), sq=m=>C.rows[m]&&!C.rows[m].nosq?C.rows[m]:null;
+  bars('c1',cm.map(m=>({m, v:sq(m)?C.rows[m].vol:null, tip:sq(m)?`Search volume ${fmt(C.rows[m].vol)}`:'no data'})));
+  bars('c2',cm.map(m=>{const x=sq(m); return {m, v:x?x.bclk:null, tip:x?`Our clicks ${fmt(x.bclk)}<br>Market ${fmt(x.clk)}<br>Our share ${pct(share(x,'clk','bclk'))}`:'no data'};}));
+  bars('c3',cm.map(m=>{const x=sq(m); return {m, v:x?x.bpur:null, tip:x?`Our purchases ${fmt(x.bpur)}<br>Market ${fmt(x.pur)}<br>Our share ${pct(share(x,'pur','bpur'))}`:'no data'};}));
   drivers(C);
-  const opts=months.filter(m=>C.rows[m]).slice().reverse();
+  const opts=months.filter(m=>C.rows[m]&&!C.rows[m].nosq).slice().reverse();
   const cur=$('kwMonth').value; $('kwMonth').innerHTML=opts.map(m=>`<option value="${m}">${mlab(m)}</option>`).join('');
   if(opts.includes(cur)) $('kwMonth').value=cur;
   renderKw();
@@ -417,8 +435,11 @@ function coverage(C, qs){
     const miss=(st.missingAsins||[]);
     if(miss.length) html+=`<div class="warnbox"><b>I don't have keyword data for ${miss.join(', ')}.</b> ${miss.includes('B0F8PBHYX6')?'B0F8PBHYX6 is 10044 (the 1 lb Hibiscus). ':''}Amazon only gives us search-query data for the products we request each month (about 40), and this one isn't in that list yet. Tick it in the product list (marked "sales only") to see its units and revenue in the sales section; it just has no keyword rows. The ad columns do include its ads (they cover every campaign of the brand), which is why ad clicks can be higher than "our clicks".</div>`;
     if(!st.asins.size){ const np=(st.notPulled||[]);
-      html+=`<div class="prov"><b>Brand level:</b> "Ours" adds up every ${st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'Worldwide Botanicals and Teeccino'} product we pull for each search. It isn't tied to one product; purchases are assumed to come from the relevant ones.${np.length?` Not counted yet: ${np.map(a=>a+(a==='B0F8PBHYX6'?' (10044 Hibiscus - Loose Tea - 1 lb)':'')).join(', ')}, which isn't in our monthly keyword pull, so our share here reads a little low.`:''}</div>`; }
-    html+=`<div class="prov"><b>Automatic source:</b> Amazon's Search Query Performance report, by product, ${mlab(D.api.months[0])} to ${mlab(D.api.months[D.api.months.length-1])}. "Ours" adds up our products' numbers for each search. It runs <b>lower than Seller Central's brand view</b>, because Amazon only returns each product's top 100 searches and we request about 40 products a month. For example, Sep 2026 searches for "teeccino": your sheet shows 622 Teeccino purchases, this source 376. Use it for trends and share movement; use your sheet's numbers when you need the full brand total. Year-over-year is only possible from Sep 2026 on.</div>`;
+      html+=`<div class="prov"><b>Brand level:</b> "Ours" adds up every ${st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'Worldwide Botanicals and Teeccino'} product we pull for each search. It isn't tied to one product; purchases are assumed to come from the relevant ones.${np.length?` In the "auto" months, not counted yet: ${np.map(a=>a+(a==='B0F8PBHYX6'?' (10044 Hibiscus - Loose Tea - 1 lb)':'')).join(', ')}, which isn't in our monthly keyword pull, so our share here reads a little low.`:''}</div>`; }
+    if(!st.asins.size && C.mixed){ const sm=C.months.filter(m=>C.src[m]==='S'), am=C.months.filter(m=>C.src[m]==='A'), rng=ms=>ms.length?mlab(ms[0])+' to '+mlab(ms[ms.length-1]):'none';
+      html+=`<div class="prov"><b>Where each month comes from:</b> <b>${rng(sm)}</b> come from your Seller Central brand-view sheets (${st.brand==='WWB'?'the WWB tracker':st.brand==='TEE'?'the Teeccino Google Sheet':'Teeccino and WWB sheets added together, market counted once'}), marked "sheet". ${am.length?`<b>${rng(am)}</b> ${am.length>1?'come':'comes'} from the automatic report, marked "auto", because ${st.brand==='TEE'?'your sheet':'your sheets'} ${st.brand==='ALL'?"don't both":"doesn't"} have ${am.length>1?'those months':'that month'} yet. The automatic report reads lower than the brand view (about 80% to 90% of purchases for WWB), so a step down where "sheet" turns into "auto" is the change of source, not a real drop. Month-over-month and year-over-year changes always compare two months from the same source, so they aren't thrown off by it.`:''} The brand view only lists each brand's top 1,000 searches a month, so a small search can drop out of the sheet months and show as no data.</div>`; }
+    else if(st.asins.size) html+=`<div class="prov"><b>Ticked products:</b> history before ${mlab(D.api.months[0])} comes from your brand-view sheets, which count the whole brand and can't be split by product, so with products ticked the page shows ${mlab(D.api.months[0])} onward only. Untick all products to see the full history back to ${mlab([D.sheet.months[0],D.sheetW.months[0]].filter(Boolean).sort()[0])}.</div>`;
+    html+=`<div class="prov"><b>Automatic source:</b> Amazon's Search Query Performance report, by product, ${mlab(D.api.months[0])} to ${mlab(D.api.months[D.api.months.length-1])}. "Ours" adds up our products' numbers for each search. It runs <b>lower than Seller Central's brand view</b>, because Amazon only returns each product's top 100 searches and we request about 40 products a month. For example, Sep 2026 searches for "teeccino": your sheet shows 622 Teeccino purchases, this source 376. Use it for trends and share movement; use your sheet's numbers when you need the full brand total. </div>`;
   } else {
     const rng=ms=>ms.length?mlab(ms[0])+' to '+mlab(ms[ms.length-1]):'none';
     html+=`<div class="prov"><b>Your sheets:</b> the Seller Central brand-view downloads (top 1,000 searches a month per brand). <b>Teeccino</b>: your Google Sheet, ${rng(D.sheet.months)}, re-read whenever the page updates, so a month you paste in shows up here too.${D.sheet.ok?'':' <b>'+(D.sheet.note||'')+'</b>'} <b>Worldwide Botanicals</b>: the WWB tracker file you sent on ${D.sheetW.file_date||'—'}, ${rng(D.sheetW.months)}; it isn't linked to a live Google Sheet yet, so later months come from the automatic source until it is.${D.sheetW.ok===false?' <b>'+(D.sheetW.note||'')+'</b>':''} ${st.brand==='ALL'?'"Both" shows only months that are in both sheets.':''}</div>`;
@@ -460,9 +481,9 @@ function priceBB(m, ly){
   return {idx:den?num/den:null, n, u0, u1, bb0:s0?b0/s0:null, bb1:s1?b1/s1:null};
 }
 function drivers(C){
-  const ms=C.months.filter(m=>C.rows[m]); const m=ms[ms.length-1];
+  const ms=C.months.filter(m=>C.rows[m]&&!C.rows[m].nosq); const m=ms[ms.length-1];
   if(!m){ $('drivers').innerHTML='<div class="note">No data for these terms.</div>'; return; }
-  const x=C.rows[m], ly=C.rows[prevM(m,12)], pm=C.rows[prevM(m,1)];
+  const [x0,ly]=C.pair(m,prevM(m,12)), x=x0||C.rows[m], pm=C.pair(m,prevM(m,1))[1];
   let h='<div class="drv">';
   const k=(t,v,d)=>`<div class="card kpi"><div class="k">${t}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
   if(!ly){
@@ -489,7 +510,7 @@ function drivers(C){
   h+='</div>';
   if(pb) h+=`<div class="note">Price, Buy Box and units cover ${st.asins.size?'the ticked products':'every '+(st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'WWB and Teeccino')+' product (tick products to narrow it)'}. Like-for-like price compares each product's own average selling price, weighted by last year's units, so a shift in which products sell doesn't read as a price change. Ad spend on these searches is only available from ${mlab(D.ads.months[0])}, so a year-over-year ad comparison isn't possible yet. New competitors: I don't have that; our data only shows our own products' searches, not who else entered.</div>`;
   // biggest keyword movers
-  const mv=st.qs.map(q=>{const a=(C.perQ[q]||{})[m], b=(C.perQ[q]||{})[prevM(m,12)]; return {q, d:(a?a.bpur:0)-(b?b.bpur:0), a, b};}).filter(o=>o.d).sort((p,q)=>p.d-q.d);
+  const mv=st.qs.map(q=>{const [a,b]=C.pair(m,prevM(m,12),q); return {q, d:(a?a.bpur:0)-(b?b.bpur:0), a, b};}).filter(o=>o.d).sort((p,q)=>p.d-q.d);
   const lose=mv.slice(0,5), gain=mv.slice(-5).reverse().filter(o=>o.d>0);
   const li=o=>`<li>${D.queries[o.q]}: ${o.d>0?'+':''}${fmt(o.d)} purchases (share ${pct(o.b&&o.b.pur?o.b.bpur/o.b.pur:null)} → ${pct(o.a&&o.a.pur?o.a.bpur/o.a.pur:null)}; market ${fmt(o.b?o.b.pur:0)} → ${fmt(o.a?o.a.pur:0)})</li>`;
   h+=`<div class="note" style="margin-top:10px">"From market size" is how much our purchases would have moved if we had kept last year's share; "from our share" is the rest. The two add up to the total change.</div>`;
@@ -501,13 +522,13 @@ function renderKw(){
   const C=st.C; const m=$('kwMonth').value; if(!C||!m){ $('tKw').innerHTML=''; return; }
   const ly=prevM(m,12), pm=prevM(m,1);
   $('kwTag').textContent=`${mlab(m)}, with change vs ${mlab(pm)} and ${mlab(ly)}`;
-  const rows=st.qs.map(q=>({q, x:(C.perQ[q]||{})[m], p:(C.perQ[q]||{})[pm], y:(C.perQ[q]||{})[ly]})).filter(o=>o.x&&(o.x.vol||o.x.bimp))
+  const rows=st.qs.map(q=>({q, x:(C.perQ[q]||{})[m], p:C.pair(m,pm,q)[1], y:C.pair(m,ly,q)[1], xp:C.pair(m,pm,q)[0], xy:C.pair(m,ly,q)[0]})).filter(o=>o.x&&(o.x.vol||o.x.bimp))
     .sort((a,b)=>b.x.vol-a.x.vol);
   const r=(a,b)=>b?(a-b)/b:null;
   let h=`<thead><tr><th>Search term</th><th>Search volume</th><th>vs LY</th><th>Our impr. share</th><th>Our clicks</th><th>Our click share</th><th>Our purchases</th><th>Our purchase share</th><th>Share ${MN[+ly.slice(5)-1]} ${ly.slice(0,4)}</th><th>Purchases vs prior mo.</th><th>Purchases vs LY</th><th>Ad clicks</th><th>Ad spend</th><th>Ad purchases</th></tr></thead><tbody>`;
   rows.forEach(o=>{ const x=o.x;
-    h+=`<tr><td class="kw">${D.queries[o.q]}</td><td>${fmt(x.vol)}</td><td>${chg(o.y?r(x.vol,o.y.vol):null)}</td><td>${pct(share(x,'imp','bimp'))}</td><td>${fmt(x.bclk)}</td><td>${pct(share(x,'clk','bclk'))}</td>
-    <td>${fmt(x.bpur)}</td><td>${pct(share(x,'pur','bpur'))}</td><td>${o.y?pct(share(o.y,'pur','bpur')):'—'}</td><td>${o.p?((x.bpur-o.p.bpur)>=0?'+':'')+fmt(x.bpur-o.p.bpur):'—'}</td><td>${o.y?((x.bpur-o.y.bpur)>=0?'+':'')+fmt(x.bpur-o.y.bpur):'—'}</td>
+    h+=`<tr><td class="kw">${D.queries[o.q]}</td><td>${fmt(x.vol)}</td><td>${chg(o.y?r((o.xy||{}).vol||0,o.y.vol):null)}</td><td>${pct(share(x,'imp','bimp'))}</td><td>${fmt(x.bclk)}</td><td>${pct(share(x,'clk','bclk'))}</td>
+    <td>${fmt(x.bpur)}</td><td>${pct(share(x,'pur','bpur'))}</td><td>${o.y?pct(share(o.y,'pur','bpur')):'—'}</td><td>${o.p?(((o.xp||{}).bpur||0)-o.p.bpur>=0?'+':'')+fmt(((o.xp||{}).bpur||0)-o.p.bpur):'—'}</td><td>${o.y?(((o.xy||{}).bpur||0)-o.y.bpur>=0?'+':'')+fmt(((o.xy||{}).bpur||0)-o.y.bpur):'—'}</td>
     ${adsHave(m)?`<td>${fmt(x.aclk)}</td><td>${money(x.aspend)}</td><td>${fmt(x.apur)}</td>`:'<td class="na" colspan="3" style="text-align:center">no ad data</td>'}</tr>`; });
   if(!rows.length) h+='<tr><td class="na" colspan="14">No data for these terms in this month.</td></tr>';
   h+='</tbody>';
@@ -515,7 +536,7 @@ function renderKw(){
     const K=['vol','imp','clk','pur','bimp','bclk','bpur','aclk','aspend','apur'];
     const sum=list=>{const t={}; K.forEach(k=>t[k]=0); list.forEach(o=>K.forEach(k=>t[k]+=o[k]||0)); return t;};
     const T=sum(rows.map(o=>o.x)), wY=rows.filter(o=>o.y), wP=rows.filter(o=>o.p);
-    const TY=sum(wY.map(o=>o.y)), XY=sum(wY.map(o=>o.x)), TP=sum(wP.map(o=>o.p)), XP=sum(wP.map(o=>o.x));
+    const TY=sum(wY.map(o=>o.y)), XY=sum(wY.map(o=>o.xy||{})), TP=sum(wP.map(o=>o.p)), XP=sum(wP.map(o=>o.xp||{}));
     const sg=v=>(v>=0?'+':'')+fmt(v);
     h+=`<tfoot><tr class="lat" style="border-top:2px solid var(--line)"><td class="kw" title="Sum of the ${rows.length} terms above. Share columns are our summed numbers divided by the summed market. Changes vs LY / prior month only count terms that have data in both months.">Total (${rows.length} terms)</td><td>${fmt(T.vol)}</td><td>${chg(wY.length?r(XY.vol,TY.vol):null)}</td><td>${pct(share(T,'imp','bimp'))}</td><td>${fmt(T.bclk)}</td><td>${pct(share(T,'clk','bclk'))}</td>
     <td>${fmt(T.bpur)}</td><td>${pct(share(T,'pur','bpur'))}</td><td>${wY.length?pct(share(TY,'pur','bpur')):'—'}</td><td>${wP.length?sg(XP.bpur-TP.bpur):'—'}</td><td>${wY.length?sg(XY.bpur-TY.bpur):'—'}</td>
