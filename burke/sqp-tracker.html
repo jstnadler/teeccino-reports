@@ -149,7 +149,7 @@
 <script>
 (function(){
 const PRESETS = [
-  {name:'Hibiscus (WWB)', src:'api', brand:'WWB', asins:['B0DTVF3RT1','B0F8PBHYX6'],
+  {name:'Hibiscus (brand level)', src:'api', brand:'ALL', asins:[], notPulled:['B0F8PBHYX6'],
    terms:['hibiscus tea loose leaf','hibiscus tea','organic hibiscus tea loose leaf','loose leaf hibiscus tea','hibiscus tea organic','hibiscus leaves','hibiscus tea organic loose leaf','hibiscus flowers','organic hibiscus tea','hibiscus','organic hibiscus']},
   {name:'Branded (from your sheet)', src:'sheet', brand:'TEE', asins:[], terms:['*teeccino*','*teecino*','*teechino*','*teccino*','*teaccino*']},
   {name:'Chicory (from your sheet)', src:'sheet', brand:'ALL', asins:[], terms:['chicory']},
@@ -192,7 +192,7 @@ function initUI(){
   document.querySelectorAll('#brandSeg button').forEach(b=>b.onclick=()=>{st.brand=b.dataset.v; st.asins.clear(); render();});
   $('asinNone').onclick=()=>{st.asins.clear(); render();};
   $('notes').oninput=()=>{ store.notes[st.group]=$('notes').value; save(); };
-  $('saveGrp').onclick=()=>{ const nm=prompt('Name for this keyword group:', st.group.endsWith('(WWB)')?'':st.group); if(!nm) return;
+  $('saveGrp').onclick=()=>{ const nm=prompt('Name for this keyword group:', PRESETS.some(p=>p.name===st.group)?'':st.group); if(!nm) return;
     store.groups=store.groups.filter(g=>g.name!==nm);
     store.groups.push({name:nm, src:st.src, brand:st.brand, asins:[...st.asins].map(i=>D.asins[i].asin), terms:st.terms.filter(t=>t.trim())});
     if(store.notes[st.group] && !store.notes[nm]) store.notes[nm]=store.notes[st.group];
@@ -207,7 +207,7 @@ function initUI(){
 function fillPresets(){ $('preset').innerHTML=allGroups().map(g=>`<option>${g.name.replace(/</g,'&lt;')}</option>`).join(''); }
 function applyGroup(nm){ const g=allGroups().find(x=>x.name===nm); if(!g) return;
   st.group=nm; st.src=g.src; st.brand=g.brand; st.terms=g.terms.slice();
-  st.asins=new Set(g.asins.map(a=>D.asinIdx[a]).filter(i=>i!=null)); st.missingAsins=g.asins.filter(a=>D.asinIdx[a]==null);
+  st.asins=new Set(g.asins.map(a=>D.asinIdx[a]).filter(i=>i!=null)); st.missingAsins=g.asins.filter(a=>D.asinIdx[a]==null); st.notPulled=(g.notPulled||[]).filter(a=>D.asinIdx[a]==null);
   $('preset').value=nm; $('terms').value=st.terms.join('\n'); $('notes').value=store.notes[nm]||''; render(); }
 
 function matchedQueries(){
@@ -315,6 +315,8 @@ function coverage(C, qs){
   if(st.src==='api'){
     const miss=(st.missingAsins||[]);
     if(miss.length) html+=`<div class="warnbox"><b>I don't have keyword data for ${miss.join(', ')}.</b> ${miss.includes('B0F8PBHYX6')?'B0F8PBHYX6 is 10044 (the 1 lb Hibiscus). ':''}Amazon only gives us search-query data for the products we request each month (about 40), and this one isn't in that list yet. Its sales still count in your other reports; it just has no keyword rows here. The ad columns do include its ads (they cover every campaign of the brand), which is why ad clicks can be higher than "our clicks".</div>`;
+    if(!st.asins.size){ const np=(st.notPulled||[]);
+      html+=`<div class="prov"><b>Brand level:</b> "Ours" adds up every ${st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'Worldwide Botanicals and Teeccino'} product we pull for each search. It isn't tied to one product; purchases are assumed to come from the relevant ones.${np.length?` Not counted yet: ${np.map(a=>a+(a==='B0F8PBHYX6'?' (10044 Hibiscus - Loose Tea - 1 lb)':'')).join(', ')}, which isn't in our monthly keyword pull, so our share here reads a little low.`:''}</div>`; }
     html+=`<div class="prov"><b>Automatic source:</b> Amazon's Search Query Performance report, by product, ${mlab(D.api.months[0])} to ${mlab(D.api.months[D.api.months.length-1])}. "Ours" adds up our products' numbers for each search. It runs <b>lower than Seller Central's brand view</b>, because Amazon only returns each product's top 100 searches and we request about 40 products a month. For example, Sep 2026 searches for "teeccino": your sheet shows 622 Teeccino purchases, this source 376. Use it for trends and share movement; use your sheet's numbers when you need the full brand total. Year-over-year is only possible from Sep 2026 on.</div>`;
   } else {
     html+=`<div class="prov"><b>Your sheet:</b> the Seller Central brand-view downloads you paste into the DATA tab (Teeccino brand only, top 1,000 searches a month), ${D.sheet.months.length?mlab(D.sheet.months[0])+' to '+mlab(D.sheet.months[D.sheet.months.length-1]):'none'}. Re-read from your Google Sheet whenever the page updates, so a month you paste in shows up here too. Worldwide Botanicals isn't in it; switch to the automatic source for WWB.${D.sheet.ok?'':' <b>'+(D.sheet.note||'')+'</b>'}</div>`;
