@@ -111,7 +111,7 @@
           <select id="asinLine"><option value="">All lines</option></select>
           <label style="font-size:12px;white-space:nowrap"><input type="checkbox" id="asinDisco"> show discontinued</label></div>
         <div class="asinlist" id="asins" style="max-height:260px"></div>
-        <div class="row" style="margin-top:6px"><button id="asinNone">Clear products</button></div>
+        <div class="row" style="margin-top:6px;gap:6px"><button id="asinAll" title="Ticks every product currently showing in the list above (respects the brand, search box, line and discontinued filters)">Tick all shown</button><button id="asinNone">Clear products</button></div>
       </div>
       <div id="srcNote" class="note"></div>
     </div>
@@ -195,7 +195,7 @@ function index(){
   D.sheet.rows.forEach(r=>D.sByQ[r[1]].push(r));
   D.sheetW=D.sheetW||{months:[],rows:[]}; D.swByQ=Array.from({length:n},()=>[]); D.sheetW.rows.forEach(r=>D.swByQ[r[1]].push(r)); D.ads.rows.forEach(r=>D.aByQ[r[1]].push(r));
   D.asinIdx={}; D.asins.forEach((a,i)=>D.asinIdx[a.asin]=i);
-  D.salesBy={}; (D.sales?D.sales.rows:[]).forEach(r=>{ const m=D.sales.months[r[0]]; (D.salesBy[r[1]]||(D.salesBy[r[1]]={}))[m]=[r[2],r[3]]; });
+  D.salesBy={}; (D.sales?D.sales.rows:[]).forEach(r=>{ const m=D.sales.months[r[0]]; (D.salesBy[r[1]]||(D.salesBy[r[1]]={}))[m]=[r[2],r[3],r[4]||0,r[5]||0]; });
   $('built').textContent='Data rebuilt '+D.built+'.';
 }
 
@@ -206,6 +206,7 @@ function initUI(){
   document.querySelectorAll('#srcSeg button').forEach(b=>b.onclick=()=>{st.src=b.dataset.v; render();});
   document.querySelectorAll('#brandSeg button').forEach(b=>b.onclick=()=>{st.brand=b.dataset.v; st.asins.clear(); render();});
   $('asinNone').onclick=()=>{st.asins.clear(); render();};
+  $('asinAll').onclick=()=>{ shownAsins().forEach(([a,i])=>st.asins.add(i)); render(); };
   $('asinFind').oninput=()=>renderAsins(); $('asinLine').onchange=()=>renderAsins(); $('asinDisco').onchange=()=>renderAsins();
   $('notes').oninput=()=>{ store.notes[st.group]=$('notes').value; save(); };
   $('saveGrp').onclick=()=>{ const nm=prompt('Name for this keyword group:', PRESETS.some(p=>p.name===st.group)?'':st.group); if(!nm) return;
@@ -358,13 +359,17 @@ function render(){
   prov();
 }
 
+function shownAsins(){
+  const f=($('asinFind').value||'').trim().toLowerCase(), ln=$('asinLine').value, sd=$('asinDisco').checked;
+  return D.asins.map((a,i)=>[a,i]).filter(([a])=>st.brand==='ALL'||a.brand===st.brand)
+    .filter(([a,i])=>st.asins.has(i)||((sd||!isDisco(a))&&(!ln||a.line===ln)&&(!f||[a.asin,a.item,a.name,a.btitle,a.line,pname(a)].join(' ').toLowerCase().includes(f))));
+}
+
 function renderAsins(){
   if(st.src!=='api') return;
   const lines=[...new Set(D.asins.map(a=>a.line).filter(Boolean))].sort();
   if($('asinLine').options.length<=1) $('asinLine').innerHTML='<option value="">All lines</option>'+lines.map(l=>`<option>${l}</option>`).join('');
-  const f=($('asinFind').value||'').trim().toLowerCase(), ln=$('asinLine').value, sd=$('asinDisco').checked;
-  const list=D.asins.map((a,i)=>[a,i]).filter(([a])=>st.brand==='ALL'||a.brand===st.brand)
-    .filter(([a,i])=>st.asins.has(i)||((sd||!isDisco(a))&&(!ln||a.line===ln)&&(!f||[a.asin,a.item,a.name,a.btitle,a.line,pname(a)].join(' ').toLowerCase().includes(f))))
+  const list=shownAsins()
     .sort((x,y)=>(st.asins.has(y[1])-st.asins.has(x[1]))||(isDisco(x[0])-isDisco(y[0]))||((!!y[0].bl)-(!!x[0].bl))||((y[0].kw!==false)-(x[0].kw!==false))||String(x[0].item||'~').localeCompare(String(y[0].item||'~')));
   $('asins').innerHTML=list.map(([a,i])=>`<label><input type="checkbox" data-i="${i}" ${st.asins.has(i)?'checked':''}>
     <span title="${(a.btitle||'').replace(/"/g,'&quot;')}">${a.item||a.multi?pname(a):(a.btitle?`${a.btitle} <i>(not matched in the catalog)</i>`:'Item not mapped')}${a.multi?' <span class="tagso" title="This ASIN is claimed by more than one item in the catalog; sales cover the whole ASIN">2 items claim this ASIN</span>':''} ${a.line?`<span class="tagso">${a.line}</span>`:''}<span class="tagb">${a.brand==='TEE'?'TCN':a.brand==='WWB'?'WWB':'?'}</span>${a.kw===false?'<span class="tagso" title="No search-query data for this product; ticking it adds its sales only">sales only</span>':''}${isDisco(a)?'<span class="tagso" title="Red in your list: discontinued or selling through remaining stock">discontinued</span>':''}${a.flag==='green'?'<span class="dot" style="background:#3fbf7f" title="Green in your list"></span>':a.flag==='orange'?'<span class="dot" style="background:#e6a93a" title="Orange in your list"></span>':a.flag==='blue'?'<span class="dot" style="background:#5b8def" title="Blue in your list (ignored for now)"></span>':''}<br><span class="k">${a.asin}</span></span></label>`).join('');
@@ -410,6 +415,15 @@ function bars(id, pts){
 function niceStep(x){ const p=Math.pow(10,Math.floor(Math.log10(x||1))); const f=x/p; return (f<=1?1:f<=2?2:f<=5?5:10)*p; }
 function abbr(v){ return v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?(v/1e3).toFixed(v%1e3?1:0)+'k':String(v); }
 
+function priceBB(m, ly){
+  if(!D.sales||!D.sales.months.includes(m)||!D.sales.months.includes(ly)) return null;
+  const ids=st.asins.size?[...st.asins]:D.asins.map((a,i)=>i).filter(i=>st.brand==='ALL'||D.asins[i].brand===st.brand);
+  let num=0,den=0,n=0,u0=0,u1=0,s0=0,b0=0,s1=0,b1=0;
+  ids.forEach(i=>{ const x=(D.salesBy[i]||{})[m], y=(D.salesBy[i]||{})[ly];
+    if(x){u1+=x[0]; s1+=x[2]; b1+=x[2]*x[3];} if(y){u0+=y[0]; s0+=y[2]; b0+=y[2]*y[3];}
+    if(x&&y&&x[0]>0&&y[0]>0){ const p1=x[1]/x[0], p0=y[1]/y[0]; num+=y[0]*p1; den+=y[0]*p0; n++; } });
+  return {idx:den?num/den:null, n, u0, u1, bb0:s0?b0/s0:null, bb1:s1?b1/s1:null};
+}
 function drivers(C){
   const ms=C.months.filter(m=>C.rows[m]); const m=ms[ms.length-1];
   if(!m){ $('drivers').innerHTML='<div class="note">No data for these terms.</div>'; return; }
@@ -430,7 +444,15 @@ function drivers(C){
   const cs1=share(x,'clk','bclk'), cs0=share(ly,'clk','bclk'), cv1=x.bclk?x.bpur/x.bclk:null, cv0=ly.bclk?ly.bpur/ly.bclk:null;
   h+=k('Our click share', pct(cs1), `${mlab(prevM(m,12))}: ${pct(cs0)}`);
   h+=k('Our purchases per click', pct(cv1), `${mlab(prevM(m,12))}: ${pct(cv0)}`);
+  // price + Buy Box for the products behind this group (Burke 2026-11-24: drivers incl. price and Buy Box)
+  const pb=priceBB(m, prevM(m,12));
+  if(pb){
+    h+=k('Our price, like for like', pb.idx==null?'—':chg(pb.idx-1), `Same products, ${mlab(prevM(m,12))} → ${mlab(m)} (${pb.n} products selling in both months)`);
+    h+=k('Buy Box', pb.bb1==null?'—':pct(pb.bb1/100), `${mlab(prevM(m,12))}: ${pb.bb0==null?'—':pct(pb.bb0/100)}, session-weighted`);
+    h+=k('Units sold, these products', fmt(pb.u1), `${mlab(prevM(m,12))}: ${fmt(pb.u0)} (${chg(pb.u0?(pb.u1-pb.u0)/pb.u0:null)})`);
+  }
   h+='</div>';
+  if(pb) h+=`<div class="note">Price, Buy Box and units cover ${st.asins.size?'the ticked products':'every '+(st.brand==='WWB'?'Worldwide Botanicals':st.brand==='TEE'?'Teeccino':'WWB and Teeccino')+' product (tick products to narrow it)'}. Like-for-like price compares each product's own average selling price, weighted by last year's units, so a shift in which products sell doesn't read as a price change. Ad spend on these searches is only available from ${mlab(D.ads.months[0])}, so a year-over-year ad comparison isn't possible yet. New competitors: I don't have that; our data only shows our own products' searches, not who else entered.</div>`;
   // biggest keyword movers
   const mv=st.qs.map(q=>{const a=(C.perQ[q]||{})[m], b=(C.perQ[q]||{})[prevM(m,12)]; return {q, d:(a?a.bpur:0)-(b?b.bpur:0), a, b};}).filter(o=>o.d).sort((p,q)=>p.d-q.d);
   const lose=mv.slice(0,5), gain=mv.slice(-5).reverse().filter(o=>o.d>0);
