@@ -1,15 +1,17 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sales By ASIN, Last 30 Days &middot; Burke's Portal</title>
-<!-- Built by AmazonSmith 2026-11-24 from Burke's v3 "Amazon ASIN Sales YoY" sheet.
-     Static page; every number comes from sales-by-asin-30d-data.json, rebuilt daily by
-     clawd-amazonsmith/builders/build_burke_asin_30d.py. Do not hand-edit numbers here. -->
+<title>Sales By ASIN &middot; Burke's Portal</title>
+<!-- Built by AmazonSmith from Burke's v3 "Amazon ASIN Sales YoY" sheet.
+     v2 2026-11-24: movable date range (Last 30 days default, Last 90 days, Custom), always
+     compared to the same calendar dates one year earlier.
+     Static page; every number comes from sales-by-asin-30d-data.json (per-day, per-ASIN),
+     rebuilt daily by clawd-amazonsmith/builders/build_burke_asin_30d.py. Do not hand-edit numbers. -->
 <style>
   :root { --bg:#14211a; --card:#1a2a20; --ink:#e8eaed; --muted:#9aa0a6;
           --line:#294036; --gold:#D4A843; --s1:#2E9E6F; --band:#1d3026;
-          --good:#199e70; --bad:#e0644f; --input-bg:#12211a; }
-  html[data-portal-theme="light"] { --band:#f1f5f2; }
+          --good:#199e70; --bad:#e0644f; --input-bg:#12211a; --warn:#3a3320; }
+  html[data-portal-theme="light"] { --band:#f1f5f2; --warn:#fbf3dc; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink);
          font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:24px; }
@@ -31,8 +33,14 @@
            font:inherit; font-size:13px; cursor:pointer; }
   button:hover { border-color:var(--s1); }
   .seg button.on { background:var(--s1); color:#fff; }
-  input[type=text] { background:var(--input-bg); color:var(--ink); border:1px solid var(--line); border-radius:6px;
-                     padding:6px 8px; font:inherit; font-size:13px; min-width:320px; }
+  input[type=text], input[type=date] { background:var(--input-bg); color:var(--ink); border:1px solid var(--line); border-radius:6px;
+                     padding:6px 8px; font:inherit; font-size:13px; color-scheme:dark; }
+  html[data-portal-theme="light"] input[type=date] { color-scheme:light; }
+  input[type=text] { min-width:320px; }
+  #custom { display:none; gap:6px; align-items:center; font-size:13px; color:var(--muted); }
+  #custom.show { display:inline-flex; }
+  .ctl .lbl { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .warn { background:var(--warn); border:1px solid var(--gold); border-radius:8px; padding:8px 12px; font-size:13px; margin:0 0 12px; display:none; }
   label.chk { font-size:13px; color:var(--muted); }
   .tbl-wrap { overflow:auto; max-height:78vh; border:1px solid var(--line); border-radius:10px; }
   table { border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums; }
@@ -56,14 +64,23 @@
 <div id="portal-nav"></div>
 <script>
   /* Portal-scoped nav (burke/_nav.html), never Justin's main hub nav. */
-  fetch('/teeccino-reports/burke/_nav.html').then(function(r){return r.text();}).then(function(html){
+  fetch('/teeccino-reports/burke/_nav.html').then(function(r){if(!r.ok) throw 0; return r.text();}).then(function(html){
     var el=document.getElementById('portal-nav'); el.innerHTML=html; document.body.classList.add('has-portal-nav');
     el.querySelectorAll('script').forEach(function(s){var n=document.createElement('script'); if(s.src) n.src=s.src; else n.textContent=s.textContent; document.body.appendChild(n);});
   }).catch(function(){});
 </script>
 <div class="wrap">
-  <h1><span class="amz">Amazon</span> Sales By ASIN, Last 30 Days</h1>
+  <h1><span class="amz">Amazon</span> Sales By ASIN, <span id="rangeName">Last 30 Days</span></h1>
   <div class="sub" id="sub">Loading…</div>
+
+  <div class="ctl">
+    <span class="lbl">Dates</span>
+    <div class="seg" id="rangeSeg">
+      <button data-v="L30" class="on">Last 30 days</button><button data-v="L90">Last 90 days</button><button data-v="C">Custom</button>
+    </div>
+    <span id="custom"><input type="date" id="from"> to <input type="date" id="to"> <button id="apply">Apply</button></span>
+  </div>
+  <div class="warn" id="warn"></div>
 
   <div class="kpis" id="kpis"></div>
 
@@ -83,7 +100,8 @@
 </div>
 <script>
 (function(){
-  var D, brand='WWB', sortKey=null, sortDir=-1;
+  var D, ROWS=[], brand='WWB', sortKey=null, sortDir=-1;
+  var R={mode:'L30', s:null, e:null, ls:null, le:null, label:'Last 30 days'};
   var $=function(id){return document.getElementById(id);};
   var nf=new Intl.NumberFormat('en-US');
   var mf=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2});
@@ -95,27 +113,81 @@
     return '<span class="'+(p>0?'up':p<0?'down':'')+'">'+sgn(p,function(x){return x.toFixed(1)+'%';})+'</span>'; }
   function dif(a,b,f){ var d=b-a; return '<span class="'+(d>0?'up':d<0?'down':'')+'">'+sgn(d,f)+'</span>'; }
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  // ---- plain calendar-date helpers (UTC so no daylight-saving drift) ----
+  function pd(s){var p=s.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));}
+  function iso(d){return d.toISOString().slice(0,10);}
+  function add(s,n){var d=pd(s);d.setUTCDate(d.getUTCDate()+n);return iso(d);}
+  function lyd(s){var p=s.split('-');var y=+p[0]-1;if(p[1]==='02'&&p[2]==='29')return y+'-02-28';return y+'-'+p[1]+'-'+p[2];}
+  function days(s,e){var out=[];for(var d=s;d<=e;d=add(d,1))out.push(d);return out;}
 
   fetch('sales-by-asin-30d-data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
-    D=d; head(); kpis(); render();
+    D=d; D.miss={}; (D.missing||[]).forEach(function(x){D.miss[x]=1;});
+    $('from').min=$('to').min=D.first; $('from').max=$('to').max=D.end;
+    var q=new URLSearchParams(location.search);
+    if(q.get('from')&&q.get('to')) setRange('C',q.get('from'),q.get('to')); else setRange(q.get('range')==='L90'?'L90':'L30');
   }).catch(function(e){ $('sub').textContent='Could not load the data file: '+e; });
 
+  function setRange(mode,s,e){
+    R.mode=mode;
+    if(mode==='C'){
+      if(!s||!e) return;
+      if(s>e){var t=s;s=e;e=t;}
+      if(e>D.end) e=D.end; if(s>e) s=e;
+      R.s=s; R.e=e; R.label=fd(s,s.slice(0,4)!==e.slice(0,4))+' – '+fd(e,1);
+    } else {
+      var n=mode==='L90'?90:30; R.e=D.end; R.s=add(D.end,1-n); R.label='Last '+n+' days';
+    }
+    R.ls=lyd(R.s); R.le=lyd(R.e);
+    document.querySelectorAll('#rangeSeg button').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-v')===mode);});
+    $('custom').classList.toggle('show',mode==='C');
+    $('from').value=R.s; $('to').value=R.e;
+    var q=new URLSearchParams(location.search); q.delete('range'); q.delete('from'); q.delete('to');
+    if(mode==='C'){q.set('from',R.s);q.set('to',R.e);} else if(mode==='L90') q.set('range','L90');
+    history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:''));
+    compute(); head(); kpis(); render();
+  }
+  function compute(){
+    var m={}, ty=days(R.s,R.e), ly=days(R.ls,R.le);
+    function addDays(list,ku,kr){ list.forEach(function(d){ var a=D.daily[d]; if(!a) return;
+      for(var i=0;i<a.length;i+=3){ var r=m[a[i]]||(m[a[i]]={u0:0,u1:0,r0:0,r1:0}); r[ku]+=a[i+1]; r[kr]+=a[i+2]; } }); }
+    addDays(ty,'u1','r1'); addDays(ly,'u0','r0');
+    ROWS=Object.keys(m).map(function(i){var x=m[i], b=D.rows[i];
+      return {a:b.a,d:b.d,it:b.it,b:b.b,f:b.f,disc:b.disc,u0:x.u0,u1:x.u1,r0:x.r0/100,r1:x.r1/100};})
+      .filter(function(r){return r.u0||r.u1||r.r0||r.r1;});
+    // Coverage: days we do not have. Before D.first = older than Amazon's ~2-year history.
+    var old=function(d){return D.floor&&d<D.floor;}, gap=function(d){return !old(d)&&(d<D.first||D.miss[d]);};
+    R.tyMiss=ty.filter(function(d){return old(d)||gap(d);}).length;
+    R.lyOld=ly.filter(old).length;
+    R.lyMiss=ly.filter(gap).length;
+    R.n=ty.length;
+    var A={u1:0,r1:0,u0:0,r0:0,c1:0,c0:0};
+    ty.forEach(function(d){var x=D.acct[d]; if(x){A.u1+=x[0];A.r1+=x[1];A.c1++;}});
+    ly.forEach(function(d){var x=D.acct[d]; if(x){A.u0+=x[0];A.r0+=x[1];A.c0++;}});
+    R.acct=A;
+  }
   function head(){
-    var ty=fd(D.start)+' – '+fd(D.end,1), ly=fd(D.ly_start)+' – '+fd(D.ly_end,1);
-    $('sub').innerHTML='<b>'+ty+'</b> vs the same dates last year ('+ly+'). Ordered units and ordered product sales, US marketplace — the same numbers as Seller Central Business Reports. '+
-      'Updated every morning; the last '+D.lag_days+' days are left out because Amazon is still posting them.';
+    $('rangeName').textContent=R.mode==='C'?'Custom Dates':R.label.replace('days','Days');
+    var ty=fd(R.s,R.s.slice(0,4)!==R.e.slice(0,4))+' – '+fd(R.e,1), ly=fd(R.ls,R.ls.slice(0,4)!==R.le.slice(0,4))+' – '+fd(R.le,1);
+    $('sub').innerHTML='<b>'+ty+'</b> ('+R.n+' days) vs the same dates last year ('+ly+'). Ordered units and ordered product sales, US marketplace — the same numbers as Seller Central Business Reports. '+
+      'Updated every morning; the newest '+D.lag_days+' days are left out because Amazon is still posting them, so the latest date you can pick is '+fd(D.end,1)+'.';
+    var w=[];
+    if(R.tyMiss) w.push(R.tyMiss+' of the '+R.n+' selected days are not loaded yet, so this period is undercounted.');
+    if(R.lyOld) w.push('Last year is incomplete: Amazon only keeps about two years of this data, and '+R.lyOld+' of last year\'s '+R.n+' days are older than that ('+fd(D.floor,1)+' is the earliest).');
+    if(R.lyMiss) w.push(R.lyMiss+' of last year\'s days are not loaded yet, so last year is undercounted.');
+    $('warn').innerHTML=w.length?'<b>Heads up:</b> '+w.join(' '):''; $('warn').style.display=w.length?'block':'none';
     var n='Rows are grouped by product (every size and pack of a flavor sits together, biggest seller first), just like your v3 sheet. Untick “Group by product” to sort any column. '+
-      'Last year uses the same calendar dates, so the weekday mix and holiday timing can differ (e.g. Black Friday falls on a different date each year).';
-    if(D.lag_notes && D.lag_notes.length) n+=' <b>Today the window was moved back an extra day:</b> '+esc(D.lag_notes.join('; '))+'.';
+      'Last year uses the same calendar dates, so the weekday mix and holiday timing can differ (e.g. Black Friday falls on a different date each year). '+
+      'The page address keeps your date choice, so you can bookmark or share a custom range.';
+    if(D.lag_notes && D.lag_notes.length) n+=' <b>Today the newest date was moved back an extra day:</b> '+esc(D.lag_notes.join('; '))+'.';
     $('note').innerHTML=n;
-    var c=D.check;
-    $('foot').innerHTML='Built '+esc(D.built)+'. Source: Amazon Sales &amp; Traffic report by child ASIN, pulled fresh each morning. '+
-      'Account total for the 30 days: '+nf.format(c.ty_units)+' units / '+mf0.format(c.ty_rev)+' (last year '+nf.format(c.ly_units)+' / '+mf0.format(c.ly_rev)+'). '+
-      'The ASIN rows can differ from that by a few dozen units because Amazon rolls up the two views separately.';
+    var A=R.acct, f='Built '+esc(D.built)+'. Source: Amazon Sales &amp; Traffic by child ASIN, one pull per day, kept from '+fd(D.first,1)+' on. ';
+    if(A.c1===R.n) f+='Amazon\'s account total for these dates: '+nf.format(A.u1)+' units / '+mf0.format(A.r1)+
+      (A.c0===R.n?' (last year '+nf.format(A.u0)+' / '+mf0.format(A.r0)+')':'')+'. The ASIN rows can differ from that by a fraction of a percent because Amazon rolls up the two views separately.';
+    $('foot').innerHTML=f;
   }
   function sums(rows){ var s={u0:0,u1:0,r0:0,r1:0}; rows.forEach(function(r){s.u0+=r.u0;s.u1+=r.u1;s.r0+=r.r0;s.r1+=r.r1;}); return s; }
   function kpis(){
-    var parts=[['All Amazon',D.rows],['WWB',D.rows.filter(function(r){return r.b==='WWB';})],['Teeccino',D.rows.filter(function(r){return r.b==='TEE';})]];
+    var parts=[['All Amazon',ROWS],['WWB',ROWS.filter(function(r){return r.b==='WWB';})],['Teeccino',ROWS.filter(function(r){return r.b==='TEE';})]];
     $('kpis').innerHTML=parts.map(function(p){ var s=sums(p[1]);
       return '<div class="card kpi"><div class="k">'+p[0]+' · revenue</div><div class="v">'+mf0.format(s.r1)+' '+pct(s.r0,s.r1)+'</div>'+
         '<div class="d">Last year '+mf0.format(s.r0)+' · Units '+nf.format(s.u1)+' vs '+nf.format(s.u0)+' ('+pct(s.u0,s.u1)+')</div></div>';
@@ -123,11 +195,10 @@
   }
   function rowsNow(){
     var q=$('find').value.trim().toLowerCase();
-    return D.rows.filter(function(r){ return (brand==='ALL'||r.b===brand) &&
+    return ROWS.filter(function(r){ return (brand==='ALL'||r.b===brand) &&
       (!q || (r.a+' '+r.d+' '+r.it).toLowerCase().indexOf(q)>=0); });
   }
   function ordered(rows){
-    var k=function(r){return [r.r1,r.r0];};
     if($('grp').checked){
       var fam={}; rows.forEach(function(r){var f=(brand==='ALL'?r.b+'|':'')+r.f;(fam[f]=fam[f]||[]).push(r);});
       var best=function(g){return g.reduce(function(m,r){return Math.max(m,r.r1);},0)*1e6+g.reduce(function(m,r){return Math.max(m,r.r0);},0)/1e3;};
@@ -139,12 +210,13 @@
       pu:function(r){return r.u0?(r.u1-r.u0)/r.u0:-1e9;},pr:function(r){return r.r0?(r.r1-r.r0)/r.r0:-1e9;}}[key]||function(r){return r[key];};
     return rows.slice().sort(function(a,b){var x=f(a),y=f(b); if(typeof x==='string') return sortDir*x.localeCompare(y); return sortDir*(x-y);}).map(function(r){return [r,false];});
   }
-  var COLS=[['a','ASIN','l'],['d','Description','l'],['u0','Last year'],['u1','Last 30 days'],['du','Change'],['pu','% Change'],
-            ['r0','Last year'],['r1','Last 30 days'],['dr','Change'],['pr','% Change']];
   function render(){
-    var rows=rowsNow(), o=ordered(rows), s=sums(rows);
+    var cur=R.mode==='C'?'Selected dates':R.label;
+    var COLS=[['a','ASIN','l'],['d','Description','l'],['u0','Last year'],['u1',cur],['du','Change'],['pu','% Change'],
+              ['r0','Last year'],['r1',cur],['dr','Change'],['pr','% Change']];
+    var rows=rowsNow(), o=ordered(rows), s=sums(rows), g=$('grp').checked;
     var h='<thead><tr><th class="grp l" colspan="2"></th><th class="grp" colspan="4">Units</th><th class="grp" colspan="4">Revenue</th></tr><tr>'+
-      COLS.map(function(c){return '<th data-k="'+c[0]+'" class="'+(c[2]||'')+(sortKey===c[0]&&!$('grp').checked?' sorted':'')+'">'+c[1]+(sortKey===c[0]&&!$('grp').checked?(sortDir<0?' ▾':' ▴'):'')+'</th>';}).join('')+'</tr></thead><tbody>';
+      COLS.map(function(c){return '<th data-k="'+c[0]+'" class="'+(c[2]||'')+(sortKey===c[0]&&!g?' sorted':'')+'">'+c[1]+(sortKey===c[0]&&!g?(sortDir<0?' ▾':' ▴'):'')+'</th>';}).join('')+'</tr></thead><tbody>';
     h+=o.map(function(x){var r=x[0];
       return '<tr'+(x[1]?' class="band"':'')+'><td class="asin l"><a href="https://www.amazon.com/dp/'+r.a+'" target="_blank" rel="noopener">'+r.a+'</a></td>'+
         '<td class="desc l"'+(r.it?' title="'+esc(r.it)+'"':'')+'>'+esc(r.d)+(brand==='ALL'?'<span class="tag">'+(r.b==='TEE'?'TCN':r.b)+'</span>':'')+(r.disc?'<span class="tag">discontinued</span>':'')+'</td>'+
@@ -157,16 +229,23 @@
       var k=th.getAttribute('data-k'); if(sortKey===k) sortDir=-sortDir; else {sortKey=k; sortDir=(k==='a'||k==='d')?1:-1;}
       $('grp').checked=false; render(); }; });
   }
+  document.querySelectorAll('#rangeSeg button').forEach(function(b){ b.onclick=function(){
+    var v=b.getAttribute('data-v');
+    if(v==='C'){ R.mode='C'; document.querySelectorAll('#rangeSeg button').forEach(function(x){x.classList.toggle('on',x===b);});
+      $('custom').classList.add('show'); $('from').focus(); return; }
+    setRange(v); }; });
+  $('apply').onclick=function(){ if($('from').value&&$('to').value) setRange('C',$('from').value,$('to').value); };
+  [$('from'),$('to')].forEach(function(el){ el.onkeydown=function(e){ if(e.key==='Enter') $('apply').click(); }; });
   document.querySelectorAll('#brandSeg button').forEach(function(b){ b.onclick=function(){
     document.querySelectorAll('#brandSeg button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); brand=b.getAttribute('data-v'); render(); }; });
   $('find').oninput=render; $('grp').onchange=render;
   $('csv').onclick=function(){
     var rows=ordered(rowsNow()).map(function(x){return x[0];});
-    var L=[['ASIN','Brand','Description','Product catalog item','Units '+D.ly_start+' to '+D.ly_end,'Units '+D.start+' to '+D.end,'Revenue '+D.ly_start+' to '+D.ly_end,'Revenue '+D.start+' to '+D.end]];
+    var L=[['ASIN','Brand','Description','Product catalog item','Units '+R.ls+' to '+R.le,'Units '+R.s+' to '+R.e,'Revenue '+R.ls+' to '+R.le,'Revenue '+R.s+' to '+R.e]];
     rows.forEach(function(r){L.push([r.a,r.b==='TEE'?'Teeccino':r.b,r.d,r.it,r.u0,r.u1,r.r0.toFixed(2),r.r1.toFixed(2)]);});
     var csv=L.map(function(l){return l.map(function(v){v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',');}).join('\r\n');
     var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));
-    a.download='Amazon Sales By ASIN '+D.start+' to '+D.end+'.csv'; a.click();
+    a.download='Amazon Sales By ASIN '+R.s+' to '+R.e+'.csv'; a.click();
   };
 })();
 </script>
